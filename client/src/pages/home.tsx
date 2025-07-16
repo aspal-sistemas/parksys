@@ -5,6 +5,7 @@ import { Map, ArrowRight, MapPin, Trees, Users, Calendar, Sparkles, TrendingUp, 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import ParkCard from '@/components/ParkCard';
+import AdSpace from '@/components/AdSpace';
 import { ExtendedPark } from '@shared/schema';
 import logoImage from '@assets/logo_1751306368691.png';
 
@@ -72,6 +73,15 @@ const Home: React.FC = () => {
               </Link>
             </div>
             
+            {/* 🎯 PUBLICIDAD PILOTO - Hero Banner */}
+            <div className="mb-8">
+              <AdSpace 
+                spaceId="1" 
+                position="hero" 
+                pageType="homepage" 
+                className="rounded-lg shadow-xl border-2 border-white/20 backdrop-blur-sm"
+              />
+            </div>
 
           </div>
           

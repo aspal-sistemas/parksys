@@ -275,10 +275,9 @@ router.put('/advertisements/:id', isAuthenticated, upload.single('image'), async
 // Obtener asignaciones activas
 router.get('/placements', async (req, res) => {
   try {
-    const { pageType, pageId } = req.query;
+    const { spaceId, pageType, position } = req.query;
     
-    // Primero verificar si hay asignaciones
-    const result = await pool.query(`
+    let query = `
       SELECT 
         ap.id,
         ap.advertisement_id,
@@ -286,27 +285,63 @@ router.get('/placements', async (req, res) => {
         ap.priority,
         ap.start_date,
         ap.end_date,
-        ap.is_active
+        ap.is_active,
+        a.title,
+        a.description,
+        a.image_url,
+        a.link_url as target_url,
+        a.alt_text,
+        a.is_active as ad_is_active
       FROM ad_placements ap
-      WHERE ap.is_active = true
+      LEFT JOIN advertisements a ON ap.advertisement_id = a.id
+      LEFT JOIN ad_spaces ads ON ap.ad_space_id = ads.id
+      WHERE ap.is_active = true 
+        AND a.is_active = true
         AND ap.start_date <= CURRENT_DATE
         AND ap.end_date >= CURRENT_DATE
-      ORDER BY ap.priority DESC
-      LIMIT 10
-    `);
+    `;
     
-    // Transformar resultados a formato simple
-    const placements = result.rows.map(row => ({
+    const params = [];
+    
+    if (spaceId) {
+      query += ` AND ads.id = $${params.length + 1}`;
+      params.push(spaceId);
+    }
+    
+    if (pageType) {
+      query += ` AND ads.page_type = $${params.length + 1}`;
+      params.push(pageType);
+    }
+    
+    if (position) {
+      query += ` AND ads.position = $${params.length + 1}`;
+      params.push(position);
+    }
+    
+    query += ` ORDER BY ap.priority DESC LIMIT 10`;
+    
+    const result = await pool.query(query, params);
+    
+    // Formatear los datos para el frontend
+    const formattedData = result.rows.map(row => ({
       id: row.id,
+      adSpaceId: row.ad_space_id,
       advertisementId: row.advertisement_id,
-      spaceId: row.ad_space_id,
-      priority: row.priority,
       startDate: row.start_date,
       endDate: row.end_date,
-      isActive: row.is_active
+      isActive: row.is_active,
+      advertisement: {
+        id: row.advertisement_id,
+        title: row.title,
+        description: row.description,
+        imageUrl: row.image_url,
+        targetUrl: row.target_url,
+        altText: row.alt_text,
+        isActive: row.ad_is_active
+      }
     }));
     
-    res.json({ success: true, data: placements });
+    res.json({ success: true, data: formattedData });
   } catch (error) {
     console.error('Error obteniendo asignaciones:', error);
     res.status(500).json({ success: false, error: 'Error obteniendo asignaciones' });
@@ -507,6 +542,72 @@ router.get('/public/ads', async (req, res) => {
   } catch (error) {
     console.error('Error obteniendo anuncios públicos:', error);
     res.status(500).json({ success: false, error: 'Error obteniendo anuncios públicos' });
+  }
+});
+
+// ===================
+// TRACKING ENDPOINTS
+// ===================
+
+// Endpoint para tracking de impresiones
+router.post('/track-impression', async (req, res) => {
+  try {
+    const { placementId } = req.body;
+    
+    if (!placementId) {
+      return res.status(400).json({
+        success: false,
+        error: 'placementId es requerido'
+      });
+    }
+    
+    // Registrar la impresión (por ahora solo log)
+    console.log(`📊 Impresión registrada para placement ID: ${placementId}`);
+    
+    // Aquí podrías insertar en una tabla de analytics si existe
+    // await pool.query('INSERT INTO ad_impressions (placement_id, timestamp) VALUES ($1, NOW())', [placementId]);
+    
+    res.json({
+      success: true,
+      message: 'Impresión registrada'
+    });
+  } catch (error) {
+    console.error('Error al registrar impresión:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error al registrar impresión'
+    });
+  }
+});
+
+// Endpoint para tracking de clicks
+router.post('/track-click', async (req, res) => {
+  try {
+    const { placementId } = req.body;
+    
+    if (!placementId) {
+      return res.status(400).json({
+        success: false,
+        error: 'placementId es requerido'
+      });
+    }
+    
+    // Registrar el click (por ahora solo log)
+    console.log(`🖱️ Click registrado para placement ID: ${placementId}`);
+    
+    // Aquí podrías insertar en una tabla de analytics si existe
+    // await pool.query('INSERT INTO ad_clicks (placement_id, timestamp) VALUES ($1, NOW())', [placementId]);
+    
+    res.json({
+      success: true,
+      message: 'Click registrado'
+    });
+  } catch (error) {
+    console.error('Error al registrar click:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error al registrar click'
+    });
   }
 });
 
