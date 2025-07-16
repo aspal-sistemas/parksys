@@ -481,7 +481,7 @@ function ActivitiesPage() {
       {/* Banner Publicitario */}
       <section className="max-w-7xl mx-auto px-4 py-4">
         <AdSpace 
-          spaceId="7" 
+          spaceId="6" 
           position="header" 
           pageType="activities" 
         />
