@@ -5,7 +5,7 @@ import { X, ExternalLink } from 'lucide-react';
 interface AdSpaceProps {
   spaceId: string;
   position: 'header' | 'sidebar' | 'footer' | 'hero' | 'profile';
-  pageType: 'homepage' | 'parks' | 'tree-species' | 'activities' | 'concessions' | 'activity-detail' | 'instructors';
+  pageType: 'homepage' | 'parks' | 'tree-species' | 'activities' | 'concessions' | 'activity-detail' | 'instructors' | 'instructor-profile';
   className?: string;
 }
 
