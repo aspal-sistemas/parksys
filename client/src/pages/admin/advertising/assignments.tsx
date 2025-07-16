@@ -108,23 +108,24 @@ const AssignmentCard: React.FC<{ assignment: Assignment; onEdit: (assignment: As
   };
 
   return (
-    <Card className="hover:shadow-lg transition-shadow">
-      <CardHeader>
-        <div className="flex justify-between items-start">
-          <div>
-            <CardTitle className="text-lg">{assignment.advertisement.title}</CardTitle>
-            <p className="text-sm text-gray-600 mt-1">{assignment.space.name}</p>
-            <div className="flex items-center gap-2 mt-2">
+    <Card className="hover:shadow-lg transition-shadow h-full">
+      <CardHeader className="pb-3">
+        <div className="flex justify-between items-start gap-4">
+          <div className="flex-1 min-w-0">
+            <CardTitle className="text-lg truncate">{assignment.advertisement.title}</CardTitle>
+            <p className="text-sm text-gray-600 mt-1 truncate">{assignment.space.name}</p>
+            <div className="flex items-center gap-2 mt-2 flex-wrap">
               {getStatusIcon()}
               <Badge className={getStatusColor()}>{getStatusText()}</Badge>
               <Badge variant="outline">Prioridad {assignment.priority}</Badge>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-shrink-0">
             <Button
               variant="outline"
               size="sm"
               onClick={() => onEdit(assignment)}
+              className="h-8 w-8 p-0"
             >
               <Edit className="w-4 h-4" />
             </Button>
@@ -132,44 +133,50 @@ const AssignmentCard: React.FC<{ assignment: Assignment; onEdit: (assignment: As
               variant="destructive"
               size="sm"
               onClick={() => onDelete(assignment.id)}
+              className="h-8 w-8 p-0"
             >
               <Trash2 className="w-4 h-4" />
             </Button>
           </div>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <p className="font-medium">Espacio:</p>
-            <p className="text-gray-600">{assignment.space.pageType} - {assignment.space.position}</p>
+      <CardContent className="pt-0">
+        <div className="space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+            <div className="min-w-0">
+              <p className="font-medium text-gray-700">Espacio:</p>
+              <p className="text-gray-600 truncate">{assignment.space.pageType} - {assignment.space.position}</p>
+            </div>
+            <div className="min-w-0">
+              <p className="font-medium text-gray-700">Frecuencia:</p>
+              <p className="text-gray-600 truncate">{assignment.frequency}</p>
+            </div>
+            <div className="min-w-0">
+              <p className="font-medium text-gray-700">Fecha inicio:</p>
+              <p className="text-gray-600">{format(new Date(assignment.startDate), 'dd/MM/yyyy', { locale: es })}</p>
+            </div>
+            <div className="min-w-0">
+              <p className="font-medium text-gray-700">Fecha fin:</p>
+              <p className="text-gray-600">{format(new Date(assignment.endDate), 'dd/MM/yyyy', { locale: es })}</p>
+            </div>
           </div>
-          <div>
-            <p className="font-medium">Frecuencia:</p>
-            <p className="text-gray-600">{assignment.frequency}</p>
-          </div>
-          <div>
-            <p className="font-medium">Fecha inicio:</p>
-            <p className="text-gray-600">{format(new Date(assignment.startDate), 'dd/MM/yyyy', { locale: es })}</p>
-          </div>
-          <div>
-            <p className="font-medium">Fecha fin:</p>
-            <p className="text-gray-600">{format(new Date(assignment.endDate), 'dd/MM/yyyy', { locale: es })}</p>
-          </div>
-        </div>
-        
-        {/* Vista previa del anuncio */}
-        <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-          <p className="text-xs text-gray-500 mb-2">Vista previa:</p>
-          <div className="flex items-center gap-3">
-            <img 
-              src={assignment.advertisement.imageUrl} 
-              alt={assignment.advertisement.title}
-              className="w-12 h-12 object-cover rounded"
-            />
-            <div className="flex-1">
-              <p className="font-medium text-sm">{assignment.advertisement.title}</p>
-              <p className="text-xs text-gray-600 truncate">{assignment.advertisement.description}</p>
+          
+          {/* Vista previa del anuncio */}
+          <div className="p-3 bg-gray-50 rounded-lg">
+            <p className="text-xs text-gray-500 mb-2">Vista previa:</p>
+            <div className="flex items-start gap-3">
+              <img 
+                src={assignment.advertisement.imageUrl} 
+                alt={assignment.advertisement.title}
+                className="w-12 h-12 object-cover rounded flex-shrink-0"
+                onError={(e) => {
+                  e.currentTarget.src = 'https://via.placeholder.com/48x48?text=IMG';
+                }}
+              />
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-sm truncate">{assignment.advertisement.title}</p>
+                <p className="text-xs text-gray-600 line-clamp-2 mt-1">{assignment.advertisement.description}</p>
+              </div>
             </div>
           </div>
         </div>
@@ -632,7 +639,7 @@ export default function AdvertisingAssignments() {
             <p className="mt-4 text-gray-600">Cargando asignaciones...</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-4 lg:gap-6">
             {filteredAssignments.map((assignment) => (
               <AssignmentCard
                 key={assignment.id}
