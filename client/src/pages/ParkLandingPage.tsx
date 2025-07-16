@@ -35,6 +35,7 @@ import TreeSpeciesIcon from '@/components/ui/tree-species-icon';
 import TreePhotoViewer from '@/components/TreePhotoViewer';
 import PublicInstructorEvaluationForm from '@/components/PublicInstructorEvaluationForm';
 import ParkEvaluationsSectionSimple from '@/components/ParkEvaluationsSectionSimple';
+import PublicLayout from '@/components/PublicLayout';
 import greenFlagLogo from '@assets/PHOTO-2025-07-01-12-36-16_1751396336894.jpg';
 
 function ParkLandingPage() {
@@ -193,7 +194,8 @@ function ParkLandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <PublicLayout>
+      <div className="min-h-screen bg-gray-50">
       {/* Header Navigation */}
       <div className="bg-white shadow-sm border-b sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
@@ -503,7 +505,7 @@ function ParkLandingPage() {
               <CardContent>
                 {park.activities && park.activities.length > 0 ? (
                   <div className="space-y-4">
-                    {park.activities.map((activity) => (
+                    {park.activities.slice(0, 3).map((activity) => (
                       <div key={activity.id} className="border-l-4 border-orange-300 pl-4 py-3 bg-orange-50 rounded-r-lg">
                         <div className="flex justify-between items-start mb-2">
                           <h3 className="font-semibold text-gray-800">{activity.title}</h3>
@@ -520,6 +522,15 @@ function ParkLandingPage() {
                         </div>
                       </div>
                     ))}
+                    
+                    <div className="text-center pt-4 border-t">
+                      <Link href="/activities">
+                        <Button variant="outline" className="border-orange-300 text-orange-700 hover:bg-orange-50">
+                          <Calendar className="h-4 w-4 mr-2" />
+                          Ver todas las actividades
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
                 ) : (
                   <div className="text-center py-8 bg-gray-50 rounded-lg">
@@ -972,11 +983,15 @@ function ParkLandingPage() {
                         </div>
                       </div>
                     ))}
-                    {park.volunteers.length > 3 && (
-                      <div className="text-center pt-2">
-                        <p className="text-green-600 text-xs">+{park.volunteers.length - 3} voluntarios más</p>
-                      </div>
-                    )}
+                    
+                    <div className="text-center pt-4 border-t">
+                      <Link href="/volunteers">
+                        <Button variant="outline" className="border-green-300 text-green-700 hover:bg-green-50">
+                          <Heart className="h-4 w-4 mr-2" />
+                          Ver todos los voluntarios
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
                 ) : (
                   <div className="text-center py-6">
@@ -1142,7 +1157,8 @@ function ParkLandingPage() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </PublicLayout>
   );
 }
 

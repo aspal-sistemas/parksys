@@ -5,6 +5,7 @@ import { Search, MapPin, Building, Phone, Calendar } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import PublicLayout from '@/components/PublicLayout';
 import heroImage from '@assets/barista-making-tasty-coffee-on-a-professional-mach-2025-01-07-23-28-05-utc_1751509914385.jpg';
 
 interface Concession {
@@ -100,7 +101,8 @@ export default function ConcessionsList() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <PublicLayout>
+      <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
       <div 
         className="relative text-white py-24"
@@ -309,6 +311,7 @@ export default function ConcessionsList() {
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </PublicLayout>
   );
 }
