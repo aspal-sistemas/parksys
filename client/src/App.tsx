@@ -91,6 +91,11 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/ConcessionDetail')))}
           </Suspense>
         </Route>
+        <Route path="/volunteers">
+          <Suspense fallback={<div className="p-8 text-center">Cargando voluntarios...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/VolunteersList')))}
+          </Suspense>
+        </Route>
         <Route path="/parque/:slug/evaluar">
           <Suspense fallback={<div className="p-8 text-center">Cargando formulario de evaluación...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/ParkEvaluationForm')))}
