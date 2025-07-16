@@ -506,27 +506,27 @@ const InstructorsPage: React.FC = () => {
             <div className="sticky top-4 space-y-4">
               {/* Espacio 1 - Certificaciones */}
               <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
-                <AdSpace spaceId="13" position="sidebar" pageType="instructors" />
+                <AdSpace spaceId="13" position="sidebar" pageType="instructor-profile" />
               </div>
 
               {/* Espacio 2 - Capacitación */}
               <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
-                <AdSpace spaceId="14" position="sidebar" pageType="instructors" />
+                <AdSpace spaceId="13" position="sidebar" pageType="instructor-profile" />
               </div>
 
               {/* Espacio 3 - Oportunidades */}
               <div className="bg-gradient-to-br from-purple-50 to-violet-50 p-4 rounded-lg border border-purple-200">
-                <AdSpace spaceId="15" position="sidebar" pageType="instructors" />
+                <AdSpace spaceId="13" position="sidebar" pageType="instructor-profile" />
               </div>
 
               {/* Espacio 4 - Eventos */}
               <div className="bg-gradient-to-br from-orange-50 to-red-50 p-4 rounded-lg border border-orange-200">
-                <AdSpace spaceId="16" position="sidebar" pageType="instructors" />
+                <AdSpace spaceId="13" position="sidebar" pageType="instructor-profile" />
               </div>
 
               {/* Espacio 5 - Recursos */}
               <div className="bg-gradient-to-br from-teal-50 to-cyan-50 p-4 rounded-lg border border-teal-200">
-                <AdSpace spaceId="17" position="sidebar" pageType="instructors" />
+                <AdSpace spaceId="13" position="sidebar" pageType="instructor-profile" />
               </div>
             </div>
           </div>
