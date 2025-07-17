@@ -94,6 +94,31 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
     }
   }, [activePlacement?.advertisement?.updatedAt]);
 
+  // Escuchar eventos globales de actualización de publicidad
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'adForceUpdate') {
+        console.log('🔄 AdSpace: Forzando actualización por cambio en localStorage');
+        setRefreshKey(Date.now());
+        setForceRender(prev => prev + 1);
+      }
+    };
+
+    const handleCustomUpdate = (e: CustomEvent) => {
+      console.log('🔄 AdSpace: Forzando actualización por evento personalizado');
+      setRefreshKey(Date.now());
+      setForceRender(prev => prev + 1);
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('adForceUpdate', handleCustomUpdate as EventListener);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('adForceUpdate', handleCustomUpdate as EventListener);
+    };
+  }, []);
+
   const trackImpression = async (placementId: number) => {
     try {
       await fetch('/api/advertising/track-impression', {

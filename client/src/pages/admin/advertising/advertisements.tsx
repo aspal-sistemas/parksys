@@ -188,6 +188,20 @@ const AdAdvertisements = () => {
         alt_text: ''
       });
       queryClient.invalidateQueries({ queryKey: ['/api/advertising-management/advertisements'] });
+      
+      // Disparar eventos globales para actualizar todas las páginas
+      localStorage.setItem('adForceUpdate', Date.now().toString());
+      window.dispatchEvent(new CustomEvent('adForceUpdate'));
+      
+      // Disparar evento cross-window para páginas abiertas
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: 'adForceUpdate',
+        newValue: Date.now().toString(),
+        oldValue: null,
+        url: window.location.href
+      }));
+      
+      console.log('🌐 Eventos globales disparados para actualizar todas las páginas (CREATE)');
     },
     onError: (error: any) => {
       toast({
@@ -243,6 +257,20 @@ const AdAdvertisements = () => {
       });
       
       console.log('🔄 Cache de publicidad invalidado completamente');
+      
+      // Disparar eventos globales para actualizar todas las páginas
+      localStorage.setItem('adForceUpdate', Date.now().toString());
+      window.dispatchEvent(new CustomEvent('adForceUpdate'));
+      
+      // Disparar evento cross-window para páginas abiertas
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: 'adForceUpdate',
+        newValue: Date.now().toString(),
+        oldValue: null,
+        url: window.location.href
+      }));
+      
+      console.log('🌐 Eventos globales disparados para actualizar todas las páginas');
     },
     onError: (error: any) => {
       toast({
@@ -266,6 +294,20 @@ const AdAdvertisements = () => {
         description: "Anuncio eliminado correctamente",
       });
       queryClient.invalidateQueries({ queryKey: ['/api/advertising-management/advertisements'] });
+      
+      // Disparar eventos globales para actualizar todas las páginas
+      localStorage.setItem('adForceUpdate', Date.now().toString());
+      window.dispatchEvent(new CustomEvent('adForceUpdate'));
+      
+      // Disparar evento cross-window para páginas abiertas
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: 'adForceUpdate',
+        newValue: Date.now().toString(),
+        oldValue: null,
+        url: window.location.href
+      }));
+      
+      console.log('🌐 Eventos globales disparados para actualizar todas las páginas (DELETE)');
     },
     onError: (error: any) => {
       toast({

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { Map, ArrowRight, MapPin, Trees, Users, Calendar, Sparkles, TrendingUp, Zap, Leaf, Shield, Heart, BookOpen, GraduationCap, Target, Award } from 'lucide-react';
@@ -10,6 +10,32 @@ import { ExtendedPark } from '@shared/schema';
 import logoImage from '@assets/logo_1751306368691.png';
 
 const Home: React.FC = () => {
+  // Estado para forzar actualización de anuncios estáticos
+  const [forceUpdateKey, setForceUpdateKey] = useState(Date.now());
+  
+  // Escuchar cambios en localStorage para actualizar anuncios
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'adForceUpdate') {
+        console.log('🔄 Forzando actualización de anuncios en /home por cambio en localStorage');
+        setForceUpdateKey(Date.now());
+      }
+    };
+
+    const handleCustomUpdate = (e: CustomEvent) => {
+      console.log('🔄 Forzando actualización de anuncios en /home por evento personalizado');
+      setForceUpdateKey(Date.now());
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('adForceUpdate', handleCustomUpdate as EventListener);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('adForceUpdate', handleCustomUpdate as EventListener);
+    };
+  }, []);
+  
   // Fetch a few featured parks
   const { data: allParks = [], isLoading } = useQuery<ExtendedPark[]>({
     queryKey: ['/api/parks'],
