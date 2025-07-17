@@ -88,6 +88,7 @@ const AdAdvertisements: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [refreshKey, setRefreshKey] = useState(0);
   const [forceRender, setForceRender] = useState(0);
+  const [imageKeys, setImageKeys] = useState<{[key: number]: string}>({});
   const [formData, setFormData] = useState<AdFormData>({
     title: '',
     description: '',
@@ -248,6 +249,34 @@ const AdAdvertisements: React.FC = () => {
         setRefreshKey(prev => prev + 1);
         setForceRender(prev => prev + 1);
       }, 1500);
+      
+      // Invalidación específica para el anuncio actualizado
+      setTimeout(() => {
+        if (data?.id) {
+          forceImageReload(data.id);
+        }
+      }, 2000);
+      
+      // Invalidación extrema: recrear todos los contenedores de imágenes
+      setTimeout(() => {
+        const containers = document.querySelectorAll('.aspect-video');
+        containers.forEach(container => {
+          const img = container.querySelector('img');
+          if (img) {
+            const parent = container.parentNode;
+            const clone = container.cloneNode(true);
+            parent?.replaceChild(clone, container);
+          }
+        });
+        console.log('🔄 Contenedores de imágenes recreados completamente');
+      }, 3000);
+      
+      // Test final: invalidar todos los estados y forzar rerender completo
+      setTimeout(() => {
+        setRefreshKey(Date.now());
+        setForceRender(Date.now());
+        console.log('🚀 RERENDER COMPLETO EJECUTADO - Todos los estados invalidados');
+      }, 4000);
       
       toast({
         title: "Anuncio actualizado",
@@ -449,10 +478,11 @@ const AdAdvertisements: React.FC = () => {
   const getImageUrlWithCacheBust = (imageUrl: string, updatedAt?: string) => {
     if (!imageUrl) return '';
     
-    // Para todas las URLs, agregar timestamp basado en updated_at + refreshKey + forceRender + timestamp actual
+    // Para todas las URLs, agregar timestamp basado en updated_at + refreshKey + forceRender + timestamp actual + random
     const timestamp = updatedAt ? new Date(updatedAt).getTime() : Date.now();
     const separator = imageUrl.includes('?') ? '&' : '?';
-    const finalUrl = `${imageUrl}${separator}v=${timestamp}&r=${refreshKey}&f=${forceRender}&t=${Date.now()}`;
+    const randomId = Math.random().toString(36).substr(2, 9);
+    const finalUrl = `${imageUrl}${separator}v=${timestamp}&r=${refreshKey}&f=${forceRender}&t=${Date.now()}&rnd=${randomId}`;
     
     // Debug logging activo para verificar URLs
     console.log('🖼️ Cache-busting URL:', {
@@ -462,29 +492,57 @@ const AdAdvertisements: React.FC = () => {
       refreshKey,
       forceRender,
       now: Date.now(),
+      random: randomId,
       final: finalUrl
     });
     
     return finalUrl;
   };
   
-  // Función para recrear imagen con DOM limpio
+  // Función para recrear imagen con DOM limpio y cache-breaking agresivo
   const createImageElement = (src: string, alt: string, className: string, adId: number, updatedAt: string) => {
     const imageKey = `${adId}-${updatedAt}-${refreshKey}-${forceRender}-${Date.now()}`;
     
+    // Generar una URL única que evite completamente el cache
+    const cacheBustingSrc = `${src}${src.includes('?') ? '&' : '?'}cb=${Date.now()}&uid=${Math.random().toString(36).substr(2, 9)}`;
+    
     return React.createElement('img', {
       key: imageKey,
-      src: src,
+      src: cacheBustingSrc,
       alt: alt,
       className: className,
-      style: { display: 'block' }, // Forzar display block
+      style: { 
+        display: 'block',
+        // Forzar re-render del navegador
+        imageRendering: 'auto',
+        backgroundColor: 'transparent'
+      },
       onLoad: () => {
         // Logging para verificar que la imagen se cargó
-        console.log(`✅ Imagen cargada para anuncio ${adId}:`, src);
+        console.log(`✅ Imagen cargada para anuncio ${adId}:`, cacheBustingSrc);
       },
       onError: (e) => {
+        console.log(`❌ Error cargando imagen para anuncio ${adId}:`, cacheBustingSrc);
         (e.target as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDIwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIxMDAiIGZpbGw9IiNmM2Y0ZjYiLz48cGF0aCBkPSJNNTAgNTBoMTAwdjEwSDE1MHYxMEg1MFY1MHoiIGZpbGw9IiNkMWQ1ZGIiLz48L3N2Zz4=';
       }
+    });
+  };
+
+  // Función para invalidar cache de una imagen específica
+  const forceImageReload = (adId: number) => {
+    const imageElements = document.querySelectorAll(`img[src*="${adId}"]`);
+    imageElements.forEach(img => {
+      const imgElement = img as HTMLImageElement;
+      const currentSrc = imgElement.src;
+      
+      // Técnica de cache-breaking: cambiar src a vacío y luego restaurar con nuevo timestamp
+      imgElement.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+      
+      setTimeout(() => {
+        const newSrc = currentSrc.split('?')[0] + `?cb=${Date.now()}&uid=${Math.random().toString(36).substr(2, 9)}`;
+        imgElement.src = newSrc;
+        console.log(`🔄 Imagen ${adId} forzada a recargar:`, newSrc);
+      }, 50);
     });
   };
 
