@@ -245,7 +245,7 @@ const AdAdvertisements = () => {
   const filteredAds = advertisements.filter((ad: Advertisement) => {
     const matchesSearch = ad.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          ad.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCampaign = campaignFilter === 'all' || ad.campaign_id.toString() === campaignFilter;
+    const matchesCampaign = campaignFilter === 'all' || (ad.campaign_id && ad.campaign_id.toString() === campaignFilter);
     const matchesStatus = statusFilter === 'all' || 
                          (statusFilter === 'active' && ad.is_active) ||
                          (statusFilter === 'inactive' && !ad.is_active);
@@ -321,7 +321,7 @@ const AdAdvertisements = () => {
                     </div>
                     <div>
                       <Label htmlFor="campaign">Campaña *</Label>
-                      <Select value={formData.campaign_id.toString()} onValueChange={(value) => setFormData({...formData, campaign_id: parseInt(value)})}>
+                      <Select value={formData.campaign_id ? formData.campaign_id.toString() : ""} onValueChange={(value) => setFormData({...formData, campaign_id: parseInt(value)})}>
                         <SelectTrigger>
                           <SelectValue placeholder="Seleccionar campaña" />
                         </SelectTrigger>
@@ -553,7 +553,7 @@ const AdAdvertisements = () => {
                 </div>
                 <div>
                   <Label htmlFor="edit_campaign">Campaña *</Label>
-                  <Select value={formData.campaign_id.toString()} onValueChange={(value) => setFormData({...formData, campaign_id: parseInt(value)})}>
+                  <Select value={formData.campaign_id ? formData.campaign_id.toString() : ""} onValueChange={(value) => setFormData({...formData, campaign_id: parseInt(value)})}>
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccionar campaña" />
                     </SelectTrigger>
