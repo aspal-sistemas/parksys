@@ -262,9 +262,51 @@ const AdAdvertisements = () => {
 
   const handleEditSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedAd && formData.title && formData.image_url && formData.campaign_id !== 0) {
-      editMutation.mutate({ ...formData, id: selectedAd.id });
+    if (!selectedAd) {
+      toast({
+        title: "Error",
+        description: "No se ha seleccionado un anuncio para editar",
+        variant: "destructive",
+      });
+      return;
     }
+    
+    if (!formData.title || !formData.image_url || formData.campaign_id === 0) {
+      toast({
+        title: "Error",
+        description: "Por favor completa todos los campos requeridos",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Preparar los datos para el endpoint
+    const updateData = {
+      id: selectedAd.id,
+      title: formData.title,
+      description: formData.description || '',
+      image_url: formData.image_url,
+      link_url: '',
+      alt_text: formData.alt_text || '',
+      ad_type: 'institutional',
+      media_type: formData.media_type,
+      frequency: 'always',
+      start_date: null,
+      end_date: null,
+      priority: 5,
+      is_active: formData.is_active,
+      video_url: null,
+      html_content: formData.content || '',
+      carousel_images: [],
+      scheduled_days: [],
+      scheduled_hours: [],
+      target_pages: [],
+      target_positions: [],
+      campaign_id: formData.campaign_id
+    };
+    
+    console.log('Datos para actualizar:', updateData);
+    editMutation.mutate(updateData);
   };
 
   const handleEdit = (ad: Advertisement) => {
@@ -690,7 +732,7 @@ const AdAdvertisements = () => {
 
         {/* Edit Modal */}
         <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Editar Anuncio</DialogTitle>
             </DialogHeader>
@@ -700,7 +742,7 @@ const AdAdvertisements = () => {
                   <Label htmlFor="edit_title">Título *</Label>
                   <Input
                     id="edit_title"
-                    value={formData.title}
+                    value={formData.title || ''}
                     onChange={(e) => setFormData({...formData, title: e.target.value})}
                     required
                     placeholder="Título del anuncio"
@@ -727,7 +769,7 @@ const AdAdvertisements = () => {
                 <Label htmlFor="edit_description">Descripción</Label>
                 <Textarea
                   id="edit_description"
-                  value={formData.description}
+                  value={formData.description || ''}
                   onChange={(e) => setFormData({...formData, description: e.target.value})}
                   placeholder="Descripción del anuncio"
                   rows={3}
@@ -769,7 +811,7 @@ const AdAdvertisements = () => {
                   <Label htmlFor="edit_image_url">URL del Contenido *</Label>
                   <Input
                     id="edit_image_url"
-                    value={formData.image_url}
+                    value={formData.image_url || ''}
                     onChange={(e) => setFormData({...formData, image_url: e.target.value})}
                     required
                     placeholder="https://ejemplo.com/imagen.jpg"
@@ -832,7 +874,7 @@ const AdAdvertisements = () => {
                   <Input
                     id="edit_duration"
                     type="number"
-                    value={formData.duration}
+                    value={formData.duration || 0}
                     onChange={(e) => setFormData({...formData, duration: parseInt(e.target.value) || 0})}
                     placeholder="30"
                     min="0"
@@ -845,7 +887,7 @@ const AdAdvertisements = () => {
                 <Label htmlFor="edit_alt_text">Texto Alternativo</Label>
                 <Input
                   id="edit_alt_text"
-                  value={formData.alt_text}
+                  value={formData.alt_text || ''}
                   onChange={(e) => setFormData({...formData, alt_text: e.target.value})}
                   placeholder="Descripción del contenido para accesibilidad"
                 />
@@ -855,7 +897,7 @@ const AdAdvertisements = () => {
                 <Label htmlFor="edit_content">Contenido</Label>
                 <Textarea
                   id="edit_content"
-                  value={formData.content}
+                  value={formData.content || ''}
                   onChange={(e) => setFormData({...formData, content: e.target.value})}
                   placeholder="Contenido adicional del anuncio"
                   rows={4}
@@ -866,18 +908,22 @@ const AdAdvertisements = () => {
                 <input
                   type="checkbox"
                   id="edit_is_active"
-                  checked={formData.is_active}
+                  checked={formData.is_active || false}
                   onChange={(e) => setFormData({...formData, is_active: e.target.checked})}
                 />
                 <Label htmlFor="edit_is_active">Anuncio activo</Label>
               </div>
               
-              <div className="flex justify-end space-x-2">
+              <div className="flex justify-end space-x-2 pt-4">
                 <Button type="button" variant="outline" onClick={() => setIsEditModalOpen(false)}>
                   Cancelar
                 </Button>
-                <Button type="submit" className="bg-[#00a587] hover:bg-[#067f5f]">
-                  Actualizar Anuncio
+                <Button 
+                  type="submit" 
+                  className="bg-[#00a587] hover:bg-[#067f5f]"
+                  disabled={editMutation.isPending}
+                >
+                  {editMutation.isPending ? 'Actualizando...' : 'Actualizar Anuncio'}
                 </Button>
               </div>
             </form>
