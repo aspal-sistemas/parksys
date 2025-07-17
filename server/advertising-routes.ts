@@ -291,7 +291,8 @@ router.get('/placements', async (req, res) => {
         a.image_url,
         a.link_url as target_url,
         a.alt_text,
-        a.is_active as ad_is_active
+        a.is_active as ad_is_active,
+        a.updated_at as ad_updated_at
       FROM ad_placements ap
       LEFT JOIN advertisements a ON ap.advertisement_id = a.id
       LEFT JOIN ad_spaces ads ON ap.ad_space_id = ads.id
@@ -337,7 +338,8 @@ router.get('/placements', async (req, res) => {
         imageUrl: row.image_url,
         targetUrl: row.target_url,
         altText: row.alt_text,
-        isActive: row.ad_is_active
+        isActive: row.ad_is_active,
+        updatedAt: row.ad_updated_at
       }
     }));
     

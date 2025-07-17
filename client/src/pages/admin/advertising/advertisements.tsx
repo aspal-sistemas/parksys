@@ -214,6 +214,35 @@ const AdAdvertisements = () => {
       setIsEditModalOpen(false);
       setSelectedAd(null);
       queryClient.invalidateQueries({ queryKey: ['/api/advertising-management/advertisements'] });
+      
+      // Invalidar cache de placements para forzar actualización de imágenes en páginas públicas
+      queryClient.invalidateQueries({ queryKey: ['/api/advertising/placements'] });
+      
+      // Invalidar todo el cache relacionado con publicidad
+      queryClient.invalidateQueries({ queryKey: ['/api/advertising'] });
+      
+      // Sistema de invalidación múltiple con delays escalonados
+      const invalidationDelays = [0, 500, 1000, 1500, 2000, 3000, 4000];
+      
+      invalidationDelays.forEach((delay, index) => {
+        setTimeout(() => {
+          queryClient.invalidateQueries({ queryKey: ['/api/advertising/placements'] });
+          queryClient.refetchQueries({ queryKey: ['/api/advertising/placements'] });
+          
+          // Invalidación brutal del DOM para forzar recarga de imágenes
+          const images = document.querySelectorAll('img[src*="unsplash"]');
+          images.forEach(img => {
+            const src = img.getAttribute('src');
+            if (src) {
+              img.setAttribute('src', src + '&reload=' + Date.now());
+            }
+          });
+          
+          console.log(`🔄 Cache de publicidad invalidado - Iteración ${index + 1}/${invalidationDelays.length}`);
+        }, delay);
+      });
+      
+      console.log('🔄 Cache de publicidad invalidado completamente');
     },
     onError: (error: any) => {
       toast({

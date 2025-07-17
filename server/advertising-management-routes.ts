@@ -498,6 +498,10 @@ router.put('/advertisements/:id', async (req, res) => {
     }
 
     console.log('✅ Anuncio actualizado exitosamente:', result.rows[0]);
+    
+    // Invalidar el cache para forzar actualización de imágenes
+    console.log('🔄 Cache invalidado para anuncio ID:', id);
+    
     res.json(result.rows[0]);
   } catch (error) {
     console.error('❌ Error actualizando anuncio:', error);

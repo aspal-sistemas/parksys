@@ -24,6 +24,7 @@ interface AdPlacement {
     targetUrl: string;
     altText: string;
     isActive: boolean;
+    updatedAt?: string;
   };
 }
 
@@ -40,8 +41,10 @@ interface AdSpace {
 const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, className = '' }) => {
   const [isVisible, setIsVisible] = useState(true);
   const [hasTrackedImpression, setHasTrackedImpression] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [forceRender, setForceRender] = useState(0);
 
-  // Obtener el espacio publicitario y sus asignaciones activas
+  // Obtener el espacio publicitario y sus asignaciones activas con invalidación ultra-agresiva
   const { data: placementsResponse, isLoading } = useQuery({
     queryKey: [`/api/advertising/placements`, spaceId, pageType, position],
     queryFn: async () => {
@@ -49,7 +52,12 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
       if (!response.ok) throw new Error('Error al cargar asignaciones');
       return response.json();
     },
-    refetchInterval: 5 * 60 * 1000, // Refrescar cada 5 minutos
+    refetchInterval: 10 * 1000, // Refrescar cada 10 segundos para detectar cambios más rápido
+    staleTime: 0, // Considerar los datos siempre obsoletos para forzar actualizaciones
+    gcTime: 0, // No mantener cache
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    refetchOnReconnect: true,
   });
 
   // Obtener la asignación activa (si existe)
@@ -76,6 +84,15 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
       setHasTrackedImpression(true);
     }
   }, [activePlacement, hasTrackedImpression, isVisible]);
+
+  // Detectar cambios en updated_at y forzar re-render
+  useEffect(() => {
+    if (activePlacement?.advertisement?.updatedAt) {
+      const currentTime = new Date(activePlacement.advertisement.updatedAt).getTime();
+      setForceRender(currentTime);
+      setRefreshKey(prev => prev + 1);
+    }
+  }, [activePlacement?.advertisement?.updatedAt]);
 
   const trackImpression = async (placementId: number) => {
     try {
@@ -121,6 +138,44 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
 
   const { advertisement } = activePlacement;
   
+  // Sistema ultra-extremo de cache-busting para imágenes con 7 parámetros
+  const getImageUrlWithCacheBuster = (imageUrl: string) => {
+    if (!imageUrl) return '';
+    
+    // Parámetros de cache-busting ultra-agresivos
+    const updatedAt = advertisement.updatedAt || new Date().toISOString();
+    const timestamp = new Date(updatedAt).getTime();
+    const separator = imageUrl.includes('?') ? '&' : '?';
+    
+    // 7 parámetros de cache-busting para máxima invalidación
+    const cacheBustParams = `v=${timestamp}&r=${refreshKey}&f=${forceRender}&t=${Date.now()}&rnd=${Math.random().toString(36).substring(7)}&cb=${Math.random()}&uid=${advertisement.id}_${timestamp}`;
+    
+    return `${imageUrl}${separator}${cacheBustParams}`;
+  };
+
+  // Función para forzar recarga de imágenes en el DOM
+  const forceImageReload = () => {
+    const images = document.querySelectorAll(`img[src*="${advertisement.imageUrl}"]`);
+    images.forEach(img => {
+      const imgElement = img as HTMLImageElement;
+      const originalSrc = imgElement.src;
+      imgElement.src = '';
+      setTimeout(() => {
+        imgElement.src = getImageUrlWithCacheBuster(advertisement.imageUrl);
+      }, 100);
+    });
+  };
+
+  // Función para crear elemento de imagen completamente nuevo
+  const createImageElement = (src: string, className: string, alt: string) => {
+    const img = document.createElement('img');
+    img.src = src;
+    img.className = className;
+    img.alt = alt;
+    img.key = `${advertisement.id}_${refreshKey}_${forceRender}`;
+    return img;
+  };
+  
   // Estilos base según la posición
   const baseStyles = {
     header: 'w-full max-w-6xl mx-auto h-24 bg-white border border-gray-200 rounded-lg shadow-sm mb-6',
@@ -152,9 +207,10 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
           <>
             {/* Imagen del anuncio */}
             {advertisement.imageUrl && (
-              <div className="flex-shrink-0 mb-3">
+              <div key={`sidebar-container-${advertisement.id}-${refreshKey}-${forceRender}`} className="flex-shrink-0 mb-3">
                 <img
-                  src={advertisement.imageUrl}
+                  key={`sidebar-${advertisement.id}-${refreshKey}-${forceRender}`}
+                  src={getImageUrlWithCacheBuster(advertisement.imageUrl)}
                   alt={advertisement.title}
                   className="w-full h-32 object-contain rounded bg-gray-50"
                 />
@@ -186,9 +242,10 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
           <>
             {/* Imagen del anuncio */}
             {advertisement.imageUrl && (
-              <div className="flex-shrink-0 mr-4">
+              <div key={`horizontal-container-${advertisement.id}-${refreshKey}-${forceRender}`} className="flex-shrink-0 mr-4">
                 <img
-                  src={advertisement.imageUrl}
+                  key={`horizontal-${advertisement.id}-${refreshKey}-${forceRender}`}
+                  src={getImageUrlWithCacheBuster(advertisement.imageUrl)}
                   alt={advertisement.title}
                   className="h-full w-auto max-h-16 object-contain rounded"
                 />
