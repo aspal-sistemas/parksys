@@ -48,6 +48,7 @@ const AdAdvertisements = () => {
   const [refreshKey, setRefreshKey] = useState(Date.now());
   const [forceRender, setForceRender] = useState(Date.now());
   const [ad13Timestamp, setAd13Timestamp] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   
   const [formData, setFormData] = useState({
     title: '',
@@ -64,6 +65,32 @@ const AdAdvertisements = () => {
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Función para subir archivos
+  const uploadFile = async (file: File): Promise<string> => {
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        throw new Error('Error al subir el archivo');
+      }
+      
+      const result = await response.json();
+      return result.url;
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      throw error;
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   // Fetch advertisements
   const { data: advertisements = [], isLoading: isLoadingAds, refetch } = useQuery({
@@ -347,14 +374,120 @@ const AdAdvertisements = () => {
                     />
                   </div>
                   
+                  {/* Tipo de contenido multimedia */}
                   <div>
-                    <Label htmlFor="image_url">URL de Imagen *</Label>
+                    <Label htmlFor="media_type">Tipo de Contenido *</Label>
+                    <Select value={formData.media_type} onValueChange={(value) => setFormData({...formData, media_type: value as 'image' | 'video' | 'gif'})}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar tipo de contenido" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="image">Imagen</SelectItem>
+                        <SelectItem value="video">Video</SelectItem>
+                        <SelectItem value="gif">GIF Animado</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Método de almacenamiento */}
+                  <div>
+                    <Label htmlFor="storage_type">Método de Almacenamiento *</Label>
+                    <Select value={formData.storage_type} onValueChange={(value) => setFormData({...formData, storage_type: value as 'url' | 'upload'})}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar método" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="url">URL Externa</SelectItem>
+                        <SelectItem value="upload">Subir Archivo</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Campo condicional según el tipo de almacenamiento */}
+                  {formData.storage_type === 'url' ? (
+                    <div>
+                      <Label htmlFor="image_url">URL del Contenido *</Label>
+                      <Input
+                        id="image_url"
+                        value={formData.image_url}
+                        onChange={(e) => setFormData({...formData, image_url: e.target.value})}
+                        required
+                        placeholder="https://ejemplo.com/imagen.jpg"
+                      />
+                    </div>
+                  ) : (
+                    <div>
+                      <Label htmlFor="file_upload">Subir Archivo *</Label>
+                      <Input
+                        id="file_upload"
+                        type="file"
+                        accept={formData.media_type === 'image' ? 'image/*' : formData.media_type === 'video' ? 'video/*' : 'image/gif'}
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            try {
+                              const uploadedUrl = await uploadFile(file);
+                              setFormData({...formData, image_url: uploadedUrl});
+                              toast({
+                                title: "Éxito",
+                                description: "Archivo subido correctamente",
+                              });
+                            } catch (error) {
+                              toast({
+                                title: "Error",
+                                description: "Error al subir el archivo",
+                                variant: "destructive",
+                              });
+                            }
+                          }
+                        }}
+                        disabled={isUploading}
+                        className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#00a587] file:text-white hover:file:bg-[#067f5f] disabled:opacity-50"
+                      />
+                      {isUploading && (
+                        <div className="flex items-center mt-2 text-sm text-gray-600">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#00a587] mr-2"></div>
+                          Subiendo archivo...
+                        </div>
+                      )}
+                      {formData.image_url && (
+                        <div className="mt-2">
+                          <p className="text-sm text-gray-600">Vista previa:</p>
+                          <div className="mt-1 border border-gray-300 rounded-lg p-2">
+                            {formData.media_type === 'image' || formData.media_type === 'gif' ? (
+                              <img src={formData.image_url} alt="Vista previa" className="max-w-full h-32 object-cover rounded" />
+                            ) : (
+                              <video src={formData.image_url} controls className="max-w-full h-32 rounded" />
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Duración para videos */}
+                  {formData.media_type === 'video' && (
+                    <div>
+                      <Label htmlFor="duration">Duración (segundos)</Label>
+                      <Input
+                        id="duration"
+                        type="number"
+                        value={formData.duration}
+                        onChange={(e) => setFormData({...formData, duration: parseInt(e.target.value) || 0})}
+                        placeholder="30"
+                        min="0"
+                      />
+                    </div>
+                  )}
+
+                  {/* Texto alternativo */}
+                  <div>
+                    <Label htmlFor="alt_text">Texto Alternativo</Label>
                     <Input
-                      id="image_url"
-                      value={formData.image_url}
-                      onChange={(e) => setFormData({...formData, image_url: e.target.value})}
-                      required
-                      placeholder="https://ejemplo.com/imagen.jpg"
+                      id="alt_text"
+                      value={formData.alt_text}
+                      onChange={(e) => setFormData({...formData, alt_text: e.target.value})}
+                      placeholder="Descripción del contenido para accesibilidad"
                     />
                   </div>
                   
@@ -579,14 +712,120 @@ const AdAdvertisements = () => {
                 />
               </div>
               
+              {/* Tipo de contenido multimedia */}
               <div>
-                <Label htmlFor="edit_image_url">URL de Imagen *</Label>
+                <Label htmlFor="edit_media_type">Tipo de Contenido *</Label>
+                <Select value={formData.media_type} onValueChange={(value) => setFormData({...formData, media_type: value as 'image' | 'video' | 'gif'})}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar tipo de contenido" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="image">Imagen</SelectItem>
+                    <SelectItem value="video">Video</SelectItem>
+                    <SelectItem value="gif">GIF Animado</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Método de almacenamiento */}
+              <div>
+                <Label htmlFor="edit_storage_type">Método de Almacenamiento *</Label>
+                <Select value={formData.storage_type} onValueChange={(value) => setFormData({...formData, storage_type: value as 'url' | 'upload'})}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar método" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="url">URL Externa</SelectItem>
+                    <SelectItem value="upload">Subir Archivo</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Campo condicional según el tipo de almacenamiento */}
+              {formData.storage_type === 'url' ? (
+                <div>
+                  <Label htmlFor="edit_image_url">URL del Contenido *</Label>
+                  <Input
+                    id="edit_image_url"
+                    value={formData.image_url}
+                    onChange={(e) => setFormData({...formData, image_url: e.target.value})}
+                    required
+                    placeholder="https://ejemplo.com/imagen.jpg"
+                  />
+                </div>
+              ) : (
+                <div>
+                  <Label htmlFor="edit_file_upload">Subir Archivo *</Label>
+                  <Input
+                    id="edit_file_upload"
+                    type="file"
+                    accept={formData.media_type === 'image' ? 'image/*' : formData.media_type === 'video' ? 'video/*' : 'image/gif'}
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        try {
+                          const uploadedUrl = await uploadFile(file);
+                          setFormData({...formData, image_url: uploadedUrl});
+                          toast({
+                            title: "Éxito",
+                            description: "Archivo subido correctamente",
+                          });
+                        } catch (error) {
+                          toast({
+                            title: "Error",
+                            description: "Error al subir el archivo",
+                            variant: "destructive",
+                          });
+                        }
+                      }
+                    }}
+                    disabled={isUploading}
+                    className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#00a587] file:text-white hover:file:bg-[#067f5f] disabled:opacity-50"
+                  />
+                  {isUploading && (
+                    <div className="flex items-center mt-2 text-sm text-gray-600">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#00a587] mr-2"></div>
+                      Subiendo archivo...
+                    </div>
+                  )}
+                  {formData.image_url && (
+                    <div className="mt-2">
+                      <p className="text-sm text-gray-600">Vista previa actual:</p>
+                      <div className="mt-1 border border-gray-300 rounded-lg p-2">
+                        {formData.media_type === 'image' || formData.media_type === 'gif' ? (
+                          <img src={formData.image_url} alt="Vista previa" className="max-w-full h-32 object-cover rounded" />
+                        ) : (
+                          <video src={formData.image_url} controls className="max-w-full h-32 rounded" />
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Duración para videos */}
+              {formData.media_type === 'video' && (
+                <div>
+                  <Label htmlFor="edit_duration">Duración (segundos)</Label>
+                  <Input
+                    id="edit_duration"
+                    type="number"
+                    value={formData.duration}
+                    onChange={(e) => setFormData({...formData, duration: parseInt(e.target.value) || 0})}
+                    placeholder="30"
+                    min="0"
+                  />
+                </div>
+              )}
+
+              {/* Texto alternativo */}
+              <div>
+                <Label htmlFor="edit_alt_text">Texto Alternativo</Label>
                 <Input
-                  id="edit_image_url"
-                  value={formData.image_url}
-                  onChange={(e) => setFormData({...formData, image_url: e.target.value})}
-                  required
-                  placeholder="https://ejemplo.com/imagen.jpg"
+                  id="edit_alt_text"
+                  value={formData.alt_text}
+                  onChange={(e) => setFormData({...formData, alt_text: e.target.value})}
+                  placeholder="Descripción del contenido para accesibilidad"
                 />
               </div>
               

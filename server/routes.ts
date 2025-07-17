@@ -51,6 +51,7 @@ import { updateSkillsRouter } from "./updateSkills";
 import { registerEventRoutes } from "./events-routes";
 import { registerActivityRoutes } from "./activitiesRoutes";
 import advertisingRoutes from "./advertising-routes";
+import { uploadAdvertising, handleAdvertisingUpload } from "./api/advertising-upload";
 import { 
   insertParkSchema, insertCommentSchema, insertIncidentSchema, 
   insertActivitySchema, insertDocumentSchema, insertParkImageSchema,
@@ -393,6 +394,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Endpoint para cargar imágenes de perfil
   app.post('/api/upload/profile-image', isAuthenticated, handleProfileImageUpload);
+  
+  // Endpoint para subir archivos de publicidad
+  app.post('/api/advertising/upload', isAuthenticated, uploadAdvertising, handleAdvertisingUpload);
 
   // Montamos todas las rutas públicas bajo el prefijo /public-api
   // Esta línea asegura que todas las rutas definidas en publicRouter sean accesibles bajo /public-api

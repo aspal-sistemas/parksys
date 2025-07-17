@@ -199,6 +199,9 @@ app.get('/status', (req: Request, res: Response) => {
 // Servir archivos estáticos del directorio public ANTES de otras rutas
 app.use(express.static(path.join(process.cwd(), 'public')));
 
+// Servir archivos de publicidad desde uploads/advertising
+app.use('/uploads/advertising', express.static(path.join(process.cwd(), 'uploads/advertising')));
+
 // ENDPOINT COMBINADO para la matriz de flujo de efectivo
 app.get("/cash-flow-matrix-data", async (req: Request, res: Response) => {
   try {
