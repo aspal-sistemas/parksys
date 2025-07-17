@@ -672,15 +672,18 @@ const AdAdvertisements = () => {
                     />
                   </div>
                   
+                  {/* URL de Contenido - Liga de destino */}
                   <div>
-                    <Label htmlFor="content">Contenido</Label>
-                    <Textarea
+                    <Label htmlFor="content">URL de Contenido</Label>
+                    <Input
                       id="content"
                       value={formData.content}
                       onChange={(e) => setFormData({...formData, content: e.target.value})}
-                      placeholder="Contenido adicional del anuncio"
-                      rows={4}
+                      placeholder="https://ejemplo.com/destino - Liga donde irá el usuario al hacer clic"
                     />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Esta es la URL donde será dirigido el usuario cuando haga clic en el banner publicitario
+                    </p>
                   </div>
                   
                   <div className="flex items-center space-x-2">
@@ -1012,15 +1015,18 @@ const AdAdvertisements = () => {
                 />
               </div>
               
+              {/* URL de Contenido - Liga de destino */}
               <div>
-                <Label htmlFor="edit_content">Contenido</Label>
-                <Textarea
+                <Label htmlFor="edit_content">URL de Contenido</Label>
+                <Input
                   id="edit_content"
                   value={formData.content || ''}
                   onChange={(e) => setFormData({...formData, content: e.target.value})}
-                  placeholder="Contenido adicional del anuncio"
-                  rows={4}
+                  placeholder="https://ejemplo.com/destino - Liga donde irá el usuario al hacer clic"
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  Esta es la URL donde será dirigido el usuario cuando haga clic en el banner publicitario
+                </p>
               </div>
               
               <div className="flex items-center space-x-2">
