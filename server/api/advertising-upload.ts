@@ -57,7 +57,10 @@ export const uploadAdvertising = multer({
 // Endpoint para subir archivos de publicidad
 export const handleAdvertisingUpload = async (req: Request, res: Response) => {
   try {
+    console.log('📁 Procesando subida de archivo de publicidad...');
+    
     if (!req.file) {
+      console.log('❌ No se encontró archivo en la petición');
       return res.status(400).json({ 
         success: false, 
         error: 'No se ha enviado ningún archivo' 
@@ -87,6 +90,15 @@ export const handleAdvertisingUpload = async (req: Request, res: Response) => {
 
   } catch (error) {
     console.error('❌ Error al subir archivo de publicidad:', error);
+    
+    // Verificar si es un error de multer
+    if (error instanceof Error && error.message.includes('Formato de archivo no válido')) {
+      return res.status(400).json({
+        success: false,
+        error: error.message
+      });
+    }
+    
     return res.status(500).json({
       success: false,
       error: 'Error interno del servidor al subir el archivo'

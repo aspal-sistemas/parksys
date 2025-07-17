@@ -395,8 +395,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Endpoint para cargar imágenes de perfil
   app.post('/api/upload/profile-image', isAuthenticated, handleProfileImageUpload);
   
-  // Endpoint para subir archivos de publicidad
-  app.post('/api/advertising/upload', isAuthenticated, uploadAdvertising, handleAdvertisingUpload);
+  // Endpoint para subir archivos de publicidad con manejo de errores
+  app.post('/api/advertising/upload', isAuthenticated, (req: Request, res: Response) => {
+    uploadAdvertising(req, res, (err) => {
+      if (err) {
+        console.error('❌ Error en multer:', err);
+        return res.status(400).json({
+          success: false,
+          error: err.message || 'Error al procesar el archivo'
+        });
+      }
+      handleAdvertisingUpload(req, res);
+    });
+  });
 
   // Montamos todas las rutas públicas bajo el prefijo /public-api
   // Esta línea asegura que todas las rutas definidas en publicRouter sean accesibles bajo /public-api

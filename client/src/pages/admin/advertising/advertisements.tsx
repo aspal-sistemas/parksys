@@ -73,17 +73,39 @@ const AdAdvertisements = () => {
       const formData = new FormData();
       formData.append('file', file);
       
-      const response = await fetch('/api/upload', {
+      console.log('📁 Subiendo archivo:', file.name, file.type, file.size);
+
+      const response = await fetch('/api/advertising/upload', {
         method: 'POST',
         body: formData,
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
       });
+
+      console.log('📁 Response status:', response.status);
       
+      const responseText = await response.text();
+      console.log('📁 Response text:', responseText);
+
       if (!response.ok) {
-        throw new Error('Error al subir el archivo');
+        let errorMessage = 'Error al subir el archivo';
+        try {
+          const errorData = JSON.parse(responseText);
+          errorMessage = errorData.error || errorData.message || errorMessage;
+        } catch (e) {
+          console.error('Error parsing response:', e);
+          errorMessage = `Error del servidor: ${response.status}`;
+        }
+        throw new Error(errorMessage);
       }
-      
-      const result = await response.json();
-      return result.url;
+
+      const result = JSON.parse(responseText);
+      if (result.success) {
+        return result.url;
+      } else {
+        throw new Error(result.error || 'Error desconocido');
+      }
     } catch (error) {
       console.error('Error uploading file:', error);
       throw error;
