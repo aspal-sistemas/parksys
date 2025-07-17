@@ -1152,6 +1152,16 @@ async function initializeDatabaseAsync() {
     console.error("Error al registrar rutas de comunicaciones:", error);
   }
 
+  // Registrar rutas del sistema de publicidad
+  try {
+    const { default: advertisingRouter } = await import("./advertising-routes");
+    console.log("Registrando rutas del sistema de publicidad...");
+    app.use("/api/advertising-management", advertisingRouter);
+    console.log("Rutas del sistema de publicidad registradas correctamente");
+  } catch (error) {
+    console.error("Error al registrar rutas de publicidad:", error);
+  }
+
   // Registrar rutas del sistema de conteo de visitantes
   try {
     console.log("Registrando rutas del sistema de conteo de visitantes...");
