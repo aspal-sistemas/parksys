@@ -129,6 +129,8 @@ const AdAdvertisements: React.FC = () => {
   useEffect(() => {
     if (advertisements.length > 0) {
       setForceRender(prev => prev + 1);
+      // Forzar actualización inmediata de refreshKey también
+      setRefreshKey(prev => prev + 1);
     }
   }, [advertisements.map(ad => ad.updated_at).join(',')]);
   
@@ -138,6 +140,33 @@ const AdAdvertisements: React.FC = () => {
       setRefreshKey(prev => prev + 1);
     }
   }, [forceRender]);
+  
+  // Forzar actualización cuando cambia cualquier anuncio individual
+  useEffect(() => {
+    if (advertisements.length > 0) {
+      const timer = setTimeout(() => {
+        setRefreshKey(prev => prev + 1);
+        setForceRender(prev => prev + 1);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [advertisements]);
+  
+  // Actualización agresiva cuando los datos cambian
+  useEffect(() => {
+    if (advertisements.length > 0) {
+      // Múltiples actualizaciones escalonadas
+      const timer1 = setTimeout(() => setRefreshKey(prev => prev + 1), 200);
+      const timer2 = setTimeout(() => setForceRender(prev => prev + 1), 400);
+      const timer3 = setTimeout(() => setRefreshKey(prev => prev + 1), 600);
+      
+      return () => {
+        clearTimeout(timer1);
+        clearTimeout(timer2);
+        clearTimeout(timer3);
+      };
+    }
+  }, [advertisementData]);
   
   // Debug logging para verificar los datos recibidos
   // console.log('📊 RefreshKey actual:', refreshKey);
@@ -203,6 +232,22 @@ const AdAdvertisements: React.FC = () => {
         setRefreshKey(prev => prev + 1);
         setForceRender(prev => prev + 1);
       }, 1000);
+      
+      // Invalidación brutal del DOM para imágenes
+      setTimeout(() => {
+        // Forzar recarga de todas las imágenes en el DOM
+        const images = document.querySelectorAll('img[src*="unsplash"]');
+        images.forEach(img => {
+          const imgElement = img as HTMLImageElement;
+          const currentSrc = imgElement.src;
+          imgElement.src = '';
+          setTimeout(() => {
+            imgElement.src = currentSrc;
+          }, 10);
+        });
+        setRefreshKey(prev => prev + 1);
+        setForceRender(prev => prev + 1);
+      }, 1500);
       
       toast({
         title: "Anuncio actualizado",
@@ -400,25 +445,47 @@ const AdAdvertisements: React.FC = () => {
     return campaign?.name || 'Sin campaña';
   };
 
-  // Función para generar URL con cache-busting
+  // Función para generar URL con cache-busting ultra-agresivo
   const getImageUrlWithCacheBust = (imageUrl: string, updatedAt?: string) => {
     if (!imageUrl) return '';
     
-    // Para todas las URLs, agregar timestamp basado en updated_at + refreshKey
+    // Para todas las URLs, agregar timestamp basado en updated_at + refreshKey + forceRender + timestamp actual
     const timestamp = updatedAt ? new Date(updatedAt).getTime() : Date.now();
     const separator = imageUrl.includes('?') ? '&' : '?';
-    const finalUrl = `${imageUrl}${separator}v=${timestamp}&r=${refreshKey}`;
+    const finalUrl = `${imageUrl}${separator}v=${timestamp}&r=${refreshKey}&f=${forceRender}&t=${Date.now()}`;
     
-    // Debug logging
-    // console.log('🖼️ Cache-busting URL:', {
-    //   original: imageUrl,
-    //   updatedAt,
-    //   timestamp,
-    //   refreshKey,
-    //   final: finalUrl
-    // });
+    // Debug logging activo para verificar URLs
+    console.log('🖼️ Cache-busting URL:', {
+      original: imageUrl,
+      updatedAt,
+      timestamp,
+      refreshKey,
+      forceRender,
+      now: Date.now(),
+      final: finalUrl
+    });
     
     return finalUrl;
+  };
+  
+  // Función para recrear imagen con DOM limpio
+  const createImageElement = (src: string, alt: string, className: string, adId: number, updatedAt: string) => {
+    const imageKey = `${adId}-${updatedAt}-${refreshKey}-${forceRender}-${Date.now()}`;
+    
+    return React.createElement('img', {
+      key: imageKey,
+      src: src,
+      alt: alt,
+      className: className,
+      style: { display: 'block' }, // Forzar display block
+      onLoad: () => {
+        // Logging para verificar que la imagen se cargó
+        console.log(`✅ Imagen cargada para anuncio ${adId}:`, src);
+      },
+      onError: (e) => {
+        (e.target as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDIwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIxMDAiIGZpbGw9IiNmM2Y0ZjYiLz48cGF0aCBkPSJNNTAgNTBoMTAwdjEwSDE1MHYxMEg1MFY1MHoiIGZpbGw9IiNkMWQ1ZGIiLz48L3N2Zz4=';
+      }
+    });
   };
 
   return (
@@ -925,15 +992,13 @@ const AdAdvertisements: React.FC = () => {
                 <div className="space-y-3">
                   {/* Imagen preview */}
                   <div className="aspect-video rounded-lg overflow-hidden bg-gray-100">
-                    <img 
-                      key={`${ad.id}-${ad.updated_at}-${refreshKey}-${forceRender}`}
-                      src={getImageUrlWithCacheBust(ad.image_url, ad.updated_at)} 
-                      alt={ad.alt_text || ad.title}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDIwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIxMDAiIGZpbGw9IiNmM2Y0ZjYiLz48cGF0aCBkPSJNNTAgNTBoMTAwdjEwSDE1MHYxMEg1MFY1MHoiIGZpbGw9IiNkMWQ1ZGIiLz48L3N2Zz4=';
-                      }}
-                    />
+                    {createImageElement(
+                      getImageUrlWithCacheBust(ad.image_url, ad.updated_at),
+                      ad.alt_text || ad.title,
+                      "w-full h-full object-cover",
+                      ad.id,
+                      ad.updated_at
+                    )}
                   </div>
                   
                   <div>
@@ -1030,12 +1095,13 @@ const AdAdvertisements: React.FC = () => {
             {selectedAd && (
               <div className="space-y-4">
                 <div className="aspect-video rounded-lg overflow-hidden bg-gray-100">
-                  <img 
-                    key={`modal-${selectedAd.id}-${selectedAd.updated_at}-${refreshKey}-${forceRender}`}
-                    src={getImageUrlWithCacheBust(selectedAd.image_url, selectedAd.updated_at)} 
-                    alt={selectedAd.alt_text || selectedAd.title}
-                    className="w-full h-full object-cover"
-                  />
+                  {createImageElement(
+                    getImageUrlWithCacheBust(selectedAd.image_url, selectedAd.updated_at),
+                    selectedAd.alt_text || selectedAd.title,
+                    "w-full h-full object-cover",
+                    selectedAd.id,
+                    selectedAd.updated_at
+                  )}
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
