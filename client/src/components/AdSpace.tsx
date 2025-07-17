@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { X, ExternalLink } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 
 interface AdSpaceProps {
   spaceId: string;
@@ -39,7 +39,7 @@ interface AdSpace {
 }
 
 const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, className = '' }) => {
-  const [isVisible, setIsVisible] = useState(true);
+  // Removido isVisible para usuarios públicos
   const [hasTrackedImpression, setHasTrackedImpression] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [forceRender, setForceRender] = useState(0);
@@ -67,13 +67,13 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
 
 
 
-  // Registrar impresión cuando el componente es visible
+  // Registrar impresión cuando el componente carga
   useEffect(() => {
-    if (activePlacement && !hasTrackedImpression && isVisible) {
+    if (activePlacement && !hasTrackedImpression) {
       trackImpression(activePlacement.id);
       setHasTrackedImpression(true);
     }
-  }, [activePlacement, hasTrackedImpression, isVisible]);
+  }, [activePlacement, hasTrackedImpression]);
 
 
 
@@ -131,12 +131,10 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
     }
   };
 
-  const handleClose = () => {
-    setIsVisible(false);
-  };
+  // Removido handleClose para usuarios públicos
 
   // Si está cargando o no hay asignación activa, no mostrar nada
-  if (isLoading || !activePlacement || !isVisible) {
+  if (isLoading || !activePlacement) {
     return null;
   }
 
@@ -167,17 +165,8 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
   const containerStyle = baseStyles[position];
 
   return (
-    <div className={`${containerStyle} ${className} relative overflow-hidden group cursor-pointer hover:shadow-md transition-shadow duration-200`} onClick={handleAdClick}>
-      {/* Botón de cerrar - aparece al hacer hover */}
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          handleClose();
-        }}
-        className="absolute top-2 right-2 p-1 bg-gray-100 hover:bg-gray-200 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
-      >
-        <X className="h-3 w-3 text-gray-600" />
-      </button>
+    <div className={`${containerStyle} ${className} relative overflow-hidden cursor-pointer hover:shadow-md transition-shadow duration-200`} onClick={handleAdClick}>
+      {/* Botón de cerrar removido para usuarios públicos */}
 
       {/* Contenido del anuncio */}
       <div className={`h-full ${position === 'sidebar' ? 'flex flex-col' : 'flex items-center justify-between'} p-4`}>
