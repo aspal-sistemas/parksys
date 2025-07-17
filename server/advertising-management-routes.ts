@@ -443,6 +443,12 @@ router.post('/advertisements', async (req, res) => {
 router.put('/advertisements/:id', async (req, res) => {
   try {
     const { id } = req.params;
+    
+    console.log('🔧 Actualizando anuncio con ID:', id);
+    console.log('📋 Content-Type:', req.get('Content-Type'));
+    console.log('📋 Datos recibidos:', req.body);
+    console.log('📋 Body keys:', Object.keys(req.body));
+    
     const {
       title,
       description,
@@ -469,9 +475,6 @@ router.put('/advertisements/:id', async (req, res) => {
       type,
       status
     } = req.body;
-
-    console.log('🔧 Actualizando anuncio con ID:', id);
-    console.log('📋 Datos recibidos:', req.body);
 
     const result = await pool.query(`
       UPDATE advertisements 
