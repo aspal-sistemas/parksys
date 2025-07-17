@@ -586,82 +586,46 @@ function ActivitiesPage() {
               {/* Espacio publicitario principal - sistema */}
               <div className="bg-white rounded-lg border shadow-sm">
                 <AdSpace 
-                  spaceId="9" 
+                  spaceId="7" 
                   position="sidebar" 
                   pageType="activities" 
                 />
               </div>
 
-              {/* Espacio publicitario secundario - deportes */}
-              <div className="bg-white rounded-lg border shadow-sm p-4">
-                <div className="text-center">
-                  <img 
-                    src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=200&q=80"
-                    alt="Clases de deportes"
-                    className="w-full h-40 object-cover rounded-lg mb-3"
-                  />
-                  <h3 className="font-semibold text-gray-900 mb-2">Clases de Deportes</h3>
-                  <p className="text-sm text-gray-600 mb-3">
-                    Fútbol, básquetbol, tenis y más
-                  </p>
-                  <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors text-sm">
-                    Inscribirse
-                  </button>
-                </div>
+              {/* Espacio publicitario secundario */}
+              <div className="bg-white rounded-lg border shadow-sm">
+                <AdSpace 
+                  spaceId="15" 
+                  position="sidebar" 
+                  pageType="activities" 
+                />
               </div>
 
-              {/* Espacio publicitario terciario - arte */}
-              <div className="bg-white rounded-lg border shadow-sm p-4">
-                <div className="text-center">
-                  <img 
-                    src="https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=200&q=80"
-                    alt="Talleres de arte"
-                    className="w-full h-40 object-cover rounded-lg mb-3"
-                  />
-                  <h3 className="font-semibold text-gray-900 mb-2">Talleres de Arte</h3>
-                  <p className="text-sm text-gray-600 mb-3">
-                    Pintura, escultura y artes plásticas
-                  </p>
-                  <button className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors text-sm">
-                    Conoce Más
-                  </button>
-                </div>
+              {/* Espacio publicitario terciario */}
+              <div className="bg-white rounded-lg border shadow-sm">
+                <AdSpace 
+                  spaceId="16" 
+                  position="sidebar" 
+                  pageType="activities" 
+                />
               </div>
 
-              {/* Espacio publicitario cuaternario - música */}
-              <div className="bg-white rounded-lg border shadow-sm p-4">
-                <div className="text-center">
-                  <img 
-                    src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=200&q=80"
-                    alt="Clases de música"
-                    className="w-full h-40 object-cover rounded-lg mb-3"
-                  />
-                  <h3 className="font-semibold text-gray-900 mb-2">Clases de Música</h3>
-                  <p className="text-sm text-gray-600 mb-3">
-                    Aprende instrumentos al aire libre
-                  </p>
-                  <button className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors text-sm">
-                    Ver Horarios
-                  </button>
-                </div>
+              {/* Espacio publicitario cuaternario */}
+              <div className="bg-white rounded-lg border shadow-sm">
+                <AdSpace 
+                  spaceId="17" 
+                  position="sidebar" 
+                  pageType="activities" 
+                />
               </div>
 
-              {/* Espacio publicitario quinario - fitness */}
-              <div className="bg-white rounded-lg border shadow-sm p-4">
-                <div className="text-center">
-                  <img 
-                    src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=200&q=80"
-                    alt="Actividades de fitness"
-                    className="w-full h-40 object-cover rounded-lg mb-3"
-                  />
-                  <h3 className="font-semibold text-gray-900 mb-2">Fitness al Aire Libre</h3>
-                  <p className="text-sm text-gray-600 mb-3">
-                    Yoga, aeróbicos y entrenamiento funcional
-                  </p>
-                  <button className="w-full bg-orange-600 text-white py-2 px-4 rounded-lg hover:bg-orange-700 transition-colors text-sm">
-                    Únete Ahora
-                  </button>
-                </div>
+              {/* Espacio publicitario quinario */}
+              <div className="bg-white rounded-lg border shadow-sm">
+                <AdSpace 
+                  spaceId="18" 
+                  position="sidebar" 
+                  pageType="activities" 
+                />
               </div>
             </div>
           </div>
