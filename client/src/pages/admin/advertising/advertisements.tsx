@@ -252,8 +252,12 @@ const AdAdvertisements: React.FC = () => {
       
       // Invalidación específica para el anuncio actualizado
       setTimeout(() => {
-        if (data?.id) {
-          forceImageReload(data.id);
+        // Buscar el anuncio actualizado más reciente
+        const updatedAds = queryClient.getQueryData<any>(['/api/advertising-management/advertisements']);
+        if (updatedAds?.data) {
+          updatedAds.data.forEach((ad: any) => {
+            forceImageReload(ad.id);
+          });
         }
       }, 2000);
       
