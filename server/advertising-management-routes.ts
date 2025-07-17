@@ -4,6 +4,8 @@ import { pool } from './db';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import crypto from 'crypto';
+import { adMediaFiles } from '../shared/advertising-schema';
 
 const router = Router();
 
@@ -34,6 +36,191 @@ const upload = multer({
   },
   limits: {
     fileSize: 50 * 1024 * 1024 // 50MB
+  }
+});
+
+// Función para generar hash SHA256 de un archivo
+function generateFileHash(filePath: string): string {
+  const fileBuffer = fs.readFileSync(filePath);
+  const hashSum = crypto.createHash('sha256');
+  hashSum.update(fileBuffer);
+  return hashSum.digest('hex');
+}
+
+// Función para obtener dimensiones de imagen (simplificada)
+function getImageDimensions(filePath: string, mimeType: string): string {
+  // En un sistema real, usarías una librería como sharp o image-size
+  // Para este ejemplo, retornamos dimensiones por defecto
+  if (mimeType.startsWith('image/')) {
+    return '800x600'; // Placeholder
+  }
+  return '';
+}
+
+// =====================================
+// ENDPOINTS PARA GESTIÓN DE ARCHIVOS MULTIMEDIA
+// =====================================
+
+// Subir archivo multimedia
+router.post('/media/upload', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No se ha proporcionado ningún archivo' });
+    }
+
+    const file = req.file;
+    const filePath = file.path;
+    const fileUrl = `/uploads/advertising/${file.filename}`;
+    const fileHash = generateFileHash(filePath);
+    
+    // Verificar si ya existe un archivo con el mismo hash
+    const existingFile = await pool.query(
+      'SELECT * FROM ad_media_files WHERE file_hash = $1',
+      [fileHash]
+    );
+    
+    if (existingFile.rows.length > 0) {
+      // Si existe, eliminar el archivo duplicado y devolver el existente
+      fs.unlinkSync(filePath);
+      return res.json({
+        success: true,
+        data: existingFile.rows[0],
+        message: 'Archivo ya existe en el sistema'
+      });
+    }
+
+    // Determinar el tipo de media
+    let mediaType = 'image';
+    if (file.mimetype.startsWith('video/')) {
+      mediaType = 'video';
+    } else if (file.mimetype === 'image/gif') {
+      mediaType = 'gif';
+    }
+
+    // Obtener dimensiones
+    const dimensions = getImageDimensions(filePath, file.mimetype);
+    
+    // Guardar información del archivo en la base de datos
+    const result = await pool.query(`
+      INSERT INTO ad_media_files (
+        filename, original_name, mime_type, file_size, file_path, file_url,
+        media_type, dimensions, file_hash, uploaded_by
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      RETURNING *
+    `, [
+      file.filename,
+      file.originalname,
+      file.mimetype,
+      file.size,
+      filePath,
+      fileUrl,
+      mediaType,
+      dimensions,
+      fileHash,
+      req.user?.id || 1 // Default a admin user
+    ]);
+
+    console.log('✅ Archivo multimedia subido exitosamente:', file.filename);
+    
+    res.json({
+      success: true,
+      data: result.rows[0],
+      message: 'Archivo subido exitosamente'
+    });
+  } catch (error) {
+    console.error('❌ Error subiendo archivo:', error);
+    
+    // Limpiar archivo si hubo error
+    if (req.file) {
+      try {
+        fs.unlinkSync(req.file.path);
+      } catch (unlinkError) {
+        console.error('❌ Error eliminando archivo temporal:', unlinkError);
+      }
+    }
+    
+    res.status(500).json({ error: 'Error subiendo archivo: ' + error.message });
+  }
+});
+
+// Obtener archivos multimedia
+router.get('/media', async (req, res) => {
+  try {
+    const { mediaType, limit = 50, offset = 0 } = req.query;
+    
+    let query = 'SELECT * FROM ad_media_files';
+    const params = [];
+    
+    if (mediaType && mediaType !== 'all') {
+      query += ' WHERE media_type = $1';
+      params.push(mediaType);
+    }
+    
+    query += ' ORDER BY created_at DESC LIMIT $' + (params.length + 1) + ' OFFSET $' + (params.length + 2);
+    params.push(limit, offset);
+    
+    const result = await pool.query(query, params);
+    
+    res.json({
+      success: true,
+      data: result.rows,
+      total: result.rows.length
+    });
+  } catch (error) {
+    console.error('❌ Error obteniendo archivos multimedia:', error);
+    res.status(500).json({ error: 'Error obteniendo archivos: ' + error.message });
+  }
+});
+
+// Eliminar archivo multimedia
+router.delete('/media/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Verificar que el archivo no esté siendo usado por anuncios
+    const usageCheck = await pool.query(
+      'SELECT COUNT(*) as count FROM advertisements WHERE media_file_id = $1',
+      [id]
+    );
+    
+    if (parseInt(usageCheck.rows[0].count) > 0) {
+      return res.status(400).json({ 
+        error: 'No se puede eliminar el archivo porque está siendo usado por anuncios activos' 
+      });
+    }
+    
+    // Obtener información del archivo
+    const fileInfo = await pool.query(
+      'SELECT * FROM ad_media_files WHERE id = $1',
+      [id]
+    );
+    
+    if (fileInfo.rows.length === 0) {
+      return res.status(404).json({ error: 'Archivo no encontrado' });
+    }
+    
+    // Eliminar archivo físico
+    const filePath = fileInfo.rows[0].file_path;
+    try {
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    } catch (fsError) {
+      console.error('❌ Error eliminando archivo físico:', fsError);
+    }
+    
+    // Eliminar registro de la base de datos
+    await pool.query('DELETE FROM ad_media_files WHERE id = $1', [id]);
+    
+    console.log('✅ Archivo multimedia eliminado exitosamente:', id);
+    
+    res.json({
+      success: true,
+      message: 'Archivo eliminado exitosamente'
+    });
+  } catch (error) {
+    console.error('❌ Error eliminando archivo:', error);
+    res.status(500).json({ error: 'Error eliminando archivo: ' + error.message });
   }
 });
 

@@ -26,7 +26,8 @@ import {
   Video,
   FileImage,
   PlayCircle,
-  Clock
+  Clock,
+  Upload
 } from 'lucide-react';
 
 interface Advertisement {
@@ -64,6 +65,17 @@ interface AdFormData {
   media_type?: 'image' | 'video' | 'gif';
   video_url?: string;
   duration?: number;
+  storage_type?: 'url' | 'file';
+  media_file_id?: number;
+}
+
+interface UploadedFile {
+  id: number;
+  filename: string;
+  original_name: string;
+  file_url: string;
+  media_type: string;
+  file_size: number;
 }
 
 const AdAdvertisements: React.FC = () => {
@@ -84,8 +96,13 @@ const AdAdvertisements: React.FC = () => {
     is_active: true,
     media_type: 'image',
     video_url: '',
-    duration: 0
+    duration: 0,
+    storage_type: 'url',
+    media_file_id: undefined
   });
+  
+  const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -187,8 +204,62 @@ const AdAdvertisements: React.FC = () => {
       is_active: true,
       media_type: 'image',
       video_url: '',
-      duration: 0
+      duration: 0,
+      storage_type: 'url',
+      media_file_id: undefined
     });
+    setUploadedFile(null);
+  };
+
+  // Función para manejar la subida de archivos
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/advertising-management/media/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al subir archivo');
+      }
+
+      const result = await response.json();
+      
+      if (result.success) {
+        setUploadedFile(result.data);
+        setFormData(prev => ({
+          ...prev,
+          media_file_id: result.data.id,
+          // Limpiar URLs externas cuando se sube archivo
+          image_url: '',
+          video_url: ''
+        }));
+        
+        toast({
+          title: "Archivo subido exitosamente",
+          description: `${result.data.original_name} se ha subido correctamente`,
+        });
+      } else {
+        throw new Error(result.message || 'Error al subir archivo');
+      }
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      toast({
+        title: "Error al subir archivo",
+        description: error instanceof Error ? error.message : "Error desconocido",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleCreateSubmit = (e: React.FormEvent) => {
@@ -199,6 +270,26 @@ const AdAdvertisements: React.FC = () => {
   const handleEditSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     updateAdMutation.mutate(formData);
+  };
+
+  // Función para manejar el cambio del tipo de almacenamiento
+  const handleStorageTypeChange = (storageType: 'url' | 'file') => {
+    setFormData(prev => ({
+      ...prev,
+      storage_type: storageType,
+      // Limpiar campos según el tipo de almacenamiento
+      ...(storageType === 'url' ? {
+        media_file_id: undefined
+      } : {
+        image_url: '',
+        video_url: ''
+      })
+    }));
+    
+    // Limpiar archivo subido si se cambia a URL
+    if (storageType === 'url') {
+      setUploadedFile(null);
+    }
   };
 
   const handleEditClick = (ad: Advertisement) => {
@@ -213,7 +304,9 @@ const AdAdvertisements: React.FC = () => {
       is_active: ad.is_active !== undefined ? ad.is_active : true,
       media_type: (ad as any).media_type || 'image',
       video_url: (ad as any).video_url || '',
-      duration: (ad as any).duration || 0
+      duration: (ad as any).duration || 0,
+      storage_type: (ad as any).storage_type || 'url',
+      media_file_id: (ad as any).media_file_id || undefined
     });
     setIsEditModalOpen(true);
   };
@@ -342,32 +435,145 @@ const AdAdvertisements: React.FC = () => {
                     </Select>
                   </div>
                   
+                  <div>
+                    <Label htmlFor="storage_type">Método de Almacenamiento *</Label>
+                    <Select value={formData.storage_type || 'url'} onValueChange={handleStorageTypeChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar método" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="url">URL Externa</SelectItem>
+                        <SelectItem value="file">Subir Archivo</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-gray-600 mt-1">
+                      • URL Externa: Usar enlaces de servicios externos
+                      • Subir Archivo: Almacenar en tu propia base de datos
+                    </p>
+                  </div>
+                  
                   {formData.media_type === 'image' && (
                     <div>
-                      <Label htmlFor="image_url">URL de la Imagen *</Label>
-                      <Input
-                        id="image_url"
-                        value={formData.image_url}
-                        onChange={(e) => setFormData({...formData, image_url: e.target.value})}
-                        required
-                        placeholder="https://ejemplo.com/imagen.jpg"
-                      />
-                      <p className="text-sm text-gray-600 mt-1">Sube tu imagen y pega la URL aquí</p>
+                      {formData.storage_type === 'url' ? (
+                        <div>
+                          <Label htmlFor="image_url">URL de la Imagen *</Label>
+                          <Input
+                            id="image_url"
+                            value={formData.image_url}
+                            onChange={(e) => setFormData({...formData, image_url: e.target.value})}
+                            required
+                            placeholder="https://ejemplo.com/imagen.jpg"
+                          />
+                          <p className="text-sm text-gray-600 mt-1">Introduce la URL de tu imagen externa</p>
+                        </div>
+                      ) : (
+                        <div>
+                          <Label>Subir Imagen *</Label>
+                          <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                            <input
+                              type="file"
+                              id="image_upload"
+                              accept="image/*"
+                              onChange={handleFileUpload}
+                              className="hidden"
+                              disabled={isUploading}
+                            />
+                            <label htmlFor="image_upload" className="cursor-pointer">
+                              <div className="flex flex-col items-center space-y-2">
+                                {isUploading ? (
+                                  <div className="flex items-center space-x-2">
+                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00a587]"></div>
+                                    <span className="text-sm text-[#00a587]">Subiendo...</span>
+                                  </div>
+                                ) : (
+                                  <>
+                                    <Upload className="h-8 w-8 text-gray-400" />
+                                    <p className="text-sm text-gray-600">
+                                      Clic para seleccionar imagen
+                                    </p>
+                                    <p className="text-xs text-gray-500">
+                                      Máximo 50MB - JPG, PNG, GIF, WEBP
+                                    </p>
+                                  </>
+                                )}
+                              </div>
+                            </label>
+                          </div>
+                          {uploadedFile && (
+                            <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded">
+                              <p className="text-sm text-green-800">
+                                ✅ Imagen subida: {uploadedFile.original_name}
+                              </p>
+                              <p className="text-xs text-green-600">
+                                {uploadedFile.media_type} - {(uploadedFile.file_size / 1024 / 1024).toFixed(2)}MB
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
                   
                   {formData.media_type === 'video' && (
                     <div className="space-y-3">
-                      <div>
-                        <Label htmlFor="video_url">URL del Video *</Label>
-                        <Input
-                          id="video_url"
-                          value={formData.video_url}
-                          onChange={(e) => setFormData({...formData, video_url: e.target.value})}
-                          required
-                          placeholder="https://ejemplo.com/video.mp4"
-                        />
-                      </div>
+                      {formData.storage_type === 'url' ? (
+                        <div>
+                          <Label htmlFor="video_url">URL del Video *</Label>
+                          <Input
+                            id="video_url"
+                            value={formData.video_url}
+                            onChange={(e) => setFormData({...formData, video_url: e.target.value})}
+                            required
+                            placeholder="https://ejemplo.com/video.mp4"
+                          />
+                          <p className="text-sm text-gray-600 mt-1">Introduce la URL de tu video externo</p>
+                        </div>
+                      ) : (
+                        <div>
+                          <Label>Subir Video *</Label>
+                          <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                            <input
+                              type="file"
+                              id="video_upload"
+                              accept="video/*"
+                              onChange={handleFileUpload}
+                              className="hidden"
+                              disabled={isUploading}
+                            />
+                            <label htmlFor="video_upload" className="cursor-pointer">
+                              <div className="flex flex-col items-center space-y-2">
+                                {isUploading ? (
+                                  <div className="flex items-center space-x-2">
+                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00a587]"></div>
+                                    <span className="text-sm text-[#00a587]">Subiendo...</span>
+                                  </div>
+                                ) : (
+                                  <>
+                                    <Upload className="h-8 w-8 text-gray-400" />
+                                    <p className="text-sm text-gray-600">
+                                      Clic para seleccionar video
+                                    </p>
+                                    <p className="text-xs text-gray-500">
+                                      Máximo 50MB - MP4, WEBM
+                                    </p>
+                                  </>
+                                )}
+                              </div>
+                            </label>
+                          </div>
+                          {uploadedFile && (
+                            <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded">
+                              <p className="text-sm text-green-800">
+                                ✅ Video subido: {uploadedFile.original_name}
+                              </p>
+                              <p className="text-xs text-green-600">
+                                {uploadedFile.media_type} - {(uploadedFile.file_size / 1024 / 1024).toFixed(2)}MB
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      
                       <div>
                         <Label htmlFor="duration">Duración (segundos)</Label>
                         <Input
@@ -378,30 +584,81 @@ const AdAdvertisements: React.FC = () => {
                           placeholder="30"
                         />
                       </div>
-                      <div>
-                        <Label htmlFor="image_url">Imagen de Vista Previa</Label>
-                        <Input
-                          id="image_url"
-                          value={formData.image_url}
-                          onChange={(e) => setFormData({...formData, image_url: e.target.value})}
-                          placeholder="https://ejemplo.com/thumbnail.jpg"
-                        />
-                        <p className="text-sm text-gray-600 mt-1">Imagen que se mostrará antes de reproducir el video</p>
-                      </div>
+                      
+                      {formData.storage_type === 'url' && (
+                        <div>
+                          <Label htmlFor="image_url">Imagen de Vista Previa</Label>
+                          <Input
+                            id="image_url"
+                            value={formData.image_url}
+                            onChange={(e) => setFormData({...formData, image_url: e.target.value})}
+                            placeholder="https://ejemplo.com/thumbnail.jpg"
+                          />
+                          <p className="text-sm text-gray-600 mt-1">Imagen que se mostrará antes de reproducir el video</p>
+                        </div>
+                      )}
                     </div>
                   )}
                   
                   {formData.media_type === 'gif' && (
                     <div>
-                      <Label htmlFor="image_url">URL del GIF *</Label>
-                      <Input
-                        id="image_url"
-                        value={formData.image_url}
-                        onChange={(e) => setFormData({...formData, image_url: e.target.value})}
-                        required
-                        placeholder="https://ejemplo.com/animacion.gif"
-                      />
-                      <p className="text-sm text-gray-600 mt-1">Los GIFs se reproducen automáticamente</p>
+                      {formData.storage_type === 'url' ? (
+                        <div>
+                          <Label htmlFor="image_url">URL del GIF *</Label>
+                          <Input
+                            id="image_url"
+                            value={formData.image_url}
+                            onChange={(e) => setFormData({...formData, image_url: e.target.value})}
+                            required
+                            placeholder="https://ejemplo.com/animacion.gif"
+                          />
+                          <p className="text-sm text-gray-600 mt-1">Los GIFs se reproducen automáticamente</p>
+                        </div>
+                      ) : (
+                        <div>
+                          <Label>Subir GIF *</Label>
+                          <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                            <input
+                              type="file"
+                              id="gif_upload"
+                              accept="image/gif"
+                              onChange={handleFileUpload}
+                              className="hidden"
+                              disabled={isUploading}
+                            />
+                            <label htmlFor="gif_upload" className="cursor-pointer">
+                              <div className="flex flex-col items-center space-y-2">
+                                {isUploading ? (
+                                  <div className="flex items-center space-x-2">
+                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00a587]"></div>
+                                    <span className="text-sm text-[#00a587]">Subiendo...</span>
+                                  </div>
+                                ) : (
+                                  <>
+                                    <Upload className="h-8 w-8 text-gray-400" />
+                                    <p className="text-sm text-gray-600">
+                                      Clic para seleccionar GIF
+                                    </p>
+                                    <p className="text-xs text-gray-500">
+                                      Máximo 50MB - Solo archivos GIF
+                                    </p>
+                                  </>
+                                )}
+                              </div>
+                            </label>
+                          </div>
+                          {uploadedFile && (
+                            <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded">
+                              <p className="text-sm text-green-800">
+                                ✅ GIF subido: {uploadedFile.original_name}
+                              </p>
+                              <p className="text-xs text-green-600">
+                                {uploadedFile.media_type} - {(uploadedFile.file_size / 1024 / 1024).toFixed(2)}MB
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -853,31 +1110,139 @@ const AdAdvertisements: React.FC = () => {
                   </Select>
                 </div>
                 
+                <div>
+                  <Label htmlFor="edit_storage_type">Método de Almacenamiento *</Label>
+                  <Select value={formData.storage_type || 'url'} onValueChange={handleStorageTypeChange}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar método" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="url">URL Externa</SelectItem>
+                      <SelectItem value="file">Subir Archivo</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
                 {formData.media_type === 'image' && (
                   <div>
-                    <Label htmlFor="edit_image_url">URL de la Imagen *</Label>
-                    <Input
-                      id="edit_image_url"
-                      value={formData.image_url}
-                      onChange={(e) => setFormData({...formData, image_url: e.target.value})}
-                      required
-                      placeholder="https://ejemplo.com/imagen.jpg"
-                    />
+                    {formData.storage_type === 'url' ? (
+                      <div>
+                        <Label htmlFor="edit_image_url">URL de la Imagen *</Label>
+                        <Input
+                          id="edit_image_url"
+                          value={formData.image_url}
+                          onChange={(e) => setFormData({...formData, image_url: e.target.value})}
+                          required
+                          placeholder="https://ejemplo.com/imagen.jpg"
+                        />
+                      </div>
+                    ) : (
+                      <div>
+                        <Label>Subir Imagen *</Label>
+                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                          <input
+                            type="file"
+                            id="edit_image_upload"
+                            accept="image/*"
+                            onChange={handleFileUpload}
+                            className="hidden"
+                            disabled={isUploading}
+                          />
+                          <label htmlFor="edit_image_upload" className="cursor-pointer">
+                            <div className="flex flex-col items-center space-y-2">
+                              {isUploading ? (
+                                <div className="flex items-center space-x-2">
+                                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00a587]"></div>
+                                  <span className="text-sm text-[#00a587]">Subiendo...</span>
+                                </div>
+                              ) : (
+                                <>
+                                  <Upload className="h-8 w-8 text-gray-400" />
+                                  <p className="text-sm text-gray-600">
+                                    Clic para seleccionar imagen
+                                  </p>
+                                  <p className="text-xs text-gray-500">
+                                    Máximo 50MB - JPG, PNG, GIF, WEBP
+                                  </p>
+                                </>
+                              )}
+                            </div>
+                          </label>
+                        </div>
+                        {uploadedFile && (
+                          <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded">
+                            <p className="text-sm text-green-800">
+                              ✅ Imagen subida: {uploadedFile.original_name}
+                            </p>
+                            <p className="text-xs text-green-600">
+                              {uploadedFile.media_type} - {(uploadedFile.file_size / 1024 / 1024).toFixed(2)}MB
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
                 
                 {formData.media_type === 'video' && (
                   <div className="space-y-3">
-                    <div>
-                      <Label htmlFor="edit_video_url">URL del Video *</Label>
-                      <Input
-                        id="edit_video_url"
-                        value={formData.video_url}
-                        onChange={(e) => setFormData({...formData, video_url: e.target.value})}
-                        required
-                        placeholder="https://ejemplo.com/video.mp4"
-                      />
-                    </div>
+                    {formData.storage_type === 'url' ? (
+                      <div>
+                        <Label htmlFor="edit_video_url">URL del Video *</Label>
+                        <Input
+                          id="edit_video_url"
+                          value={formData.video_url}
+                          onChange={(e) => setFormData({...formData, video_url: e.target.value})}
+                          required
+                          placeholder="https://ejemplo.com/video.mp4"
+                        />
+                      </div>
+                    ) : (
+                      <div>
+                        <Label>Subir Video *</Label>
+                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                          <input
+                            type="file"
+                            id="edit_video_upload"
+                            accept="video/*"
+                            onChange={handleFileUpload}
+                            className="hidden"
+                            disabled={isUploading}
+                          />
+                          <label htmlFor="edit_video_upload" className="cursor-pointer">
+                            <div className="flex flex-col items-center space-y-2">
+                              {isUploading ? (
+                                <div className="flex items-center space-x-2">
+                                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00a587]"></div>
+                                  <span className="text-sm text-[#00a587]">Subiendo...</span>
+                                </div>
+                              ) : (
+                                <>
+                                  <Upload className="h-8 w-8 text-gray-400" />
+                                  <p className="text-sm text-gray-600">
+                                    Clic para seleccionar video
+                                  </p>
+                                  <p className="text-xs text-gray-500">
+                                    Máximo 50MB - MP4, WEBM
+                                  </p>
+                                </>
+                              )}
+                            </div>
+                          </label>
+                        </div>
+                        {uploadedFile && (
+                          <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded">
+                            <p className="text-sm text-green-800">
+                              ✅ Video subido: {uploadedFile.original_name}
+                            </p>
+                            <p className="text-xs text-green-600">
+                              {uploadedFile.media_type} - {(uploadedFile.file_size / 1024 / 1024).toFixed(2)}MB
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    
                     <div>
                       <Label htmlFor="edit_duration">Duración (segundos)</Label>
                       <Input
@@ -888,28 +1253,81 @@ const AdAdvertisements: React.FC = () => {
                         placeholder="30"
                       />
                     </div>
-                    <div>
-                      <Label htmlFor="edit_image_url">Imagen de Vista Previa</Label>
-                      <Input
-                        id="edit_image_url"
-                        value={formData.image_url}
-                        onChange={(e) => setFormData({...formData, image_url: e.target.value})}
-                        placeholder="https://ejemplo.com/thumbnail.jpg"
-                      />
-                    </div>
+                    
+                    {formData.storage_type === 'url' && (
+                      <div>
+                        <Label htmlFor="edit_image_url">Imagen de Vista Previa</Label>
+                        <Input
+                          id="edit_image_url"
+                          value={formData.image_url}
+                          onChange={(e) => setFormData({...formData, image_url: e.target.value})}
+                          placeholder="https://ejemplo.com/thumbnail.jpg"
+                        />
+                        <p className="text-sm text-gray-600 mt-1">Imagen que se mostrará antes de reproducir el video</p>
+                      </div>
+                    )}
                   </div>
                 )}
                 
                 {formData.media_type === 'gif' && (
                   <div>
-                    <Label htmlFor="edit_image_url">URL del GIF *</Label>
-                    <Input
-                      id="edit_image_url"
-                      value={formData.image_url}
-                      onChange={(e) => setFormData({...formData, image_url: e.target.value})}
-                      required
-                      placeholder="https://ejemplo.com/animacion.gif"
-                    />
+                    {formData.storage_type === 'url' ? (
+                      <div>
+                        <Label htmlFor="edit_image_url">URL del GIF *</Label>
+                        <Input
+                          id="edit_image_url"
+                          value={formData.image_url}
+                          onChange={(e) => setFormData({...formData, image_url: e.target.value})}
+                          required
+                          placeholder="https://ejemplo.com/animacion.gif"
+                        />
+                        <p className="text-sm text-gray-600 mt-1">Los GIFs se reproducen automáticamente</p>
+                      </div>
+                    ) : (
+                      <div>
+                        <Label>Subir GIF *</Label>
+                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                          <input
+                            type="file"
+                            id="edit_gif_upload"
+                            accept="image/gif"
+                            onChange={handleFileUpload}
+                            className="hidden"
+                            disabled={isUploading}
+                          />
+                          <label htmlFor="edit_gif_upload" className="cursor-pointer">
+                            <div className="flex flex-col items-center space-y-2">
+                              {isUploading ? (
+                                <div className="flex items-center space-x-2">
+                                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00a587]"></div>
+                                  <span className="text-sm text-[#00a587]">Subiendo...</span>
+                                </div>
+                              ) : (
+                                <>
+                                  <Upload className="h-8 w-8 text-gray-400" />
+                                  <p className="text-sm text-gray-600">
+                                    Clic para seleccionar GIF
+                                  </p>
+                                  <p className="text-xs text-gray-500">
+                                    Máximo 50MB - Solo archivos GIF
+                                  </p>
+                                </>
+                              )}
+                            </div>
+                          </label>
+                        </div>
+                        {uploadedFile && (
+                          <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded">
+                            <p className="text-sm text-green-800">
+                              ✅ GIF subido: {uploadedFile.original_name}
+                            </p>
+                            <p className="text-xs text-green-600">
+                              {uploadedFile.media_type} - {(uploadedFile.file_size / 1024 / 1024).toFixed(2)}MB
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
