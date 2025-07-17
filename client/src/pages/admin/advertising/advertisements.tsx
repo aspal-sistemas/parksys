@@ -86,6 +86,7 @@ const AdAdvertisements: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCampaign, setFilterCampaign] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [refreshKey, setRefreshKey] = useState(0);
   const [formData, setFormData] = useState<AdFormData>({
     title: '',
     description: '',
@@ -122,6 +123,13 @@ const AdAdvertisements: React.FC = () => {
   // Validación defensiva para asegurar que las variables sean siempre arrays
   const campaigns = Array.isArray(campaignData) ? campaignData : [];
   const advertisements = Array.isArray(advertisementData) ? advertisementData : [];
+  
+  // Debug logging para verificar los datos recibidos
+  console.log('📊 RefreshKey actual:', refreshKey);
+  console.log('📊 Datos de anuncios recibidos:', advertisements.length, 'anuncios');
+  if (advertisements.length > 0) {
+    console.log('📊 Primer anuncio (ID 13) updated_at:', advertisements.find(ad => ad.id === 13)?.updated_at);
+  }
 
   // Mutación para crear anuncio
   const createAdMutation = useMutation({
@@ -153,12 +161,24 @@ const AdAdvertisements: React.FC = () => {
       method: 'PUT',
       body: JSON.stringify(data)
     }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/advertising-management/advertisements'] });
-      queryClient.refetchQueries({ queryKey: ['/api/advertising-management/advertisements'] });
+    onSuccess: async () => {
+      // Invalidación completa del cache
+      await queryClient.invalidateQueries({ queryKey: ['/api/advertising-management/advertisements'] });
+      await queryClient.refetchQueries({ queryKey: ['/api/advertising-management/advertisements'] });
+      
+      // Cerrar modal y resetear estado
       setIsEditModalOpen(false);
       setSelectedAd(null);
       resetForm();
+      
+      // Forzar re-render con refreshKey
+      setRefreshKey(prev => prev + 1);
+      
+      // Invalidación adicional después de un delay
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ['/api/advertising-management/advertisements'] });
+      }, 500);
+      
       toast({
         title: "Anuncio actualizado",
         description: "El anuncio se ha actualizado exitosamente",
@@ -359,15 +379,21 @@ const AdAdvertisements: React.FC = () => {
   const getImageUrlWithCacheBust = (imageUrl: string, updatedAt?: string) => {
     if (!imageUrl) return '';
     
-    // Si es una URL externa, no agregar cache-busting
-    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-      return imageUrl;
-    }
-    
-    // Si es una URL interna, agregar timestamp
+    // Para todas las URLs, agregar timestamp basado en updated_at + refreshKey
     const timestamp = updatedAt ? new Date(updatedAt).getTime() : Date.now();
     const separator = imageUrl.includes('?') ? '&' : '?';
-    return `${imageUrl}${separator}t=${timestamp}`;
+    const finalUrl = `${imageUrl}${separator}v=${timestamp}&r=${refreshKey}`;
+    
+    // Debug logging
+    console.log('🖼️ Cache-busting URL:', {
+      original: imageUrl,
+      updatedAt,
+      timestamp,
+      refreshKey,
+      final: finalUrl
+    });
+    
+    return finalUrl;
   };
 
   return (
@@ -875,6 +901,7 @@ const AdAdvertisements: React.FC = () => {
                   {/* Imagen preview */}
                   <div className="aspect-video rounded-lg overflow-hidden bg-gray-100">
                     <img 
+                      key={`${ad.id}-${refreshKey}`}
                       src={getImageUrlWithCacheBust(ad.image_url, ad.updated_at)} 
                       alt={ad.alt_text || ad.title}
                       className="w-full h-full object-cover"
@@ -979,6 +1006,7 @@ const AdAdvertisements: React.FC = () => {
               <div className="space-y-4">
                 <div className="aspect-video rounded-lg overflow-hidden bg-gray-100">
                   <img 
+                    key={`modal-${selectedAd.id}-${refreshKey}`}
                     src={getImageUrlWithCacheBust(selectedAd.image_url, selectedAd.updated_at)} 
                     alt={selectedAd.alt_text || selectedAd.title}
                     className="w-full h-full object-cover"
