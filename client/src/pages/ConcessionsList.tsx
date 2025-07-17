@@ -302,17 +302,17 @@ export default function ConcessionsList() {
 
               {/* Espacio 3 - Inversión */}
               <div className="bg-gradient-to-br from-purple-50 to-violet-50 p-4 rounded-lg border border-purple-200">
-                <AdSpace spaceId="20" position="sidebar" pageType="concessions" />
+                <AdSpace spaceId="23" position="sidebar" pageType="concessions" />
               </div>
 
               {/* Espacio 4 - Eventos */}
               <div className="bg-gradient-to-br from-orange-50 to-red-50 p-4 rounded-lg border border-orange-200">
-                <AdSpace spaceId="21" position="sidebar" pageType="concessions" />
+                <AdSpace spaceId="24" position="sidebar" pageType="concessions" />
               </div>
 
               {/* Espacio 5 - Recursos */}
               <div className="bg-gradient-to-br from-teal-50 to-cyan-50 p-4 rounded-lg border border-teal-200">
-                <AdSpace spaceId="22" position="sidebar" pageType="concessions" />
+                <AdSpace spaceId="25" position="sidebar" pageType="concessions" />
               </div>
             </div>
           </div>
