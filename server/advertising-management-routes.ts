@@ -662,4 +662,253 @@ router.post('/track-click', async (req, res) => {
   }
 });
 
+// =====================================
+// ENDPOINTS PARA GESTIÓN DE CAMPAÑAS
+// =====================================
+
+// Obtener todas las campañas
+router.get('/campaigns', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        id,
+        name,
+        client,
+        description,
+        start_date as "startDate",
+        end_date as "endDate",
+        budget,
+        status,
+        priority,
+        created_at as "createdAt",
+        updated_at as "updatedAt"
+      FROM ad_campaigns
+      ORDER BY created_at DESC
+    `);
+    
+    console.log('✅ Campañas obtenidas exitosamente:', result.rows.length);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('❌ Error obteniendo campañas:', error);
+    res.status(500).json({ error: 'Error obteniendo campañas: ' + error.message });
+  }
+});
+
+// Crear nueva campaña
+router.post('/campaigns', async (req, res) => {
+  try {
+    const {
+      name,
+      client,
+      description,
+      startDate,
+      endDate,
+      budget,
+      priority = 'medium'
+    } = req.body;
+
+    console.log('🔧 Creando campaña con datos:', req.body);
+
+    const result = await pool.query(`
+      INSERT INTO ad_campaigns (
+        name, client, description, start_date, end_date, budget, priority, status
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, 'active')
+      RETURNING 
+        id,
+        name,
+        client,
+        description,
+        start_date as "startDate",
+        end_date as "endDate",
+        budget,
+        status,
+        priority,
+        created_at as "createdAt",
+        updated_at as "updatedAt"
+    `, [name, client, description, startDate, endDate, budget, priority]);
+
+    console.log('✅ Campaña creada exitosamente:', result.rows[0]);
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('❌ Error creando campaña:', error);
+    res.status(500).json({ error: 'Error creando campaña: ' + error.message });
+  }
+});
+
+// Actualizar campaña
+router.put('/campaigns/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      name,
+      client,
+      description,
+      startDate,
+      endDate,
+      budget,
+      priority
+    } = req.body;
+
+    console.log('🔧 Actualizando campaña ID:', id, 'con datos:', req.body);
+
+    const result = await pool.query(`
+      UPDATE ad_campaigns 
+      SET 
+        name = $1,
+        client = $2,
+        description = $3,
+        start_date = $4,
+        end_date = $5,
+        budget = $6,
+        priority = $7,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = $8
+      RETURNING 
+        id,
+        name,
+        client,
+        description,
+        start_date as "startDate",
+        end_date as "endDate",
+        budget,
+        status,
+        priority,
+        created_at as "createdAt",
+        updated_at as "updatedAt"
+    `, [name, client, description, startDate, endDate, budget, priority, id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Campaña no encontrada' });
+    }
+
+    console.log('✅ Campaña actualizada exitosamente:', result.rows[0]);
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('❌ Error actualizando campaña:', error);
+    res.status(500).json({ error: 'Error actualizando campaña: ' + error.message });
+  }
+});
+
+// Cambiar estado de campaña
+router.patch('/campaigns/:id/status', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    console.log('🔧 Cambiando estado de campaña ID:', id, 'a:', status);
+
+    const result = await pool.query(`
+      UPDATE ad_campaigns 
+      SET 
+        status = $1,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = $2
+      RETURNING 
+        id,
+        name,
+        client,
+        description,
+        start_date as "startDate",
+        end_date as "endDate",
+        budget,
+        status,
+        priority,
+        created_at as "createdAt",
+        updated_at as "updatedAt"
+    `, [status, id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Campaña no encontrada' });
+    }
+
+    console.log('✅ Estado de campaña cambiado exitosamente:', result.rows[0]);
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('❌ Error cambiando estado de campaña:', error);
+    res.status(500).json({ error: 'Error cambiando estado de campaña: ' + error.message });
+  }
+});
+
+// Eliminar campaña
+router.delete('/campaigns/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    console.log('🔧 Eliminando campaña ID:', id);
+
+    // Verificar si la campaña existe
+    const checkResult = await pool.query('SELECT id FROM ad_campaigns WHERE id = $1', [id]);
+    if (checkResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Campaña no encontrada' });
+    }
+
+    // Eliminar la campaña (los anuncios asociados se eliminarán en cascada)
+    await pool.query('DELETE FROM ad_campaigns WHERE id = $1', [id]);
+
+    console.log('✅ Campaña eliminada exitosamente');
+    res.json({ success: true });
+  } catch (error) {
+    console.error('❌ Error eliminando campaña:', error);
+    res.status(500).json({ error: 'Error eliminando campaña: ' + error.message });
+  }
+});
+
+// Obtener campaña específica con anuncios
+router.get('/campaigns/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    console.log('🔧 Obteniendo campaña ID:', id);
+
+    const campaignResult = await pool.query(`
+      SELECT 
+        id,
+        name,
+        client,
+        description,
+        start_date as "startDate",
+        end_date as "endDate",
+        budget,
+        status,
+        priority,
+        created_at as "createdAt",
+        updated_at as "updatedAt"
+      FROM ad_campaigns
+      WHERE id = $1
+    `, [id]);
+
+    if (campaignResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Campaña no encontrada' });
+    }
+
+    const campaign = campaignResult.rows[0];
+
+    // Obtener anuncios asociados a la campaña
+    const advertisementsResult = await pool.query(`
+      SELECT 
+        id,
+        title,
+        description,
+        image_url as "imageUrl",
+        target_url as "targetUrl",
+        alt_text as "altText",
+        is_active as "isActive",
+        click_count as "clickCount",
+        impression_count as "impressionCount",
+        created_at as "createdAt"
+      FROM advertisements
+      WHERE campaign_id = $1
+      ORDER BY created_at DESC
+    `, [id]);
+
+    campaign.advertisements = advertisementsResult.rows;
+
+    console.log('✅ Campaña obtenida exitosamente con', advertisementsResult.rows.length, 'anuncios');
+    res.json(campaign);
+  } catch (error) {
+    console.error('❌ Error obteniendo campaña:', error);
+    res.status(500).json({ error: 'Error obteniendo campaña: ' + error.message });
+  }
+});
+
 export default router;
