@@ -92,7 +92,8 @@ import {
   Plus,
   Image,
   Scale,
-  Monitor
+  Monitor,
+  Grid
 } from 'lucide-react';
 
 interface NavItemProps {
@@ -1045,6 +1046,13 @@ const AdminSidebarComplete: React.FC = () => {
                 active={location.startsWith('/admin/advertising/assignments')}
               >
                 Asignaciones
+              </NavItem>
+              <NavItem 
+                href="/admin/advertising/space-mappings" 
+                icon={<Grid className="h-4 w-4" />}
+                active={location.startsWith('/admin/advertising/space-mappings')}
+              >
+                Mapeo de Espacios
               </NavItem>
               <NavItem 
                 href="/admin/advertising/analytics" 

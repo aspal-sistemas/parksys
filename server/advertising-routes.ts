@@ -182,6 +182,40 @@ router.get('/advertisements', async (req, res) => {
   }
 });
 
+// Obtener mapeo completo de espacios publicitarios y anuncios
+router.get('/space-mappings', async (req, res) => {
+  try {
+    const mappings = await pool.query(`
+      SELECT 
+        asp.id as space_id,
+        asp.name as space_name,
+        asp.page_type,
+        asp.position,
+        asp.description,
+        ads.id as ad_id,
+        ads.title as ad_title,
+        ads.content as ad_content,
+        ads.image_url,
+        ads.link_url,
+        ap.id as placement_id,
+        ap.priority,
+        ap.start_date,
+        ap.end_date,
+        ap.is_active as placement_active,
+        asp.is_active as space_active
+      FROM ad_spaces asp
+      LEFT JOIN ad_placements ap ON asp.id = ap.ad_space_id AND ap.is_active = true
+      LEFT JOIN advertisements ads ON ap.advertisement_id = ads.id
+      ORDER BY asp.page_type, asp.position, asp.id
+    `);
+    
+    res.json(mappings.rows);
+  } catch (error) {
+    console.error('Error al obtener mapeo de espacios:', error);
+    res.status(500).json({ error: 'Error al obtener mapeo de espacios' });
+  }
+});
+
 // Obtener anuncios por campaña
 router.get('/campaigns/:campaignId/advertisements', async (req, res) => {
   try {
