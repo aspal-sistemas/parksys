@@ -1,0 +1,62 @@
+eruda.js:2 Warning: A component is changing a controlled input to be uncontrolled. This is likely caused by the value changing from a defined to undefined, which should not happen. Decide between using a controlled or uncontrolled input element for the lifetime of the component. More info: https://reactjs.org/link/controlled-components
+    at input
+    at _c (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/src/components/ui/input.tsx:20:11)
+    at div
+    at form
+    at div
+    at https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…unner/workspace/node_modules/.vite/deps/chunk-N37XXYKJ.js?v=15bc1513:42:13
+    at https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…runner/workspace/node_modules/.vite/deps/chunk-AA4YV7VR.js?v=15bc1513:61:7
+    at https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…unner/workspace/node_modules/.vite/deps/chunk-GXYGOJMY.js?v=15bc1513:79:13
+    at https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…unner/workspace/node_modules/.vite/deps/chunk-GXYGOJMY.js?v=15bc1513:56:13
+    at https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…unner/workspace/node_modules/.vite/deps/chunk-N37XXYKJ.js?v=15bc1513:42:13
+    at https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…runner/workspace/node_modules/.vite/deps/chunk-7VZB2PUU.js?v=15bc1513:29:5
+    at https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…nner/workspace/node_modules/.vite/deps/chunk-54I5LU37.js?v=15bc1513:235:13
+    at https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…nner/workspace/node_modules/.vite/deps/chunk-54I5LU37.js?v=15bc1513:158:58
+    at Presence (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…unner/workspace/node_modules/.vite/deps/chunk-XSGX5HQ4.js?v=15bc1513:24:11)
+    at https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…nner/workspace/node_modules/.vite/deps/chunk-54I5LU37.js?v=15bc1513:149:64
+    at https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…unner/workspace/node_modules/.vite/deps/chunk-GXYGOJMY.js?v=15bc1513:79:13
+    at https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…unner/workspace/node_modules/.vite/deps/chunk-GXYGOJMY.js?v=15bc1513:56:13
+    at https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…unner/workspace/node_modules/.vite/deps/chunk-N37XXYKJ.js?v=15bc1513:42:13
+    at https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…nner/workspace/node_modules/.vite/deps/chunk-AA4YV7VR.js?v=15bc1513:260:22
+    at Presence (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…unner/workspace/node_modules/.vite/deps/chunk-XSGX5HQ4.js?v=15bc1513:24:11)
+    at Provider (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…unner/workspace/node_modules/.vite/deps/chunk-GBY3YEWR.js?v=15bc1513:38:15)
+    at DialogPortal (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…nner/workspace/node_modules/.vite/deps/chunk-54I5LU37.js?v=15bc1513:111:11)
+    at _c3 (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/src/components/ui/dialog.tsx:52:12)
+    at Provider (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…unner/workspace/node_modules/.vite/deps/chunk-GBY3YEWR.js?v=15bc1513:38:15)
+    at Dialog (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…runner/workspace/node_modules/.vite/deps/chunk-54I5LU37.js?v=15bc1513:52:5)
+    at div
+    at main
+    at div
+    at div
+    at AdminLayout (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/src/components/AdminLayout.tsx:22:24)
+    at AdAdvertisements (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/src/pages/admin/advertising/advertisements.tsx:33:53)
+    at Suspense
+    at Route (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=15bc1513:338:16)
+    at Switch (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=15bc1513:394:17)
+    at div
+    at Router (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/src/App.tsx?v=Wep_zQ7YsCl2pVI992R9A:52:22)
+    at Provider (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…unner/workspace/node_modules/.vite/deps/chunk-GBY3YEWR.js?v=15bc1513:38:15)
+    at TooltipProvider (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…rkspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=15bc1513:64:5)
+    at ProfileCompletionProvider (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/src/components/ProfileCompletionContext.tsx:169:45)
+    at QueryClientProvider (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…rkspace/node_modules/.vite/deps/@tanstack_react-query.js?v=15bc1513:2881:3)
+    at App
+    at V (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…e/runner/workspace/node_modules/.vite/deps/next-themes.js?v=15bc1513:44:25)
+    at J (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…e/runner/workspace/node_modules/.vite/deps/next-themes.js?v=15bc1513:42:18)
+
+eruda.js:2 📁 Subiendo archivo: 1.jpg image/jpeg 597954
+4db9107a-1fd2-47c3-a…da/3.2.3/eruda.js:2 [vite] server connection lost. Polling for restart...
+4db9107a-1fd2-47c3-a…da/3.2.3/eruda.js:2 
+ GET https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/ 502 (Bad Gateway)
+4db9107a-1fd2-47c3-a…da/3.2.3/eruda.js:2 Error uploading file: TypeError: Failed to fetch
+    at window.fetch (4db9107a-1fd2-47c3-a…3/eruda.js:2:218642)
+    at uploadFile (4db9107a-1fd2-47c3-a…tisements.tsx:63:30)
+    at onChange (4db9107a-1fd2-47c3-a…sements.tsx:1457:47)
+    at HTMLUnknownElement.callCallback2 (4db9107a-1fd2-47c3-a…?v=15bc1513:3674:22)
+    at Object.invokeGuardedCallbackDev (4db9107a-1fd2-47c3-a…?v=15bc1513:3699:24)
+    at invokeGuardedCallback (4db9107a-1fd2-47c3-a…?v=15bc1513:3733:39)
+    at invokeGuardedCallbackAndCatchFirstError (4db9107a-1fd2-47c3-a…?v=15bc1513:3736:33)
+    at executeDispatch (4db9107a-1fd2-47c3-a…?v=15bc1513:7014:11)
+    at processDispatchQueueItemsInOrder (4db9107a-1fd2-47c3-a…?v=15bc1513:7034:15)
+    at processDispatchQueue (4db9107a-1fd2-47c3-a…?v=15bc1513:7043:13)
+﻿
+

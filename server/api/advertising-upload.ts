@@ -6,7 +6,7 @@ import fs from 'fs';
 // Configurar almacenamiento para archivos de publicidad
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadDir = path.join(__dirname, '../../uploads/advertising');
+    const uploadDir = path.join(process.cwd(), 'uploads/advertising');
     
     // Crear directorio si no existe
     if (!fs.existsSync(uploadDir)) {

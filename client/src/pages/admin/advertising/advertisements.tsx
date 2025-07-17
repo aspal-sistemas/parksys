@@ -270,12 +270,12 @@ const AdAdvertisements = () => {
   const handleEdit = (ad: Advertisement) => {
     setSelectedAd(ad);
     setFormData({
-      title: ad.title,
-      description: ad.description,
-      image_url: ad.image_url,
-      content: ad.content,
-      campaign_id: ad.campaign_id,
-      is_active: ad.is_active,
+      title: ad.title || '',
+      description: ad.description || '',
+      image_url: ad.image_url || '',
+      content: ad.content || '',
+      campaign_id: ad.campaign_id || 0,
+      is_active: ad.is_active || false,
       media_type: 'image',
       storage_type: 'url',
       duration: 0,
