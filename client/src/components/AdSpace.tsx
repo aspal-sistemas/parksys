@@ -44,20 +44,18 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
   const [refreshKey, setRefreshKey] = useState(0);
   const [forceRender, setForceRender] = useState(0);
 
-  // Obtener el espacio publicitario y sus asignaciones activas con invalidación ultra-agresiva
+  // Obtener el espacio publicitario y sus asignaciones activas
   const { data: placementsResponse, isLoading, refetch } = useQuery({
-    queryKey: [`/api/advertising/placements`, spaceId, pageType, position, refreshKey, forceRender],
+    queryKey: [`/api/advertising/placements`, spaceId, pageType, position],
     queryFn: async () => {
-      const response = await fetch(`/api/advertising/placements?spaceId=${spaceId}&pageType=${pageType}&position=${position}&_t=${Date.now()}`);
+      const response = await fetch(`/api/advertising/placements?spaceId=${spaceId}&pageType=${pageType}&position=${position}`);
       if (!response.ok) throw new Error('Error al cargar asignaciones');
       return response.json();
     },
-    refetchInterval: 5 * 1000, // Refrescar cada 5 segundos para detectar cambios más rápido
-    staleTime: 0, // Considerar los datos siempre obsoletos para forzar actualizaciones
-    gcTime: 0, // No mantener cache
+    refetchInterval: 30 * 1000, // Refrescar cada 30 segundos
+    staleTime: 30 * 1000, // Considerar datos válidos por 30 segundos
     refetchOnWindowFocus: true,
     refetchOnMount: true,
-    refetchOnReconnect: true,
   });
 
   // Obtener la asignación activa (si existe)
@@ -65,25 +63,9 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
     ? placementsResponse.data[0] 
     : null;
 
-  // Forzar actualización inicial cuando se carga el componente
-  useEffect(() => {
-    setTimeout(() => {
-      setRefreshKey(Date.now());
-      setForceRender(prev => prev + 1);
-    }, 1000);
-  }, []);
 
-  // Debug logging (solo en desarrollo)
-  if (import.meta.env.DEV) {
-    console.log('🎯 AdSpace Debug:', {
-      spaceId,
-      position,
-      pageType,
-      isLoading,
-      placementsResponse,
-      activePlacement
-    });
-  }
+
+
 
   // Registrar impresión cuando el componente es visible
   useEffect(() => {
@@ -93,32 +75,17 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
     }
   }, [activePlacement, hasTrackedImpression, isVisible]);
 
-  // Detectar cambios en updated_at y forzar re-render
-  useEffect(() => {
-    if (activePlacement?.advertisement?.updatedAt) {
-      const currentTime = new Date(activePlacement.advertisement.updatedAt).getTime();
-      setForceRender(currentTime);
-      setRefreshKey(prev => prev + 1);
-    }
-  }, [activePlacement?.advertisement?.updatedAt]);
+
 
   // Escuchar eventos globales de actualización de publicidad
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'adForceUpdate') {
-        console.log('🔄 AdSpace: Forzando actualización por cambio en localStorage');
-        setRefreshKey(Date.now());
-        setForceRender(prev => prev + 1);
-        // Forzar refetch inmediato
         refetch();
       }
     };
 
     const handleCustomUpdate = (e: CustomEvent) => {
-      console.log('🔄 AdSpace: Forzando actualización por evento personalizado');
-      setRefreshKey(Date.now());
-      setForceRender(prev => prev + 1);
-      // Forzar refetch inmediato
       refetch();
     };
 
@@ -175,43 +142,18 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
 
   const { advertisement } = activePlacement;
   
-  // Sistema ultra-extremo de cache-busting para imágenes con 7 parámetros
+  // Sistema simple de cache-busting
   const getImageUrlWithCacheBuster = (imageUrl: string) => {
     if (!imageUrl) return '';
     
-    // Parámetros de cache-busting ultra-agresivos
     const updatedAt = advertisement.updatedAt || new Date().toISOString();
     const timestamp = new Date(updatedAt).getTime();
     const separator = imageUrl.includes('?') ? '&' : '?';
     
-    // 7 parámetros de cache-busting para máxima invalidación
-    const cacheBustParams = `v=${timestamp}&r=${refreshKey}&f=${forceRender}&t=${Date.now()}&rnd=${Math.random().toString(36).substring(7)}&cb=${Math.random()}&uid=${advertisement.id}_${timestamp}`;
-    
-    return `${imageUrl}${separator}${cacheBustParams}`;
+    return `${imageUrl}${separator}v=${timestamp}`;
   };
 
-  // Función para forzar recarga de imágenes en el DOM
-  const forceImageReload = () => {
-    const images = document.querySelectorAll(`img[src*="${advertisement.imageUrl}"]`);
-    images.forEach(img => {
-      const imgElement = img as HTMLImageElement;
-      const originalSrc = imgElement.src;
-      imgElement.src = '';
-      setTimeout(() => {
-        imgElement.src = getImageUrlWithCacheBuster(advertisement.imageUrl);
-      }, 100);
-    });
-  };
 
-  // Función para crear elemento de imagen completamente nuevo
-  const createImageElement = (src: string, className: string, alt: string) => {
-    const img = document.createElement('img');
-    img.src = src;
-    img.className = className;
-    img.alt = alt;
-    img.key = `${advertisement.id}_${refreshKey}_${forceRender}`;
-    return img;
-  };
   
   // Estilos base según la posición
   const baseStyles = {
@@ -244,9 +186,8 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
           <>
             {/* Imagen del anuncio */}
             {advertisement.imageUrl && (
-              <div key={`sidebar-container-${advertisement.id}-${refreshKey}-${forceRender}`} className="flex-shrink-0 mb-3">
+              <div className="flex-shrink-0 mb-3">
                 <img
-                  key={`sidebar-${advertisement.id}-${refreshKey}-${forceRender}`}
                   src={getImageUrlWithCacheBuster(advertisement.imageUrl)}
                   alt={advertisement.title}
                   className="w-full h-32 object-contain rounded bg-gray-50"
