@@ -273,29 +273,69 @@ router.post('/advertisements', isAuthenticated, upload.single('image'), async (r
 router.put('/advertisements/:id', isAuthenticated, upload.single('image'), async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, content, linkUrl, type, priority, status } = req.body;
-    const imageUrl = req.file ? `/uploads/advertisements/${req.file.filename}` : undefined;
+    const data = req.body;
     
-    const updateData: any = {
-      title,
-      content,
-      linkUrl,
-      type,
-      priority: parseInt(priority) || 0,
-      status,
-      updatedAt: new Date()
-    };
+    console.log('Datos recibidos para actualizar anuncio:', data);
     
-    if (imageUrl) {
-      updateData.imageUrl = imageUrl;
+    // Mapear los campos que vienen del frontend
+    const updateQuery = `
+      UPDATE advertisements 
+      SET 
+        title = $1,
+        description = $2,
+        image_url = $3,
+        content = $4,
+        campaign_id = $5,
+        is_active = $6,
+        media_type = $7,
+        storage_type = $8,
+        duration = $9,
+        alt_text = $10,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = $11
+      RETURNING *
+    `;
+    
+    const params = [
+      data.title || '',
+      data.description || '',
+      data.image_url || '',
+      data.content || '',
+      data.campaign_id || 1,
+      data.is_active !== undefined ? data.is_active : true,
+      data.media_type || 'image',
+      data.storage_type || 'url',
+      data.duration || 0,
+      data.alt_text || '',
+      parseInt(id)
+    ];
+    
+    const result = await pool.query(updateQuery, params);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Anuncio no encontrado' });
     }
     
-    const [ad] = await db.update(advertisements)
-      .set(updateData)
-      .where(eq(advertisements.id, parseInt(id)))
-      .returning();
+    // Mapear respuesta a camelCase
+    const updatedAd = result.rows[0];
+    const response = {
+      id: updatedAd.id,
+      title: updatedAd.title,
+      description: updatedAd.description,
+      imageUrl: updatedAd.image_url,
+      content: updatedAd.content,
+      campaignId: updatedAd.campaign_id,
+      isActive: updatedAd.is_active,
+      mediaType: updatedAd.media_type,
+      storageType: updatedAd.storage_type,
+      duration: updatedAd.duration,
+      altText: updatedAd.alt_text,
+      createdAt: updatedAd.created_at,
+      updatedAt: updatedAd.updated_at
+    };
     
-    res.json({ success: true, data: ad });
+    console.log('Anuncio actualizado exitosamente:', response);
+    res.json({ success: true, data: response });
   } catch (error) {
     console.error('Error actualizando anuncio:', error);
     res.status(500).json({ success: false, error: 'Error actualizando anuncio' });
