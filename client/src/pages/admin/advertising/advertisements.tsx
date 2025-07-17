@@ -138,14 +138,14 @@ const AdAdvertisements = () => {
     if (!advertisements || advertisements.length === 0) return;
     
     const ad13 = advertisements.find((ad: Advertisement) => ad.id === 13);
-    if (ad13 && ad13.updated_at && ad13.updated_at !== ad13Timestamp) {
+    if (ad13 && ad13.updatedAt && ad13.updatedAt !== ad13Timestamp) {
       console.log('🎯 ANUNCIO 13 DETECTADO - Cambio en timestamp:', {
         anterior: ad13Timestamp,
-        nuevo: ad13.updated_at,
+        nuevo: ad13.updatedAt,
         diferencia: ad13Timestamp ? 'CAMBIO DETECTADO' : 'PRIMER CARGA'
       });
       
-      setAd13Timestamp(ad13.updated_at);
+      setAd13Timestamp(ad13.updatedAt);
       
       // Usar función especializada para actualizar anuncio 13
       forceAd13Update();
@@ -395,14 +395,14 @@ const AdAdvertisements = () => {
     setFormData({
       title: ad.title || '',
       description: ad.description || '',
-      image_url: ad.image_url || '',
+      image_url: ad.imageUrl || '',
       content: ad.content || '',
-      campaign_id: ad.campaign_id || 0,
-      is_active: ad.is_active || false,
+      campaign_id: ad.campaignId || 0,
+      is_active: ad.isActive || false,
       media_type: 'image',
       storage_type: 'url',
       duration: 0,
-      alt_text: ''
+      alt_text: ad.altText || ''
     });
     setIsEditModalOpen(true);
   };
@@ -417,17 +417,17 @@ const AdAdvertisements = () => {
   const filteredAds = advertisements.filter((ad: Advertisement) => {
     const matchesSearch = ad.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          ad.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCampaign = campaignFilter === 'all' || (ad.campaign_id && ad.campaign_id.toString() === campaignFilter);
+    const matchesCampaign = campaignFilter === 'all' || (ad.campaignId && ad.campaignId.toString() === campaignFilter);
     const matchesStatus = statusFilter === 'all' || 
-                         (statusFilter === 'active' && ad.is_active) ||
-                         (statusFilter === 'inactive' && !ad.is_active);
+                         (statusFilter === 'active' && ad.isActive) ||
+                         (statusFilter === 'inactive' && !ad.isActive);
     
     return matchesSearch && matchesCampaign && matchesStatus;
   });
 
   // Statistics
   const totalAds = advertisements.length;
-  const activeAds = advertisements.filter((ad: Advertisement) => ad.is_active).length;
+  const activeAds = advertisements.filter((ad: Advertisement) => ad.isActive).length;
   const totalImpressions = advertisements.reduce((sum: number, ad: Advertisement) => sum + (ad.id * 150), 0);
   const totalClicks = advertisements.reduce((sum: number, ad: Advertisement) => sum + (ad.id * 25), 0);
 
@@ -801,33 +801,19 @@ const AdAdvertisements = () => {
           {filteredAds.map((ad: Advertisement) => (
             <Card key={`${ad.id}-${refreshKey}-${forceRender}`} className="overflow-hidden" data-ad-id={ad.id}>
               <div className="aspect-video relative overflow-hidden">
-                {ad.image_url && ad.image_url !== 'null' ? (
-                  <img
-                    src={ad.image_url}
-                    alt={ad.title}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      console.error('Error loading image:', ad.image_url);
-                      e.currentTarget.style.display = 'none';
-                      e.currentTarget.parentElement?.classList.add('flex', 'items-center', 'justify-center', 'bg-gray-200');
-                      e.currentTarget.parentElement!.innerHTML = '<div class="text-gray-500 text-center"><svg class="h-16 w-16 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg><p class="text-sm">Imagen no disponible</p></div>';
-                    }}
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gray-200">
-                    <div className="text-gray-500 text-center">
-                      <svg className="h-16 w-16 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                      </svg>
-                      <p className="text-sm">Sin imagen</p>
-                    </div>
-                  </div>
-                )}
+                <img
+                  src={ad.imageUrl}
+                  alt={ad.title}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDQwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0iI2ZmZiI+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSIzMDAiIGZpbGw9IiNmNGY0ZjQiLz48L2c+PC9zdmc+';
+                  }}
+                />
                 <div className="absolute top-2 right-2">
                   <span className={`px-2 py-1 text-xs rounded-full ${
-                    ad.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    ad.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                   }`}>
-                    {ad.is_active ? 'Activo' : 'Inactivo'}
+                    {ad.isActive ? 'Activo' : 'Inactivo'}
                   </span>
                 </div>
               </div>
@@ -836,8 +822,8 @@ const AdAdvertisements = () => {
                   <h3 className="font-semibold text-lg">{ad.title}</h3>
                   <p className="text-sm text-gray-600">{ad.description}</p>
                   <div className="flex items-center justify-between text-sm text-gray-500">
-                    <span>{getCampaignName(ad.campaign_id)}</span>
-                    <span>{formatDate(ad.created_at)}</span>
+                    <span>{getCampaignName(ad.campaignId)}</span>
+                    <span>{formatDate(ad.createdAt)}</span>
                   </div>
                   <div className="flex justify-end space-x-2 mt-4">
                     <Button
