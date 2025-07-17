@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { AdminLayout } from '@/components/AdminLayout';
-import { Plus, Edit, Trash2, Eye, Activity, ImageIcon, Upload, Calendar, DollarSign, BarChart3, AlertCircle } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, Activity, ImageIcon, Upload, Calendar, DollarSign, BarChart3, AlertCircle, RefreshCw } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 
 interface Advertisement {
@@ -461,6 +461,42 @@ const AdAdvertisements = () => {
             <Button onClick={forceAd13Update} variant="outline" className="bg-orange-50 hover:bg-orange-100 text-orange-700">
               <Eye className="h-4 w-4 mr-2" />
               Actualizar Anuncio 13
+            </Button>
+            <Button 
+              onClick={() => {
+                // Disparar eventos globales para actualizar todas las páginas
+                localStorage.setItem('adForceUpdate', Date.now().toString());
+                window.dispatchEvent(new CustomEvent('adForceUpdate'));
+                
+                // Disparar evento cross-window
+                window.dispatchEvent(new StorageEvent('storage', {
+                  key: 'adForceUpdate',
+                  newValue: Date.now().toString(),
+                  oldValue: null,
+                  url: window.location.href
+                }));
+                
+                // Invalidar cache múltiple
+                const invalidationDelays = [0, 500, 1000, 1500, 2000];
+                invalidationDelays.forEach((delay) => {
+                  setTimeout(() => {
+                    queryClient.invalidateQueries({ queryKey: ['/api/advertising/placements'] });
+                    queryClient.refetchQueries({ queryKey: ['/api/advertising/placements'] });
+                  }, delay);
+                });
+                
+                console.log('🔄 Actualización manual de todas las imágenes publicitarias disparada');
+                
+                toast({
+                  title: "Actualización enviada",
+                  description: "Se ha disparado la actualización de todas las imágenes publicitarias en las páginas",
+                });
+              }}
+              variant="outline" 
+              className="bg-blue-50 hover:bg-blue-100 text-blue-700"
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Actualizar Todas las Imágenes
             </Button>
             <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
               <DialogTrigger asChild>

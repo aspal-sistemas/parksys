@@ -45,14 +45,14 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
   const [forceRender, setForceRender] = useState(0);
 
   // Obtener el espacio publicitario y sus asignaciones activas con invalidación ultra-agresiva
-  const { data: placementsResponse, isLoading } = useQuery({
-    queryKey: [`/api/advertising/placements`, spaceId, pageType, position],
+  const { data: placementsResponse, isLoading, refetch } = useQuery({
+    queryKey: [`/api/advertising/placements`, spaceId, pageType, position, refreshKey, forceRender],
     queryFn: async () => {
-      const response = await fetch(`/api/advertising/placements?spaceId=${spaceId}&pageType=${pageType}&position=${position}`);
+      const response = await fetch(`/api/advertising/placements?spaceId=${spaceId}&pageType=${pageType}&position=${position}&_t=${Date.now()}`);
       if (!response.ok) throw new Error('Error al cargar asignaciones');
       return response.json();
     },
-    refetchInterval: 10 * 1000, // Refrescar cada 10 segundos para detectar cambios más rápido
+    refetchInterval: 5 * 1000, // Refrescar cada 5 segundos para detectar cambios más rápido
     staleTime: 0, // Considerar los datos siempre obsoletos para forzar actualizaciones
     gcTime: 0, // No mantener cache
     refetchOnWindowFocus: true,
@@ -64,6 +64,14 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
   const activePlacement = placementsResponse?.success && placementsResponse.data?.length > 0 
     ? placementsResponse.data[0] 
     : null;
+
+  // Forzar actualización inicial cuando se carga el componente
+  useEffect(() => {
+    setTimeout(() => {
+      setRefreshKey(Date.now());
+      setForceRender(prev => prev + 1);
+    }, 1000);
+  }, []);
 
   // Debug logging (solo en desarrollo)
   if (import.meta.env.DEV) {
@@ -101,6 +109,8 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
         console.log('🔄 AdSpace: Forzando actualización por cambio en localStorage');
         setRefreshKey(Date.now());
         setForceRender(prev => prev + 1);
+        // Forzar refetch inmediato
+        refetch();
       }
     };
 
@@ -108,6 +118,8 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
       console.log('🔄 AdSpace: Forzando actualización por evento personalizado');
       setRefreshKey(Date.now());
       setForceRender(prev => prev + 1);
+      // Forzar refetch inmediato
+      refetch();
     };
 
     window.addEventListener('storage', handleStorageChange);
@@ -117,7 +129,7 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('adForceUpdate', handleCustomUpdate as EventListener);
     };
-  }, []);
+  }, [refetch]);
 
   const trackImpression = async (placementId: number) => {
     try {
