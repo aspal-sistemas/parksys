@@ -203,10 +203,7 @@ const AdAdvertisements = () => {
     mutationFn: async (data: typeof formData & { id: number }) => {
       return await apiRequest(`/api/advertising-management/advertisements/${data.id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
+        data: data,
       });
     },
     onSuccess: () => {
