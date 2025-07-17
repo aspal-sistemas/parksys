@@ -12,7 +12,8 @@ async function updateAdvertisementsTable() {
       ADD COLUMN IF NOT EXISTS media_file_id INTEGER REFERENCES ad_media_files(id),
       ADD COLUMN IF NOT EXISTS description TEXT,
       ADD COLUMN IF NOT EXISTS duration INTEGER,
-      ADD COLUMN IF NOT EXISTS type VARCHAR(50) DEFAULT 'banner'
+      ADD COLUMN IF NOT EXISTS type VARCHAR(50) DEFAULT 'banner',
+      ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'active'
     `);
 
     console.log('✅ Tabla advertisements actualizada exitosamente');
