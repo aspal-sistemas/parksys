@@ -122,12 +122,27 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
     }
   };
 
-  const handleAdClick = () => {
+  const handleAdClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     if (activePlacement) {
+      console.log('🖱️ Click en anuncio detectado:', {
+        placementId: activePlacement.id,
+        targetUrl: activePlacement.advertisement.targetUrl,
+        advertisement: activePlacement.advertisement
+      });
+      
       trackClick(activePlacement.id);
+      
       if (activePlacement.advertisement.targetUrl) {
+        console.log('🌐 Abriendo URL:', activePlacement.advertisement.targetUrl);
         window.open(activePlacement.advertisement.targetUrl, '_blank');
+      } else {
+        console.log('⚠️ No se encontró URL de destino');
       }
+    } else {
+      console.log('⚠️ No hay placement activo');
     }
   };
 

@@ -363,7 +363,7 @@ router.get('/placements', async (req, res) => {
         a.title,
         a.description,
         a.image_url,
-        a.link_url as target_url,
+        a.content as target_url,
         a.alt_text,
         a.is_active as ad_is_active,
         a.updated_at as ad_updated_at
