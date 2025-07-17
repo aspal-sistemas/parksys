@@ -104,32 +104,12 @@ const AdAdvertisements = () => {
     // Invalidar cache React Query específicamente
     queryClient.invalidateQueries({ queryKey: ['/api/advertising-management/advertisements'] });
     
-    // Buscar y reemplazar el contenedor completo del anuncio 13
-    setTimeout(() => {
-      const ad13Container = document.querySelector(`[data-ad-id="13"]`);
-      if (ad13Container) {
-        // Crear una nueva versión del contenedor con timestamp actualizado
-        const newContainer = ad13Container.cloneNode(true) as HTMLElement;
-        newContainer.setAttribute('data-updated', Date.now().toString());
-        ad13Container.parentNode?.replaceChild(newContainer, ad13Container);
-        console.log('🔄 ANUNCIO 13 - Contenedor completamente reemplazado');
-      }
-      
-      // Forzar recarga de todas las imágenes del anuncio 13
-      const ad13Images = document.querySelectorAll('img[src*="1582213782179"]');
-      ad13Images.forEach((img, index) => {
-        setTimeout(() => {
-          const imgElement = img as HTMLImageElement;
-          const newSrc = imgElement.src.split('?')[0] + `?force13=${Date.now()}&idx=${index}&rnd=${Math.random()}`;
-          imgElement.src = newSrc;
-          console.log(`🖼️ ANUNCIO 13 - Imagen ${index} actualizada:`, newSrc);
-        }, index * 100);
-      });
-      
-      // Actualizar estados de forzado
-      setRefreshKey(Date.now());
-      setForceRender(Date.now());
-    }, 200);
+    // Actualizar estados de forzado para provocar re-render
+    setRefreshKey(Date.now());
+    setForceRender(Date.now());
+    
+    // Forzar re-fetch de los datos
+    refetch();
   };
 
   // Create mutation
