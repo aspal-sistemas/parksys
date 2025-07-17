@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ExternalLink, Eye, MapPin, Calendar, Image, Link as LinkIcon } from 'lucide-react';
 import { Link } from 'wouter';
+import AdminLayout from '@/components/AdminLayout';
 
 interface SpaceMapping {
   space_id: number;
@@ -91,7 +92,8 @@ const SpaceMappings: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <AdminLayout>
+      <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Mapeo de Espacios Publicitarios</h1>
@@ -268,7 +270,8 @@ const SpaceMappings: React.FC = () => {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+      </div>
+    </AdminLayout>
   );
 };
 
