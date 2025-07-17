@@ -801,12 +801,28 @@ const AdAdvertisements = () => {
           {filteredAds.map((ad: Advertisement) => (
             <Card key={`${ad.id}-${refreshKey}-${forceRender}`} className="overflow-hidden" data-ad-id={ad.id}>
               <div className="aspect-video relative overflow-hidden">
-                <img
-                  src={`${ad.image_url}?v=${ad.updated_at}&r=${refreshKey}&f=${forceRender}&t=${Date.now()}&rnd=${Math.random().toString(36).substr(2, 9)}&cb=${Date.now()}&uid=${Math.random().toString(36).substr(2, 9)}`}
-                  alt={ad.title}
-                  className="w-full h-full object-cover"
-                  key={`img-${ad.id}-${refreshKey}-${forceRender}`}
-                />
+                {ad.image_url && ad.image_url !== 'null' ? (
+                  <img
+                    src={ad.image_url}
+                    alt={ad.title}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      console.error('Error loading image:', ad.image_url);
+                      e.currentTarget.style.display = 'none';
+                      e.currentTarget.parentElement?.classList.add('flex', 'items-center', 'justify-center', 'bg-gray-200');
+                      e.currentTarget.parentElement!.innerHTML = '<div class="text-gray-500 text-center"><svg class="h-16 w-16 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg><p class="text-sm">Imagen no disponible</p></div>';
+                    }}
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                    <div className="text-gray-500 text-center">
+                      <svg className="h-16 w-16 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                      </svg>
+                      <p className="text-sm">Sin imagen</p>
+                    </div>
+                  </div>
+                )}
                 <div className="absolute top-2 right-2">
                   <span className={`px-2 py-1 text-xs rounded-full ${
                     ad.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
