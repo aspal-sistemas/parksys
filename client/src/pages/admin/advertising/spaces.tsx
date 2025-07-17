@@ -1,277 +1,134 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import AdminLayout from '@/components/AdminLayout';
-import { LayoutGrid, Monitor, Search, Filter, Plus, Edit, Trash2, Eye } from 'lucide-react';
+import { MapPin, Calendar, Image, Link as LinkIcon, ExternalLink, Grid, List, Eye, Plus, Edit, Trash2, Search, Filter } from 'lucide-react';
+import { Link } from 'wouter';
 
-interface AdSpace {
-  id: number;
-  pageType: string;
+interface SpaceMapping {
+  space_id: number;
+  space_name: string;
+  page_type: string;
   position: string;
-  dimensions: string;
-  maxFileSize: number;
-  allowedFormats: string[];
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
+  description: string;
+  ad_id: number | null;
+  ad_title: string | null;
+  ad_content: string | null;
+  image_url: string | null;
+  link_url: string | null;
+  placement_id: number | null;
+  priority: number | null;
+  start_date: string | null;
+  end_date: string | null;
+  placement_active: boolean;
+  space_active: boolean;
 }
 
 const AdSpaces = () => {
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPageType, setFilterPageType] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedSpace, setSelectedSpace] = useState<any>(null);
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    page_type: '',
-    position: '',
-    page_identifier: '',
-    width: '',
-    height: '',
-    category: 'commercial',
-    is_active: true
-  });
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Mutación para crear espacios
-  const createSpaceMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const response = await fetch('/api/advertising/spaces', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-      if (!response.ok) {
-        throw new Error('Error al crear el espacio publicitario');
-      }
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/advertising/spaces'] });
-      setIsCreateModalOpen(false);
-      setFormData({
-        name: '',
-        description: '',
-        page_type: '',
-        position: '',
-        page_identifier: '',
-        width: '',
-        height: '',
-        category: 'commercial',
-        is_active: true
-      });
-      toast({
-        title: "Éxito",
-        description: "Espacio publicitario creado correctamente",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: "No se pudo crear el espacio publicitario",
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Mutación para actualizar espacios
-  const updateSpaceMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const response = await fetch(`/api/advertising/spaces/${selectedSpace.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-      if (!response.ok) {
-        throw new Error('Error al actualizar el espacio publicitario');
-      }
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/advertising/spaces'] });
-      setIsEditModalOpen(false);
-      setSelectedSpace(null);
-      setFormData({
-        name: '',
-        description: '',
-        page_type: '',
-        position: '',
-        page_identifier: '',
-        width: '',
-        height: '',
-        category: 'commercial',
-        is_active: true
-      });
-      toast({
-        title: "Éxito",
-        description: "Espacio publicitario actualizado correctamente",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: "No se pudo actualizar el espacio publicitario",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const { data: apiResponse, isLoading, error } = useQuery({
-    queryKey: ['/api/advertising/spaces'],
+  // Usar el endpoint de space-mappings que tiene información completa
+  const { data: spaceMappings, isLoading } = useQuery({
+    queryKey: ['/api/advertising-management/space-mappings'],
     queryFn: async () => {
-      const response = await fetch('/api/advertising/spaces');
+      const response = await fetch('/api/advertising-management/space-mappings');
       if (!response.ok) {
-        throw new Error('Error al cargar espacios publicitarios');
+        throw new Error('Error al obtener espacios publicitarios');
       }
       return response.json();
-    }
+    },
   });
 
-  // Extraer los datos del wrapper de respuesta
-  const spaces = apiResponse?.success ? apiResponse.data : [];
-
-  const filteredSpaces = Array.isArray(spaces) ? spaces.filter(space => {
-    const spaceName = `${space.pageType} - ${space.position}`;
-    const matchesSearch = spaceName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         space.dimensions.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesPageType = filterPageType === 'all' || space.pageType === filterPageType;
-    const matchesStatus = filterStatus === 'all' || 
-                         (filterStatus === 'active' && space.isActive) ||
-                         (filterStatus === 'inactive' && !space.isActive);
+  // Agrupar espacios por página
+  const groupedSpaces = useMemo(() => {
+    if (!spaceMappings) return {};
     
-    return matchesSearch && matchesPageType && matchesStatus;
-  }) : [];
+    const filtered = spaceMappings.filter((space: SpaceMapping) => {
+      const matchesSearch = searchTerm === '' || 
+        space.space_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        space.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        space.ad_title?.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesPageType = filterPageType === 'all' || space.page_type === filterPageType;
+      
+      const matchesStatus = filterStatus === 'all' || 
+        (filterStatus === 'active' && space.space_active) ||
+        (filterStatus === 'inactive' && !space.space_active) ||
+        (filterStatus === 'with_ad' && space.ad_id) ||
+        (filterStatus === 'without_ad' && !space.ad_id);
+      
+      return matchesSearch && matchesPageType && matchesStatus;
+    });
+    
+    return filtered.reduce((acc: any, space: SpaceMapping) => {
+      if (!acc[space.page_type]) {
+        acc[space.page_type] = [];
+      }
+      acc[space.page_type].push(space);
+      return acc;
+    }, {});
+  }, [spaceMappings, searchTerm, filterPageType, filterStatus]);
 
-  const getPageTypeColor = (pageType: string) => {
-    const colors = {
-      'parks': 'bg-green-100 text-green-800',
-      'tree-species': 'bg-blue-100 text-blue-800',
-      'activities': 'bg-purple-100 text-purple-800',
-      'concessions': 'bg-orange-100 text-orange-800',
-      'homepage': 'bg-red-100 text-red-800'
-    };
-    return colors[pageType as keyof typeof colors] || 'bg-gray-100 text-gray-800';
-  };
-
-  const getPositionBadge = (position: string) => {
-    const positions = {
-      'header': 'Header',
-      'sidebar': 'Sidebar',
-      'footer': 'Footer',
-      'hero': 'Hero',
-      'content': 'Contenido'
-    };
-    return positions[position as keyof typeof positions] || position;
-  };
-
-  const getPageTypeLabel = (pageType: string) => {
-    const types = {
+  // Funciones de utilidad
+  const getPageDisplayName = (pageType: string) => {
+    const pageNames: { [key: string]: string } = {
       'parks': 'Parques',
-      'tree-species': 'Especies Arbóreas',
+      'park-landing': 'Landing Pages de Parques',
       'activities': 'Actividades',
-      'concessions': 'Concesiones',
-      'homepage': 'Página Principal',
+      'activity-detail': 'Detalles de Actividades',
       'instructors': 'Instructores',
+      'concessions': 'Concesiones',
+      'tree-species': 'Especies Arbóreas',
       'volunteers': 'Voluntarios',
-      'activity-detail': 'Detalle de Actividad',
-      'instructor-profile': 'Perfil de Instructor'
+      'home': 'Página Principal'
     };
-    return types[pageType as keyof typeof types] || pageType;
+    return pageNames[pageType] || pageType;
   };
 
-  const getPositionLabel = (position: string) => {
-    const positions = {
-      'header': 'Encabezado',
+  const getPositionDisplayName = (position: string) => {
+    const positionNames: { [key: string]: string } = {
+      'header': 'Cabecera',
       'sidebar': 'Barra lateral',
       'footer': 'Pie de página',
-      'hero': 'Sección principal',
       'content': 'Contenido',
-      'profile': 'Perfil'
+      'profile': 'Perfil',
+      'gallery': 'Galería',
+      'hero': 'Hero'
     };
-    return positions[position as keyof typeof positions] || position;
+    return positionNames[position] || position;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    createSpaceMutation.mutate(formData);
-  };
-
-  const handleEditSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    updateSpaceMutation.mutate(formData);
-  };
-
-  const handleEditClick = (space: any) => {
-    setSelectedSpace(space);
-    setFormData({
-      name: space.name || '',
-      description: space.description || '',
-      page_type: space.page_type || space.pageType || '',
-      position: space.position || '',
-      page_identifier: space.page_identifier || space.pageIdentifier || '',
-      width: space.width || '',
-      height: space.height || '',
-      category: space.category || 'commercial',
-      is_active: space.is_active !== undefined ? space.is_active : space.isActive !== undefined ? space.isActive : true
-    });
-    setIsEditModalOpen(true);
-  };
-
-  const handleViewSpace = (space: any) => {
-    setSelectedSpace(space);
-    setIsViewModalOpen(true);
-  };
-
-  const handleEditSpace = (space: any) => {
-    setSelectedSpace(space);
-    setFormData({
-      name: space.name || '',
-      description: space.description || '',
-      page_type: space.page_type || '',
-      position: space.position || '',
-      page_identifier: space.page_identifier || '',
-      width: space.width || '',
-      height: space.height || '',
-      category: space.category || 'commercial',
-      is_active: space.is_active !== undefined ? space.is_active : true
-    });
-    setIsEditModalOpen(true);
+  const getRouteForPage = (pageType: string) => {
+    const routes: { [key: string]: string } = {
+      'parks': '/parks',
+      'park-landing': '/parks',
+      'activities': '/activities',
+      'activity-detail': '/activities',
+      'instructors': '/instructors',
+      'concessions': '/concessions',
+      'tree-species': '/tree-species',
+      'volunteers': '/volunteers',
+      'home': '/'
+    };
+    return routes[pageType] || '/';
   };
 
   if (isLoading) {
     return (
       <AdminLayout>
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center">Cargando espacios publicitarios...</div>
-        </div>
-      </AdminLayout>
-    );
-  }
-
-  if (error) {
-    return (
-      <AdminLayout>
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center text-red-600">Error al cargar espacios publicitarios</div>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-gray-500">Cargando espacios publicitarios...</div>
         </div>
       </AdminLayout>
     );
@@ -279,507 +136,252 @@ const AdSpaces = () => {
 
   return (
     <AdminLayout>
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Espacios Publicitarios</h1>
-          <p className="text-gray-600">Gestión de espacios publicitarios disponibles en el sistema</p>
-        </div>
-
-        {/* Controles de búsqueda y filtros */}
-        <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  placeholder="Buscar espacios por nombre o descripción..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <Select value={filterPageType} onValueChange={setFilterPageType}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Tipo de página" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas las páginas</SelectItem>
-                  <SelectItem value="parks">Parques</SelectItem>
-                  <SelectItem value="tree-species">Especies Arbóreas</SelectItem>
-                  <SelectItem value="activities">Actividades</SelectItem>
-                  <SelectItem value="concessions">Concesiones</SelectItem>
-                  <SelectItem value="homepage">Homepage</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="w-[140px]">
-                  <SelectValue placeholder="Estado" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="active">Activos</SelectItem>
-                  <SelectItem value="inactive">Inactivos</SelectItem>
-                </SelectContent>
-              </Select>
-              <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-                <DialogTrigger asChild>
-                  <Button className="bg-[#00a587] hover:bg-[#067f5f]">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Nuevo Espacio
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl">
-                  <DialogHeader>
-                    <DialogTitle>Crear Nuevo Espacio Publicitario</DialogTitle>
-                  </DialogHeader>
-                  <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                      <Label htmlFor="name">Nombre del Espacio</Label>
-                      <Input
-                        id="name"
-                        value={formData.name}
-                        onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                        placeholder="ej: Header Principal Homepage"
-                        required
-                      />
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="description">Descripción</Label>
-                      <Textarea
-                        id="description"
-                        value={formData.description}
-                        onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                        placeholder="Descripción del espacio publicitario"
-                        rows={3}
-                      />
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="page_type">Tipo de Página</Label>
-                        <Select value={formData.page_type} onValueChange={(value) => setFormData(prev => ({ ...prev, page_type: value }))}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Seleccionar tipo" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="parks">Parques</SelectItem>
-                            <SelectItem value="tree-species">Especies Arbóreas</SelectItem>
-                            <SelectItem value="activities">Actividades</SelectItem>
-                            <SelectItem value="concessions">Concesiones</SelectItem>
-                            <SelectItem value="homepage">Homepage</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label htmlFor="position">Posición</Label>
-                        <Select value={formData.position} onValueChange={(value) => setFormData(prev => ({ ...prev, position: value }))}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Seleccionar posición" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="header">Header</SelectItem>
-                            <SelectItem value="sidebar">Sidebar</SelectItem>
-                            <SelectItem value="footer">Footer</SelectItem>
-                            <SelectItem value="hero">Hero</SelectItem>
-                            <SelectItem value="content">Contenido</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="page_identifier">Identificador de Página</Label>
-                      <Input
-                        id="page_identifier"
-                        value={formData.page_identifier}
-                        onChange={(e) => setFormData(prev => ({ ...prev, page_identifier: e.target.value }))}
-                        placeholder="ej: homepage, park-detail, activities-list"
-                      />
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="width">Ancho (px)</Label>
-                        <Input
-                          id="width"
-                          type="number"
-                          value={formData.width}
-                          onChange={(e) => setFormData(prev => ({ ...prev, width: e.target.value }))}
-                          placeholder="ej: 300"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="height">Alto (px)</Label>
-                        <Input
-                          id="height"
-                          type="number"
-                          value={formData.height}
-                          onChange={(e) => setFormData(prev => ({ ...prev, height: e.target.value }))}
-                          placeholder="ej: 250"
-                        />
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="category">Categoría</Label>
-                      <Select value={formData.category} onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Seleccionar categoría" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="commercial">Comercial</SelectItem>
-                          <SelectItem value="institutional">Institucional</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div className="flex items-center space-x-2">
-                      <Switch
-                        id="is_active"
-                        checked={formData.is_active}
-                        onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_active: checked }))}
-                      />
-                      <Label htmlFor="is_active">Activo</Label>
-                    </div>
-                    
-                    <div className="flex justify-end space-x-2">
-                      <Button type="button" variant="outline" onClick={() => setIsCreateModalOpen(false)}>
-                        Cancelar
-                      </Button>
-                      <Button type="submit" className="bg-[#00a587] hover:bg-[#067f5f]" disabled={createSpaceMutation.isPending}>
-                        {createSpaceMutation.isPending ? 'Creando...' : 'Crear Espacio'}
-                      </Button>
-                    </div>
-                  </form>
-                </DialogContent>
-              </Dialog>
-            </div>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Espacios Publicitarios</h1>
+            <p className="text-gray-600">Gestión de espacios publicitarios organizados por páginas del sistema</p>
+          </div>
+          <div className="flex gap-2">
+            <Link href="/admin/advertising/advertisements">
+              <Button variant="outline">
+                <Image className="h-4 w-4 mr-2" />
+                Gestionar Anuncios
+              </Button>
+            </Link>
+            <Link href="/admin/advertising/space-mappings">
+              <Button variant="outline">
+                <MapPin className="h-4 w-4 mr-2" />
+                Ver Mapeos
+              </Button>
+            </Link>
           </div>
         </div>
 
-        {/* Modal para Ver Espacio */}
-        <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Detalles del Espacio Publicitario</DialogTitle>
-            </DialogHeader>
-            {selectedSpace && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-sm font-medium text-gray-700">Nombre</Label>
-                    <p className="text-sm text-gray-900">{selectedSpace.name}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium text-gray-700">ID</Label>
-                    <p className="text-sm text-gray-900">#{selectedSpace.id}</p>
-                  </div>
-                </div>
-                
-                <div>
-                  <Label className="text-sm font-medium text-gray-700">Descripción</Label>
-                  <p className="text-sm text-gray-900">{selectedSpace.description || 'Sin descripción'}</p>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-sm font-medium text-gray-700">Tipo de Página</Label>
-                    <p className="text-sm text-gray-900">{getPageTypeLabel(selectedSpace.page_type)}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium text-gray-700">Posición</Label>
-                    <p className="text-sm text-gray-900">{getPositionLabel(selectedSpace.position)}</p>
-                  </div>
-                </div>
-                
-                <div>
-                  <Label className="text-sm font-medium text-gray-700">Identificador de Página</Label>
-                  <p className="text-sm text-gray-900">{selectedSpace.page_identifier || 'No especificado'}</p>
-                </div>
-                
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <Label className="text-sm font-medium text-gray-700">Ancho</Label>
-                    <p className="text-sm text-gray-900">{selectedSpace.width ? `${selectedSpace.width}px` : 'No especificado'}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium text-gray-700">Alto</Label>
-                    <p className="text-sm text-gray-900">{selectedSpace.height ? `${selectedSpace.height}px` : 'No especificado'}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium text-gray-700">Categoría</Label>
-                    <p className="text-sm text-gray-900">{selectedSpace.category === 'commercial' ? 'Comercial' : 'Institucional'}</p>
-                  </div>
-                </div>
-                
-                <div>
-                  <Label className="text-sm font-medium text-gray-700">Estado</Label>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      selectedSpace.is_active 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {selectedSpace.is_active ? 'Activo' : 'Inactivo'}
-                    </span>
-                  </div>
-                </div>
-                
-                <div className="flex justify-end pt-4">
-                  <Button onClick={() => setIsViewModalOpen(false)}>
-                    Cerrar
-                  </Button>
-                </div>
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
-
-        {/* Modal para Editar Espacio */}
-        <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Editar Espacio Publicitario</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleEditSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="edit-name">Nombre</Label>
-                  <Input
-                    id="edit-name"
-                    value={formData.name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                    placeholder="Nombre del espacio"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="edit-page_type">Tipo de Página</Label>
-                  <Select value={formData.page_type} onValueChange={(value) => setFormData(prev => ({ ...prev, page_type: value }))}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar tipo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="homepage">Página Principal</SelectItem>
-                      <SelectItem value="parks">Parques</SelectItem>
-                      <SelectItem value="activities">Actividades</SelectItem>
-                      <SelectItem value="activity-detail">Detalle de Actividad</SelectItem>
-                      <SelectItem value="instructors">Instructores</SelectItem>
-                      <SelectItem value="instructor-profile">Perfil de Instructor</SelectItem>
-                      <SelectItem value="volunteers">Voluntarios</SelectItem>
-                      <SelectItem value="concessions">Concesiones</SelectItem>
-                      <SelectItem value="tree-species">Especies Arbóreas</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              
-              <div>
-                <Label htmlFor="edit-description">Descripción</Label>
-                <textarea
-                  id="edit-description"
-                  value={formData.description}
-                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder="Descripción del espacio publicitario"
-                  className="w-full p-2 border rounded-md"
-                  rows={3}
-                />
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="edit-position">Posición</Label>
-                  <Select value={formData.position} onValueChange={(value) => setFormData(prev => ({ ...prev, position: value }))}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar posición" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="header">Encabezado</SelectItem>
-                      <SelectItem value="sidebar">Barra lateral</SelectItem>
-                      <SelectItem value="footer">Pie de página</SelectItem>
-                      <SelectItem value="hero">Sección principal</SelectItem>
-                      <SelectItem value="content">Contenido</SelectItem>
-                      <SelectItem value="profile">Perfil</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="edit-page_identifier">Identificador de Página</Label>
-                  <Input
-                    id="edit-page_identifier"
-                    value={formData.page_identifier}
-                    onChange={(e) => setFormData(prev => ({ ...prev, page_identifier: e.target.value }))}
-                    placeholder="ID específico de la página"
-                  />
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="edit-width">Ancho (px)</Label>
-                  <Input
-                    id="edit-width"
-                    type="number"
-                    value={formData.width}
-                    onChange={(e) => setFormData(prev => ({ ...prev, width: e.target.value }))}
-                    placeholder="ej: 300"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="edit-height">Alto (px)</Label>
-                  <Input
-                    id="edit-height"
-                    type="number"
-                    value={formData.height}
-                    onChange={(e) => setFormData(prev => ({ ...prev, height: e.target.value }))}
-                    placeholder="ej: 250"
-                  />
-                </div>
-              </div>
-              
-              <div>
-                <Label htmlFor="edit-category">Categoría</Label>
-                <Select value={formData.category} onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar categoría" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="commercial">Comercial</SelectItem>
-                    <SelectItem value="institutional">Institucional</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="edit-is_active"
-                  checked={formData.is_active}
-                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_active: checked }))}
-                />
-                <Label htmlFor="edit-is_active">Activo</Label>
-              </div>
-              
-              <div className="flex justify-end space-x-2">
-                <Button type="button" variant="outline" onClick={() => setIsEditModalOpen(false)}>
-                  Cancelar
-                </Button>
-                <Button type="submit" className="bg-[#00a587] hover:bg-[#067f5f]" disabled={updateSpaceMutation.isPending}>
-                  {updateSpaceMutation.isPending ? 'Actualizando...' : 'Actualizar Espacio'}
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
-
-        {/* Estadísticas */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Espacios</CardTitle>
-              <LayoutGrid className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{spaces.length}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Activos</CardTitle>
-              <Monitor className="h-4 w-4 text-green-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{spaces.filter(s => s.isActive).length}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Inactivos</CardTitle>
-              <Monitor className="h-4 w-4 text-red-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{spaces.filter(s => !s.isActive).length}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Tamaño Promedio</CardTitle>
-              <Monitor className="h-4 w-4 text-blue-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {spaces.length > 0 ? Math.round(spaces.reduce((sum, s) => sum + s.maxFileSize, 0) / spaces.length / 1024 / 1024) : 0}MB
-              </div>
-            </CardContent>
-          </Card>
+        {/* Filtros */}
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex-1">
+            <div className="relative">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Buscar por nombre, descripción o anuncio..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </div>
+          <Select value={filterPageType} onValueChange={setFilterPageType}>
+            <SelectTrigger className="w-full md:w-48">
+              <SelectValue placeholder="Filtrar por página" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas las páginas</SelectItem>
+              <SelectItem value="parks">Parques</SelectItem>
+              <SelectItem value="park-landing">Landing Pages</SelectItem>
+              <SelectItem value="activities">Actividades</SelectItem>
+              <SelectItem value="instructors">Instructores</SelectItem>
+              <SelectItem value="concessions">Concesiones</SelectItem>
+              <SelectItem value="tree-species">Especies Arbóreas</SelectItem>
+              <SelectItem value="volunteers">Voluntarios</SelectItem>
+              <SelectItem value="home">Página Principal</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={filterStatus} onValueChange={setFilterStatus}>
+            <SelectTrigger className="w-full md:w-48">
+              <SelectValue placeholder="Filtrar por estado" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos los estados</SelectItem>
+              <SelectItem value="active">Espacios activos</SelectItem>
+              <SelectItem value="inactive">Espacios inactivos</SelectItem>
+              <SelectItem value="with_ad">Con anuncio</SelectItem>
+              <SelectItem value="without_ad">Sin anuncio</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
-        {/* Lista de espacios */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          {filteredSpaces.map((space) => (
-            <Card key={space.id} className="hover:shadow-lg transition-shadow">
+        {/* Controles de vista */}
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-gray-600">
+            {Object.keys(groupedSpaces).length} páginas con espacios publicitarios
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant={viewMode === 'grid' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('grid')}
+            >
+              <Grid className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={viewMode === 'list' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('list')}
+            >
+              <List className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+
+        {/* Contenido organizado por páginas */}
+        <div className="space-y-6">
+          {Object.entries(groupedSpaces).map(([pageType, spaces]) => (
+            <Card key={pageType}>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">{space.pageType} - {space.position}</CardTitle>
-                  <Badge variant={space.isActive ? "default" : "secondary"}>
-                    {space.isActive ? "Activo" : "Inactivo"}
-                  </Badge>
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <MapPin className="h-5 w-5 text-blue-600" />
+                      {getPageDisplayName(pageType)}
+                    </CardTitle>
+                    <CardDescription>
+                      {spaces.length} espacios publicitarios configurados
+                    </CardDescription>
+                  </div>
+                  <div className="flex gap-2">
+                    <Link href={getRouteForPage(pageType)} target="_blank">
+                      <Button variant="outline" size="sm">
+                        <Eye className="h-4 w-4 mr-2" />
+                        Ver Página
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
-                <CardDescription>Espacio publicitario en {space.pageType}</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Tipo de página:</span>
-                    <Badge className={getPageTypeColor(space.pageType)}>
-                      {space.pageType}
-                    </Badge>
+                {viewMode === 'grid' ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {spaces.map((space: SpaceMapping) => (
+                      <div key={`${space.space_id}-${space.placement_id}`} className="border rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <Badge variant={space.space_active ? "default" : "secondary"}>
+                              {getPositionDisplayName(space.position)}
+                            </Badge>
+                            <Badge variant={space.placement_active ? "default" : "outline"}>
+                              {space.placement_active ? 'Activo' : 'Inactivo'}
+                            </Badge>
+                          </div>
+                          <span className="text-sm text-gray-500">ID: {space.space_id}</span>
+                        </div>
+                        
+                        <h3 className="font-semibold text-sm mb-1">
+                          {space.space_name || `Espacio ${space.space_id}`}
+                        </h3>
+                        
+                        {space.description && (
+                          <p className="text-xs text-gray-600 mb-3">{space.description}</p>
+                        )}
+
+                        {space.ad_id ? (
+                          <div className="space-y-3">
+                            <div className="bg-green-50 border border-green-200 rounded p-3">
+                              <div className="flex items-center gap-2 mb-2">
+                                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                <span className="text-sm font-medium text-green-800">
+                                  Anuncio Asignado
+                                </span>
+                              </div>
+                              
+                              <div className="space-y-2">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs text-gray-500">Título:</span>
+                                  <span className="text-sm font-medium">{space.ad_title}</span>
+                                </div>
+                                
+                                {space.image_url && (
+                                  <div className="flex items-center gap-2">
+                                    <Image className="h-3 w-3 text-gray-500" />
+                                    <span className="text-xs text-gray-600">Imagen disponible</span>
+                                  </div>
+                                )}
+                                
+                                {space.link_url && (
+                                  <div className="flex items-center gap-2">
+                                    <LinkIcon className="h-3 w-3 text-gray-500" />
+                                    <span className="text-xs text-gray-600">Enlace configurado</span>
+                                  </div>
+                                )}
+                                
+                                <div className="flex items-center gap-2">
+                                  <Calendar className="h-3 w-3 text-gray-500" />
+                                  <span className="text-xs text-gray-600">
+                                    {new Date(space.start_date).toLocaleDateString()} - {new Date(space.end_date).toLocaleDateString()}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="bg-yellow-50 border border-yellow-200 rounded p-3">
+                            <div className="flex items-center gap-2 mb-1">
+                              <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                              <span className="text-sm font-medium text-yellow-800">
+                                Sin Anuncio Asignado
+                              </span>
+                            </div>
+                            <p className="text-xs text-yellow-700">
+                              Este espacio está disponible para asignar anuncios
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    ))}
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Posición:</span>
-                    <Badge variant="outline">{getPositionBadge(space.position)}</Badge>
+                ) : (
+                  <div className="space-y-4">
+                    {spaces.map((space: SpaceMapping) => (
+                      <div key={`${space.space_id}-${space.placement_id}`} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="flex items-center gap-4">
+                          <div className="flex flex-col">
+                            <span className="font-medium">{space.space_name || `Espacio ${space.space_id}`}</span>
+                            <span className="text-sm text-gray-600">
+                              {getPositionDisplayName(space.position)}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {space.ad_id ? (
+                              <>
+                                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                <span className="text-sm font-medium">{space.ad_title}</span>
+                              </>
+                            ) : (
+                              <>
+                                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                                <span className="text-sm font-medium text-yellow-700">Sin anuncio asignado</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant={space.space_active ? "default" : "secondary"}>
+                            {getPositionDisplayName(space.position)}
+                          </Badge>
+                          <Badge variant={space.placement_active ? "default" : "outline"}>
+                            {space.placement_active ? 'Activo' : 'Inactivo'}
+                          </Badge>
+                          {space.ad_id && (
+                            <Badge variant="outline">
+                              {new Date(space.start_date).toLocaleDateString()} - {new Date(space.end_date).toLocaleDateString()}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Dimensiones:</span>
-                    <span className="text-sm text-gray-600">{space.dimensions || 'Responsive'}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Tamaño máximo:</span>
-                    <span className="text-sm font-bold text-[#00a587]">{space.maxFileSize ? Math.round(space.maxFileSize / 1024 / 1024) + 'MB' : 'Sin límite'}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Formatos:</span>
-                    <span className="text-sm text-gray-600">{space.allowedFormats ? space.allowedFormats.join(', ') : 'Todos'}</span>
-                  </div>
-                </div>
-                <div className="flex gap-2 mt-4">
-                  <Button variant="outline" size="sm" className="flex-1" onClick={() => handleViewSpace(space)}>
-                    <Eye className="h-4 w-4 mr-1" />
-                    Ver
-                  </Button>
-                  <Button variant="outline" size="sm" className="flex-1" onClick={() => handleEditClick(space)}>
-                    <Edit className="h-4 w-4 mr-1" />
-                    Editar
-                  </Button>
-                  <Button variant="outline" size="sm" className="text-red-600 hover:bg-red-50">
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
+                )}
               </CardContent>
             </Card>
           ))}
         </div>
 
-        {filteredSpaces.length === 0 && (
+        {Object.keys(groupedSpaces).length === 0 && (
           <div className="text-center py-12">
-            <Monitor className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No se encontraron espacios</h3>
-            <p className="text-gray-600">
-              {searchTerm || filterPageType !== 'all' || filterStatus !== 'all'
-                ? 'No hay espacios que coincidan con los filtros aplicados'
-                : 'Aún no hay espacios publicitarios configurados'}
+            <div className="text-gray-500 mb-4">No se encontraron espacios publicitarios</div>
+            <p className="text-sm text-gray-400">
+              Ajusta los filtros o verifica que existan espacios configurados
             </p>
           </div>
         )}
