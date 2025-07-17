@@ -291,8 +291,6 @@ const AdAdvertisements = () => {
       ad_type: 'institutional',
       media_type: formData.media_type,
       frequency: 'always',
-      start_date: null,
-      end_date: null,
       priority: 5,
       is_active: formData.is_active,
       video_url: null,
@@ -302,7 +300,13 @@ const AdAdvertisements = () => {
       scheduled_hours: [],
       target_pages: [],
       target_positions: [],
-      campaign_id: formData.campaign_id
+      campaign_id: formData.campaign_id,
+      content: formData.content || '',
+      storage_type: formData.storage_type || 'url',
+      media_file_id: null,
+      duration: formData.duration || 0,
+      type: formData.media_type,
+      status: 'active'
     };
     
     console.log('Datos para actualizar:', updateData);

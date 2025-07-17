@@ -452,8 +452,6 @@ router.put('/advertisements/:id', async (req, res) => {
       ad_type,
       media_type,
       frequency,
-      start_date,
-      end_date,
       priority,
       is_active,
       video_url,
@@ -463,34 +461,44 @@ router.put('/advertisements/:id', async (req, res) => {
       scheduled_hours,
       target_pages,
       target_positions,
-      campaign_id
+      campaign_id,
+      content,
+      storage_type,
+      media_file_id,
+      duration,
+      type,
+      status
     } = req.body;
+
+    console.log('🔧 Actualizando anuncio con ID:', id);
+    console.log('📋 Datos recibidos:', req.body);
 
     const result = await pool.query(`
       UPDATE advertisements 
       SET title = $1, description = $2, image_url = $3, link_url = $4, alt_text = $5,
-          ad_type = $6, media_type = $7, frequency = $8, start_date = $9, end_date = $10,
-          priority = $11, is_active = $12, video_url = $13, html_content = $14,
-          carousel_images = $15, scheduled_days = $16, scheduled_hours = $17,
-          target_pages = $18, target_positions = $19, campaign_id = $20,
-          updated_at = CURRENT_TIMESTAMP
-      WHERE id = $21
+          ad_type = $6, media_type = $7, frequency = $8, priority = $9, is_active = $10,
+          video_url = $11, html_content = $12, carousel_images = $13, scheduled_days = $14,
+          scheduled_hours = $15, target_pages = $16, target_positions = $17, campaign_id = $18,
+          content = $19, storage_type = $20, media_file_id = $21, duration = $22,
+          type = $23, status = $24, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $25
       RETURNING *
     `, [
       title, description, image_url, link_url, alt_text, ad_type, media_type, 
-      frequency, start_date, end_date, priority, is_active, video_url, html_content,
-      carousel_images, scheduled_days, scheduled_hours, target_pages, target_positions,
-      campaign_id, id
+      frequency, priority, is_active, video_url, html_content, carousel_images,
+      scheduled_days, scheduled_hours, target_pages, target_positions, campaign_id,
+      content, storage_type, media_file_id, duration, type, status, id
     ]);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Anuncio no encontrado' });
     }
 
+    console.log('✅ Anuncio actualizado exitosamente:', result.rows[0]);
     res.json(result.rows[0]);
   } catch (error) {
-    console.error('Error actualizando anuncio:', error);
-    res.status(500).json({ error: 'Error actualizando anuncio' });
+    console.error('❌ Error actualizando anuncio:', error);
+    res.status(500).json({ error: 'Error actualizando anuncio: ' + error.message });
   }
 });
 
