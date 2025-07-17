@@ -115,17 +115,23 @@ const AdAdvertisements = () => {
   };
 
   // Fetch advertisements
-  const { data: advertisements = [], isLoading: isLoadingAds, refetch } = useQuery({
+  const { data: advertisementsResponse, isLoading: isLoadingAds, refetch } = useQuery({
     queryKey: ['/api/advertising-management/advertisements'],
     staleTime: 10 * 1000,
     gcTime: 30 * 1000,
   });
 
+  // Extract the data array from the response
+  const advertisements = advertisementsResponse?.data || [];
+
   // Fetch campaigns
-  const { data: campaigns = [] } = useQuery({
+  const { data: campaignsResponse } = useQuery({
     queryKey: ['/api/advertising-management/campaigns'],
     staleTime: 5 * 60 * 1000,
   });
+
+  // Extract the data array from the response
+  const campaigns = campaignsResponse?.data || [];
 
   // Detectar cambios específicos en anuncio 13
   useEffect(() => {
