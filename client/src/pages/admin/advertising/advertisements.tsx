@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -87,6 +87,7 @@ const AdAdvertisements: React.FC = () => {
   const [filterCampaign, setFilterCampaign] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [refreshKey, setRefreshKey] = useState(0);
+  const [forceRender, setForceRender] = useState(0);
   const [formData, setFormData] = useState<AdFormData>({
     title: '',
     description: '',
@@ -124,12 +125,26 @@ const AdAdvertisements: React.FC = () => {
   const campaigns = Array.isArray(campaignData) ? campaignData : [];
   const advertisements = Array.isArray(advertisementData) ? advertisementData : [];
   
+  // Detectar cambios en updated_at para forzar re-render
+  useEffect(() => {
+    if (advertisements.length > 0) {
+      setForceRender(prev => prev + 1);
+    }
+  }, [advertisements.map(ad => ad.updated_at).join(',')]);
+  
+  // Actualizar refreshKey cuando hay cambios en los anuncios
+  useEffect(() => {
+    if (advertisements.length > 0) {
+      setRefreshKey(prev => prev + 1);
+    }
+  }, [forceRender]);
+  
   // Debug logging para verificar los datos recibidos
-  console.log('📊 RefreshKey actual:', refreshKey);
-  console.log('📊 Datos de anuncios recibidos:', advertisements.length, 'anuncios');
-  if (advertisements.length > 0) {
-    console.log('📊 Primer anuncio (ID 13) updated_at:', advertisements.find(ad => ad.id === 13)?.updated_at);
-  }
+  // console.log('📊 RefreshKey actual:', refreshKey);
+  // console.log('📊 Datos de anuncios recibidos:', advertisements.length, 'anuncios');
+  // if (advertisements.length > 0) {
+  //   console.log('📊 Primer anuncio (ID 13) updated_at:', advertisements.find(ad => ad.id === 13)?.updated_at);
+  // }
 
   // Mutación para crear anuncio
   const createAdMutation = useMutation({
@@ -171,13 +186,23 @@ const AdAdvertisements: React.FC = () => {
       setSelectedAd(null);
       resetForm();
       
-      // Forzar re-render con refreshKey
+      // Forzar re-render con refreshKey y forceRender
       setRefreshKey(prev => prev + 1);
+      setForceRender(prev => prev + 1);
       
       // Invalidación adicional después de un delay
       setTimeout(() => {
         queryClient.invalidateQueries({ queryKey: ['/api/advertising-management/advertisements'] });
+        setRefreshKey(prev => prev + 1);
+        setForceRender(prev => prev + 1);
       }, 500);
+      
+      // Invalidación extra agresiva
+      setTimeout(() => {
+        queryClient.refetchQueries({ queryKey: ['/api/advertising-management/advertisements'] });
+        setRefreshKey(prev => prev + 1);
+        setForceRender(prev => prev + 1);
+      }, 1000);
       
       toast({
         title: "Anuncio actualizado",
@@ -385,13 +410,13 @@ const AdAdvertisements: React.FC = () => {
     const finalUrl = `${imageUrl}${separator}v=${timestamp}&r=${refreshKey}`;
     
     // Debug logging
-    console.log('🖼️ Cache-busting URL:', {
-      original: imageUrl,
-      updatedAt,
-      timestamp,
-      refreshKey,
-      final: finalUrl
-    });
+    // console.log('🖼️ Cache-busting URL:', {
+    //   original: imageUrl,
+    //   updatedAt,
+    //   timestamp,
+    //   refreshKey,
+    //   final: finalUrl
+    // });
     
     return finalUrl;
   };
@@ -901,7 +926,7 @@ const AdAdvertisements: React.FC = () => {
                   {/* Imagen preview */}
                   <div className="aspect-video rounded-lg overflow-hidden bg-gray-100">
                     <img 
-                      key={`${ad.id}-${refreshKey}`}
+                      key={`${ad.id}-${ad.updated_at}-${refreshKey}-${forceRender}`}
                       src={getImageUrlWithCacheBust(ad.image_url, ad.updated_at)} 
                       alt={ad.alt_text || ad.title}
                       className="w-full h-full object-cover"
@@ -1006,7 +1031,7 @@ const AdAdvertisements: React.FC = () => {
               <div className="space-y-4">
                 <div className="aspect-video rounded-lg overflow-hidden bg-gray-100">
                   <img 
-                    key={`modal-${selectedAd.id}-${refreshKey}`}
+                    key={`modal-${selectedAd.id}-${selectedAd.updated_at}-${refreshKey}-${forceRender}`}
                     src={getImageUrlWithCacheBust(selectedAd.image_url, selectedAd.updated_at)} 
                     alt={selectedAd.alt_text || selectedAd.title}
                     className="w-full h-full object-cover"
