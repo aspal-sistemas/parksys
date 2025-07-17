@@ -22,7 +22,11 @@ import {
   Link,
   Calendar,
   Activity,
-  BarChart3
+  BarChart3,
+  Video,
+  FileImage,
+  PlayCircle,
+  Clock
 } from 'lucide-react';
 
 interface Advertisement {
@@ -57,6 +61,9 @@ interface AdFormData {
   alt_text: string;
   campaign_id: number;
   is_active: boolean;
+  media_type?: 'image' | 'video' | 'gif';
+  video_url?: string;
+  duration?: number;
 }
 
 const AdAdvertisements: React.FC = () => {
@@ -74,7 +81,10 @@ const AdAdvertisements: React.FC = () => {
     link_url: '',
     alt_text: '',
     campaign_id: 0,
-    is_active: true
+    is_active: true,
+    media_type: 'image',
+    video_url: '',
+    duration: 0
   });
 
   const { toast } = useToast();
@@ -174,7 +184,10 @@ const AdAdvertisements: React.FC = () => {
       link_url: '',
       alt_text: '',
       campaign_id: 0,
-      is_active: true
+      is_active: true,
+      media_type: 'image',
+      video_url: '',
+      duration: 0
     });
   };
 
@@ -197,7 +210,10 @@ const AdAdvertisements: React.FC = () => {
       link_url: ad.link_url || '',
       alt_text: ad.alt_text || '',
       campaign_id: ad.campaign_id || 0,
-      is_active: ad.is_active !== undefined ? ad.is_active : true
+      is_active: ad.is_active !== undefined ? ad.is_active : true,
+      media_type: (ad as any).media_type || 'image',
+      video_url: (ad as any).video_url || '',
+      duration: (ad as any).duration || 0
     });
     setIsEditModalOpen(true);
   };
@@ -305,15 +321,89 @@ const AdAdvertisements: React.FC = () => {
                   />
                 </div>
                 
-                <div>
-                  <Label htmlFor="image_url">URL de la Imagen *</Label>
-                  <Input
-                    id="image_url"
-                    value={formData.image_url}
-                    onChange={(e) => setFormData({...formData, image_url: e.target.value})}
-                    required
-                    placeholder="https://ejemplo.com/imagen.jpg"
-                  />
+                {/* Sección de Contenido Multimedia */}
+                <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+                  <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                    <ImageIcon className="h-5 w-5 text-[#00a587]" />
+                    Contenido Multimedia
+                  </h3>
+                  
+                  <div>
+                    <Label htmlFor="media_type">Tipo de Contenido *</Label>
+                    <Select value={formData.media_type} onValueChange={(value: 'image' | 'video' | 'gif') => setFormData({...formData, media_type: value})}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar tipo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="image">Imagen</SelectItem>
+                        <SelectItem value="video">Video</SelectItem>
+                        <SelectItem value="gif">GIF Animado</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  {formData.media_type === 'image' && (
+                    <div>
+                      <Label htmlFor="image_url">URL de la Imagen *</Label>
+                      <Input
+                        id="image_url"
+                        value={formData.image_url}
+                        onChange={(e) => setFormData({...formData, image_url: e.target.value})}
+                        required
+                        placeholder="https://ejemplo.com/imagen.jpg"
+                      />
+                      <p className="text-sm text-gray-600 mt-1">Sube tu imagen y pega la URL aquí</p>
+                    </div>
+                  )}
+                  
+                  {formData.media_type === 'video' && (
+                    <div className="space-y-3">
+                      <div>
+                        <Label htmlFor="video_url">URL del Video *</Label>
+                        <Input
+                          id="video_url"
+                          value={formData.video_url}
+                          onChange={(e) => setFormData({...formData, video_url: e.target.value})}
+                          required
+                          placeholder="https://ejemplo.com/video.mp4"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="duration">Duración (segundos)</Label>
+                        <Input
+                          id="duration"
+                          type="number"
+                          value={formData.duration}
+                          onChange={(e) => setFormData({...formData, duration: parseInt(e.target.value) || 0})}
+                          placeholder="30"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="image_url">Imagen de Vista Previa</Label>
+                        <Input
+                          id="image_url"
+                          value={formData.image_url}
+                          onChange={(e) => setFormData({...formData, image_url: e.target.value})}
+                          placeholder="https://ejemplo.com/thumbnail.jpg"
+                        />
+                        <p className="text-sm text-gray-600 mt-1">Imagen que se mostrará antes de reproducir el video</p>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {formData.media_type === 'gif' && (
+                    <div>
+                      <Label htmlFor="image_url">URL del GIF *</Label>
+                      <Input
+                        id="image_url"
+                        value={formData.image_url}
+                        onChange={(e) => setFormData({...formData, image_url: e.target.value})}
+                        required
+                        placeholder="https://ejemplo.com/animacion.gif"
+                      />
+                      <p className="text-sm text-gray-600 mt-1">Los GIFs se reproducen automáticamente</p>
+                    </div>
+                  )}
                 </div>
                 
                 <div>
@@ -324,6 +414,53 @@ const AdAdvertisements: React.FC = () => {
                     onChange={(e) => setFormData({...formData, link_url: e.target.value})}
                     placeholder="https://ejemplo.com"
                   />
+                </div>
+                
+                {/* Sección de Programación Temporal */}
+                <div className="space-y-4 p-4 bg-blue-50 rounded-lg">
+                  <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                    <Calendar className="h-5 w-5 text-blue-600" />
+                    Programación Temporal
+                  </h3>
+                  
+                  <p className="text-sm text-gray-600">
+                    Los anuncios se programan automáticamente cuando se asignan a espacios publicitarios en la sección "Asignaciones".
+                    Aquí puedes definir preferencias generales de programación.
+                  </p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="preferred_duration">Duración Preferida (días)</Label>
+                      <Input
+                        id="preferred_duration"
+                        type="number"
+                        placeholder="30"
+                        disabled
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Se configurará en Asignaciones</p>
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="priority">Prioridad</Label>
+                      <Select disabled>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Se configurará en Asignaciones" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="high">Alta</SelectItem>
+                          <SelectItem value="medium">Media</SelectItem>
+                          <SelectItem value="low">Baja</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-white p-3 rounded border-l-4 border-blue-500">
+                    <p className="text-sm font-medium text-blue-900">💡 Consejo:</p>
+                    <p className="text-sm text-blue-700">
+                      Una vez creado el anuncio, ve a la sección "Asignaciones" para programar cuándo y dónde se mostrará.
+                    </p>
+                  </div>
                 </div>
                 
                 <div>
@@ -480,9 +617,39 @@ const AdAdvertisements: React.FC = () => {
                   </div>
                   
                   <div className="flex items-center justify-between">
-                    <Badge variant={ad.is_active ? "default" : "secondary"}>
-                      {ad.is_active ? "Activo" : "Inactivo"}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <Badge variant={ad.is_active ? "default" : "secondary"}>
+                        {ad.is_active ? "Activo" : "Inactivo"}
+                      </Badge>
+                      
+                      {/* Badge de tipo de contenido multimedia */}
+                      <Badge variant="outline" className="flex items-center gap-1">
+                        {(ad as any).media_type === 'video' ? (
+                          <>
+                            <Video className="h-3 w-3" />
+                            Video
+                          </>
+                        ) : (ad as any).media_type === 'gif' ? (
+                          <>
+                            <PlayCircle className="h-3 w-3" />
+                            GIF
+                          </>
+                        ) : (
+                          <>
+                            <FileImage className="h-3 w-3" />
+                            Imagen
+                          </>
+                        )}
+                      </Badge>
+                      
+                      {/* Badge de duración para videos */}
+                      {(ad as any).media_type === 'video' && (ad as any).duration > 0 && (
+                        <Badge variant="outline" className="flex items-center gap-1 text-xs">
+                          <Clock className="h-3 w-3" />
+                          {(ad as any).duration}s
+                        </Badge>
+                      )}
+                    </div>
                     <span className="text-xs text-gray-500">{getCampaignName(ad.campaign_id)}</span>
                   </div>
                   
@@ -577,6 +744,36 @@ const AdAdvertisements: React.FC = () => {
                 </div>
                 
                 <div>
+                  <h3 className="font-semibold text-gray-900 mb-2">Contenido Multimedia</h3>
+                  <div className="space-y-2 text-sm">
+                    <p><strong>Tipo de contenido:</strong> 
+                      <Badge variant="outline" className="ml-2">
+                        {(selectedAd as any).media_type === 'video' ? 'Video' : 
+                         (selectedAd as any).media_type === 'gif' ? 'GIF Animado' : 'Imagen'}
+                      </Badge>
+                    </p>
+                    
+                    {(selectedAd as any).media_type === 'video' && (
+                      <>
+                        <p><strong>URL del video:</strong> 
+                          <a href={(selectedAd as any).video_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline ml-1">
+                            {(selectedAd as any).video_url}
+                          </a>
+                        </p>
+                        <p><strong>Duración:</strong> {(selectedAd as any).duration || 0} segundos</p>
+                      </>
+                    )}
+                    
+                    <p><strong>URL de imagen:</strong> 
+                      <a href={selectedAd.image_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline ml-1">
+                        {selectedAd.image_url}
+                      </a>
+                    </p>
+                    <p><strong>Texto alternativo:</strong> {selectedAd.alt_text}</p>
+                  </div>
+                </div>
+                
+                <div>
                   <h3 className="font-semibold text-gray-900 mb-2">Enlaces</h3>
                   <div className="space-y-2 text-sm">
                     <p><strong>URL de destino:</strong> 
@@ -584,7 +781,6 @@ const AdAdvertisements: React.FC = () => {
                         {selectedAd.link_url}
                       </a>
                     </p>
-                    <p><strong>Texto alternativo:</strong> {selectedAd.alt_text}</p>
                   </div>
                 </div>
               </div>
@@ -636,14 +832,86 @@ const AdAdvertisements: React.FC = () => {
                 />
               </div>
               
-              <div>
-                <Label htmlFor="edit_image_url">URL de la Imagen *</Label>
-                <Input
-                  id="edit_image_url"
-                  value={formData.image_url}
-                  onChange={(e) => setFormData({...formData, image_url: e.target.value})}
-                  required
-                />
+              {/* Sección de Contenido Multimedia - Edición */}
+              <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+                <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                  <ImageIcon className="h-5 w-5 text-[#00a587]" />
+                  Contenido Multimedia
+                </h3>
+                
+                <div>
+                  <Label htmlFor="edit_media_type">Tipo de Contenido *</Label>
+                  <Select value={formData.media_type} onValueChange={(value: 'image' | 'video' | 'gif') => setFormData({...formData, media_type: value})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar tipo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="image">Imagen</SelectItem>
+                      <SelectItem value="video">Video</SelectItem>
+                      <SelectItem value="gif">GIF Animado</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                {formData.media_type === 'image' && (
+                  <div>
+                    <Label htmlFor="edit_image_url">URL de la Imagen *</Label>
+                    <Input
+                      id="edit_image_url"
+                      value={formData.image_url}
+                      onChange={(e) => setFormData({...formData, image_url: e.target.value})}
+                      required
+                      placeholder="https://ejemplo.com/imagen.jpg"
+                    />
+                  </div>
+                )}
+                
+                {formData.media_type === 'video' && (
+                  <div className="space-y-3">
+                    <div>
+                      <Label htmlFor="edit_video_url">URL del Video *</Label>
+                      <Input
+                        id="edit_video_url"
+                        value={formData.video_url}
+                        onChange={(e) => setFormData({...formData, video_url: e.target.value})}
+                        required
+                        placeholder="https://ejemplo.com/video.mp4"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="edit_duration">Duración (segundos)</Label>
+                      <Input
+                        id="edit_duration"
+                        type="number"
+                        value={formData.duration}
+                        onChange={(e) => setFormData({...formData, duration: parseInt(e.target.value) || 0})}
+                        placeholder="30"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="edit_image_url">Imagen de Vista Previa</Label>
+                      <Input
+                        id="edit_image_url"
+                        value={formData.image_url}
+                        onChange={(e) => setFormData({...formData, image_url: e.target.value})}
+                        placeholder="https://ejemplo.com/thumbnail.jpg"
+                      />
+                    </div>
+                  </div>
+                )}
+                
+                {formData.media_type === 'gif' && (
+                  <div>
+                    <Label htmlFor="edit_image_url">URL del GIF *</Label>
+                    <Input
+                      id="edit_image_url"
+                      value={formData.image_url}
+                      onChange={(e) => setFormData({...formData, image_url: e.target.value})}
+                      required
+                      placeholder="https://ejemplo.com/animacion.gif"
+                    />
+                  </div>
+                )}
               </div>
               
               <div>
