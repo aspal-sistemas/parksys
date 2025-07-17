@@ -130,7 +130,7 @@ const AdAdvertisements: React.FC = () => {
       body: JSON.stringify(data)
     }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/advertising/advertisements'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/advertising-management/advertisements'] });
       setIsCreateModalOpen(false);
       resetForm();
       toast({
@@ -154,7 +154,8 @@ const AdAdvertisements: React.FC = () => {
       body: JSON.stringify(data)
     }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/advertising/advertisements'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/advertising-management/advertisements'] });
+      queryClient.refetchQueries({ queryKey: ['/api/advertising-management/advertisements'] });
       setIsEditModalOpen(false);
       setSelectedAd(null);
       resetForm();
@@ -178,7 +179,7 @@ const AdAdvertisements: React.FC = () => {
       method: 'DELETE'
     }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/advertising/advertisements'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/advertising-management/advertisements'] });
       toast({
         title: "Anuncio eliminado",
         description: "El anuncio se ha eliminado exitosamente",
@@ -352,6 +353,21 @@ const AdAdvertisements: React.FC = () => {
   const getCampaignName = (campaignId: number) => {
     const campaign = campaigns.find((c: Campaign) => c.id === campaignId);
     return campaign?.name || 'Sin campaña';
+  };
+
+  // Función para generar URL con cache-busting
+  const getImageUrlWithCacheBust = (imageUrl: string, updatedAt?: string) => {
+    if (!imageUrl) return '';
+    
+    // Si es una URL externa, no agregar cache-busting
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      return imageUrl;
+    }
+    
+    // Si es una URL interna, agregar timestamp
+    const timestamp = updatedAt ? new Date(updatedAt).getTime() : Date.now();
+    const separator = imageUrl.includes('?') ? '&' : '?';
+    return `${imageUrl}${separator}t=${timestamp}`;
   };
 
   return (
@@ -859,7 +875,7 @@ const AdAdvertisements: React.FC = () => {
                   {/* Imagen preview */}
                   <div className="aspect-video rounded-lg overflow-hidden bg-gray-100">
                     <img 
-                      src={ad.image_url} 
+                      src={getImageUrlWithCacheBust(ad.image_url, ad.updated_at)} 
                       alt={ad.alt_text || ad.title}
                       className="w-full h-full object-cover"
                       onError={(e) => {
@@ -963,7 +979,7 @@ const AdAdvertisements: React.FC = () => {
               <div className="space-y-4">
                 <div className="aspect-video rounded-lg overflow-hidden bg-gray-100">
                   <img 
-                    src={selectedAd.image_url} 
+                    src={getImageUrlWithCacheBust(selectedAd.image_url, selectedAd.updated_at)} 
                     alt={selectedAd.alt_text || selectedAd.title}
                     className="w-full h-full object-cover"
                   />
