@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useLocation } from 'wouter';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -43,6 +44,7 @@ interface Volunteer {
 }
 
 export default function VolunteersList() {
+  const [, navigate] = useLocation();
   const [searchTerm, setSearchTerm] = useState('');
   const [parkFilter, setParkFilter] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -485,7 +487,12 @@ export default function VolunteersList() {
           <p className="text-xl text-green-100 mb-8 max-w-2xl mx-auto">
             Únete a nuestro equipo de voluntarios y ayuda a hacer la diferencia en tu comunidad.
           </p>
-          <Button size="lg" variant="secondary" className="bg-white text-green-600 hover:bg-gray-100">
+          <Button 
+            size="lg" 
+            variant="secondary" 
+            className="bg-white text-green-600 hover:bg-gray-100"
+            onClick={() => navigate('/volunteers/register')}
+          >
             Registrarse como Voluntario
           </Button>
         </div>
