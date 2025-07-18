@@ -460,8 +460,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Obtenemos los parques con sus imágenes y amenidades
       const parks = await getParksDirectly(filters);
       
-      // Respondemos con los parques completos
-      res.json(parks);
+      // Respondemos con los parques completos en el formato esperado por el frontend
+      res.json({ 
+        data: parks,
+        pagination: {
+          page: 1,
+          limit: parks.length,
+          total: parks.length,
+          totalPages: 1
+        }
+      });
     } catch (error) {
       console.error("Error al obtener parques:", error);
       res.status(500).json({ message: "Error fetching parks" });
