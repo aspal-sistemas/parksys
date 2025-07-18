@@ -238,7 +238,7 @@ const DetalleActividadPage = () => {
                   <div>
                     {actividad.price ? (
                       <Badge variant="outline" className="text-yellow-700">
-                        ${actividad.price.toFixed(2)} MXN
+                        ${parseFloat(actividad.price).toFixed(2)} MXN
                       </Badge>
                     ) : (
                       <Badge className="bg-green-50 text-green-700 border-0">Gratuita</Badge>

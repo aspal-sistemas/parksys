@@ -480,7 +480,7 @@ function ParkLandingPage() {
                           
                           {/* Foto de la actividad */}
                           {activity.primaryImage && (
-                            <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
+                            <div className="w-5 h-5 rounded-lg overflow-hidden flex-shrink-0">
                               <img 
                                 src={activity.primaryImage}
                                 alt={activity.title}
