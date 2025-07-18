@@ -456,7 +456,8 @@ function ParkLandingPage() {
                         onClick={() => {
                           setSelectedActivity(activity);
                           if (activity.primaryImage) {
-                            openImageModal(activity.primaryImage);
+                            setSelectedImage(activity.primaryImage);
+                            setIsImageModalOpen(true);
                           }
                         }}
                       >
