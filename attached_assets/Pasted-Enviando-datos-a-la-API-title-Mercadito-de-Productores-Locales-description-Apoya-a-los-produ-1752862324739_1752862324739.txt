@@ -1,0 +1,15 @@
+Enviando datos a la API: {title: 'Mercadito de Productores Locales', description: 'Apoya a los productores locales comprando producto… artesanías y comida casera. Cada sábado del mes.', parkId: 5, startDate: '2025-07-03', endDate: '2025-07-24', …}
+Console.js:61 🌐 [QUERY] GET /api/activities/109
+Console.js:61 🔍 Datos raw recibidos del API: (26) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
+Console.js:61 🔍 Primera actividad completa: {id: 169, parkId: 24, title: 'Clases de Patinaje', description: 'Entrenamiento básico y recorrido dentro del parque.', startDate: '2025-08-08 00:00:00', …}
+Console.js:61 🔍 Campos de precio de primera actividad: {id: 169, title: 'Clases de Patinaje', price: null, isFree: true}
+Console.js:61 🌐 [QUERY] GET /api/activities
+Console.js:61 🔍 Datos raw recibidos del API: (26) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
+Console.js:61 🔍 Primera actividad completa: {id: 169, parkId: 24, title: 'Clases de Patinaje', description: 'Entrenamiento básico y recorrido dentro del parque.', startDate: '2025-08-08 00:00:00', …}
+Console.js:61 🔍 Campos de precio de primera actividad: {id: 169, title: 'Clases de Patinaje', price: null, isFree: true}
+Console.js:61 🔍 Datos raw recibidos del API: (26) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
+Console.js:61 🔍 Primera actividad completa: {id: 169, parkId: 24, title: 'Clases de Patinaje', description: 'Entrenamiento básico y recorrido dentro del parque.', startDate: '2025-08-08 00:00:00', …}
+Console.js:61 🔍 Campos de precio de primera actividad: {id: 169, title: 'Clases de Patinaje', price: null, isFree: true}
+Console.js:61 🔍 Datos raw recibidos del API: (26) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
+Console.js:61 🔍 Primera actividad completa: {id: 169, parkId: 24, title: 'Clases de Patinaje', description: 'Entrenamiento básico y recorrido dentro del parque.', startDate: '2025-08-08 00:00:00', …}
+Console.js:61 🔍 Campos de precio de primera actividad: {id: 169, title: 'Clases de Patinaje', price: null, isFree: true}
