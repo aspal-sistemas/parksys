@@ -482,7 +482,7 @@ export default function TreeSpecies() {
               </div>
               
               {/* Información de paginación */}
-              <div className="flex items-center justify-between mt-8">
+              <div className="flex items-center justify-between mt-8 mb-12">
                 <div className="text-sm text-gray-600">
                   Mostrando {startIndex + 1} a {Math.min(startIndex + itemsPerPage, totalItems)} de {totalItems} especies
                 </div>
