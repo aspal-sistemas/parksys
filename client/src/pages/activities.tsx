@@ -479,7 +479,7 @@ function ActivitiesPage() {
       </section>
 
       {/* Banner Publicitario - Ancho completo independiente */}
-      <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] py-4">
+      <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] py-8">
         <AdSpace 
           spaceId="34" 
           position="banner" 
