@@ -171,8 +171,9 @@ export default function EditVolunteerPage() {
   useEffect(() => {
     if (volunteerData) {
       // Si el voluntario tiene una imagen de perfil, mostrarla
-      if (volunteerData.profileImageUrl || volunteerData.profile_image_url) {
-        setUploadedImageUrl(volunteerData.profileImageUrl || volunteerData.profile_image_url);
+      const imageUrl = volunteerData.profileImageUrl || volunteerData.profile_image_url;
+      if (imageUrl) {
+        setUploadedImageUrl(imageUrl);
       }
       
       form.reset({

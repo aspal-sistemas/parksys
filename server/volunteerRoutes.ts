@@ -318,6 +318,7 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
               v.legal_consent,
               v.user_id,
               v.age,
+              v.profile_image_url,
               v.created_at,
               v.updated_at,
               COALESCE(u.full_name, v.full_name) as user_full_name,
@@ -371,6 +372,7 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
         status: volunteerData.status || 'active',
         userId: volunteerData.user_id,
         municipalityId: 2, // Guadalajara por defecto
+        profileImageUrl: volunteerData.profile_image_url || null,
         // Manejar áreas de interés con datos por defecto
         interestNature: interestAreas.includes('nature') || interestAreas.includes('naturaleza'),
         interestEvents: interestAreas.includes('events') || interestAreas.includes('eventos'),
