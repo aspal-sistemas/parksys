@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Calendar, CalendarIcon, Clock, Target, BarChart3, Settings, Plus, Edit, Trash2, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { CalendarIcon, Clock, Target, BarChart3, Settings, Plus, Edit, Trash2, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Calendar } from '@/components/ui/calendar';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -82,9 +83,18 @@ interface Advertisement {
 }
 
 const AssignmentCard: React.FC<{ assignment: Assignment; onEdit: (assignment: Assignment) => void; onDelete: (id: number) => void }> = ({ assignment, onEdit, onDelete }) => {
-  const isActive = assignment.isActive && new Date() >= new Date(assignment.startDate) && new Date() <= new Date(assignment.endDate);
-  const isExpired = new Date() > new Date(assignment.endDate);
-  const isPending = new Date() < new Date(assignment.startDate);
+  // Safe date parsing for status calculations
+  const safeStartDate = assignment.startDate ? new Date(assignment.startDate) : null;
+  const safeEndDate = assignment.endDate ? new Date(assignment.endDate) : null;
+  const now = new Date();
+  
+  const isActive = assignment.isActive && 
+    safeStartDate && safeEndDate && 
+    !isNaN(safeStartDate.getTime()) && !isNaN(safeEndDate.getTime()) &&
+    now >= safeStartDate && now <= safeEndDate;
+    
+  const isExpired = safeEndDate && !isNaN(safeEndDate.getTime()) && now > safeEndDate;
+  const isPending = safeStartDate && !isNaN(safeStartDate.getTime()) && now < safeStartDate;
 
   const getStatusIcon = () => {
     if (isActive) return <CheckCircle className="w-4 h-4 text-green-500" />;
@@ -153,11 +163,33 @@ const AssignmentCard: React.FC<{ assignment: Assignment; onEdit: (assignment: As
             </div>
             <div className="min-w-0">
               <p className="font-medium text-gray-700">Fecha inicio:</p>
-              <p className="text-gray-600">{format(new Date(assignment.startDate), 'dd/MM/yyyy', { locale: es })}</p>
+              <p className="text-gray-600">
+                {assignment.startDate 
+                  ? (() => {
+                      try {
+                        return format(new Date(assignment.startDate), 'dd/MM/yyyy', { locale: es });
+                      } catch (error) {
+                        return 'Fecha inválida';
+                      }
+                    })()
+                  : 'Sin fecha'
+                }
+              </p>
             </div>
             <div className="min-w-0">
               <p className="font-medium text-gray-700">Fecha fin:</p>
-              <p className="text-gray-600">{format(new Date(assignment.endDate), 'dd/MM/yyyy', { locale: es })}</p>
+              <p className="text-gray-600">
+                {assignment.endDate 
+                  ? (() => {
+                      try {
+                        return format(new Date(assignment.endDate), 'dd/MM/yyyy', { locale: es });
+                      } catch (error) {
+                        return 'Fecha inválida';
+                      }
+                    })()
+                  : 'Sin fecha'
+                }
+              </p>
             </div>
           </div>
           
