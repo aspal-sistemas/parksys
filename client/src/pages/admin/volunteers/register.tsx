@@ -11,9 +11,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowLeft, Save, UserPlus } from 'lucide-react';
+import { ArrowLeft, Save, UserPlus, Upload, X, Camera } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
 
 // Schema de validación para registro de voluntarios
 const volunteerRegistrationSchema = z.object({
@@ -35,6 +36,9 @@ const volunteerRegistrationSchema = z.object({
   volunteerExperience: z.string().optional(),
   skills: z.string().optional(),
   availability: z.enum(['weekdays', 'weekends', 'evenings', 'mornings', 'flexible']),
+  
+  // Fotografía del voluntario
+  profileImage: z.any().optional(),
   
   // Áreas de interés
   interestNature: z.boolean().optional(),
@@ -59,6 +63,9 @@ export default function VolunteerRegisterPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   const form = useForm<VolunteerRegistrationForm>({
     resolver: zodResolver(volunteerRegistrationSchema),
@@ -86,30 +93,70 @@ export default function VolunteerRegisterPage() {
       ageConsent: false,
       conductConsent: false,
       municipalityId: 2, // Guadalajara por defecto
+      profileImage: null,
     },
   });
+
+  // Función para manejar la subida de imagen
+  const handleImageUpload = async (file: File) => {
+    setIsUploadingImage(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await apiRequest('/api/upload/volunteer-profile', {
+        method: 'POST',
+        data: formData,
+        headers: {
+          // No enviar Content-Type para permitir que el navegador lo establezca automáticamente
+        },
+      });
+
+      if (response.url) {
+        setUploadedImageUrl(response.url);
+        setImageFile(file);
+        form.setValue('profileImage', file);
+        toast({
+          title: 'Imagen subida',
+          description: 'La fotografía del voluntario se ha subido correctamente',
+        });
+      }
+    } catch (error) {
+      console.error('Error subiendo imagen:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudo subir la imagen',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
+  // Función para remover la imagen
+  const handleRemoveImage = () => {
+    setUploadedImageUrl(null);
+    setImageFile(null);
+    form.setValue('profileImage', null);
+  };
 
   // Mutación para crear voluntario
   const createVolunteerMutation = useMutation({
     mutationFn: async (data: VolunteerRegistrationForm) => {
-      const response = await fetch('/api/users', {
+      const volunteerData = {
+        ...data,
+        role: 'voluntario',
+        username: data.email, // Usar email como username
+        password: 'temp123', // Contraseña temporal
+        profileImageUrl: uploadedImageUrl, // Incluir la URL de la imagen subida
+      };
+
+      const response = await apiRequest('/api/users', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...data,
-          role: 'voluntario',
-          username: data.email, // Usar email como username
-          password: 'temp123', // Contraseña temporal
-        }),
+        data: volunteerData,
       });
 
-      if (!response.ok) {
-        throw new Error('Error al registrar voluntario');
-      }
-
-      return response.json();
+      return response;
     },
     onSuccess: () => {
       toast({
@@ -256,6 +303,78 @@ export default function VolunteerRegisterPage() {
                     </FormItem>
                   )}
                 />
+
+                {/* Campo de fotografía del voluntario */}
+                <div className="md:col-span-2">
+                  <FormField
+                    control={form.control}
+                    name="profileImage"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center gap-2">
+                          <Camera className="h-4 w-4" />
+                          Fotografía del Voluntario (Opcional)
+                        </FormLabel>
+                        <FormControl>
+                          <div className="space-y-4">
+                            {!uploadedImageUrl ? (
+                              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                                <div className="flex flex-col items-center gap-2">
+                                  <Upload className="h-8 w-8 text-gray-400" />
+                                  <p className="text-sm text-gray-600">
+                                    Subir fotografía del voluntario
+                                  </p>
+                                  <p className="text-xs text-gray-500">
+                                    JPG, PNG o WEBP (máx. 5MB)
+                                  </p>
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0];
+                                      if (file) {
+                                        handleImageUpload(file);
+                                      }
+                                    }}
+                                    className="hidden"
+                                    id="volunteer-image-upload"
+                                  />
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => document.getElementById('volunteer-image-upload')?.click()}
+                                    disabled={isUploadingImage}
+                                  >
+                                    {isUploadingImage ? 'Subiendo...' : 'Seleccionar Imagen'}
+                                  </Button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="relative inline-block">
+                                <img
+                                  src={uploadedImageUrl}
+                                  alt="Foto del voluntario"
+                                  className="w-32 h-32 object-cover rounded-lg border"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="destructive"
+                                  size="sm"
+                                  className="absolute -top-2 -right-2 h-6 w-6 p-0"
+                                  onClick={handleRemoveImage}
+                                >
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </CardContent>
             </Card>
 

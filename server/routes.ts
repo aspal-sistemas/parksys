@@ -2,6 +2,8 @@ import type { Express, Request, Response, NextFunction } from "express";
 import express from "express";
 import multer from "multer";
 import * as XLSX from "xlsx";
+import path from "path";
+import fs from "fs";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { isAuthenticated, hasMunicipalityAccess, hasParkAccess, requirePermission, requireAdmin } from "./middleware/auth";
@@ -303,6 +305,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.error("Error al registrar rutas del sistema de cobro híbrido:", error);
   }
   
+  // Endpoint específico para subir imágenes de perfil de voluntarios
+  
+  // Configurar multer para subida de imágenes de voluntarios
+  const volunteerUploadDir = path.resolve('./public/uploads/volunteers');
+  if (!fs.existsSync(volunteerUploadDir)) {
+    fs.mkdirSync(volunteerUploadDir, { recursive: true });
+  }
+  
+  const volunteerStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, volunteerUploadDir);
+    },
+    filename: (req, file, cb) => {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      const ext = path.extname(file.originalname).toLowerCase();
+      cb(null, 'volunteer-' + uniqueSuffix + ext);
+    }
+  });
+  
+  const volunteerUpload = multer({
+    storage: volunteerStorage,
+    fileFilter: (req, file, cb) => {
+      if (file.mimetype.startsWith('image/')) {
+        cb(null, true);
+      } else {
+        cb(null, false);
+      }
+    },
+    limits: {
+      fileSize: 5 * 1024 * 1024 // 5MB máximo
+    }
+  }).single('file');
+  
+  apiRouter.post('/upload/volunteer-profile', (req: Request, res: Response) => {
+    volunteerUpload(req, res, (err) => {
+      if (err) {
+        if (err instanceof multer.MulterError) {
+          if (err.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({
+              success: false,
+              message: 'El archivo es demasiado grande. Máximo 5MB.'
+            });
+          }
+        }
+        return res.status(500).json({
+          success: false,
+          message: 'Error al subir la imagen'
+        });
+      }
+      
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          message: 'No se seleccionó ninguna imagen'
+        });
+      }
+      
+      const imageUrl = `/uploads/volunteers/${req.file.filename}`;
+      res.json({
+        success: true,
+        url: imageUrl,
+        message: 'Imagen subida correctamente'
+      });
+    });
+  });
+
   // Endpoints para imágenes de perfil
   // Obtener la imagen de perfil de un usuario
   apiRouter.get('/users/:id/profile-image', async (req: Request, res: Response) => {
