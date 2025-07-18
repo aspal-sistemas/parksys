@@ -45,6 +45,8 @@ function ParkLandingPage() {
   const [selectedImage, setSelectedImage] = React.useState<string | null>(null);
   const [isImageModalOpen, setIsImageModalOpen] = React.useState(false);
   const [selectedSpeciesData, setSelectedSpeciesData] = React.useState<any>(null);
+  const [selectedActivityData, setSelectedActivityData] = React.useState<any>(null);
+  const [isActivityModalOpen, setIsActivityModalOpen] = React.useState(false);
   
   // Extraer ID del slug (formato: nombre-parque-id)
   const parkId = slug?.split('-').pop();
@@ -445,39 +447,68 @@ function ParkLandingPage() {
               </CardHeader>
               <CardContent>
                 {park.activities && park.activities.length > 0 ? (
-                  <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                     {park.activities.slice(0, 3).map((activity) => (
-                      <div key={activity.id} className="border-l-4 border-orange-300 pl-4 py-3 bg-orange-50 rounded-r-lg">
-                        <div className="flex justify-between items-start mb-2">
-                          <h3 className="font-semibold text-gray-800">{activity.title}</h3>
+                      <div 
+                        key={activity.id} 
+                        className="group cursor-pointer bg-white rounded-lg border border-orange-200 hover:border-orange-400 transition-all duration-300 overflow-hidden"
+                        onClick={() => {
+                          setSelectedActivityData(activity);
+                          setIsActivityModalOpen(true);
+                        }}
+                      >
+                        <div className="aspect-[4/3] relative overflow-hidden">
+                          {activity.imageUrl ? (
+                            <img 
+                              src={activity.imageUrl}
+                              alt={activity.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center">
+                              <Calendar className="h-16 w-16 text-orange-600 opacity-70" />
+                            </div>
+                          )}
+                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300"></div>
+                          
+                          {/* Badge de categoría */}
                           {activity.category && (
-                            <Badge variant="outline" className="ml-2">
-                              {activity.category}
-                            </Badge>
+                            <div className="absolute top-2 right-2">
+                              <Badge variant="secondary" className="text-xs bg-white/90 text-orange-700 border-orange-300">
+                                {activity.category}
+                              </Badge>
+                            </div>
                           )}
                         </div>
-                        <p className="text-gray-600 text-sm mb-2">{activity.description}</p>
-                        <div className="flex items-center text-xs text-gray-500">
-                          <Clock className="h-3 w-3 mr-1" />
-                          {formatDate(activity.startDate)}
+                        <div className="p-3">
+                          <h4 className="font-semibold text-orange-800 text-sm line-clamp-2 mb-2">
+                            {activity.title}
+                          </h4>
+                          <div className="flex items-center text-xs text-gray-500">
+                            <Clock className="h-3 w-3 mr-1" />
+                            {formatDate(activity.startDate)}
+                          </div>
                         </div>
                       </div>
                     ))}
-                    
-                    <div className="text-center pt-4 border-t">
-                      <Link href="/activities">
-                        <Button variant="outline" className="border-orange-300 text-orange-700 hover:bg-orange-50">
-                          <Calendar className="h-4 w-4 mr-2" />
-                          Ver todas las actividades
-                        </Button>
-                      </Link>
-                    </div>
                   </div>
                 ) : (
                   <div className="text-center py-8 bg-gray-50 rounded-lg">
                     <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-400" />
                     <p className="text-gray-500 mb-2">No hay actividades programadas actualmente</p>
                     <p className="text-sm text-gray-400">Próximamente se publicarán nuevos eventos</p>
+                  </div>
+                )}
+                
+                {/* Enlace para ver todas las actividades */}
+                {park.activities && park.activities.length > 0 && (
+                  <div className="text-center pt-4 border-t mt-4">
+                    <Link href="/activities">
+                      <Button variant="outline" className="border-orange-300 text-orange-700 hover:bg-orange-50">
+                        <Calendar className="h-4 w-4 mr-2" />
+                        Ver todas las actividades
+                      </Button>
+                    </Link>
                   </div>
                 )}
               </CardContent>
@@ -1207,6 +1238,137 @@ function ParkLandingPage() {
                 {allImages.findIndex(img => img.imageUrl === selectedImage) + 1} de {allImages.length}
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Actividad Expandida */}
+      {isActivityModalOpen && selectedActivityData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setIsActivityModalOpen(false)}>
+          <div className="relative max-w-5xl max-h-[90vh] w-full mx-4 bg-white rounded-lg overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex h-full">
+              {/* Imagen principal */}
+              <div className="flex-1 relative">
+                {selectedActivityData.imageUrl ? (
+                  <img 
+                    src={selectedActivityData.imageUrl}
+                    alt={selectedActivityData.title}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center">
+                    <Calendar className="h-32 w-32 text-orange-600 opacity-70" />
+                  </div>
+                )}
+                
+                {/* Botón cerrar */}
+                <button
+                  onClick={() => setIsActivityModalOpen(false)}
+                  className="absolute top-4 right-4 bg-black/60 text-white rounded-full p-2 hover:bg-black/80 transition-all"
+                >
+                  ✕
+                </button>
+              </div>
+              
+              {/* Panel de información */}
+              <div className="w-80 bg-white p-6 overflow-y-auto">
+                <div className="space-y-4">
+                  <div>
+                    <h2 className="text-xl font-bold text-orange-800 mb-2">{selectedActivityData.title}</h2>
+                    {selectedActivityData.category && (
+                      <Badge className="bg-orange-100 text-orange-800 border-orange-300">
+                        {selectedActivityData.category}
+                      </Badge>
+                    )}
+                  </div>
+                  
+                  {selectedActivityData.description && (
+                    <div>
+                      <h3 className="font-medium text-gray-900 mb-1">Descripción</h3>
+                      <p className="text-sm text-gray-700">{selectedActivityData.description}</p>
+                    </div>
+                  )}
+                  
+                  <div className="space-y-3">
+                    {selectedActivityData.startDate && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600">Fecha:</span>
+                        <span className="font-medium text-orange-700">{formatDate(selectedActivityData.startDate)}</span>
+                      </div>
+                    )}
+                    
+                    {selectedActivityData.startTime && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600">Hora:</span>
+                        <span className="font-medium">{selectedActivityData.startTime}</span>
+                      </div>
+                    )}
+                    
+                    {selectedActivityData.location && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600">Ubicación:</span>
+                        <span className="font-medium">{selectedActivityData.location}</span>
+                      </div>
+                    )}
+                    
+                    {selectedActivityData.capacity && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600">Capacidad:</span>
+                        <span className="font-medium">{selectedActivityData.capacity} personas</span>
+                      </div>
+                    )}
+                    
+                    {selectedActivityData.duration && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600">Duración:</span>
+                        <span className="font-medium">{selectedActivityData.duration} minutos</span>
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Precio:</span>
+                      {selectedActivityData.price && Number(selectedActivityData.price) > 0 ? (
+                        <Badge variant="outline" className="text-yellow-700 border-yellow-300">
+                          ${Number(selectedActivityData.price).toFixed(2)} MXN
+                        </Badge>
+                      ) : (
+                        <Badge className="bg-green-100 text-green-700 border-green-300">
+                          Gratuita
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {selectedActivityData.requirements && (
+                    <div>
+                      <h3 className="font-medium text-gray-900 mb-1">Requisitos</h3>
+                      <p className="text-sm text-gray-700">{selectedActivityData.requirements}</p>
+                    </div>
+                  )}
+                  
+                  {selectedActivityData.materials && (
+                    <div>
+                      <h3 className="font-medium text-gray-900 mb-1">Materiales incluidos</h3>
+                      <p className="text-sm text-gray-700">{selectedActivityData.materials}</p>
+                    </div>
+                  )}
+                  
+                  {selectedActivityData.instructorName && (
+                    <div>
+                      <h3 className="font-medium text-gray-900 mb-1">Instructor</h3>
+                      <p className="text-sm text-gray-700">{selectedActivityData.instructorName}</p>
+                    </div>
+                  )}
+                  
+                  <div className="pt-4 border-t">
+                    <Button className="w-full bg-orange-600 hover:bg-orange-700 text-white">
+                      <Calendar className="h-4 w-4 mr-2" />
+                      Inscribirse a la actividad
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}
