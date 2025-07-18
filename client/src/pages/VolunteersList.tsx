@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import PublicLayout from '@/components/PublicLayout';
 import AdSpace from '@/components/AdSpace';
+import volunteerHeroImage from '@assets/happy-volunteer-couple-planting-trees-together-by-2025-01-16-13-28-02-utc_1752871919358.jpg';
 
 interface Volunteer {
   id: number;
@@ -125,15 +126,31 @@ export default function VolunteersList() {
   return (
     <PublicLayout>
       <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-green-600 to-green-800 text-white py-16">
+      {/* Header Hero con imagen de fondo */}
+      <div 
+        className="relative py-24 text-white"
+        style={{
+          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)), url(${volunteerHeroImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      >
         <div className="container mx-auto px-4">
           <div className="text-center">
-            <Users className="h-16 w-16 mx-auto mb-4" />
-            <h1 className="text-4xl font-bold mb-4">Nuestros Voluntarios</h1>
-            <p className="text-xl text-green-100 max-w-2xl mx-auto">
+            <Users className="h-16 w-16 mx-auto mb-4 drop-shadow-lg" />
+            <h1 className="text-5xl font-bold mb-6 drop-shadow-lg">Nuestros Voluntarios</h1>
+            <p className="text-xl max-w-2xl mx-auto drop-shadow-md leading-relaxed">
               Conoce a las personas comprometidas que dedican su tiempo y esfuerzo para hacer de nuestros parques lugares mejores para todos.
             </p>
+            <div className="mt-8">
+              <Button 
+                className="bg-[#00a587] hover:bg-[#067f5f] text-white px-8 py-3 text-lg font-semibold shadow-lg"
+                size="lg"
+              >
+                Únete como Voluntario
+              </Button>
+            </div>
           </div>
         </div>
       </div>
