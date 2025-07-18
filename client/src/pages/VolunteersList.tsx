@@ -37,37 +37,54 @@ interface Volunteer {
   availableDays?: string;
   createdAt: string;
   profileImageUrl?: string;
+  preferredParkId?: number;
+  parkName?: string;
+  volunteerActivities?: string[];
 }
 
 export default function VolunteersList() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [skillFilter, setSkillFilter] = useState('all');
-  const [genderFilter, setGenderFilter] = useState('all');
+  const [parkFilter, setParkFilter] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
 
-  // Consulta para obtener todos los voluntarios
+  // Consulta para obtener todos los voluntarios con información del parque
   const { data: volunteers = [], isLoading, error } = useQuery<Volunteer[]>({
-    queryKey: ['/api/volunteers'],
+    queryKey: ['/api/volunteers/public'],
     queryFn: async () => {
-      const response = await fetch('/api/volunteers');
+      const response = await fetch('/api/volunteers/public');
       if (!response.ok) throw new Error('Error cargando voluntarios');
       return response.json();
     }
   });
 
+  // Consulta para obtener lista de parques para el filtro
+  const { data: parksResponse } = useQuery({
+    queryKey: ['/api/parks'],
+    queryFn: async () => {
+      const response = await fetch('/api/parks');
+      if (!response.ok) throw new Error('Error cargando parques');
+      return response.json();
+    }
+  });
+
+  const parks = parksResponse?.data || [];
+
   // Filtrar voluntarios
   const filteredVolunteers = volunteers.filter(volunteer => {
+    const interestAreasString = Array.isArray(volunteer.interestAreas) 
+      ? volunteer.interestAreas.join(' ')
+      : volunteer.interestAreas || '';
+    
     const matchesSearch = searchTerm === '' || 
       volunteer.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      volunteer.skills?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      volunteer.interestAreas?.toLowerCase().includes(searchTerm.toLowerCase());
+      interestAreasString.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      volunteer.parkName?.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesSkill = skillFilter === 'all' || volunteer.skills?.toLowerCase().includes(skillFilter.toLowerCase());
-    const matchesGender = genderFilter === 'all' || volunteer.gender === genderFilter;
+    const matchesPark = parkFilter === 'all' || volunteer.preferredParkId?.toString() === parkFilter;
     
-    return matchesSearch && matchesSkill && matchesGender && volunteer.status === 'active';
+    return matchesSearch && matchesPark && volunteer.status === 'active';
   });
 
   // Paginación
@@ -79,7 +96,7 @@ export default function VolunteersList() {
   // Resetear página cuando cambian los filtros
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, skillFilter, genderFilter]);
+  }, [searchTerm, parkFilter]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('es-ES', {
@@ -158,28 +175,22 @@ export default function VolunteersList() {
       {/* Estadísticas */}
       <div className="py-8 bg-white border-b">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="text-center">
               <div className="text-3xl font-bold text-green-600">{filteredVolunteers.length}</div>
               <div className="text-gray-600">Voluntarios Activos</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-blue-600">
-                {new Set(filteredVolunteers.map(v => v.skills).filter(Boolean)).size}
+                {parks.length}
               </div>
-              <div className="text-gray-600">Habilidades Diferentes</div>
+              <div className="text-gray-600">Parques con Voluntarios</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-purple-600">
-                {filteredVolunteers.filter(v => v.gender === 'female').length}
+                {filteredVolunteers.filter(v => v.preferredParkId).length}
               </div>
-              <div className="text-gray-600">Mujeres</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-orange-600">
-                {filteredVolunteers.filter(v => v.gender === 'male').length}
-              </div>
-              <div className="text-gray-600">Hombres</div>
+              <div className="text-gray-600">Con Parque Asignado</div>
             </div>
           </div>
         </div>
@@ -193,20 +204,23 @@ export default function VolunteersList() {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
-                  placeholder="Buscar por nombre, habilidades o intereses..."
+                  placeholder="Buscar por nombre, actividades o parque..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
                 />
               </div>
-              <Select value={genderFilter} onValueChange={setGenderFilter}>
+              <Select value={parkFilter} onValueChange={setParkFilter}>
                 <SelectTrigger className="w-full md:w-48">
-                  <SelectValue placeholder="Filtrar por género" />
+                  <SelectValue placeholder="Filtrar por parque" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos los géneros</SelectItem>
-                  <SelectItem value="male">Hombres</SelectItem>
-                  <SelectItem value="female">Mujeres</SelectItem>
+                  <SelectItem value="all">Todos los parques</SelectItem>
+                  {parks.map((park: any) => (
+                    <SelectItem key={park.id} value={park.id.toString()}>
+                      {park.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -253,10 +267,76 @@ export default function VolunteersList() {
               {viewMode === 'grid' ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {currentVolunteers.map((volunteer) => (
-                <Card key={volunteer.id} className="hover:shadow-lg transition-shadow">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start space-x-4">
-                      <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                    <Card key={volunteer.id} className="hover:shadow-lg transition-shadow">
+                      <CardContent className="p-6">
+                        <div className="text-center space-y-4">
+                          {/* Fotografía del voluntario */}
+                          <div className="w-24 h-24 mx-auto bg-green-100 rounded-full flex items-center justify-center overflow-hidden">
+                            {volunteer.profileImageUrl ? (
+                              <img 
+                                src={volunteer.profileImageUrl} 
+                                alt={volunteer.fullName}
+                                className="w-24 h-24 rounded-full object-cover"
+                              />
+                            ) : (
+                              <span className="text-green-600 font-semibold text-xl">
+                                {getInitials(volunteer.fullName)}
+                              </span>
+                            )}
+                          </div>
+                          
+                          {/* Nombre completo */}
+                          <div>
+                            <h3 className="text-lg font-semibold text-gray-900">
+                              {volunteer.fullName}
+                            </h3>
+                          </div>
+                          
+                          {/* Parque asignado */}
+                          <div className="flex items-center justify-center gap-2">
+                            <MapPin className="h-4 w-4 text-green-600" />
+                            <span className="text-sm text-gray-600">
+                              {volunteer.parkName || 'Sin parque asignado'}
+                            </span>
+                          </div>
+                          
+                          {/* Actividades de voluntariado */}
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-center gap-2">
+                              <Heart className="h-4 w-4 text-green-600" />
+                              <span className="text-sm font-medium text-gray-700">Actividades:</span>
+                            </div>
+                            <div className="flex flex-wrap justify-center gap-1">
+                              {volunteer.interestAreas && Array.isArray(volunteer.interestAreas) ? (
+                                volunteer.interestAreas.map((activity, index) => (
+                                  <Badge key={index} variant="secondary" className="text-xs">
+                                    {activity}
+                                  </Badge>
+                                ))
+                              ) : volunteer.interestAreas && typeof volunteer.interestAreas === 'string' ? (
+                                volunteer.interestAreas.split(',').map((activity, index) => (
+                                  <Badge key={index} variant="secondary" className="text-xs">
+                                    {activity.trim()}
+                                  </Badge>
+                                ))
+                              ) : (
+                                <span className="text-xs text-gray-500">No especificadas</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+          ) : (
+            <div className="space-y-4">
+              {currentVolunteers.map((volunteer) => (
+                <Card key={volunteer.id} className="hover:shadow-md transition-shadow">
+                  <CardContent className="p-6">
+                    <div className="flex items-start space-x-6">
+                      {/* Fotografía del voluntario */}
+                      <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center overflow-hidden">
                         {volunteer.profileImageUrl ? (
                           <img 
                             src={volunteer.profileImageUrl} 
@@ -269,107 +349,47 @@ export default function VolunteersList() {
                           </span>
                         )}
                       </div>
-                      <div className="flex-1">
-                        <CardTitle className="text-lg">{volunteer.fullName}</CardTitle>
-                        <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
-                          {volunteer.age && (
-                            <div className="flex items-center gap-1">
-                              <User className="h-3 w-3" />
-                              <span>{volunteer.age} años</span>
-                            </div>
-                          )}
-                          {volunteer.gender && (
-                            <Badge variant="outline" className="text-xs">
-                              {volunteer.gender === 'male' ? 'Hombre' : 'Mujer'}
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2">
-                        <Mail className="h-4 w-4 text-gray-500" />
-                        <span className="text-sm text-gray-600">{volunteer.email}</span>
-                      </div>
                       
-                      {volunteer.phone && (
-                        <div className="flex items-center gap-2">
-                          <Phone className="h-4 w-4 text-gray-500" />
-                          <span className="text-sm text-gray-600">{volunteer.phone}</span>
-                        </div>
-                      )}
-                      
-                      {volunteer.skills && (
-                        <div className="flex items-start gap-2">
-                          <Award className="h-4 w-4 text-gray-500 mt-0.5" />
-                          <span className="text-sm text-gray-600">{volunteer.skills}</span>
-                        </div>
-                      )}
-                      
-                      {volunteer.availableDays && (
-                        <div className="flex items-start gap-2">
-                          <Calendar className="h-4 w-4 text-gray-500 mt-0.5" />
-                          <span className="text-sm text-gray-600">{volunteer.availableDays}</span>
-                        </div>
-                      )}
-                      
-                      {volunteer.interestAreas && (
-                        <div className="flex items-start gap-2">
-                          <Heart className="h-4 w-4 text-gray-500 mt-0.5" />
-                          <span className="text-sm text-gray-600">{volunteer.interestAreas}</span>
-                        </div>
-                      )}
-                      
-                      <div className="flex items-center gap-2 text-xs text-gray-500">
-                        <Clock className="h-3 w-3" />
-                        <span>Voluntario desde {formatDate(volunteer.createdAt)}</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {currentVolunteers.map((volunteer) => (
-                <Card key={volunteer.id} className="hover:shadow-md transition-shadow">
-                  <CardContent className="p-6">
-                    <div className="flex items-start space-x-4">
-                      <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                        {volunteer.profileImageUrl ? (
-                          <img 
-                            src={volunteer.profileImageUrl} 
-                            alt={volunteer.fullName}
-                            className="w-12 h-12 rounded-full object-cover"
-                          />
-                        ) : (
-                          <span className="text-green-600 font-semibold">
-                            {getInitials(volunteer.fullName)}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {/* Nombre completo */}
                         <div>
-                          <h3 className="font-semibold text-lg">{volunteer.fullName}</h3>
-                          <p className="text-sm text-gray-600">{volunteer.email}</p>
-                          {volunteer.phone && (
-                            <p className="text-sm text-gray-600">{volunteer.phone}</p>
-                          )}
+                          <h3 className="font-semibold text-lg text-gray-900">{volunteer.fullName}</h3>
                         </div>
+                        
+                        {/* Parque asignado */}
                         <div>
-                          <p className="text-sm font-medium text-gray-700">Habilidades:</p>
-                          <p className="text-sm text-gray-600">{volunteer.skills || 'No especificadas'}</p>
-                          <p className="text-sm font-medium text-gray-700 mt-2">Disponibilidad:</p>
-                          <p className="text-sm text-gray-600">{volunteer.availableDays || 'No especificada'}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-gray-700">Intereses:</p>
-                          <p className="text-sm text-gray-600">{volunteer.interestAreas || 'No especificados'}</p>
-                          <p className="text-sm text-gray-500 mt-2">
-                            Voluntario desde {formatDate(volunteer.createdAt)}
+                          <div className="flex items-center gap-2">
+                            <MapPin className="h-4 w-4 text-green-600" />
+                            <span className="text-sm font-medium text-gray-700">Parque:</span>
+                          </div>
+                          <p className="text-sm text-gray-600 mt-1">
+                            {volunteer.parkName || 'Sin parque asignado'}
                           </p>
+                        </div>
+                        
+                        {/* Actividades de voluntariado */}
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <Heart className="h-4 w-4 text-green-600" />
+                            <span className="text-sm font-medium text-gray-700">Actividades:</span>
+                          </div>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {volunteer.interestAreas && Array.isArray(volunteer.interestAreas) ? (
+                              volunteer.interestAreas.map((activity, index) => (
+                                <Badge key={index} variant="secondary" className="text-xs">
+                                  {activity}
+                                </Badge>
+                              ))
+                            ) : volunteer.interestAreas && typeof volunteer.interestAreas === 'string' ? (
+                              volunteer.interestAreas.split(',').map((activity, index) => (
+                                <Badge key={index} variant="secondary" className="text-xs">
+                                  {activity.trim()}
+                                </Badge>
+                              ))
+                            ) : (
+                              <span className="text-xs text-gray-500">No especificadas</span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>

@@ -24,6 +24,40 @@ import {
 export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRouter: any, isAuthenticated: any) {
   
   // === RUTAS PARA VOLUNTARIOS ===
+  
+  // Endpoint público para obtener voluntarios con información del parque
+  apiRouter.get("/volunteers/public", async (req: Request, res: Response) => {
+    try {
+      const result = await db.execute(sql`
+        SELECT 
+          v.id,
+          v.full_name as "fullName",
+          v.email,
+          v.phone,
+          v.skills,
+          v.status,
+          v.age,
+          v.gender,
+          v.available_hours as "availability",
+          v.previous_experience as "experience",
+          v.interest_areas as "interestAreas",
+          v.available_days as "availableDays",
+          v.created_at as "createdAt",
+          v.profile_image_url as "profileImageUrl",
+          v.preferred_park_id as "preferredParkId",
+          p.name as "parkName"
+        FROM volunteers v
+        LEFT JOIN parks p ON v.preferred_park_id = p.id
+        WHERE v.status = 'active'
+        ORDER BY v.created_at DESC
+      `);
+      
+      res.json(result.rows || []);
+    } catch (error) {
+      console.error('Error obteniendo voluntarios públicos:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  });
 
   // Crear un perfil de voluntario completo a partir de un usuario existente con rol "voluntario"
   apiRouter.post("/volunteers/create-from-user", isAuthenticated, async (req: Request, res: Response) => {
