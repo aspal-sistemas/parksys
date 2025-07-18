@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { Plus, Pencil, Trash, Search, ChevronLeft, ChevronRight, Calendar, X, Image as ImageIcon } from 'lucide-react';
+import { Plus, Pencil, Trash, Search, ChevronLeft, ChevronRight, Calendar, X, Image as ImageIcon, Grid, List, Clock, MapPin, Users, Badge } from 'lucide-react';
 import { useLocation } from 'wouter';
 import AdminLayout from '@/components/AdminLayout';
 import { Button } from '@/components/ui/button';
@@ -48,6 +48,7 @@ const AdminActivities = () => {
   const [filterPark, setFilterPark] = useState('all');
   const [filterCategory, setFilterCategory] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
+  const [viewMode, setViewMode] = useState<'table' | 'cards'>('cards'); // Vista por defecto: fichas
   
   // States for delete functionality
   const [selectedActivity, setSelectedActivity] = useState<any>(null);
@@ -257,16 +258,38 @@ const AdminActivities = () => {
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-gray-900">Gestión de Actividades</h1>
-          <Button 
-            className="bg-[#00a587] hover:bg-[#067f5f]"
-            onClick={() => {
-              console.log('Botón Nueva Actividad clickeado - redirigiendo al organizador');
-              setLocation('/admin/organizador/catalogo/crear');
-            }}
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Nueva Actividad
-          </Button>
+          <div className="flex items-center gap-3">
+            {/* Toggle de vista */}
+            <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+              <Button
+                variant={viewMode === 'cards' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('cards')}
+                className={`${viewMode === 'cards' ? 'bg-[#00a587] text-white' : 'text-gray-600'}`}
+              >
+                <Grid className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'table' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('table')}
+                className={`${viewMode === 'table' ? 'bg-[#00a587] text-white' : 'text-gray-600'}`}
+              >
+                <List className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            <Button 
+              className="bg-[#00a587] hover:bg-[#067f5f]"
+              onClick={() => {
+                console.log('Botón Nueva Actividad clickeado - redirigiendo al organizador');
+                setLocation('/admin/organizador/catalogo/crear');
+              }}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Nueva Actividad
+            </Button>
+          </div>
         </div>
 
         {/* Filters */}
@@ -316,7 +339,7 @@ const AdminActivities = () => {
           </div>
         </div>
 
-        {/* Activities table */}
+        {/* Activities content */}
         <div className="bg-white rounded-lg shadow overflow-hidden">
           {filteredActivities.length === 0 ? (
             <div className="py-16 flex justify-center">
@@ -331,71 +354,156 @@ const AdminActivities = () => {
             </div>
           ) : (
             <>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[50px]">ID</TableHead>
-                    <TableHead>Título</TableHead>
-                    <TableHead>Categoría</TableHead>
-                    <TableHead>Parque</TableHead>
-                    <TableHead>Fecha</TableHead>
-                    <TableHead className="text-right">Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {currentActivities.map((activity: any) => (
-                    <TableRow key={activity.id}>
-                      <TableCell className="font-medium">#{activity.id}</TableCell>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">{activity.title}</p>
+              {viewMode === 'table' ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[50px]">ID</TableHead>
+                      <TableHead>Título</TableHead>
+                      <TableHead>Categoría</TableHead>
+                      <TableHead>Parque</TableHead>
+                      <TableHead>Fecha</TableHead>
+                      <TableHead className="text-right">Acciones</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {currentActivities.map((activity: any) => (
+                      <TableRow key={activity.id}>
+                        <TableCell className="font-medium">#{activity.id}</TableCell>
+                        <TableCell>
+                          <div>
+                            <p className="font-medium">{activity.title}</p>
+                            {activity.description && (
+                              <p className="text-sm text-gray-500 truncate max-w-xs">
+                                {activity.description}
+                              </p>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getCategoryColors(getCategoryName(activity))}`}>
+                            {getCategoryName(activity)}
+                          </span>
+                        </TableCell>
+                        <TableCell>{activity.parkName || `Parque ${activity.parkId}`}</TableCell>
+                        <TableCell>{formatDate(activity.startDate)}</TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end space-x-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="text-green-600 hover:text-green-700"
+                              onClick={() => setLocation(`/admin/activities/${activity.id}/images`)}
+                              title="Gestionar imágenes"
+                            >
+                              <ImageIcon className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="text-blue-600 hover:text-blue-700"
+                              onClick={() => handleEdit(activity)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="text-red-600 hover:text-red-700"
+                              onClick={() => handleDelete(activity)}
+                            >
+                              <Trash className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                // Vista de fichas
+                <div className="p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {currentActivities.map((activity: any) => (
+                      <div key={activity.id} className="bg-white border rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
+                        {/* Header de la ficha */}
+                        <div className="p-4 border-b">
+                          <div className="flex justify-between items-start mb-2">
+                            <h3 className="font-semibold text-gray-900 line-clamp-2">{activity.title}</h3>
+                            <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                              #{activity.id}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getCategoryColors(getCategoryName(activity))}`}>
+                              {getCategoryName(activity)}
+                            </span>
+                          </div>
+                        </div>
+                        
+                        {/* Contenido de la ficha */}
+                        <div className="p-4">
                           {activity.description && (
-                            <p className="text-sm text-gray-500 truncate max-w-xs">
+                            <p className="text-sm text-gray-600 mb-3 line-clamp-3">
                               {activity.description}
                             </p>
                           )}
+                          
+                          <div className="space-y-2 mb-4">
+                            <div className="flex items-center text-sm text-gray-500">
+                              <MapPin className="h-4 w-4 mr-2 text-gray-400" />
+                              <span>{activity.parkName || `Parque ${activity.parkId}`}</span>
+                            </div>
+                            <div className="flex items-center text-sm text-gray-500">
+                              <Clock className="h-4 w-4 mr-2 text-gray-400" />
+                              <span>{formatDate(activity.startDate)}</span>
+                            </div>
+                            {activity.capacity && (
+                              <div className="flex items-center text-sm text-gray-500">
+                                <Users className="h-4 w-4 mr-2 text-gray-400" />
+                                <span>{activity.capacity} personas</span>
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Botones de acción */}
+                          <div className="flex justify-between items-center pt-3 border-t">
+                            <div className="flex space-x-2">
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="text-green-600 hover:text-green-700"
+                                onClick={() => setLocation(`/admin/activities/${activity.id}/images`)}
+                                title="Gestionar imágenes"
+                              >
+                                <ImageIcon className="h-4 w-4" />
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="text-blue-600 hover:text-blue-700"
+                                onClick={() => handleEdit(activity)}
+                                title="Editar"
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="text-red-600 hover:text-red-700"
+                                onClick={() => handleDelete(activity)}
+                                title="Eliminar"
+                              >
+                                <Trash className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getCategoryColors(getCategoryName(activity))}`}>
-                          {getCategoryName(activity)}
-                        </span>
-                      </TableCell>
-                      <TableCell>{activity.parkName || `Parque ${activity.parkId}`}</TableCell>
-                      <TableCell>{formatDate(activity.startDate)}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end space-x-2">
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="text-green-600 hover:text-green-700"
-                            onClick={() => setLocation(`/admin/activities/${activity.id}/images`)}
-                            title="Gestionar imágenes"
-                          >
-                            <ImageIcon className="h-4 w-4" />
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="text-blue-600 hover:text-blue-700"
-                            onClick={() => handleEdit(activity)}
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="text-red-600 hover:text-red-700"
-                            onClick={() => handleDelete(activity)}
-                          >
-                            <Trash className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </>
           )}
         </div>
