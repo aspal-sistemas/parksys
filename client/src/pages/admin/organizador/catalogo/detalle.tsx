@@ -236,9 +236,9 @@ const DetalleActividadPage = () => {
                 <div>
                   <h3 className="font-medium mb-2">Precio</h3>
                   <div>
-                    {actividad.price ? (
+                    {actividad.price && Number(actividad.price) > 0 ? (
                       <Badge variant="outline" className="text-yellow-700">
-                        ${actividad.price.toFixed(2)} MXN
+                        ${Number(actividad.price).toFixed(2)} MXN
                       </Badge>
                     ) : (
                       <Badge className="bg-green-50 text-green-700 border-0">Gratuita</Badge>
