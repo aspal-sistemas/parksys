@@ -62,6 +62,12 @@ const AdminActivities = () => {
     queryKey: ['/api/activities'],
   });
 
+  // Fetch activities with images for card view
+  const { data: activitiesWithImagesData } = useQuery({
+    queryKey: ['/api/actividades-fotos'],
+    enabled: viewMode === 'cards',
+  });
+
   const { data: parksData } = useQuery({
     queryKey: ['/api/parks'],
   });
@@ -171,9 +177,11 @@ const AdminActivities = () => {
   }, [activitiesData]);
 
   const filteredActivities = useMemo(() => {
-    if (!Array.isArray(activitiesData)) return [];
+    // Use activities with images for card view, regular activities for table view
+    const sourceData = viewMode === 'cards' ? activitiesWithImagesData : activitiesData;
+    if (!Array.isArray(sourceData)) return [];
     
-    return activitiesData.filter((activity: any) => {
+    return sourceData.filter((activity: any) => {
       if (searchQuery && !activity.title.toLowerCase().includes(searchQuery.toLowerCase())) {
         return false;
       }
@@ -185,7 +193,7 @@ const AdminActivities = () => {
       }
       return true;
     });
-  }, [activitiesData, searchQuery, filterPark, filterCategory]);
+  }, [activitiesData, activitiesWithImagesData, searchQuery, filterPark, filterCategory, viewMode]);
 
   const totalActivities = filteredActivities.length;
   const totalPages = Math.ceil(totalActivities / activitiesPerPage);
@@ -425,14 +433,45 @@ const AdminActivities = () => {
                 <div className="p-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {currentActivities.map((activity: any) => (
-                      <div key={activity.id} className="bg-white border rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
-                        {/* Header de la ficha */}
-                        <div className="p-4 border-b">
-                          <div className="flex justify-between items-start mb-2">
-                            <h3 className="font-semibold text-gray-900 line-clamp-2">{activity.title}</h3>
-                            <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                      <div key={activity.id} className="bg-white border rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden">
+                        {/* Imagen de la actividad */}
+                        <div className="relative h-48 bg-gray-100">
+                          {activity.imageUrl ? (
+                            <img 
+                              src={activity.imageUrl} 
+                              alt={activity.title}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
+                              <div className="text-center">
+                                <ImageIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+                                <p className="text-sm text-gray-500">Sin imagen</p>
+                              </div>
+                            </div>
+                          )}
+                          {/* Badge de estado de imagen */}
+                          <div className="absolute top-2 right-2">
+                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                              activity.imageUrl 
+                                ? 'bg-green-100 text-green-800' 
+                                : 'bg-orange-100 text-orange-800'
+                            }`}>
+                              {activity.imageUrl ? 'Con imagen' : 'Sin imagen'}
+                            </span>
+                          </div>
+                          {/* ID de la actividad */}
+                          <div className="absolute top-2 left-2">
+                            <span className="text-xs text-white bg-black/60 px-2 py-1 rounded">
                               #{activity.id}
                             </span>
+                          </div>
+                        </div>
+                        
+                        {/* Header de la ficha */}
+                        <div className="p-4 border-b">
+                          <div className="mb-2">
+                            <h3 className="font-semibold text-gray-900 line-clamp-2">{activity.title}</h3>
                           </div>
                           <div className="flex items-center gap-2 mb-2">
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getCategoryColors(getCategoryName(activity))}`}>
