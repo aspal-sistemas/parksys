@@ -1412,7 +1412,78 @@ DatabaseStorage.prototype.getAllActivities = async function(): Promise<any[]> {
 };
 
 DatabaseStorage.prototype.getParkActivities = async function(parkId: number): Promise<any[]> {
-  return [];
+  console.log("🎯 GET PARK ACTIVITIES - Park ID:", parkId);
+  
+  try {
+    const result = await pool.query(`
+      SELECT 
+        a.id,
+        a.title,
+        a.description,
+        a.start_date as "startDate",
+        a.end_date as "endDate", 
+        a.start_time as "startTime",
+        a.end_time as "endTime",
+        a.category,
+        a.category_id as "categoryId",
+        a.park_id as "parkId",
+        a.location,
+        a.capacity,
+        a.duration,
+        a.price,
+        a.is_free as "isFree",
+        a.materials,
+        a.requirements,
+        a.is_recurring as "isRecurring",
+        a.recurring_days as "recurringDays",
+        a.target_market as "targetMarket",
+        a.special_needs as "specialNeeds",
+        a.instructor_id as "instructorId",
+        a.created_at as "createdAt",
+        p.name as "parkName",
+        ac.name as "categoryName",
+        i.full_name as "instructorName"
+      FROM activities a
+      LEFT JOIN parks p ON a.park_id = p.id
+      LEFT JOIN activity_categories ac ON a.category_id = ac.id
+      LEFT JOIN instructors i ON a.instructor_id = i.id
+      WHERE a.park_id = $1
+      ORDER BY a.start_date DESC
+    `, [parkId]);
+
+    console.log("🎯 Activities found for park", parkId, ":", result.rows.length);
+    
+    return result.rows.map(row => ({
+      id: row.id,
+      title: row.title,
+      description: row.description,
+      startDate: row.startDate,
+      endDate: row.endDate,
+      startTime: row.startTime,
+      endTime: row.endTime,
+      category: row.categoryName || row.category,
+      categoryId: row.categoryId,
+      parkId: row.parkId,
+      parkName: row.parkName,
+      location: row.location,
+      capacity: row.capacity,
+      duration: row.duration,
+      price: row.price,
+      isFree: row.isFree,
+      materials: row.materials,
+      requirements: row.requirements,
+      isRecurring: row.isRecurring,
+      recurringDays: row.recurringDays,
+      targetMarket: row.targetMarket,
+      specialNeeds: row.specialNeeds,
+      instructorId: row.instructorId,
+      instructorName: row.instructorName,
+      createdAt: row.createdAt
+    }));
+  } catch (error) {
+    console.error("Error al obtener actividades del parque:", error);
+    return [];
+  }
 };
 
 DatabaseStorage.prototype.createActivity = async function(activityData: any): Promise<any> {
