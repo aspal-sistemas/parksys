@@ -491,7 +491,7 @@ export default function AdvertisingAssignments() {
       
       return apiRequest('/api/advertising-management/assignments', {
         method: 'POST',
-        body: JSON.stringify(payload),
+        body: payload,
       });
     },
     onSuccess: () => {
