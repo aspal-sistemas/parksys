@@ -681,6 +681,15 @@ function ParkLandingPage() {
               </Card>
             )}
 
+            {/* Banner publicitario después de Galería */}
+            <div className="max-w-full">
+              <AdSpace 
+                spaceId="33" 
+                position="banner" 
+                pageType="park-landing" 
+                className="w-full"
+              />
+            </div>
 
           </div>
 
