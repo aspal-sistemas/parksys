@@ -1442,11 +1442,13 @@ DatabaseStorage.prototype.getParkActivities = async function(parkId: number): Pr
         a.created_at as "createdAt",
         p.name as "parkName",
         ac.name as "categoryName",
-        i.full_name as "instructorName"
+        i.full_name as "instructorName",
+        ai.image_url
       FROM activities a
       LEFT JOIN parks p ON a.park_id = p.id
       LEFT JOIN activity_categories ac ON a.category_id = ac.id
       LEFT JOIN instructors i ON a.instructor_id = i.id
+      LEFT JOIN activity_images ai ON a.id = ai.activity_id AND ai.is_primary = true
       WHERE a.park_id = $1
       ORDER BY a.start_date DESC
     `, [parkId]);
@@ -1481,6 +1483,7 @@ DatabaseStorage.prototype.getParkActivities = async function(parkId: number): Pr
       specialNeeds: row.specialNeeds,
       instructorId: row.instructorId,
       instructorName: row.instructorName,
+      imageUrl: row.image_url,
       createdAt: row.createdAt
     }));
   } catch (error) {
