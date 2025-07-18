@@ -249,20 +249,54 @@ router.get('/campaigns/:campaignId/advertisements', async (req, res) => {
 // Crear nuevo anuncio
 router.post('/advertisements', isAuthenticated, upload.single('image'), async (req, res) => {
   try {
-    const { campaignId, title, content, linkUrl, type, priority } = req.body;
-    const imageUrl = req.file ? `/uploads/advertisements/${req.file.filename}` : null;
+    const { 
+      campaign_id, 
+      title, 
+      description, 
+      content, 
+      image_url, 
+      media_type, 
+      storage_type, 
+      duration, 
+      alt_text, 
+      is_active 
+    } = req.body;
     
-    const [ad] = await db.insert(advertisements).values({
-      campaignId: parseInt(campaignId),
-      title,
-      content,
-      imageUrl,
-      linkUrl,
-      type,
-      priority: parseInt(priority) || 0
-    }).returning();
+    console.log('Datos recibidos para crear anuncio:', req.body);
     
-    res.json({ success: true, data: ad });
+    // Usar SQL directo para evitar problemas con Drizzle ORM
+    const result = await pool.query(`
+      INSERT INTO advertisements (
+        campaign_id, 
+        title, 
+        description, 
+        content, 
+        image_url, 
+        media_type, 
+        storage_type, 
+        duration, 
+        alt_text, 
+        is_active,
+        created_at,
+        updated_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      RETURNING *
+    `, [
+      campaign_id && campaign_id !== 0 ? parseInt(campaign_id) : null,
+      title || '',
+      description || '',
+      content || '',
+      image_url || '',
+      media_type || 'image',
+      storage_type || 'url',
+      duration ? parseInt(duration) : 0,
+      alt_text || '',
+      is_active !== undefined ? is_active : true,
+      new Date(),
+      new Date()
+    ]);
+    
+    res.json({ success: true, data: result.rows[0] });
   } catch (error) {
     console.error('Error creando anuncio:', error);
     res.status(500).json({ success: false, error: 'Error creando anuncio' });
