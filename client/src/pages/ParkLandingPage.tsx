@@ -410,46 +410,59 @@ function ParkLandingPage() {
               </CardHeader>
               <CardContent>
                 {park.treeSpecies && park.treeSpecies.length > 0 ? (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                    {park.treeSpecies.map((species: any) => (
-                      <div 
-                        key={species.id} 
-                        className="group cursor-pointer bg-white rounded-lg border border-green-200 hover:border-green-400 transition-all duration-300 overflow-hidden"
-                        onClick={() => {
-                          // Crear modal con información técnica detallada
-                          const speciesImageUrl = species.photoUrl || species.customPhotoUrl;
-                          if (speciesImageUrl) {
-                            openImageModal(speciesImageUrl);
-                            // Guardar información técnica para mostrar en el modal
-                            setSelectedSpeciesData(species);
-                          }
-                        }}
-                      >
-                        <div className="aspect-square relative overflow-hidden">
-                          {species.photoUrl || species.customPhotoUrl ? (
-                            <img 
-                              src={species.photoUrl || species.customPhotoUrl}
-                              alt={species.commonName}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center">
-                              <TreeSpeciesIcon 
-                                iconType={species.iconType}
-                                customIconUrl={species.customIconUrl}
-                                size={64}
+                  <div className="space-y-4">
+                    {/* Solo mostrar las primeras 4 especies en una fila */}
+                    <div className="grid grid-cols-4 gap-4">
+                      {park.treeSpecies.slice(0, 4).map((species: any) => (
+                        <div 
+                          key={species.id} 
+                          className="group cursor-pointer bg-white rounded-lg border border-green-200 hover:border-green-400 transition-all duration-300 overflow-hidden"
+                          onClick={() => {
+                            // Crear modal con información técnica detallada
+                            const speciesImageUrl = species.photoUrl || species.customPhotoUrl;
+                            if (speciesImageUrl) {
+                              openImageModal(speciesImageUrl);
+                              // Guardar información técnica para mostrar en el modal
+                              setSelectedSpeciesData(species);
+                            }
+                          }}
+                        >
+                          <div className="aspect-square relative overflow-hidden">
+                            {species.photoUrl || species.customPhotoUrl ? (
+                              <img 
+                                src={species.photoUrl || species.customPhotoUrl}
+                                alt={species.commonName}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                               />
-                            </div>
-                          )}
-                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300"></div>
+                            ) : (
+                              <div className="w-full h-full bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center">
+                                <TreeSpeciesIcon 
+                                  iconType={species.iconType}
+                                  customIconUrl={species.customIconUrl}
+                                  size={64}
+                                />
+                              </div>
+                            )}
+                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300"></div>
+                          </div>
+                          <div className="p-3 text-center">
+                            <h4 className="font-semibold text-green-800 text-sm line-clamp-2">
+                              {species.commonName}
+                            </h4>
+                          </div>
                         </div>
-                        <div className="p-3 text-center">
-                          <h4 className="font-semibold text-green-800 text-sm line-clamp-2">
-                            {species.commonName}
-                          </h4>
-                        </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
+                    
+                    {/* Botón Ver todas las especies */}
+                    <div className="text-center pt-4 border-t">
+                      <Link href="/tree-species">
+                        <Button variant="outline" className="border-green-300 text-green-700 hover:bg-green-50">
+                          <Trees className="h-4 w-4 mr-2" />
+                          Ver todas las especies
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
                 ) : (
                   <div className="text-center py-8">
