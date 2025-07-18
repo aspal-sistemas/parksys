@@ -297,7 +297,7 @@ const Home: React.FC = () => {
               </div>
               <AdSpace 
                 spaceId="14" 
-                position="banner" 
+                position="sidebar" 
                 pageType="homepage" 
                 className="w-full"
               />

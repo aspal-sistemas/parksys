@@ -139,8 +139,16 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
 
   // Si está cargando o no hay asignación activa, no mostrar nada
   if (isLoading || !activePlacement) {
+    console.log('AdSpace: No hay asignación activa o está cargando', { isLoading, activePlacement, spaceId, position });
     return null;
   }
+
+  console.log('AdSpace: Mostrando anuncio', { 
+    spaceId, 
+    position, 
+    pageType, 
+    advertisement: activePlacement.advertisement 
+  });
 
   const { advertisement } = activePlacement;
   
