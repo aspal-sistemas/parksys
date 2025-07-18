@@ -697,11 +697,11 @@ function ParkLandingPage() {
 
         {/* Continuar con el resto del contenido */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
+          
           {/* Columna principal continúa */}
           <div className="lg:col-span-2 space-y-8">
-
-            {/* Sección de Actividades */}
+            
+            {/* Actividades */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -816,6 +816,66 @@ function ParkLandingPage() {
               </CardContent>
             </Card>
 
+            {/* ¡Realiza tu evento aquí! */}
+            <Card className="bg-gradient-to-r from-green-400 to-blue-500 text-white">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5" />
+                  ¡Realiza tu evento aquí!
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="mb-4">
+                  Organiza tu evento en este parque. Tenemos opciones para eventos de bajo y alto impacto.
+                </p>
+                <div className="space-y-3">
+                  <Link href="/admin/eventos-ambu/solicitud-bajo-impacto">
+                    <Button variant="outline" className="w-full bg-white text-green-700 hover:bg-green-50">
+                      <Calendar className="h-4 w-4 mr-2" />
+                      Solicitud de evento de bajo impacto
+                    </Button>
+                  </Link>
+                  <Link href="/admin/eventos-ambu/solicitud-alto-impacto">
+                    <Button variant="outline" className="w-full bg-white text-green-700 hover:bg-green-50">
+                      <Calendar className="h-4 w-4 mr-2" />
+                      Solicitud de evento de alto impacto
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Instalaciones */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Store className="h-5 w-5 text-orange-600" />
+                  Instalaciones
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {park.amenities && park.amenities.length > 0 ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    {park.amenities.map((amenity) => (
+                      <div key={amenity.id} className="text-center p-3 bg-gray-50 rounded-lg">
+                        <AmenityIcon 
+                          iconType={amenity.iconType} 
+                          customIconUrl={amenity.customIconUrl}
+                          size="h-8 w-8" 
+                        />
+                        <p className="text-sm font-medium mt-2">{amenity.name}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <Store className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                    <p>No hay instalaciones registradas.</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
             {/* Instructores */}
             {park.instructors && park.instructors.length > 0 && (
               <Card>
@@ -878,7 +938,6 @@ function ParkLandingPage() {
                                 </div>
                               )}
                               
-                              {/* Botones de acciones */}
                               <div className="mt-3 space-y-2">
                                 <div className="flex gap-2">
                                   <Link href={`/instructor/${instructor.id}`}>
