@@ -586,8 +586,9 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
       if (req.body.interestSports) interestAreas.push('sports');
       if (req.body.interestCultural) interestAreas.push('cultural');
       
-      // Simular available_days (por ahora usamos un default)
-      const availableDays = ['flexible'];
+      // Preparar arrays para PostgreSQL usando sintaxis nativa
+      const availableDaysArray = `{${['flexible'].join(',')}}`;
+      const interestAreasArray = `{${interestAreas.join(',')}}`;
         
       // Usar SQL directo para actualizar todos los campos usando los datos mapeados
       const result = await db.execute(
@@ -603,8 +604,8 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
           previous_experience = ${updateData.previous_experience || existingVolunteer.previous_experience},
           skills = ${updateData.skills || existingVolunteer.skills},
           available_hours = ${updateData.available_hours || existingVolunteer.available_hours},
-          available_days = ${JSON.stringify(availableDays)},
-          interest_areas = ${JSON.stringify(interestAreas)},
+          available_days = ${availableDaysArray}::text[],
+          interest_areas = ${interestAreasArray}::text[],
           legal_consent = ${updateData.legal_consent !== undefined ? updateData.legal_consent : existingVolunteer.legal_consent},
           updated_at = NOW()
         WHERE id = ${volunteerId}
