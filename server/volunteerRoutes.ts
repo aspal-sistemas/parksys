@@ -263,7 +263,7 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
         return res.status(400).json({ message: "ID de voluntario no válido" });
       }
       
-      // Obtener datos del voluntario con información del usuario
+      // Obtener datos del voluntario con información del usuario (LEFT JOIN para manejar voluntarios sin user_id)
       const result = await db.execute(
         sql`SELECT 
               v.id,
@@ -283,12 +283,13 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
               v.interest_areas,
               v.legal_consent,
               v.user_id,
-              u.full_name as user_full_name,
-              u.birth_date,
-              u.created_at,
-              u.updated_at
+              v.age,
+              v.created_at,
+              v.updated_at,
+              COALESCE(u.full_name, v.full_name) as user_full_name,
+              COALESCE(u.birth_date, '1990-01-01') as birth_date
             FROM volunteers v
-            JOIN users u ON v.user_id = u.id
+            LEFT JOIN users u ON v.user_id = u.id AND v.user_id IS NOT NULL
             WHERE v.id = ${volunteerId}`
       );
       
@@ -305,32 +306,44 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
       const firstName = nameParts[0] || '';
       const lastName = nameParts.slice(1).join(' ') || '';
       
+      // Manejar áreas de interés - pueden estar como string JSON o array
+      let interestAreas = [];
+      try {
+        if (typeof volunteerData.interest_areas === 'string') {
+          interestAreas = JSON.parse(volunteerData.interest_areas);
+        } else if (Array.isArray(volunteerData.interest_areas)) {
+          interestAreas = volunteerData.interest_areas;
+        }
+      } catch (e) {
+        interestAreas = [];
+      }
+
       const formattedVolunteer = {
         id: volunteerData.id,
         firstName: firstName,
         lastName: lastName,
-        email: volunteerData.email,
-        phone: volunteerData.phone,
+        email: volunteerData.email || '',
+        phone: volunteerData.phone || '',
         gender: volunteerData.gender || 'no_especificar',
-        birthDate: volunteerData.birth_date ? new Date(volunteerData.birth_date).toISOString().split('T')[0] : '',
+        birthDate: volunteerData.birth_date ? new Date(volunteerData.birth_date).toISOString().split('T')[0] : '1990-01-01',
         address: volunteerData.address || '',
         emergencyContactName: volunteerData.emergency_contact || '',
         emergencyContactPhone: volunteerData.emergency_phone || '',
-        preferredParkId: volunteerData.preferred_park_id?.toString() || '',
+        preferredParkId: volunteerData.preferred_park_id?.toString() || '5',
         volunteerExperience: volunteerData.previous_experience || '',
         skills: volunteerData.skills || '',
         availability: volunteerData.available_hours || 'flexible',
-        legalConsent: volunteerData.legal_consent || true,
-        status: volunteerData.status,
+        legalConsent: volunteerData.legal_consent !== false,
+        status: volunteerData.status || 'active',
         userId: volunteerData.user_id,
         municipalityId: 2, // Guadalajara por defecto
-        // Manejar áreas de interés
-        interestNature: volunteerData.interest_areas ? volunteerData.interest_areas.includes('nature') : false,
-        interestEvents: volunteerData.interest_areas ? volunteerData.interest_areas.includes('events') : false,
-        interestEducation: volunteerData.interest_areas ? volunteerData.interest_areas.includes('education') : false,
-        interestMaintenance: volunteerData.interest_areas ? volunteerData.interest_areas.includes('maintenance') : false,
-        interestSports: volunteerData.interest_areas ? volunteerData.interest_areas.includes('sports') : false,
-        interestCultural: volunteerData.interest_areas ? volunteerData.interest_areas.includes('cultural') : false,
+        // Manejar áreas de interés con datos por defecto
+        interestNature: interestAreas.includes('nature') || interestAreas.includes('naturaleza'),
+        interestEvents: interestAreas.includes('events') || interestAreas.includes('eventos'),
+        interestEducation: interestAreas.includes('education') || interestAreas.includes('educacion'),
+        interestMaintenance: interestAreas.includes('maintenance') || interestAreas.includes('mantenimiento'),
+        interestSports: interestAreas.includes('sports') || interestAreas.includes('deportes'),
+        interestCultural: interestAreas.includes('cultural') || interestAreas.includes('cultura'),
         // Valores por defecto para los campos requeridos
         ageConsent: true,
         conductConsent: true
