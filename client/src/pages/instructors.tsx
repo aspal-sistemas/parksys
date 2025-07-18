@@ -237,9 +237,13 @@ const InstructorsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Espacio Publicitario - Header */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-3">
-        <AdSpace spaceId="12" position="header" pageType="instructors" />
+      {/* Banner publicitario de ancho completo */}
+      <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] mb-8">
+        <AdSpace 
+          spaceId={38}
+          pageType="instructors"
+          position="banner"
+        />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-0 pb-2">
