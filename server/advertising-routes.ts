@@ -114,9 +114,10 @@ router.delete('/campaigns/:id', isAuthenticated, async (req, res) => {
 // Obtener todos los espacios
 router.get('/spaces', async (req, res) => {
   try {
-    const result = await db.execute(sql`SELECT * FROM ad_spaces ORDER BY id ASC`);
+    const result = await pool.query('SELECT * FROM ad_spaces ORDER BY id ASC');
     const spaces = result.rows.map(row => ({
       id: row.id,
+      name: row.name || `Espacio ${row.id}`,
       pageType: row.page_type,
       position: row.position,
       dimensions: row.dimensions,
@@ -169,6 +170,7 @@ router.get('/advertisements', async (req, res) => {
       description: row.description,
       imageUrl: row.image_url,
       content: row.content,
+      targetUrl: row.content, // Asegurar que targetUrl existe para el formulario de assignments
       altText: row.alt_text,
       campaignId: row.campaign_id,
       isActive: row.is_active,
@@ -652,6 +654,170 @@ router.get('/public/ads', async (req, res) => {
   } catch (error) {
     console.error('Error obteniendo anuncios públicos:', error);
     res.status(500).json({ success: false, error: 'Error obteniendo anuncios públicos' });
+  }
+});
+
+// ===================
+// ASSIGNMENTS ENDPOINTS
+// ===================
+
+// Obtener todas las asignaciones
+router.get('/assignments', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        ap.id,
+        ap.ad_space_id,
+        ap.advertisement_id,
+        ap.start_date,
+        ap.end_date,
+        ap.frequency,
+        ap.priority,
+        ap.is_active,
+        ap.created_at,
+        asp.name as space_name,
+        asp.page_type,
+        asp.position,
+        asp.dimensions,
+        ads.title as ad_title,
+        ads.description as ad_description,
+        ads.image_url,
+        ads.content as target_url,
+        ads.is_active as ad_is_active
+      FROM ad_placements ap
+      LEFT JOIN ad_spaces asp ON ap.ad_space_id = asp.id
+      LEFT JOIN advertisements ads ON ap.advertisement_id = ads.id
+      ORDER BY ap.created_at DESC
+    `);
+    
+    const assignments = result.rows.map(row => ({
+      id: row.id,
+      adSpaceId: row.ad_space_id,
+      advertisementId: row.advertisement_id,
+      startDate: row.start_date,
+      endDate: row.end_date,
+      frequency: row.frequency,
+      priority: row.priority,
+      isActive: row.is_active,
+      createdAt: row.created_at,
+      space: {
+        id: row.ad_space_id,
+        name: row.space_name,
+        pageType: row.page_type,
+        position: row.position,
+        dimensions: row.dimensions,
+      },
+      advertisement: {
+        id: row.advertisement_id,
+        title: row.ad_title,
+        description: row.ad_description,
+        imageUrl: row.image_url,
+        targetUrl: row.target_url,
+        isActive: row.ad_is_active,
+      }
+    }));
+    
+    res.json({ success: true, data: assignments });
+  } catch (error) {
+    console.error('Error obteniendo asignaciones:', error);
+    res.status(500).json({ success: false, error: 'Error obteniendo asignaciones' });
+  }
+});
+
+// Crear nueva asignación
+router.post('/assignments', isAuthenticated, async (req, res) => {
+  try {
+    const { ad_space_id, advertisement_id, start_date, end_date, frequency, priority, is_active } = req.body;
+    
+    const result = await pool.query(`
+      INSERT INTO ad_placements (
+        ad_space_id, 
+        advertisement_id, 
+        start_date, 
+        end_date, 
+        frequency, 
+        priority, 
+        is_active,
+        created_at,
+        updated_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      RETURNING *
+    `, [
+      parseInt(ad_space_id),
+      parseInt(advertisement_id),
+      new Date(start_date),
+      new Date(end_date),
+      frequency || 'always',
+      priority || 5,
+      is_active !== undefined ? is_active : true,
+      new Date(),
+      new Date()
+    ]);
+    
+    res.json({ success: true, data: result.rows[0] });
+  } catch (error) {
+    console.error('Error creando asignación:', error);
+    res.status(500).json({ success: false, error: 'Error creando asignación' });
+  }
+});
+
+// Actualizar asignación
+router.put('/assignments/:id', isAuthenticated, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { ad_space_id, advertisement_id, start_date, end_date, frequency, priority, is_active } = req.body;
+    
+    const result = await pool.query(`
+      UPDATE ad_placements 
+      SET 
+        ad_space_id = $1,
+        advertisement_id = $2,
+        start_date = $3,
+        end_date = $4,
+        frequency = $5,
+        priority = $6,
+        is_active = $7,
+        updated_at = $8
+      WHERE id = $9
+      RETURNING *
+    `, [
+      parseInt(ad_space_id),
+      parseInt(advertisement_id),
+      new Date(start_date),
+      new Date(end_date),
+      frequency,
+      priority,
+      is_active,
+      new Date(),
+      parseInt(id)
+    ]);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Asignación no encontrada' });
+    }
+    
+    res.json({ success: true, data: result.rows[0] });
+  } catch (error) {
+    console.error('Error actualizando asignación:', error);
+    res.status(500).json({ success: false, error: 'Error actualizando asignación' });
+  }
+});
+
+// Eliminar asignación
+router.delete('/assignments/:id', isAuthenticated, async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const result = await pool.query('DELETE FROM ad_placements WHERE id = $1 RETURNING *', [parseInt(id)]);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Asignación no encontrada' });
+    }
+    
+    res.json({ success: true, message: 'Asignación eliminada exitosamente' });
+  } catch (error) {
+    console.error('Error eliminando asignación:', error);
+    res.status(500).json({ success: false, error: 'Error eliminando asignación' });
   }
 });
 
