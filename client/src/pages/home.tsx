@@ -37,9 +37,11 @@ const Home: React.FC = () => {
   }, []);
   
   // Fetch a few featured parks
-  const { data: allParks = [], isLoading } = useQuery<ExtendedPark[]>({
+  const { data: parksResponse, isLoading } = useQuery<{data: ExtendedPark[], pagination: any}>({
     queryKey: ['/api/parks'],
   });
+  
+  const allParks = parksResponse?.data || [];
   
   // Filtrar parques sin nombre o marcados como eliminados
   const featuredParks = allParks.filter(park => 
