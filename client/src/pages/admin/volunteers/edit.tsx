@@ -408,8 +408,8 @@ export default function EditVolunteerPage() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="">Sin preferencia</SelectItem>
-                          {parks?.map((park: any) => (
+                          <SelectItem value="none">Sin preferencia</SelectItem>
+                          {parks && parks.map((park: any) => (
                             <SelectItem key={park.id} value={park.id.toString()}>
                               {park.name}
                             </SelectItem>
