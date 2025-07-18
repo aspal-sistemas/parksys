@@ -209,6 +209,16 @@ const Parks: React.FC = () => {
           </div>
         </div>
 
+        {/* Banner publicitario */}
+        <div className="max-w-6xl mx-auto mb-8">
+          <AdSpace 
+            spaceId="31" 
+            position="banner" 
+            pageType="parks" 
+            className="w-full"
+          />
+        </div>
+
         {/* Resultados con Sidebar */}
         <div className="mb-8" id="resultados-busqueda">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
