@@ -127,14 +127,7 @@ export default function ConcessionsList() {
         </div>
       </div>
 
-      {/* Espacio Publicitario Header */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 p-4 mb-6">
-          <AdSpace spaceId="8" position="header" pageType="concessions" />
-        </div>
-      </div>
-
-      {/* Filtros */}
+      {/* Filtros - Movidos pegados al hero */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -201,8 +194,15 @@ export default function ConcessionsList() {
             </Button>
           </div>
         </div>
+      </div>
 
-        {/* Resultados */}
+      {/* Banner Publicitario de Ancho Completo */}
+      <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] py-8">
+        <AdSpace spaceId="35" position="banner" pageType="concessions" />
+      </div>
+
+      {/* Resultados */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-900">
             {filteredConcessions.length} concesiones encontradas
