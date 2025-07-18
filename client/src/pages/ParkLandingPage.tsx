@@ -682,7 +682,7 @@ function ParkLandingPage() {
             )}
 
             {/* Banner publicitario después de Galería */}
-            <div className="max-w-full">
+            <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] my-8">
               <AdSpace 
                 spaceId="33" 
                 position="banner" 
