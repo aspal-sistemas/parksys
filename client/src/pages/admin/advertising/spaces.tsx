@@ -7,8 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import AdminLayout from '@/components/AdminLayout';
-import { MapPin, Calendar, Image, Link as LinkIcon, ExternalLink, Grid, List, Eye, Plus, Edit, Trash2, Search, Filter } from 'lucide-react';
+import { MapPin, Calendar, Image, Link as LinkIcon, ExternalLink, Grid, List, Eye, Plus, Edit, Trash2, Search, Filter, Power, PowerOff } from 'lucide-react';
 import { Link } from 'wouter';
+import { apiRequest } from '@/lib/queryClient';
 
 interface SpaceMapping {
   space_id: number;
@@ -37,6 +38,31 @@ const AdSpaces = () => {
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Mutación para toggle del estado de un espacio
+  const toggleSpaceMutation = useMutation({
+    mutationFn: async ({ spaceId, isActive }: { spaceId: number; isActive: boolean }) => {
+      return apiRequest(`/api/advertising-management/spaces/${spaceId}`, {
+        method: 'PUT',
+        data: { isActive: !isActive }
+      });
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/advertising-management/space-mappings'] });
+      toast({
+        title: "Espacio actualizado",
+        description: `El espacio ha sido ${data.data.isActive ? 'activado' : 'desactivado'} correctamente.`,
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "No se pudo actualizar el espacio. Intenta nuevamente.",
+        variant: "destructive",
+      });
+      console.error('Error toggling space:', error);
+    },
+  });
 
   // Usar el endpoint de space-mappings que tiene información completa
   const { data: spaceMappings, isLoading } = useQuery({
@@ -327,6 +353,29 @@ const AdSpaces = () => {
                             </p>
                           </div>
                         )}
+                        
+                        {/* Botón de toggle */}
+                        <div className="mt-3 flex justify-end">
+                          <Button
+                            variant={space.space_active ? "outline" : "default"}
+                            size="sm"
+                            onClick={() => toggleSpaceMutation.mutate({ spaceId: space.space_id, isActive: space.space_active })}
+                            disabled={toggleSpaceMutation.isPending}
+                            className="flex items-center gap-2"
+                          >
+                            {space.space_active ? (
+                              <>
+                                <PowerOff className="h-3 w-3" />
+                                Desactivar
+                              </>
+                            ) : (
+                              <>
+                                <Power className="h-3 w-3" />
+                                Activar
+                              </>
+                            )}
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -367,6 +416,25 @@ const AdSpaces = () => {
                               {new Date(space.start_date).toLocaleDateString()} - {new Date(space.end_date).toLocaleDateString()}
                             </Badge>
                           )}
+                          <Button
+                            variant={space.space_active ? "outline" : "default"}
+                            size="sm"
+                            onClick={() => toggleSpaceMutation.mutate({ spaceId: space.space_id, isActive: space.space_active })}
+                            disabled={toggleSpaceMutation.isPending}
+                            className="flex items-center gap-2"
+                          >
+                            {space.space_active ? (
+                              <>
+                                <PowerOff className="h-3 w-3" />
+                                Desactivar
+                              </>
+                            ) : (
+                              <>
+                                <Power className="h-3 w-3" />
+                                Activar
+                              </>
+                            )}
+                          </Button>
                         </div>
                       </div>
                     ))}

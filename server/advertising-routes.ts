@@ -156,6 +156,37 @@ router.post('/spaces', isAuthenticated, async (req, res) => {
   }
 });
 
+// Actualizar espacio publicitario
+router.put('/spaces/:id', isAuthenticated, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { isActive } = req.body;
+    
+    const result = await pool.query(
+      'UPDATE ad_spaces SET is_active = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *',
+      [isActive, id]
+    );
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Espacio no encontrado' });
+    }
+    
+    const space = result.rows[0];
+    res.json({ success: true, data: {
+      id: space.id,
+      name: space.name,
+      pageType: space.page_type,
+      position: space.position,
+      dimensions: space.dimensions,
+      isActive: space.is_active,
+      updatedAt: space.updated_at
+    }});
+  } catch (error) {
+    console.error('Error actualizando espacio:', error);
+    res.status(500).json({ success: false, error: 'Error actualizando espacio' });
+  }
+});
+
 // ===================
 // ANUNCIOS
 // ===================
