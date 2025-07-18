@@ -197,7 +197,7 @@ export default function ConcessionsList() {
       </div>
 
       {/* Banner Publicitario de Ancho Completo */}
-      <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] py-8">
+      <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] py-6">
         <AdSpace spaceId="35" position="banner" pageType="concessions" />
       </div>
 
