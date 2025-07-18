@@ -213,6 +213,15 @@ export default function VolunteersList() {
         </div>
       </div>
 
+      {/* Banner publicitario de ancho completo */}
+      <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] mb-8">
+        <AdSpace 
+          spaceId={37}
+          pageType="volunteers"
+          position="banner"
+        />
+      </div>
+
       {/* Lista de voluntarios con sidebar */}
       <div className="py-8">
         <div className="container mx-auto px-4">
