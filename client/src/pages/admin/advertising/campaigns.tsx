@@ -363,7 +363,7 @@ export default function CampaignsPage() {
   const queryClient = useQueryClient();
 
   // Consulta para obtener campañas
-  const { data: campaigns, isLoading } = useQuery({
+  const { data: campaignResponse, isLoading } = useQuery({
     queryKey: ['/api/advertising-management/campaigns'],
     queryFn: async () => {
       const response = await fetch('/api/advertising-management/campaigns');
@@ -371,6 +371,9 @@ export default function CampaignsPage() {
       return response.json();
     },
   });
+
+  // Extraer campaigns del response
+  const campaigns = campaignResponse?.data || [];
 
   // Mutación para crear campaña
   const createMutation = useMutation({
@@ -512,10 +515,10 @@ export default function CampaignsPage() {
   }) : [];
 
   // Estadísticas
-  const totalCampaigns = campaigns?.length || 0;
-  const activeCampaigns = campaigns?.filter(c => c.status === 'active').length || 0;
-  const totalBudget = campaigns?.reduce((sum, c) => sum + c.budget, 0) || 0;
-  const completedCampaigns = campaigns?.filter(c => c.status === 'completed').length || 0;
+  const totalCampaigns = Array.isArray(campaigns) ? campaigns.length : 0;
+  const activeCampaigns = Array.isArray(campaigns) ? campaigns.filter(c => c.status === 'active').length : 0;
+  const totalBudget = Array.isArray(campaigns) ? campaigns.reduce((sum, c) => sum + c.budget, 0) : 0;
+  const completedCampaigns = Array.isArray(campaigns) ? campaigns.filter(c => c.status === 'completed').length : 0;
 
   return (
     <AdminLayout>
