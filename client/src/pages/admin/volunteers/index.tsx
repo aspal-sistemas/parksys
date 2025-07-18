@@ -52,9 +52,11 @@ export default function VolunteersPage() {
   const volunteers = Array.isArray(volunteersData) ? volunteersData : [];
 
   // Obtener parques para referencia
-  const { data: parks } = useQuery({
+  const { data: parksResponse } = useQuery<{data: any[], pagination: any}>({
     queryKey: ['/api/parks'],
   });
+  
+  const parks = parksResponse?.data || [];
 
   // Filtrar voluntarios con filtros extendidos
   const filteredVolunteers = volunteers.filter((volunteer: any) => {
