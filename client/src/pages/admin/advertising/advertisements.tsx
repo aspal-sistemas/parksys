@@ -170,10 +170,22 @@ const AdAdvertisements = () => {
   // Create mutation
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      return await apiRequest('/api/advertising-management/advertisements', {
+      const formDataToSend = new FormData();
+      formDataToSend.append('campaign_id', data.campaign_id.toString());
+      formDataToSend.append('title', data.title);
+      formDataToSend.append('description', data.description || '');
+      formDataToSend.append('content', data.content || '');
+      formDataToSend.append('image_url', data.image_url || '');
+      formDataToSend.append('media_type', data.media_type || 'image');
+      formDataToSend.append('storage_type', data.storage_type || 'url');
+      formDataToSend.append('duration', data.duration.toString());
+      formDataToSend.append('alt_text', data.alt_text || '');
+      formDataToSend.append('is_active', data.is_active.toString());
+      
+      return await fetch('/api/advertising-management/advertisements', {
         method: 'POST',
-        body: JSON.stringify(data),
-      });
+        body: formDataToSend,
+      }).then(res => res.json());
     },
     onSuccess: () => {
       toast({

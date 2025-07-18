@@ -264,7 +264,7 @@ router.post('/advertisements', isAuthenticated, upload.single('image'), async (r
     
     console.log('Datos recibidos para crear anuncio:', req.body);
     
-    // Usar SQL directo para evitar problemas con Drizzle ORM
+    // Usar SQL con SERIAL para generar ID automáticamente
     const result = await pool.query(`
       INSERT INTO advertisements (
         campaign_id, 
@@ -283,7 +283,7 @@ router.post('/advertisements', isAuthenticated, upload.single('image'), async (r
       RETURNING *
     `, [
       campaign_id && campaign_id !== 0 ? parseInt(campaign_id) : null,
-      title || '',
+      title || 'Anuncio sin título',
       description || '',
       content || '',
       image_url || '',
