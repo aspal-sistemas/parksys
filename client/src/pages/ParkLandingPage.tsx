@@ -337,20 +337,20 @@ function ParkLandingPage() {
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                     {park.amenities.map((amenity) => (
                       <div key={amenity.id} className="flex flex-col items-center p-4 bg-gray-50 rounded-lg border text-center">
-                        <div className="w-16 h-16 flex items-center justify-center mb-3">
+                        <div className="w-20 h-20 flex items-center justify-center mb-3">
                           {amenity.iconType === 'custom' && amenity.customIconUrl ? (
                             <img 
                               src={amenity.customIconUrl} 
                               alt={amenity.name}
-                              className="w-16 h-16 object-contain"
+                              className="w-20 h-20 object-contain"
                               onError={(e) => {
                                 console.error('Error cargando icono:', amenity.customIconUrl);
                                 e.currentTarget.style.display = 'none';
                               }}
                             />
                           ) : (
-                            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-                              <Trees className="h-8 w-8 text-green-600" />
+                            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center">
+                              <Trees className="h-10 w-10 text-green-600" />
                             </div>
                           )}
                         </div>
