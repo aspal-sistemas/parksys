@@ -355,19 +355,9 @@ export default function TreeSpecies() {
           </div>
         </div>
         
-        <div className="max-w-7xl mx-auto px-4 py-12">
-
-          {/* Publicidad Header */}
-          <div className="mb-8 flex justify-center">
-            <AdSpace 
-              spaceId="4"
-              position="header"
-              pageType="tree-species"
-            />
-          </div>
-
-          {/* Controles */}
-          <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+        {/* Filtros - Movidos pegados al hero */}
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="bg-white rounded-lg shadow-sm p-6">
             <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
               <div className="flex-1 max-w-md">
                 <div className="relative">
@@ -427,7 +417,14 @@ export default function TreeSpecies() {
               </div>
             </div>
           </div>
+        </div>
 
+        {/* Banner Publicitario de Ancho Completo */}
+        <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] mb-8">
+          <AdSpace spaceId="36" position="banner" pageType="tree-species" />
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4">
           {/* Estadísticas */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <Card>
