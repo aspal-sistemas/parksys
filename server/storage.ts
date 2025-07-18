@@ -1451,7 +1451,10 @@ DatabaseStorage.prototype.getParkActivities = async function(parkId: number): Pr
       ORDER BY a.start_date DESC
     `, [parkId]);
 
-    console.log("🎯 Activities found for park", parkId, ":", result.rows.length);
+    console.log("🎯 GET PARK ACTIVITIES - Activities found for park", parkId, ":", result.rows.length);
+    if (result.rows.length > 0) {
+      console.log("🎯 GET PARK ACTIVITIES - Sample activity:", result.rows[0]);
+    }
     
     return result.rows.map(row => ({
       id: row.id,
@@ -1582,32 +1585,32 @@ DatabaseStorage.prototype.updateActivity = async function(id: number, activityDa
     
     if (activityData.title) updateData.title = activityData.title;
     if (activityData.description) updateData.description = activityData.description;
-    if (activityData.parkId) updateData.parkId = Number(activityData.parkId);
-    if (activityData.startDate) updateData.startDate = activityData.startDate;
-    if (activityData.endDate) updateData.endDate = activityData.endDate;
-    if (activityData.startTime) updateData.startTime = activityData.startTime;
-    if (activityData.endTime) updateData.endTime = activityData.endTime;
+    if (activityData.parkId) updateData.park_id = Number(activityData.parkId);
+    if (activityData.startDate) updateData.start_date = activityData.startDate;
+    if (activityData.endDate) updateData.end_date = activityData.endDate;
+    if (activityData.startTime) updateData.start_time = activityData.startTime;
+    if (activityData.endTime) updateData.end_time = activityData.endTime;
     if (activityData.location) updateData.location = activityData.location;
     if (activityData.capacity) updateData.capacity = Number(activityData.capacity);
     if (activityData.duration !== undefined) updateData.duration = Number(activityData.duration);
     if (activityData.price !== undefined) updateData.price = Number(activityData.price);
-    if (activityData.isFree !== undefined) updateData.isFree = Boolean(activityData.isFree);
-    if (activityData.isPriceRandom !== undefined) updateData.isPriceRandom = Boolean(activityData.isPriceRandom);
+    if (activityData.isFree !== undefined) updateData.is_free = Boolean(activityData.isFree);
+    if (activityData.isPriceRandom !== undefined) updateData.is_price_random = Boolean(activityData.isPriceRandom);
     if (activityData.materials) updateData.materials = activityData.materials;
     if (activityData.requirements) updateData.requirements = activityData.requirements;
-    if (activityData.isRecurring !== undefined) updateData.isRecurring = Boolean(activityData.isRecurring);
-    if (activityData.recurringDays !== undefined) updateData.recurringDays = Array.isArray(activityData.recurringDays) ? JSON.stringify(activityData.recurringDays) : activityData.recurringDays;
-    if (activityData.targetMarket !== undefined) updateData.targetMarket = Array.isArray(activityData.targetMarket) ? JSON.stringify(activityData.targetMarket) : activityData.targetMarket;
-    if (activityData.specialNeeds !== undefined) updateData.specialNeeds = Array.isArray(activityData.specialNeeds) ? JSON.stringify(activityData.specialNeeds) : activityData.specialNeeds;
+    if (activityData.isRecurring !== undefined) updateData.is_recurring = Boolean(activityData.isRecurring);
+    if (activityData.recurringDays !== undefined) updateData.recurring_days = Array.isArray(activityData.recurringDays) ? JSON.stringify(activityData.recurringDays) : activityData.recurringDays;
+    if (activityData.targetMarket !== undefined) updateData.target_market = Array.isArray(activityData.targetMarket) ? JSON.stringify(activityData.targetMarket) : activityData.targetMarket;
+    if (activityData.specialNeeds !== undefined) updateData.special_needs = Array.isArray(activityData.specialNeeds) ? JSON.stringify(activityData.specialNeeds) : activityData.specialNeeds;
     
     // Campos específicos que necesitan mapeo especial
-    if (activityData.category) {
-      updateData.categoryId = Number(activityData.category);
+    if (activityData.category_id) {
+      updateData.category_id = Number(activityData.category_id);
       updateData.category = null; // Limpiar el campo legacy
     }
     
     if (activityData.instructorId) {
-      updateData.instructorId = Number(activityData.instructorId);
+      updateData.instructor_id = Number(activityData.instructorId);
     }
     
     console.log("📝 Datos mapeados para actualizar:", updateData);
