@@ -671,7 +671,6 @@ router.get('/assignments', async (req, res) => {
         ap.advertisement_id,
         ap.start_date,
         ap.end_date,
-        ap.frequency,
         ap.priority,
         ap.is_active,
         ap.created_at,
@@ -696,7 +695,7 @@ router.get('/assignments', async (req, res) => {
       advertisementId: row.advertisement_id,
       startDate: row.start_date,
       endDate: row.end_date,
-      frequency: row.frequency,
+      frequency: 'always', // Default value since column doesn't exist
       priority: row.priority,
       isActive: row.is_active,
       createdAt: row.created_at,
@@ -735,19 +734,17 @@ router.post('/assignments', isAuthenticated, async (req, res) => {
         advertisement_id, 
         start_date, 
         end_date, 
-        frequency, 
         priority, 
         is_active,
         created_at,
         updated_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING *
     `, [
       parseInt(ad_space_id),
       parseInt(advertisement_id),
       new Date(start_date),
       new Date(end_date),
-      frequency || 'always',
       priority || 5,
       is_active !== undefined ? is_active : true,
       new Date(),
@@ -774,18 +771,16 @@ router.put('/assignments/:id', isAuthenticated, async (req, res) => {
         advertisement_id = $2,
         start_date = $3,
         end_date = $4,
-        frequency = $5,
-        priority = $6,
-        is_active = $7,
-        updated_at = $8
-      WHERE id = $9
+        priority = $5,
+        is_active = $6,
+        updated_at = $7
+      WHERE id = $8
       RETURNING *
     `, [
       parseInt(ad_space_id),
       parseInt(advertisement_id),
       new Date(start_date),
       new Date(end_date),
-      frequency,
       priority,
       is_active,
       new Date(),

@@ -203,13 +203,17 @@ const AssignmentForm: React.FC<{ assignment?: Assignment; onSubmit: (data: Assig
     },
   });
 
-  const { data: spaces } = useQuery<AdSpace[]>({
+  const { data: spacesResponse } = useQuery({
     queryKey: ['/api/advertising-management/spaces'],
   });
 
-  const { data: advertisements } = useQuery<Advertisement[]>({
+  const { data: advertisementsResponse } = useQuery({
     queryKey: ['/api/advertising-management/advertisements'],
   });
+
+  // Extract data from API response structure
+  const spaces = spacesResponse?.data || spacesResponse || [];
+  const advertisements = advertisementsResponse?.data || advertisementsResponse || [];
 
   const handleSubmit = (data: AssignmentFormData) => {
     onSubmit(data);
@@ -422,9 +426,12 @@ export default function AdvertisingAssignments() {
 
   const queryClient = useQueryClient();
 
-  const { data: assignments, isLoading } = useQuery<Assignment[]>({
+  const { data: assignmentsResponse, isLoading } = useQuery({
     queryKey: ['/api/advertising-management/assignments'],
   });
+
+  // Extract assignments from the API response structure
+  const assignments = assignmentsResponse?.data || assignmentsResponse || [];
 
   const createMutation = useMutation({
     mutationFn: async (data: AssignmentFormData) => {
