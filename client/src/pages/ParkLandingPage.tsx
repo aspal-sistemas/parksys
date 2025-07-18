@@ -70,10 +70,18 @@ function ParkLandingPage() {
 
   const goToPreviousImage = () => {
     if (!selectedImage || !park) return;
+    const primaryImageExists = park?.images?.some(img => img.isPrimary) || false;
     const mainImage = park.primaryImage || 
       (park.images && park.images.length > 0 ? park.images[0].imageUrl : '') ||
       (park.images && park.images.length > 0 ? park.images[0].url : '');
-    const additionalImages = park.images?.filter(img => !img.isPrimary) || [];
+    
+    const additionalImages = park?.images?.filter((img, index) => {
+      if (primaryImageExists) {
+        return !img.isPrimary;
+      } else {
+        return index !== 0;
+      }
+    }) || [];
     
     const allImages = [
       ...(mainImage ? [{ imageUrl: mainImage, caption: `Vista principal de ${park.name}` }] : []),
@@ -87,10 +95,18 @@ function ParkLandingPage() {
 
   const goToNextImage = () => {
     if (!selectedImage || !park) return;
+    const primaryImageExists = park?.images?.some(img => img.isPrimary) || false;
     const mainImage = park.primaryImage || 
       (park.images && park.images.length > 0 ? park.images[0].imageUrl : '') ||
       (park.images && park.images.length > 0 ? park.images[0].url : '');
-    const additionalImages = park.images?.filter(img => !img.isPrimary) || [];
+    
+    const additionalImages = park?.images?.filter((img, index) => {
+      if (primaryImageExists) {
+        return !img.isPrimary;
+      } else {
+        return index !== 0;
+      }
+    }) || [];
     
     const allImages = [
       ...(mainImage ? [{ imageUrl: mainImage, caption: `Vista principal de ${park.name}` }] : []),
@@ -158,12 +174,22 @@ function ParkLandingPage() {
   }
 
   // Get main image - prioritize primary image or first available image
+  const primaryImageExists = park?.images?.some(img => img.isPrimary) || false;
   const mainImage = park ? (park.primaryImage || 
     (park.images && park.images.length > 0 ? park.images[0].imageUrl : '') ||
     (park.images && park.images.length > 0 ? park.images[0].url : '')) : '';
-  const additionalImages = park?.images?.filter(img => !img.isPrimary) || [];
   
-  // All images for gallery (including main image)
+  // Si hay imagen primaria marcada, excluirla de adicionales
+  // Si NO hay imagen primaria, excluir la primera imagen que se usa como main
+  const additionalImages = park?.images?.filter((img, index) => {
+    if (primaryImageExists) {
+      return !img.isPrimary; // Excluir solo las marcadas como primarias
+    } else {
+      return index !== 0; // Excluir la primera imagen (que se usa como main)
+    }
+  }) || [];
+  
+  // All images for gallery - sin duplicación
   const allImages = [
     ...(mainImage ? [{ imageUrl: mainImage, caption: `Vista principal de ${park?.name || 'Parque'}` }] : []),
     ...additionalImages
