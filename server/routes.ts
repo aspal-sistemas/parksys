@@ -339,7 +339,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }).single('file');
   
   apiRouter.post('/upload/volunteer-profile', (req: Request, res: Response) => {
-    volunteerUpload(req, res, (err) => {
+    volunteerUpload(req, res, async (err) => {
       if (err) {
         if (err instanceof multer.MulterError) {
           if (err.code === 'LIMIT_FILE_SIZE') {
@@ -363,6 +363,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const imageUrl = `/uploads/volunteers/${req.file.filename}`;
+      
+      // Si se proporciona volunteerId, actualizar la base de datos
+      const volunteerId = req.body.volunteerId;
+      if (volunteerId) {
+        try {
+          await pool.query(
+            'UPDATE volunteers SET profile_image_url = $1, updated_at = NOW() WHERE id = $2',
+            [imageUrl, parseInt(volunteerId)]
+          );
+          console.log(`✅ Imagen de perfil actualizada en BD para voluntario ${volunteerId}: ${imageUrl}`);
+        } catch (dbError) {
+          console.error('Error actualizando imagen en base de datos:', dbError);
+          // Continuamos aunque falle la actualización de BD
+        }
+      }
+      
       res.json({
         success: true,
         url: imageUrl,

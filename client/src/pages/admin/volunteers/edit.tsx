@@ -107,6 +107,7 @@ export default function EditVolunteerPage() {
     try {
       const formData = new FormData();
       formData.append('file', file);
+      formData.append('volunteerId', volunteerId); // Agregar ID del voluntario
 
       const response = await apiRequest('/api/upload/volunteer-profile', {
         method: 'POST',
