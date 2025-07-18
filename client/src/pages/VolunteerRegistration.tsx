@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -37,15 +37,7 @@ const volunteerSchema = z.object({
 
 type VolunteerFormData = z.infer<typeof volunteerSchema>;
 
-const daysOfWeek = [
-  { id: "lunes", label: "Lunes" },
-  { id: "martes", label: "Martes" },
-  { id: "miercoles", label: "Miércoles" },
-  { id: "jueves", label: "Jueves" },
-  { id: "viernes", label: "Viernes" },
-  { id: "sabado", label: "Sábado" },
-  { id: "domingo", label: "Domingo" }
-];
+
 
 export default function VolunteerRegistration() {
   const [, setLocation] = useLocation();
@@ -76,10 +68,6 @@ export default function VolunteerRegistration() {
   });
 
   // Consultas para datos necesarios
-  const { data: parksResponse } = useQuery({
-    queryKey: ["/api/parks"],
-  });
-
   const { data: municipalities } = useQuery({
     queryKey: ["/api/municipalities"],
   });
@@ -185,7 +173,7 @@ export default function VolunteerRegistration() {
     createVolunteerMutation.mutate(data);
   };
 
-  const parks = parksResponse?.data || [];
+
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -501,96 +489,47 @@ export default function VolunteerRegistration() {
                   <FormField
                     control={form.control}
                     name="availability"
-                    render={() => (
+                    render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Días Disponibles</FormLabel>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                          {daysOfWeek.map((day) => (
-                            <FormField
-                              key={day.id}
-                              control={form.control}
-                              name="availability"
-                              render={({ field }) => {
-                                return (
-                                  <FormItem
-                                    key={day.id}
-                                    className="flex flex-row items-start space-x-3 space-y-0"
-                                  >
-                                    <FormControl>
-                                      <Checkbox
-                                        checked={field.value?.includes(day.id)}
-                                        onCheckedChange={(checked) => {
-                                          return checked
-                                            ? field.onChange([...field.value, day.id])
-                                            : field.onChange(
-                                                field.value?.filter(
-                                                  (value) => value !== day.id
-                                                )
-                                              )
-                                        }}
-                                      />
-                                    </FormControl>
-                                    <FormLabel className="text-sm font-normal">
-                                      {day.label}
-                                    </FormLabel>
-                                  </FormItem>
-                                )
-                              }}
-                            />
-                          ))}
-                        </div>
+                        <FormLabel>Disponibilidad</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="Describe tu disponibilidad horaria (ejemplo: Lunes a viernes por las tardes, fines de semana por las mañanas)"
+                            className="min-h-[80px]"
+                            {...field} 
+                          />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
 
-                {/* Sección: Parques de Interés */}
+                {/* Sección: Términos y condiciones */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
-                    Parques de Interés
+                    Términos y Condiciones
                   </h3>
                   
                   <FormField
                     control={form.control}
-                    name="parkIds"
-                    render={() => (
-                      <FormItem>
-                        <FormLabel>Parques donde te gustaría colaborar</FormLabel>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-60 overflow-y-auto">
-                          {parks.map((park: any) => (
-                            <FormField
-                              key={park.id}
-                              control={form.control}
-                              name="parkIds"
-                              render={({ field }) => {
-                                return (
-                                  <FormItem
-                                    key={park.id}
-                                    className="flex flex-row items-start space-x-3 space-y-0"
-                                  >
-                                    <FormControl>
-                                      <Checkbox
-                                        checked={field.value?.includes(park.id.toString())}
-                                        onCheckedChange={(checked) => {
-                                          return checked
-                                            ? field.onChange([...field.value, park.id.toString()])
-                                            : field.onChange(
-                                                field.value?.filter(
-                                                  (value) => value !== park.id.toString()
-                                                )
-                                              )
-                                        }}
-                                      />
-                                    </FormControl>
-                                    <FormLabel className="text-sm font-normal">
-                                      {park.name}
-                                    </FormLabel>
-                                  </FormItem>
-                                )
-                              }}
-                            />
-                          ))}
+                    name="termsAccepted"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>
+                            Acepto los términos y condiciones del programa de voluntariado
+                          </FormLabel>
+                          <FormDescription>
+                            Al marcar esta casilla, confirmo que he leído y acepto las condiciones 
+                            para participar como voluntario en los parques urbanos.
+                          </FormDescription>
                         </div>
                         <FormMessage />
                       </FormItem>
@@ -611,9 +550,9 @@ export default function VolunteerRegistration() {
                   <Button
                     type="submit"
                     className="flex-1 bg-[#00a587] hover:bg-[#067f5f]"
-                    disabled={createVolunteerMutation.isPending || uploadImageMutation.isPending}
+                    disabled={createVolunteerMutation.isPending}
                   >
-                    {createVolunteerMutation.isPending || uploadImageMutation.isPending
+                    {createVolunteerMutation.isPending
                       ? "Registrando..."
                       : "Registrarme como Voluntario"
                     }
