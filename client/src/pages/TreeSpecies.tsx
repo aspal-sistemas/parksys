@@ -256,6 +256,7 @@ export default function TreeSpecies() {
   const [searchTerm, setSearchTerm] = useState('');
   const [originFilter, setOriginFilter] = useState('all');
   const [growthRateFilter, setGrowthRateFilter] = useState('all');
+  const [parkFilter, setParkFilter] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -270,8 +271,30 @@ export default function TreeSpecies() {
     }
   });
 
+  // Consulta para obtener todos los parques
+  const { data: parksResponse } = useQuery({
+    queryKey: ['/api/parks'],
+    queryFn: async () => {
+      const response = await fetch('/api/parks?limit=100');
+      if (!response.ok) throw new Error('Error cargando parques');
+      return response.json();
+    }
+  });
+
+  // Consulta para obtener las asignaciones de especies a parques
+  const { data: parkSpeciesResponse } = useQuery({
+    queryKey: ['/api/park-tree-species'],
+    queryFn: async () => {
+      const response = await fetch('/api/park-tree-species');
+      if (!response.ok) throw new Error('Error cargando especies por parque');
+      return response.json();
+    }
+  });
+
   // Extraer los datos de la respuesta
   const treeSpecies = treeSpeciesResponse?.data || [];
+  const parks = parksResponse?.data || [];
+  const parkSpeciesAssignments = parkSpeciesResponse?.data || [];
 
   // Filtrar especies
   const filteredSpecies = useMemo(() => {
@@ -286,9 +309,15 @@ export default function TreeSpecies() {
       const matchesOrigin = originFilter === 'all' || species.origin === originFilter;
       const matchesGrowthRate = growthRateFilter === 'all' || species.growthRate === growthRateFilter;
       
-      return matchesSearch && matchesOrigin && matchesGrowthRate;
+      // Filtro por parque
+      const matchesPark = parkFilter === 'all' || 
+        parkSpeciesAssignments.some((assignment: any) => 
+          assignment.speciesId === species.id && assignment.parkId === parseInt(parkFilter)
+        );
+      
+      return matchesSearch && matchesOrigin && matchesGrowthRate && matchesPark;
     });
-  }, [treeSpecies, searchTerm, originFilter, growthRateFilter]);
+  }, [treeSpecies, searchTerm, originFilter, growthRateFilter, parkFilter, parkSpeciesAssignments]);
 
   // Calcular paginación
   const totalItems = filteredSpecies.length;
@@ -299,7 +328,7 @@ export default function TreeSpecies() {
   // Resetear a página 1 cuando cambian los filtros
   React.useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, originFilter, growthRateFilter]);
+  }, [searchTerm, originFilter, growthRateFilter, parkFilter]);
 
   if (isLoading) {
     return (
@@ -372,6 +401,20 @@ export default function TreeSpecies() {
               </div>
               
               <div className="flex gap-3">
+                <Select value={parkFilter} onValueChange={setParkFilter}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="Parque" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los parques</SelectItem>
+                    {parks.map((park: any) => (
+                      <SelectItem key={park.id} value={park.id.toString()}>
+                        {park.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                
                 <Select value={originFilter} onValueChange={setOriginFilter}>
                   <SelectTrigger className="w-40">
                     <SelectValue placeholder="Origen" />

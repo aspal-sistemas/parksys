@@ -1516,6 +1516,25 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
 
   // ============== RUTAS PARA GESTIÓN DE ESPECIES ARBÓREAS EN PARQUES ==============
 
+  // Obtener todas las asignaciones de especies a parques (para filtros)
+  apiRouter.get("/park-tree-species", async (req: Request, res: Response) => {
+    try {
+      const result = await db.execute(sql`
+        SELECT 
+          pts.id,
+          pts.park_id as "parkId",
+          pts.species_id as "speciesId"
+        FROM park_tree_species pts
+        ORDER BY pts.park_id, pts.species_id
+      `);
+      
+      res.json({ data: result.rows });
+    } catch (error) {
+      console.error("Error al obtener asignaciones de especies a parques:", error);
+      res.status(500).json({ error: "Error al obtener asignaciones de especies a parques" });
+    }
+  });
+
   // Obtener especies asignadas a un parque
   apiRouter.get("/parks/:id/tree-species", async (req: Request, res: Response) => {
     try {
