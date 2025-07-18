@@ -288,14 +288,14 @@ function ParkLandingPage() {
                 {/* Basic Details Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
                   <div className="text-center p-4 bg-gray-50 rounded-lg">
-                    <Globe className="h-6 w-6 mx-auto mb-2 text-gray-600" />
+                    <Globe className="h-6 w-6 mx-auto mb-2 text-blue-600" />
                     <p className="text-sm text-gray-500">Tipo</p>
                     <p className="font-semibold">{getParkTypeLabel(park.parkType || 'urbano')}</p>
                   </div>
                   
                   {park.area && (
                     <div className="text-center p-4 bg-gray-50 rounded-lg">
-                      <Trees className="h-6 w-6 mx-auto mb-2 text-gray-600" />
+                      <Trees className="h-6 w-6 mx-auto mb-2 text-green-600" />
                       <p className="text-sm text-gray-500">Superficie</p>
                       <p className="font-semibold">
                         {Number(park.area) >= 10000 
@@ -307,14 +307,14 @@ function ParkLandingPage() {
                   
                   {park.foundationYear && (
                     <div className="text-center p-4 bg-gray-50 rounded-lg">
-                      <Calendar className="h-6 w-6 mx-auto mb-2 text-gray-600" />
+                      <Calendar className="h-6 w-6 mx-auto mb-2 text-purple-600" />
                       <p className="text-sm text-gray-500">Fundado</p>
                       <p className="font-semibold">{park.foundationYear}</p>
                     </div>
                   )}
                   
                   <div className="text-center p-4 bg-gray-50 rounded-lg">
-                    <Clock className="h-6 w-6 mx-auto mb-2 text-gray-600" />
+                    <Clock className="h-6 w-6 mx-auto mb-2 text-orange-600" />
                     <p className="text-sm text-gray-500">Horario</p>
                     <p className="font-semibold">7:00 - 19:30</p>
                   </div>
