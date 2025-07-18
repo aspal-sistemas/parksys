@@ -15,7 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Save, Edit } from "lucide-react";
+import { ArrowLeft, Save, Edit, Camera, Upload, X } from "lucide-react";
 
 // Esquema de validación para editar voluntario
 const editVolunteerSchema = z.object({
@@ -52,6 +52,9 @@ const editVolunteerSchema = z.object({
   ageConsent: z.boolean().refine(val => val === true, 'Debe confirmar ser mayor de edad'),
   conductConsent: z.boolean().refine(val => val === true, 'Debe aceptar el código de conducta'),
   
+  // Fotografía del voluntario
+  profileImage: z.any().optional(),
+  
   // Municipalidad
   municipalityId: z.number().optional(),
 });
@@ -64,6 +67,9 @@ export default function EditVolunteerPage() {
   const queryClient = useQueryClient();
   const [match, params] = useRoute('/admin/volunteers/edit/:id');
   const volunteerId = params?.id;
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   const form = useForm<EditVolunteerForm>({
     resolver: zodResolver(editVolunteerSchema),
@@ -91,8 +97,56 @@ export default function EditVolunteerPage() {
       ageConsent: false,
       conductConsent: false,
       municipalityId: 2, // Guadalajara por defecto
+      profileImage: null,
     },
   });
+
+  // Función para manejar la subida de imagen
+  const handleImageUpload = async (file: File) => {
+    setIsUploadingImage(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await apiRequest('/api/upload/volunteer-profile', {
+        method: 'POST',
+        data: formData,
+        headers: {
+          // No enviar Content-Type para permitir que el navegador lo establezca automáticamente
+        },
+      });
+
+      if (response.url) {
+        setUploadedImageUrl(response.url);
+        setImageFile(file);
+        form.setValue('profileImage', file);
+        toast({
+          title: 'Imagen actualizada',
+          description: 'La fotografía del voluntario se ha actualizado correctamente',
+        });
+      }
+    } catch (error) {
+      console.error('Error subiendo imagen:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudo subir la imagen. Intente nuevamente.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
+  // Función para remover la imagen
+  const handleRemoveImage = () => {
+    setUploadedImageUrl(null);
+    setImageFile(null);
+    form.setValue('profileImage', null);
+    toast({
+      title: 'Imagen removida',
+      description: 'La fotografía del voluntario ha sido removida',
+    });
+  };
 
   // Obtener datos del voluntario
   const { data: volunteerData, isLoading: isLoadingVolunteer } = useQuery({
@@ -115,6 +169,11 @@ export default function EditVolunteerPage() {
   // Llenar el formulario cuando se cargan los datos
   useEffect(() => {
     if (volunteerData) {
+      // Si el voluntario tiene una imagen de perfil, mostrarla
+      if (volunteerData.profileImageUrl || volunteerData.profile_image_url) {
+        setUploadedImageUrl(volunteerData.profileImageUrl || volunteerData.profile_image_url);
+      }
+      
       form.reset({
         firstName: volunteerData.firstName || '',
         lastName: volunteerData.lastName || '',
@@ -139,6 +198,7 @@ export default function EditVolunteerPage() {
         ageConsent: volunteerData.ageConsent || true,
         conductConsent: volunteerData.conductConsent || true,
         municipalityId: volunteerData.municipalityId || 2,
+        profileImage: volunteerData.profileImageUrl || volunteerData.profile_image_url || null,
       });
     }
   }, [volunteerData, form]);
@@ -348,6 +408,78 @@ export default function EditVolunteerPage() {
                     </FormItem>
                   )}
                 />
+
+                {/* Campo de fotografía del voluntario */}
+                <div className="mt-6">
+                  <FormField
+                    control={form.control}
+                    name="profileImage"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center gap-2">
+                          <Camera className="h-4 w-4" />
+                          Fotografía del Voluntario (Opcional)
+                        </FormLabel>
+                        <FormControl>
+                          <div className="space-y-4">
+                            {!uploadedImageUrl ? (
+                              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                                <div className="flex flex-col items-center gap-2">
+                                  <Upload className="h-8 w-8 text-gray-400" />
+                                  <p className="text-sm text-gray-600">
+                                    Subir o cambiar fotografía del voluntario
+                                  </p>
+                                  <p className="text-xs text-gray-500">
+                                    JPG, PNG o WEBP (máx. 5MB)
+                                  </p>
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0];
+                                      if (file) {
+                                        handleImageUpload(file);
+                                      }
+                                    }}
+                                    className="hidden"
+                                    id="volunteer-image-upload-edit"
+                                  />
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => document.getElementById('volunteer-image-upload-edit')?.click()}
+                                    disabled={isUploadingImage}
+                                  >
+                                    {isUploadingImage ? 'Subiendo...' : 'Seleccionar Imagen'}
+                                  </Button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="relative inline-block">
+                                <img
+                                  src={uploadedImageUrl}
+                                  alt="Foto del voluntario"
+                                  className="w-32 h-32 object-cover rounded-lg border"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="destructive"
+                                  size="sm"
+                                  className="absolute -top-2 -right-2 h-6 w-6 p-0"
+                                  onClick={handleRemoveImage}
+                                >
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </CardContent>
             </Card>
 
