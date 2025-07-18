@@ -214,8 +214,17 @@ export default function ParkMultimediaManager({ parkId }: ParkMultimediaManagerP
         title: "Imagen eliminada",
         description: "La imagen se ha eliminado correctamente.",
       });
+      
+      // Invalidación múltiple del cache con diferentes estrategias
       queryClient.invalidateQueries({ queryKey: [`/api/parks/${parkId}/images`] });
       queryClient.invalidateQueries({ queryKey: [`/api/parks/${parkId}`] });
+      queryClient.removeQueries({ queryKey: [`/api/parks/${parkId}/images`] });
+      queryClient.refetchQueries({ queryKey: [`/api/parks/${parkId}/images`] });
+      
+      // Forzar re-render del componente
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: [`/api/parks/${parkId}/images`] });
+      }, 100);
     },
     onError: () => {
       toast({
