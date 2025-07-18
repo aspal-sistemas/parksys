@@ -394,51 +394,72 @@ export async function getParkByIdDirectly(parkId: number) {
       const columnsArray = [];
       
       // Añadimos campos básicos que deben existir
-      columnsArray.push('id');
-      columnsArray.push('park_id as "parkId"');
-      columnsArray.push('title');
+      columnsArray.push('a.id');
+      columnsArray.push('a.park_id as "parkId"');
+      columnsArray.push('a.title');
       
       // Comprobamos campos opcionales
       if (activityColumns.rows.some(col => col.column_name === 'description')) {
-        columnsArray.push('description');
+        columnsArray.push('a.description');
       }
       
       // Comprobamos si existe category (columna de texto)
       if (activityColumns.rows.some(col => col.column_name === 'category')) {
-        columnsArray.push('category');
+        columnsArray.push('a.category');
       }
       
       if (activityColumns.rows.some(col => col.column_name === 'start_date')) {
-        columnsArray.push('start_date as "startDate"');
+        columnsArray.push('a.start_date as "startDate"');
       }
       if (activityColumns.rows.some(col => col.column_name === 'end_date')) {
-        columnsArray.push('end_date as "endDate"');
+        columnsArray.push('a.end_date as "endDate"');
       }
       if (activityColumns.rows.some(col => col.column_name === 'capacity')) {
-        columnsArray.push('capacity');
+        columnsArray.push('a.capacity');
       }
       if (activityColumns.rows.some(col => col.column_name === 'instructor_id')) {
-        columnsArray.push('instructor_id as "instructorId"');
+        columnsArray.push('a.instructor_id as "instructorId"');
       }
-      if (activityColumns.rows.some(col => col.column_name === 'status')) {
-        columnsArray.push('status');
+      if (activityColumns.rows.some(col => col.column_name === 'start_time')) {
+        columnsArray.push('a.start_time as "startTime"');
       }
-      if (activityColumns.rows.some(col => col.column_name === 'image_url')) {
-        columnsArray.push('image_url as "imageUrl"');
+      if (activityColumns.rows.some(col => col.column_name === 'end_time')) {
+        columnsArray.push('a.end_time as "endTime"');
       }
+      if (activityColumns.rows.some(col => col.column_name === 'location')) {
+        columnsArray.push('a.location');
+      }
+      if (activityColumns.rows.some(col => col.column_name === 'price')) {
+        columnsArray.push('a.price');
+      }
+      if (activityColumns.rows.some(col => col.column_name === 'is_free')) {
+        columnsArray.push('a.is_free as "isFree"');
+      }
+      if (activityColumns.rows.some(col => col.column_name === 'materials')) {
+        columnsArray.push('a.materials');
+      }
+      if (activityColumns.rows.some(col => col.column_name === 'requirements')) {
+        columnsArray.push('a.requirements');
+      }
+      // Agregar imagen de actividad desde activity_images
+      columnsArray.push('ai.image_url as "imageUrl"');
       
-      // Ahora construimos y ejecutamos la consulta
+      // Ahora construimos y ejecutamos la consulta con JOIN para incluir imágenes
       const query = `
         SELECT ${columnsArray.join(', ')}
-        FROM activities
-        WHERE park_id = $1
-        ${activityColumns.rows.some(col => col.column_name === 'start_date') ? 'ORDER BY start_date DESC' : ''}
+        FROM activities a
+        LEFT JOIN activity_images ai ON a.id = ai.activity_id AND ai.is_primary = true
+        WHERE a.park_id = $1
+        ${activityColumns.rows.some(col => col.column_name === 'start_date') ? 'ORDER BY a.start_date DESC' : ''}
       `;
       
-      console.log("Consulta de actividades generada:", query);
+      console.log("🎯 CONSULTA DE ACTIVIDADES GENERADA:", query);
       const activitiesResult = await pool.query(query, [parkId]);
       
-      console.log("Actividades encontradas:", activitiesResult.rowCount);
+      console.log("🎯 ACTIVIDADES ENCONTRADAS:", activitiesResult.rowCount);
+      if (activitiesResult.rows.length > 0) {
+        console.log("🎯 PRIMERA ACTIVIDAD:", JSON.stringify(activitiesResult.rows[0], null, 2));
+      }
       extendedPark.activities = activitiesResult.rows || [];
     } catch (err) {
       console.error("Error al obtener actividades:", err);

@@ -787,10 +787,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Obtener actividades del parque
       console.log('Paso 3: Consultando actividades del parque...');
       const activitiesResult = await pool.query(`
-        SELECT id, title, description, start_date as "startDate", category
-        FROM activities
-        WHERE park_id = $1
-        ORDER BY start_date DESC
+        SELECT 
+          a.id, 
+          a.title, 
+          a.description, 
+          a.start_date as "startDate", 
+          a.category,
+          ai.image_url as "imageUrl"
+        FROM activities a
+        LEFT JOIN activity_images ai ON a.id = ai.activity_id AND ai.is_primary = true
+        WHERE a.park_id = $1
+        ORDER BY a.start_date DESC
         LIMIT 10
       `, [parkId]);
       console.log(`Actividades encontradas: ${activitiesResult.rows.length}`);
