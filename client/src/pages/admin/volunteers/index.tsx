@@ -25,6 +25,16 @@ interface Volunteer {
   skills: string;
   isActive: boolean;
   parkName?: string;
+  profileImageUrl?: string;
+  full_name?: string;
+  age?: number;
+  address?: string;
+  emergency_contact?: string;
+  emergency_phone?: string;
+  previous_experience?: string;
+  interest_areas?: string[];
+  available_hours?: string;
+  created_at?: string;
 }
 
 export default function VolunteersPage() {
@@ -162,10 +172,17 @@ export default function VolunteersPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'activo': return 'bg-green-100 text-green-800';
-      case 'inactivo': return 'bg-red-100 text-red-800';
-      case 'suspendido': return 'bg-yellow-100 text-yellow-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'activo':
+      case 'active': 
+        return 'bg-green-100 text-green-800';
+      case 'inactivo':
+      case 'inactive': 
+        return 'bg-red-100 text-red-800';
+      case 'suspendido':
+      case 'suspended': 
+        return 'bg-yellow-100 text-yellow-800';
+      default: 
+        return 'bg-green-100 text-green-800'; // Default to active
     }
   };
 
@@ -418,41 +435,102 @@ export default function VolunteersPage() {
                 {/* Lista de voluntarios paginados */}
                 <div className="space-y-4">
                   {paginatedVolunteers.map((volunteer: any) => (
-                  <div key={volunteer.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+                  <div key={volunteer.id} className="flex items-center gap-4 p-4 border rounded-lg hover:bg-gray-50">
+                    {/* Fotografía del voluntario */}
+                    <div className="flex-shrink-0">
+                      <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center overflow-hidden">
+                        {volunteer.profileImageUrl || volunteer.profile_image_url ? (
+                          <img 
+                            src={volunteer.profileImageUrl || volunteer.profile_image_url} 
+                            alt={volunteer.full_name || `${volunteer.firstName || ''} ${volunteer.lastName || ''}`.trim()}
+                            className="w-16 h-16 rounded-full object-cover"
+                          />
+                        ) : (
+                          <Users className="h-8 w-8 text-green-600" />
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Información principal */}
                     <div className="flex-1">
                       <div className="flex items-start justify-between">
-                        <div>
+                        <div className="flex-1">
                           <h3 className="font-semibold text-lg">
                             {volunteer.full_name || `${volunteer.firstName || ''} ${volunteer.lastName || ''}`.trim()}
                           </h3>
-                          <p className="text-gray-600">{volunteer.email}</p>
-                          <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
+                          <p className="text-gray-600 mb-1">{volunteer.email}</p>
+                          
+                          {/* Información adicional en dos columnas */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2 text-sm text-gray-500">
                             <div className="flex items-center gap-1">
                               <Calendar className="h-4 w-4" />
-                              <span>Desde: {new Date(volunteer.joinDate || volunteer.join_date || volunteer.createdAt).toLocaleDateString()}</span>
+                              <span>Desde: {new Date(volunteer.joinDate || volunteer.join_date || volunteer.created_at || new Date()).toLocaleDateString()}</span>
                             </div>
                             <div className="flex items-center gap-1">
                               <Clock className="h-4 w-4" />
                               <span>{volunteer.totalHours || volunteer.total_hours || 0} horas</span>
                             </div>
-                            {volunteer.preferredParkId && (
+                            
+                            {volunteer.phone && (
+                              <div className="flex items-center gap-1">
+                                <span>📞 {volunteer.phone}</span>
+                              </div>
+                            )}
+                            
+                            {volunteer.age && (
+                              <div className="flex items-center gap-1">
+                                <span>👤 {volunteer.age} años</span>
+                              </div>
+                            )}
+                            
+                            {volunteer.preferred_park_id && (
                               <div className="flex items-center gap-1">
                                 <MapPin className="h-4 w-4" />
                                 <span>Parque preferido</span>
                               </div>
                             )}
+                            
+                            {volunteer.available_hours && (
+                              <div className="flex items-center gap-1">
+                                <span>⏰ {volunteer.available_hours}</span>
+                              </div>
+                            )}
                           </div>
-                          {volunteer.skills && (
+                          
+                          {/* Habilidades y experiencia */}
+                          {(volunteer.skills || volunteer.previous_experience) && (
+                            <div className="mt-3 space-y-1">
+                              {volunteer.skills && (
+                                <p className="text-sm text-gray-600">
+                                  <strong>Habilidades:</strong> {volunteer.skills}
+                                </p>
+                              )}
+                              {volunteer.previous_experience && (
+                                <p className="text-sm text-gray-600">
+                                  <strong>Experiencia:</strong> {volunteer.previous_experience}
+                                </p>
+                              )}
+                            </div>
+                          )}
+                          
+                          {/* Áreas de interés */}
+                          {volunteer.interest_areas && volunteer.interest_areas.length > 0 && (
                             <div className="mt-2">
-                              <p className="text-sm text-gray-600">
-                                <strong>Habilidades:</strong> {volunteer.skills}
-                              </p>
+                              <div className="flex flex-wrap gap-1">
+                                {volunteer.interest_areas.map((area: string, index: number) => (
+                                  <Badge key={index} variant="secondary" className="text-xs">
+                                    {area}
+                                  </Badge>
+                                ))}
+                              </div>
                             </div>
                           )}
                         </div>
-                        <div className="flex flex-col items-end gap-2">
-                          <Badge className={getStatusColor(volunteer.status || 'activo')}>
-                            {volunteer.status || 'activo'}
+                        
+                        {/* Estado y acciones */}
+                        <div className="flex flex-col items-end gap-2 ml-4">
+                          <Badge className={getStatusColor(volunteer.status || 'active')}>
+                            {volunteer.status === 'active' ? 'activo' : volunteer.status || 'activo'}
                           </Badge>
                           <div className="flex gap-2">
                             <Button
@@ -485,49 +563,195 @@ export default function VolunteersPage() {
 
         {/* Dialog de detalles */}
         <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>
-                Detalles del Voluntario: {selectedVolunteer?.firstName} {selectedVolunteer?.lastName}
+              <DialogTitle className="text-2xl">
+                Perfil del Voluntario
               </DialogTitle>
               <DialogDescription>
-                Información completa del voluntario seleccionado
+                Información completa y detallada del voluntario seleccionado
               </DialogDescription>
             </DialogHeader>
             {selectedVolunteer && (
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="font-semibold">Email:</p>
-                    <p>{selectedVolunteer.email}</p>
+              <div className="grid gap-6 py-4">
+                {/* Sección de encabezado con foto y datos principales */}
+                <div className="flex items-start gap-6 p-6 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg">
+                  {/* Fotografía del voluntario */}
+                  <div className="flex-shrink-0">
+                    <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center overflow-hidden ring-4 ring-white shadow-lg">
+                      {(selectedVolunteer as any).profileImageUrl || (selectedVolunteer as any).profile_image_url ? (
+                        <img 
+                          src={(selectedVolunteer as any).profileImageUrl || (selectedVolunteer as any).profile_image_url} 
+                          alt={(selectedVolunteer as any).full_name || `${selectedVolunteer.firstName || ''} ${selectedVolunteer.lastName || ''}`.trim()}
+                          className="w-24 h-24 rounded-full object-cover"
+                        />
+                      ) : (
+                        <Users className="h-12 w-12 text-green-600" />
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-semibold">Teléfono:</p>
-                    <p>{selectedVolunteer.phone}</p>
+                  
+                  {/* Información principal */}
+                  <div className="flex-1">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                      {(selectedVolunteer as any).full_name || `${selectedVolunteer.firstName || ''} ${selectedVolunteer.lastName || ''}`.trim()}
+                    </h3>
+                    <div className="flex items-center gap-4 mb-3">
+                      <Badge className={getStatusColor((selectedVolunteer as any).status || 'active')} size="lg">
+                        {(selectedVolunteer as any).status === 'active' ? 'ACTIVO' : ((selectedVolunteer as any).status || 'ACTIVO').toUpperCase()}
+                      </Badge>
+                      {(selectedVolunteer as any).age && (
+                        <span className="text-lg text-gray-600">{(selectedVolunteer as any).age} años</span>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4" />
+                        <span>Miembro desde: {new Date((selectedVolunteer as any).joinDate || (selectedVolunteer as any).join_date || (selectedVolunteer as any).created_at || new Date()).toLocaleDateString()}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4" />
+                        <span>{(selectedVolunteer as any).totalHours || (selectedVolunteer as any).total_hours || 0} horas de servicio</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="font-semibold">Estado:</p>
-                    <Badge className={getStatusColor(selectedVolunteer.status)}>
-                      {selectedVolunteer.status}
-                    </Badge>
-                  </div>
-                  <div>
-                    <p className="font-semibold">Fecha de ingreso:</p>
-                    <p>{new Date(selectedVolunteer.joinDate).toLocaleDateString()}</p>
-                  </div>
+
+                {/* Información de contacto */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Información de Contacto</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div>
+                        <p className="font-semibold text-gray-700">Email:</p>
+                        <p className="text-blue-600">{selectedVolunteer.email}</p>
+                      </div>
+                      {(selectedVolunteer as any).phone && (
+                        <div>
+                          <p className="font-semibold text-gray-700">Teléfono:</p>
+                          <p>{(selectedVolunteer as any).phone}</p>
+                        </div>
+                      )}
+                      {(selectedVolunteer as any).address && (
+                        <div>
+                          <p className="font-semibold text-gray-700">Dirección:</p>
+                          <p>{(selectedVolunteer as any).address}</p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Contacto de Emergencia</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      {(selectedVolunteer as any).emergency_contact && (
+                        <div>
+                          <p className="font-semibold text-gray-700">Nombre:</p>
+                          <p>{(selectedVolunteer as any).emergency_contact}</p>
+                        </div>
+                      )}
+                      {(selectedVolunteer as any).emergency_phone && (
+                        <div>
+                          <p className="font-semibold text-gray-700">Teléfono:</p>
+                          <p>{(selectedVolunteer as any).emergency_phone}</p>
+                        </div>
+                      )}
+                      {!(selectedVolunteer as any).emergency_contact && !(selectedVolunteer as any).emergency_phone && (
+                        <p className="text-gray-500 italic">No especificado</p>
+                      )}
+                    </CardContent>
+                  </Card>
                 </div>
-                <div>
-                  <p className="font-semibold">Horas totales de voluntariado:</p>
-                  <p>{selectedVolunteer.totalHours || 0} horas</p>
+
+                {/* Habilidades y experiencia */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {((selectedVolunteer as any).skills || (selectedVolunteer as any).previous_experience) && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg">Habilidades y Experiencia</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        {(selectedVolunteer as any).skills && (
+                          <div>
+                            <p className="font-semibold text-gray-700">Habilidades:</p>
+                            <p className="bg-gray-50 p-2 rounded">{(selectedVolunteer as any).skills}</p>
+                          </div>
+                        )}
+                        {(selectedVolunteer as any).previous_experience && (
+                          <div>
+                            <p className="font-semibold text-gray-700">Experiencia previa:</p>
+                            <p className="bg-gray-50 p-2 rounded">{(selectedVolunteer as any).previous_experience}</p>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Disponibilidad y Preferencias</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      {(selectedVolunteer as any).available_hours && (
+                        <div>
+                          <p className="font-semibold text-gray-700">Horarios disponibles:</p>
+                          <p className="capitalize">{(selectedVolunteer as any).available_hours}</p>
+                        </div>
+                      )}
+                      {(selectedVolunteer as any).preferred_park_id && (
+                        <div>
+                          <p className="font-semibold text-gray-700">Parque preferido:</p>
+                          <div className="flex items-center gap-1">
+                            <MapPin className="h-4 w-4 text-green-600" />
+                            <span>ID: {(selectedVolunteer as any).preferred_park_id}</span>
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
                 </div>
-                {selectedVolunteer.skills && (
-                  <div>
-                    <p className="font-semibold">Habilidades:</p>
-                    <p>{selectedVolunteer.skills}</p>
-                  </div>
+
+                {/* Áreas de interés */}
+                {(selectedVolunteer as any).interest_areas && (selectedVolunteer as any).interest_areas.length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Áreas de Interés</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex flex-wrap gap-2">
+                        {(selectedVolunteer as any).interest_areas.map((area: string, index: number) => (
+                          <Badge key={index} variant="outline" className="capitalize">
+                            {area}
+                          </Badge>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
                 )}
+
+                {/* Botones de acción */}
+                <div className="flex justify-end gap-3 pt-4 border-t">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setIsDetailOpen(false)}
+                  >
+                    Cerrar
+                  </Button>
+                  <Button 
+                    onClick={() => {
+                      setIsDetailOpen(false);
+                      handleEditVolunteer((selectedVolunteer as any).id);
+                    }}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    Editar Voluntario
+                  </Button>
+                </div>
               </div>
             )}
           </DialogContent>
