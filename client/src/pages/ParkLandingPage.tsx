@@ -681,15 +681,7 @@ function ParkLandingPage() {
               </Card>
             )}
 
-            {/* Banner publicitario después de Galería */}
-            <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] my-8">
-              <AdSpace 
-                spaceId="33" 
-                position="banner" 
-                pageType="park-landing" 
-                className="w-full"
-              />
-            </div>
+
 
           </div>
 
@@ -1125,6 +1117,16 @@ function ParkLandingPage() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Banner publicitario después de Galería - Fuera del grid para ancho completo */}
+      <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] my-8">
+        <AdSpace 
+          spaceId="33" 
+          position="banner" 
+          pageType="park-landing" 
+          className="w-full"
+        />
       </div>
 
       {/* Image Modal */}
