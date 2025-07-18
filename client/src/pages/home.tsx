@@ -241,40 +241,70 @@ const Home: React.FC = () => {
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-            {isLoading ? (
-              // Loading skeletons mejorados
-              Array(3).fill(0).map((_, idx) => (
-                <Card key={idx} className="animate-pulse rounded-3xl overflow-hidden shadow-lg">
-                  <div className="h-64 bg-gradient-to-br from-gray-200 to-gray-300"></div>
-                  <CardContent className="p-6">
-                    <div className="h-6 bg-gray-200 rounded-lg w-3/4 mb-3"></div>
-                    <div className="h-4 bg-gray-200 rounded-lg w-1/2 mb-4"></div>
-                    <div className="flex gap-2 mb-4">
-                      <div className="h-8 bg-gray-200 rounded-full w-20"></div>
-                      <div className="h-8 bg-gray-200 rounded-full w-20"></div>
+          {/* Layout con sidebar para publicidad */}
+          <div className="flex flex-col lg:flex-row gap-8 mb-12">
+            {/* Contenido principal - Parques */}
+            <div className="flex-1">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {isLoading ? (
+                  // Loading skeletons mejorados
+                  Array(3).fill(0).map((_, idx) => (
+                    <Card key={idx} className="animate-pulse rounded-3xl overflow-hidden shadow-lg">
+                      <div className="h-64 bg-gradient-to-br from-gray-200 to-gray-300"></div>
+                      <CardContent className="p-6">
+                        <div className="h-6 bg-gray-200 rounded-lg w-3/4 mb-3"></div>
+                        <div className="h-4 bg-gray-200 rounded-lg w-1/2 mb-4"></div>
+                        <div className="flex gap-2 mb-4">
+                          <div className="h-8 bg-gray-200 rounded-full w-20"></div>
+                          <div className="h-8 bg-gray-200 rounded-full w-20"></div>
+                        </div>
+                        <div className="h-12 bg-gray-200 rounded-xl"></div>
+                      </CardContent>
+                    </Card>
+                  ))
+                ) : featuredParks.length > 0 ? (
+                  featuredParks.slice(0, 3).map(park => (
+                    <div key={park.id} className="group">
+                      <Card className="border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105 rounded-3xl overflow-hidden bg-white">
+                        <ParkCard park={park} />
+                      </Card>
                     </div>
-                    <div className="h-12 bg-gray-200 rounded-xl"></div>
-                  </CardContent>
-                </Card>
-              ))
-            ) : featuredParks.length > 0 ? (
-              featuredParks.slice(0, 3).map(park => (
-                <div key={park.id} className="group">
-                  <Card className="border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105 rounded-3xl overflow-hidden bg-white">
-                    <ParkCard park={park} />
-                  </Card>
-                </div>
-              ))
-            ) : (
-              <div className="col-span-3 text-center py-16">
-                <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Trees className="h-12 w-12 text-gray-400" />
-                </div>
-                <p className="text-xl text-gray-500 mb-4">No hay parques disponibles en este momento</p>
-                <p className="text-gray-400">Pronto estarán disponibles más espacios verdes</p>
+                  ))
+                ) : (
+                  <div className="col-span-3 text-center py-16">
+                    <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <Trees className="h-12 w-12 text-gray-400" />
+                    </div>
+                    <p className="text-xl text-gray-500 mb-4">No hay parques disponibles en este momento</p>
+                    <p className="text-gray-400">Pronto estarán disponibles más espacios verdes</p>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
+            
+            {/* Sidebar publicitario */}
+            <div className="w-full lg:w-80 space-y-6">
+              <div className="bg-white rounded-2xl shadow-lg p-6 border">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-emerald-600" />
+                  Promociones Especiales
+                </h3>
+                <AdSpace 
+                  spaceId="14" 
+                  position="sidebar" 
+                  pageType="homepage" 
+                  className="w-full"
+                />
+              </div>
+              
+              {/* Información adicional */}
+              <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-6 border border-emerald-200">
+                <h3 className="text-lg font-semibold text-emerald-800 mb-3">¿Sabías que?</h3>
+                <p className="text-emerald-700 text-sm leading-relaxed">
+                  Los parques urbanos pueden reducir la temperatura ambiente hasta 5°C y mejorar la calidad del aire de la ciudad.
+                </p>
+              </div>
+            </div>
           </div>
           
           <div className="text-center">
