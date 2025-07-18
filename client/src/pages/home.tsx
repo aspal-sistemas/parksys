@@ -286,22 +286,14 @@ const Home: React.FC = () => {
             </Link>
           </div>
           
-          {/* Anuncio publicitario prominente */}
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-200 mb-8">
-              <div className="text-center mb-6">
-                <div className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-100 to-teal-100 rounded-full px-4 py-2 mb-4">
-                  <Sparkles className="h-4 w-4 text-emerald-600" />
-                  <span className="text-sm font-semibold text-emerald-800">Promoción Especial</span>
-                </div>
-              </div>
-              <AdSpace 
-                spaceId="14" 
-                position="sidebar" 
-                pageType="homepage" 
-                className="w-full"
-              />
-            </div>
+          {/* Banner publicitario */}
+          <div className="max-w-6xl mx-auto mb-8">
+            <AdSpace 
+              spaceId="14" 
+              position="banner" 
+              pageType="homepage" 
+              className="w-full"
+            />
           </div>
         </div>
       </section>

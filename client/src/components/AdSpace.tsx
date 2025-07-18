@@ -4,7 +4,7 @@ import { ExternalLink } from 'lucide-react';
 
 interface AdSpaceProps {
   spaceId: string;
-  position: 'header' | 'sidebar' | 'footer' | 'hero' | 'profile';
+  position: 'header' | 'sidebar' | 'footer' | 'hero' | 'profile' | 'banner';
   pageType: 'homepage' | 'parks' | 'tree-species' | 'activities' | 'concessions' | 'activity-detail' | 'instructors' | 'instructor-profile' | 'volunteers';
   className?: string;
 }
@@ -46,9 +46,9 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
 
   // Obtener el espacio publicitario y sus asignaciones activas
   const { data: placementsResponse, isLoading, refetch } = useQuery({
-    queryKey: [`/api/advertising/placements`, spaceId, pageType, position],
+    queryKey: [`/api/advertising/placements`, spaceId, pageType],
     queryFn: async () => {
-      const response = await fetch(`/api/advertising/placements?spaceId=${spaceId}&pageType=${pageType}&position=${position}`);
+      const response = await fetch(`/api/advertising/placements?spaceId=${spaceId}&pageType=${pageType}`);
       if (!response.ok) throw new Error('Error al cargar asignaciones');
       return response.json();
     },
@@ -139,16 +139,8 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
 
   // Si está cargando o no hay asignación activa, no mostrar nada
   if (isLoading || !activePlacement) {
-    console.log('AdSpace: No hay asignación activa o está cargando', { isLoading, activePlacement, spaceId, position });
     return null;
   }
-
-  console.log('AdSpace: Mostrando anuncio', { 
-    spaceId, 
-    position, 
-    pageType, 
-    advertisement: activePlacement.advertisement 
-  });
 
   const { advertisement } = activePlacement;
   
@@ -171,7 +163,8 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
     hero: 'w-full max-w-4xl mx-auto h-20 bg-white/95 backdrop-blur-sm border border-white/20 rounded-lg shadow-lg',
     sidebar: 'w-full h-64 bg-white border border-gray-200 rounded-lg shadow-sm mb-6',
     profile: 'w-full h-48 bg-white border border-gray-200 rounded-lg shadow-sm',
-    footer: 'w-full max-w-6xl mx-auto h-20 bg-white border border-gray-200 rounded-lg shadow-sm mt-6'
+    footer: 'w-full max-w-6xl mx-auto h-20 bg-white border border-gray-200 rounded-lg shadow-sm mt-6',
+    banner: 'w-full h-[150px] bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden'
   };
 
   const containerStyle = baseStyles[position];
@@ -181,8 +174,19 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
       {/* Botón de cerrar removido para usuarios públicos */}
 
       {/* Contenido del anuncio */}
-      <div className={`h-full ${position === 'sidebar' ? 'flex flex-col' : 'flex items-center justify-between'} p-4`}>
-        {position === 'sidebar' ? (
+      <div className={`h-full ${position === 'sidebar' ? 'flex flex-col' : position === 'banner' ? 'flex items-center justify-center' : 'flex items-center justify-between'} ${position === 'banner' ? 'p-0' : 'p-4'}`}>
+        {position === 'banner' ? (
+          // Layout específico para banner - imagen completa
+          <div className="w-full h-full">
+            {advertisement.imageUrl && (
+              <img
+                src={getImageUrlWithCacheBuster(advertisement.imageUrl)}
+                alt={advertisement.title}
+                className="w-full h-full object-cover"
+              />
+            )}
+          </div>
+        ) : position === 'sidebar' ? (
           // Layout vertical para sidebar
           <>
             {/* Imagen del anuncio */}
