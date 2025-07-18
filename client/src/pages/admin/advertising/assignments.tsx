@@ -229,6 +229,8 @@ const AssignmentForm: React.FC<{ assignment?: Assignment; onSubmit: (data: Assig
       priority: assignment.priority,
       is_active: assignment.isActive,
     } : {
+      ad_space_id: '',
+      advertisement_id: '',
       frequency: 'always',
       priority: 5,
       is_active: true,
@@ -467,15 +469,26 @@ export default function AdvertisingAssignments() {
 
   const createMutation = useMutation({
     mutationFn: async (data: AssignmentFormData) => {
+      // Validar que los IDs sean números válidos antes de enviar
+      const spaceId = parseInt(data.ad_space_id);
+      const advertisementId = parseInt(data.advertisement_id);
+      
+      if (isNaN(spaceId) || isNaN(advertisementId)) {
+        throw new Error('Los IDs de espacio y anuncio deben ser números válidos');
+      }
+      
       const payload = {
-        ad_space_id: parseInt(data.ad_space_id),
-        advertisement_id: parseInt(data.advertisement_id),
+        ad_space_id: spaceId,
+        advertisement_id: advertisementId,
         start_date: data.start_date.toISOString(),
         end_date: data.end_date.toISOString(),
         frequency: data.frequency,
         priority: data.priority,
         is_active: data.is_active,
       };
+      
+      console.log('Enviando payload de asignación:', payload);
+      
       return apiRequest('/api/advertising-management/assignments', {
         method: 'POST',
         body: JSON.stringify(payload),

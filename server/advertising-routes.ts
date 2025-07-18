@@ -759,6 +759,17 @@ router.post('/assignments', isAuthenticated, async (req, res) => {
   try {
     const { ad_space_id, advertisement_id, start_date, end_date, frequency, priority, is_active } = req.body;
     
+    // Validar que los IDs sean números válidos
+    const spaceId = parseInt(ad_space_id);
+    const advertisementId = parseInt(advertisement_id);
+    
+    if (isNaN(spaceId) || isNaN(advertisementId)) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Los IDs de espacio y anuncio deben ser números válidos' 
+      });
+    }
+    
     const result = await pool.query(`
       INSERT INTO ad_placements (
         ad_space_id, 
@@ -772,8 +783,8 @@ router.post('/assignments', isAuthenticated, async (req, res) => {
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING *
     `, [
-      parseInt(ad_space_id),
-      parseInt(advertisement_id),
+      spaceId,
+      advertisementId,
       new Date(start_date),
       new Date(end_date),
       priority || 5,
