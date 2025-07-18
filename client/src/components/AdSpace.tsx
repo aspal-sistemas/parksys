@@ -46,15 +46,15 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
 
   // Obtener el espacio publicitario y sus asignaciones activas
   const { data: placementsResponse, isLoading, refetch } = useQuery({
-    queryKey: [`/api/advertising/placements`, spaceId, pageType, Date.now()], // Agregar timestamp para forzar actualizaciones
+    queryKey: [`/api/advertising/placements`, spaceId, pageType], // Query key estable
     queryFn: async () => {
       const timestamp = Date.now();
       const response = await fetch(`/api/advertising/placements?spaceId=${spaceId}&pageType=${pageType}&_t=${timestamp}`);
       if (!response.ok) throw new Error('Error al cargar asignaciones');
       return response.json();
     },
-    refetchInterval: 2 * 1000, // Refrescar cada 2 segundos para actualizaciones ultra-rápidas
-    staleTime: 100, // Considerar datos válidos por 100ms solamente
+    refetchInterval: 3 * 1000, // Refrescar cada 3 segundos
+    staleTime: 1000, // Considerar datos válidos por 1 segundo
     refetchOnWindowFocus: true,
     refetchOnMount: true,
   });
