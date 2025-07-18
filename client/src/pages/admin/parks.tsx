@@ -70,15 +70,17 @@ const AdminParks = () => {
 
   // Fetch all parks with automatic refresh
   const { 
-    data: parks = [], 
+    data: parksResponse, 
     isLoading: isLoadingParks,
     isError: isErrorParks,
     refetch: refetchParks
-  } = useQuery({
+  } = useQuery<{data: Park[], pagination: any}>({
     queryKey: ['/api/parks'],
     refetchOnWindowFocus: true,
     refetchInterval: 30000, // Refresh every 30 seconds
   });
+
+  const parks = parksResponse?.data || [];
 
   // Fetch municipalities for filter
   const { 
