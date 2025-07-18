@@ -44,6 +44,7 @@ function ParkLandingPage() {
   const [selectedInstructor, setSelectedInstructor] = React.useState<any>(null);
   const [selectedImage, setSelectedImage] = React.useState<string | null>(null);
   const [isImageModalOpen, setIsImageModalOpen] = React.useState(false);
+  const [selectedSpeciesData, setSelectedSpeciesData] = React.useState<any>(null);
   
   // Extraer ID del slug (formato: nombre-parque-id)
   const parkId = slug?.split('-').pop();
@@ -62,6 +63,7 @@ function ParkLandingPage() {
   const closeImageModal = () => {
     setSelectedImage(null);
     setIsImageModalOpen(false);
+    setSelectedSpeciesData(null);
   };
 
   const goToPreviousImage = () => {
@@ -380,99 +382,43 @@ function ParkLandingPage() {
               </CardHeader>
               <CardContent>
                 {park.treeSpecies && park.treeSpecies.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                     {park.treeSpecies.map((species: any) => (
-                      <div key={species.id} className="flex flex-col p-4 bg-white rounded-lg border border-green-200">
-                        <div className="flex items-start gap-3 mb-3">
-                          <div className="w-12 h-12 flex items-center justify-center flex-shrink-0">
-                            <TreeSpeciesIcon 
-                              iconType={species.iconType}
-                              customIconUrl={species.customIconUrl}
-                              size={48}
+                      <div 
+                        key={species.id} 
+                        className="group cursor-pointer bg-white rounded-lg border border-green-200 hover:border-green-400 transition-all duration-300 overflow-hidden"
+                        onClick={() => {
+                          // Crear modal con información técnica detallada
+                          const speciesImageUrl = species.photoUrl || species.customPhotoUrl;
+                          if (speciesImageUrl) {
+                            openImageModal(speciesImageUrl);
+                            // Guardar información técnica para mostrar en el modal
+                            setSelectedSpeciesData(species);
+                          }
+                        }}
+                      >
+                        <div className="aspect-square relative overflow-hidden">
+                          {species.photoUrl || species.customPhotoUrl ? (
+                            <img 
+                              src={species.photoUrl || species.customPhotoUrl}
+                              alt={species.commonName}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                             />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1 min-w-0">
-                                <h4 className="font-semibold text-green-800 text-sm line-clamp-2">
-                                  {species.commonName}
-                                </h4>
-                                <p className="text-xs text-green-600 italic mt-1 line-clamp-2">
-                                  {species.scientificName}
-                                </p>
-                              </div>
-                              {/* Botón del visualizador de fotos */}
-                              <div className="ml-2 flex-shrink-0">
-                                <TreePhotoViewer 
-                                  photoUrl={species.photoUrl}
-                                  customPhotoUrl={species.customPhotoUrl}
-                                  commonName={species.commonName}
-                                  scientificName={species.scientificName}
-                                  photoCaption={species.photoCaption}
-                                />
-                              </div>
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center">
+                              <TreeSpeciesIcon 
+                                iconType={species.iconType}
+                                customIconUrl={species.customIconUrl}
+                                size={64}
+                              />
                             </div>
-                          </div>
+                          )}
+                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300"></div>
                         </div>
-                        
-                        <div className="space-y-2">
-                          <div className="flex flex-wrap gap-1">
-                            <Badge variant="outline" className="text-xs border-green-300 text-green-700">
-                              {species.family}
-                            </Badge>
-                            <Badge 
-                              variant={species.origin === 'Nativo' ? 'default' : 'secondary'} 
-                              className="text-xs"
-                            >
-                              {species.origin}
-                            </Badge>
-                            {species.isEndangered && (
-                              <Badge variant="destructive" className="text-xs">
-                                Amenazada
-                              </Badge>
-                            )}
-                          </div>
-                          
-                          {species.status && (
-                            <div className="flex items-center justify-between text-xs">
-                              <span className="text-gray-600">Estado:</span>
-                              <Badge 
-                                className={
-                                  species.status === 'establecido' ? 'bg-green-100 text-green-800' :
-                                  species.status === 'en_desarrollo' ? 'bg-blue-100 text-blue-800' :
-                                  'bg-yellow-100 text-yellow-800'
-                                }
-                              >
-                                {species.status === 'establecido' ? 'Establecido' :
-                                 species.status === 'en_desarrollo' ? 'En Desarrollo' :
-                                 'Planificado'}
-                              </Badge>
-                            </div>
-                          )}
-                          
-                          {(species.currentQuantity > 0 || species.recommendedQuantity > 0) && (
-                            <div className="text-xs text-gray-600">
-                              {species.currentQuantity > 0 && (
-                                <div className="flex justify-between">
-                                  <span>Plantados:</span>
-                                  <span className="font-medium text-green-700">{species.currentQuantity}</span>
-                                </div>
-                              )}
-                              {species.recommendedQuantity > 0 && (
-                                <div className="flex justify-between">
-                                  <span>Meta:</span>
-                                  <span className="font-medium text-blue-700">{species.recommendedQuantity}</span>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                          
-                          {species.plantingZone && (
-                            <div className="text-xs text-gray-600">
-                              <span>Zona: </span>
-                              <span className="font-medium">{species.plantingZone}</span>
-                            </div>
-                          )}
+                        <div className="p-3 text-center">
+                          <h4 className="font-semibold text-green-800 text-sm line-clamp-2">
+                            {species.commonName}
+                          </h4>
                         </div>
                       </div>
                     ))}
@@ -1130,7 +1076,7 @@ function ParkLandingPage() {
           onClick={closeImageModal}
         >
           <div 
-            className="relative max-w-7xl max-h-full"
+            className="relative max-w-7xl max-h-full flex"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close button */}
@@ -1144,7 +1090,7 @@ function ParkLandingPage() {
             </button>
             
             {/* Navigation buttons */}
-            {allImages.length > 1 && (
+            {allImages.length > 1 && !selectedSpeciesData && (
               <>
                 <button 
                   onClick={goToPreviousImage}
@@ -1166,14 +1112,97 @@ function ParkLandingPage() {
             )}
             
             {/* Image */}
-            <img 
-              src={selectedImage} 
-              alt="Vista ampliada del parque"
-              className="max-w-full max-h-full object-contain"
-            />
+            <div className="flex-1">
+              <img 
+                src={selectedImage} 
+                alt={selectedSpeciesData ? selectedSpeciesData.commonName : "Vista ampliada del parque"}
+                className="max-w-full max-h-full object-contain"
+              />
+            </div>
+            
+            {/* Species Technical Information Panel */}
+            {selectedSpeciesData && (
+              <div className="w-80 bg-white/95 backdrop-blur-sm p-6 overflow-y-auto max-h-full">
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-xl font-bold text-green-800 mb-2">
+                      {selectedSpeciesData.commonName}
+                    </h3>
+                    <p className="text-lg text-green-600 italic">
+                      {selectedSpeciesData.scientificName}
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="outline" className="border-green-300 text-green-700">
+                        {selectedSpeciesData.family}
+                      </Badge>
+                      <Badge 
+                        variant={selectedSpeciesData.origin === 'Nativo' ? 'default' : 'secondary'}
+                      >
+                        {selectedSpeciesData.origin}
+                      </Badge>
+                      {selectedSpeciesData.isEndangered && (
+                        <Badge variant="destructive">
+                          Amenazada
+                        </Badge>
+                      )}
+                    </div>
+                    
+                    {selectedSpeciesData.status && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600">Estado:</span>
+                        <Badge 
+                          className={
+                            selectedSpeciesData.status === 'establecido' ? 'bg-green-100 text-green-800' :
+                            selectedSpeciesData.status === 'en_desarrollo' ? 'bg-blue-100 text-blue-800' :
+                            'bg-yellow-100 text-yellow-800'
+                          }
+                        >
+                          {selectedSpeciesData.status === 'establecido' ? 'Establecido' :
+                           selectedSpeciesData.status === 'en_desarrollo' ? 'En Desarrollo' :
+                           'Planificado'}
+                        </Badge>
+                      </div>
+                    )}
+                    
+                    {(selectedSpeciesData.currentQuantity > 0 || selectedSpeciesData.recommendedQuantity > 0) && (
+                      <div className="space-y-2">
+                        {selectedSpeciesData.currentQuantity > 0 && (
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-600">Plantados:</span>
+                            <span className="font-medium text-green-700">{selectedSpeciesData.currentQuantity}</span>
+                          </div>
+                        )}
+                        {selectedSpeciesData.recommendedQuantity > 0 && (
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-600">Meta:</span>
+                            <span className="font-medium text-blue-700">{selectedSpeciesData.recommendedQuantity}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    
+                    {selectedSpeciesData.plantingZone && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">Zona de plantación:</span>
+                        <span className="font-medium">{selectedSpeciesData.plantingZone}</span>
+                      </div>
+                    )}
+                    
+                    {selectedSpeciesData.photoCaption && (
+                      <div className="mt-4 p-3 bg-green-50 rounded-lg">
+                        <p className="text-sm text-green-800">{selectedSpeciesData.photoCaption}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
             
             {/* Image counter */}
-            {allImages.length > 1 && (
+            {allImages.length > 1 && !selectedSpeciesData && (
               <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white bg-black/60 px-3 py-1 rounded-full text-sm">
                 {allImages.findIndex(img => img.imageUrl === selectedImage) + 1} de {allImages.length}
               </div>
