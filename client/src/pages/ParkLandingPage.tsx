@@ -22,7 +22,8 @@ import {
   User,
   ExternalLink,
   Users,
-  Heart
+  Heart,
+  DollarSign
 } from 'lucide-react';
 import { ExtendedPark } from '@shared/schema';
 import { Badge } from '@/components/ui/badge';
@@ -45,6 +46,7 @@ function ParkLandingPage() {
   const [selectedImage, setSelectedImage] = React.useState<string | null>(null);
   const [isImageModalOpen, setIsImageModalOpen] = React.useState(false);
   const [selectedSpeciesData, setSelectedSpeciesData] = React.useState<any>(null);
+  const [selectedActivity, setSelectedActivity] = React.useState<any>(null);
   
   // Extraer ID del slug (formato: nombre-parque-id)
   const parkId = slug?.split('-').pop();
@@ -64,6 +66,7 @@ function ParkLandingPage() {
     setSelectedImage(null);
     setIsImageModalOpen(false);
     setSelectedSpeciesData(null);
+    setSelectedActivity(null);
   };
 
   const goToPreviousImage = () => {
@@ -447,19 +450,43 @@ function ParkLandingPage() {
                 {park.activities && park.activities.length > 0 ? (
                   <div className="space-y-4">
                     {park.activities.slice(0, 3).map((activity) => (
-                      <div key={activity.id} className="border-l-4 border-orange-300 pl-4 py-3 bg-orange-50 rounded-r-lg">
-                        <div className="flex justify-between items-start mb-2">
-                          <h3 className="font-semibold text-gray-800">{activity.title}</h3>
-                          {activity.category && (
-                            <Badge variant="outline" className="ml-2">
-                              {activity.category}
-                            </Badge>
+                      <div 
+                        key={activity.id} 
+                        className="border-l-4 border-orange-300 pl-4 py-3 bg-orange-50 rounded-r-lg hover:bg-orange-100 transition-colors duration-200 cursor-pointer"
+                        onClick={() => {
+                          setSelectedActivity(activity);
+                          if (activity.primaryImage) {
+                            openImageModal(activity.primaryImage);
+                          }
+                        }}
+                      >
+                        <div className="flex gap-4">
+                          <div className="flex-1">
+                            <div className="flex justify-between items-start mb-2">
+                              <h3 className="font-semibold text-gray-800">{activity.title}</h3>
+                              {activity.category && (
+                                <Badge variant="outline" className="ml-2">
+                                  {activity.category}
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-gray-600 text-sm mb-2 line-clamp-2">{activity.description}</p>
+                            <div className="flex items-center text-xs text-gray-500">
+                              <Clock className="h-3 w-3 mr-1" />
+                              {formatDate(activity.startDate)}
+                            </div>
+                          </div>
+                          
+                          {/* Foto de la actividad */}
+                          {activity.primaryImage && (
+                            <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
+                              <img 
+                                src={activity.primaryImage}
+                                alt={activity.title}
+                                className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+                              />
+                            </div>
                           )}
-                        </div>
-                        <p className="text-gray-600 text-sm mb-2">{activity.description}</p>
-                        <div className="flex items-center text-xs text-gray-500">
-                          <Clock className="h-3 w-3 mr-1" />
-                          {formatDate(activity.startDate)}
                         </div>
                       </div>
                     ))}
@@ -1194,6 +1221,90 @@ function ParkLandingPage() {
                     {selectedSpeciesData.photoCaption && (
                       <div className="mt-4 p-3 bg-green-50 rounded-lg">
                         <p className="text-sm text-green-800">{selectedSpeciesData.photoCaption}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Activity Information Panel */}
+            {selectedActivity && (
+              <div className="w-80 bg-white/95 backdrop-blur-sm p-6 overflow-y-auto max-h-full">
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-xl font-bold text-orange-800 mb-2">
+                      {selectedActivity.title}
+                    </h3>
+                    {selectedActivity.category && (
+                      <Badge variant="outline" className="border-orange-300 text-orange-700 mb-3">
+                        {selectedActivity.category}
+                      </Badge>
+                    )}
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <h4 className="font-semibold text-gray-800 mb-2">Descripción</h4>
+                      <p className="text-sm text-gray-600 leading-relaxed">
+                        {selectedActivity.description}
+                      </p>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 gap-3">
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-orange-600" />
+                        <div>
+                          <span className="text-sm font-medium text-gray-800">Fecha y hora:</span>
+                          <p className="text-sm text-gray-600">{formatDate(selectedActivity.startDate)}</p>
+                        </div>
+                      </div>
+                      
+                      {selectedActivity.endDate && (
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-orange-600" />
+                          <div>
+                            <span className="text-sm font-medium text-gray-800">Finaliza:</span>
+                            <p className="text-sm text-gray-600">{formatDate(selectedActivity.endDate)}</p>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {selectedActivity.location && (
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-4 w-4 text-orange-600" />
+                          <div>
+                            <span className="text-sm font-medium text-gray-800">Ubicación:</span>
+                            <p className="text-sm text-gray-600">{selectedActivity.location}</p>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {selectedActivity.price && (
+                        <div className="flex items-center gap-2">
+                          <DollarSign className="h-4 w-4 text-orange-600" />
+                          <div>
+                            <span className="text-sm font-medium text-gray-800">Precio:</span>
+                            <p className="text-sm text-gray-600">${selectedActivity.price}</p>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {selectedActivity.capacity && (
+                        <div className="flex items-center gap-2">
+                          <Users className="h-4 w-4 text-orange-600" />
+                          <div>
+                            <span className="text-sm font-medium text-gray-800">Capacidad:</span>
+                            <p className="text-sm text-gray-600">{selectedActivity.capacity} personas</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {selectedActivity.requirements && (
+                      <div className="mt-4 p-3 bg-orange-50 rounded-lg">
+                        <h4 className="font-semibold text-orange-800 mb-2">Requisitos</h4>
+                        <p className="text-sm text-orange-700">{selectedActivity.requirements}</p>
                       </div>
                     )}
                   </div>
