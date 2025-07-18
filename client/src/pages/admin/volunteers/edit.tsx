@@ -146,9 +146,10 @@ export default function EditVolunteerPage() {
   // Mutación para actualizar voluntario
   const updateVolunteerMutation = useMutation({
     mutationFn: async (data: EditVolunteerForm) => {
+      console.log('🚀 Enviando datos al servidor:', data);
       const response = await apiRequest(`/api/volunteers/${volunteerId}`, {
         method: 'PUT',
-        body: JSON.stringify(data),
+        data: data, // Cambiar de 'body' a 'data' para consistency con apiRequest
       });
       return response;
     },

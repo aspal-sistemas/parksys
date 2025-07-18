@@ -559,38 +559,53 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
       const existingVolunteer = checkResult.rows[0];
       
       // Preparar datos para la actualización
-      // Es importante asegurarnos de que los campos JSON se manejen correctamente
-      const interestAreas = req.body.interest_areas 
-        ? (Array.isArray(req.body.interest_areas) 
-            ? req.body.interest_areas 
-            : JSON.parse(req.body.interest_areas))
-        : existingVolunteer.interest_areas;
+      console.log("Body completo recibido:", JSON.stringify(req.body, null, 2));
+      
+      // Convertir los datos del formulario del frontend a formato backend
+      const updateData = {
+        full_name: `${req.body.firstName || ''} ${req.body.lastName || ''}`.trim(),
+        email: req.body.email,
+        phone: req.body.phone,
+        gender: req.body.gender,
+        address: req.body.address,
+        emergency_contact: req.body.emergencyContactName,
+        emergency_phone: req.body.emergencyContactPhone,
+        preferred_park_id: req.body.preferredParkId ? parseInt(req.body.preferredParkId) : null,
+        previous_experience: req.body.volunteerExperience,
+        skills: req.body.skills,
+        available_hours: req.body.availability,
+        legal_consent: req.body.legalConsent
+      };
+      
+      // Construir areas de interés basadas en los checkboxes del frontend
+      const interestAreas = [];
+      if (req.body.interestNature) interestAreas.push('nature');
+      if (req.body.interestEvents) interestAreas.push('events');
+      if (req.body.interestEducation) interestAreas.push('education');
+      if (req.body.interestMaintenance) interestAreas.push('maintenance');
+      if (req.body.interestSports) interestAreas.push('sports');
+      if (req.body.interestCultural) interestAreas.push('cultural');
+      
+      // Simular available_days (por ahora usamos un default)
+      const availableDays = ['flexible'];
         
-      const availableDays = req.body.available_days 
-        ? (Array.isArray(req.body.available_days) 
-            ? req.body.available_days 
-            : JSON.parse(req.body.available_days))
-        : existingVolunteer.available_days;
-        
-      // Usar SQL directo para actualizar todos los campos, incluidos los nuevos
+      // Usar SQL directo para actualizar todos los campos usando los datos mapeados
       const result = await db.execute(
         sql`UPDATE volunteers SET
-          full_name = ${req.body.full_name || existingVolunteer.full_name},
-          email = ${req.body.email || existingVolunteer.email},
-          phone = ${req.body.phone || existingVolunteer.phone},
-          gender = ${req.body.gender || existingVolunteer.gender},
-          age = ${parseInt(req.body.age) || existingVolunteer.age},
-          status = ${req.body.status || existingVolunteer.status},
-          profile_image_url = ${req.body.profile_image_url || existingVolunteer.profile_image_url},
-          previous_experience = ${req.body.previous_experience || existingVolunteer.previous_experience},
-          available_hours = ${req.body.available_hours || existingVolunteer.available_hours},
+          full_name = ${updateData.full_name || existingVolunteer.full_name},
+          email = ${updateData.email || existingVolunteer.email},
+          phone = ${updateData.phone || existingVolunteer.phone},
+          gender = ${updateData.gender || existingVolunteer.gender},
+          address = ${updateData.address || existingVolunteer.address},
+          emergency_contact = ${updateData.emergency_contact || existingVolunteer.emergency_contact},
+          emergency_phone = ${updateData.emergency_phone || existingVolunteer.emergency_phone},
+          preferred_park_id = ${updateData.preferred_park_id !== null ? updateData.preferred_park_id : existingVolunteer.preferred_park_id},
+          previous_experience = ${updateData.previous_experience || existingVolunteer.previous_experience},
+          skills = ${updateData.skills || existingVolunteer.skills},
+          available_hours = ${updateData.available_hours || existingVolunteer.available_hours},
           available_days = ${JSON.stringify(availableDays)},
           interest_areas = ${JSON.stringify(interestAreas)},
-          preferred_park_id = ${req.body.preferred_park_id !== undefined ? req.body.preferred_park_id : existingVolunteer.preferred_park_id},
-          legal_consent = ${req.body.legal_consent !== undefined ? req.body.legal_consent : existingVolunteer.legal_consent},
-          address = ${req.body.address || existingVolunteer.address},
-          emergency_contact = ${req.body.emergency_contact || existingVolunteer.emergency_contact},
-          emergency_phone = ${req.body.emergency_phone || existingVolunteer.emergency_phone},
+          legal_consent = ${updateData.legal_consent !== undefined ? updateData.legal_consent : existingVolunteer.legal_consent},
           updated_at = NOW()
         WHERE id = ${volunteerId}
         RETURNING *`
