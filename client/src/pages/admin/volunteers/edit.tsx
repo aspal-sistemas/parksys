@@ -106,9 +106,11 @@ export default function EditVolunteerPage() {
   });
 
   // Obtener parques para el selector
-  const { data: parks } = useQuery({
+  const { data: parksResponse } = useQuery<{data: any[], pagination: any}>({
     queryKey: ['/api/parks'],
   });
+  
+  const parks = parksResponse?.data || [];
 
   // Llenar el formulario cuando se cargan los datos
   useEffect(() => {
