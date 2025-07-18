@@ -52,8 +52,8 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
       if (!response.ok) throw new Error('Error al cargar asignaciones');
       return response.json();
     },
-    refetchInterval: 30 * 1000, // Refrescar cada 30 segundos
-    staleTime: 30 * 1000, // Considerar datos válidos por 30 segundos
+    refetchInterval: 5 * 1000, // Refrescar cada 5 segundos para actualizaciones inmediatas
+    staleTime: 1 * 1000, // Considerar datos válidos por 1 segundo
     refetchOnWindowFocus: true,
     refetchOnMount: true,
   });

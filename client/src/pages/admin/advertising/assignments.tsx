@@ -495,12 +495,21 @@ export default function AdvertisingAssignments() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/advertising-management/assignments'] });
+      // Invalidación múltiple del cache con delays escalonados para asegurar actualizaciones inmediatas
+      [0, 500, 1000, 1500, 2000].forEach((delay) => {
+        setTimeout(() => {
+          queryClient.invalidateQueries({ queryKey: ['/api/advertising-management/assignments'] });
+          queryClient.invalidateQueries({ queryKey: ['/api/advertising/placements'] });
+          queryClient.removeQueries({ queryKey: ['/api/advertising/placements'] });
+          queryClient.refetchQueries({ queryKey: ['/api/advertising/placements'] });
+        }, delay);
+      });
+      
       setShowForm(false);
       setEditingAssignment(undefined);
       toast({
         title: "Asignación creada",
-        description: "La asignación publicitaria ha sido creada exitosamente.",
+        description: "La asignación publicitaria ha sido creada exitosamente - Actualizando banners...",
       });
     },
     onError: (error) => {
@@ -520,10 +529,19 @@ export default function AdvertisingAssignments() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/advertising-management/assignments'] });
+      // Invalidación múltiple del cache con delays escalonados
+      [0, 500, 1000, 1500, 2000].forEach((delay) => {
+        setTimeout(() => {
+          queryClient.invalidateQueries({ queryKey: ['/api/advertising-management/assignments'] });
+          queryClient.invalidateQueries({ queryKey: ['/api/advertising/placements'] });
+          queryClient.removeQueries({ queryKey: ['/api/advertising/placements'] });
+          queryClient.refetchQueries({ queryKey: ['/api/advertising/placements'] });
+        }, delay);
+      });
+      
       toast({
         title: "Asignación eliminada",
-        description: "La asignación publicitaria ha sido eliminada.",
+        description: "La asignación publicitaria ha sido eliminada - Actualizando banners...",
       });
     },
     onError: (error) => {
