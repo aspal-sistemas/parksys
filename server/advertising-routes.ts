@@ -441,6 +441,8 @@ router.get('/placements', async (req, res) => {
         a.content as target_url,
         a.alt_text,
         a.button_text,
+        a.media_type,
+        a.duration,
         a.is_active as ad_is_active,
         a.updated_at as ad_updated_at
       FROM ad_placements ap
@@ -489,6 +491,8 @@ router.get('/placements', async (req, res) => {
         targetUrl: row.target_url,
         altText: row.alt_text,
         buttonText: row.button_text,
+        mediaType: row.media_type || 'image',
+        duration: row.duration,
         isActive: row.ad_is_active,
         updatedAt: row.ad_updated_at
       }

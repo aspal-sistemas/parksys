@@ -26,6 +26,8 @@ interface AdPlacement {
     buttonText?: string;
     isActive: boolean;
     updatedAt?: string;
+    mediaType?: 'image' | 'video' | 'gif';
+    duration?: number;
   };
 }
 
@@ -147,14 +149,50 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
   const { advertisement } = activePlacement;
   
   // Sistema simple de cache-busting
-  const getImageUrlWithCacheBuster = (imageUrl: string) => {
-    if (!imageUrl) return '';
+  const getMediaUrlWithCacheBuster = (mediaUrl: string) => {
+    if (!mediaUrl) return '';
     
     const updatedAt = advertisement.updatedAt || new Date().toISOString();
     const timestamp = new Date(updatedAt).getTime();
-    const separator = imageUrl.includes('?') ? '&' : '?';
+    const separator = mediaUrl.includes('?') ? '&' : '?';
     
-    return `${imageUrl}${separator}v=${timestamp}`;
+    return `${mediaUrl}${separator}v=${timestamp}`;
+  };
+
+  // Función helper para renderizar contenido multimedia
+  const renderMedia = (className: string, autoplay: boolean = true) => {
+    const mediaUrl = getMediaUrlWithCacheBuster(advertisement.imageUrl);
+    const mediaType = advertisement.mediaType || 'image';
+    
+    if (mediaType === 'video') {
+      return (
+        <video
+          src={mediaUrl}
+          className={className}
+          autoPlay={autoplay}
+          muted
+          loop
+          playsInline
+          controls={false}
+          style={{ objectFit: 'cover' }}
+          onError={(e) => {
+            console.error('Error loading video:', e);
+            e.currentTarget.style.display = 'none';
+          }}
+        />
+      );
+    } else {
+      return (
+        <img
+          src={mediaUrl}
+          alt={advertisement.altText || advertisement.title}
+          className={className}
+          onError={(e) => {
+            e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDQwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0iI2ZmZiI+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSIzMDAiIGZpbGw9IiNmNGY0ZjQiLz48L2c+PC9zdmc+';
+          }}
+        />
+      );
+    }
   };
 
 
@@ -187,25 +225,17 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
       {/* Contenido del anuncio */}
       <div className={`h-full ${position === 'sidebar' ? 'flex flex-col' : position === 'banner' ? 'flex items-center justify-center' : position.startsWith('sidebar-') ? 'text-center' : 'flex items-center justify-between'} ${position === 'banner' ? 'p-0' : position.startsWith('sidebar-') ? '' : 'p-4'}`}>
         {position === 'banner' ? (
-          // Layout específico para banner - imagen completa
+          // Layout específico para banner - contenido multimedia completo
           <div className="w-full h-full">
-            {advertisement.imageUrl && (
-              <img
-                src={getImageUrlWithCacheBuster(advertisement.imageUrl)}
-                alt={advertisement.title}
-                className="w-full h-full object-cover"
-              />
-            )}
+            {advertisement.imageUrl && renderMedia("w-full h-full object-cover")}
           </div>
         ) : position.startsWith('sidebar-') ? (
           // Layout tipo tarjeta para espacios promocionales
           <div className="text-center">
             {advertisement.imageUrl && (
-              <img 
-                src={getImageUrlWithCacheBuster(advertisement.imageUrl)}
-                alt={advertisement.title}
-                className="w-full h-40 object-cover rounded-lg mb-3"
-              />
+              <div className="w-full h-40 rounded-lg mb-3 overflow-hidden">
+                {renderMedia("w-full h-full object-cover rounded-lg")}
+              </div>
             )}
             <h3 className="font-semibold text-gray-900 mb-2">{advertisement.title}</h3>
             <p className="text-sm text-gray-600 mb-3">
@@ -235,14 +265,10 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
         ) : position === 'sidebar' ? (
           // Layout vertical para sidebar
           <>
-            {/* Imagen del anuncio */}
+            {/* Contenido multimedia del anuncio */}
             {advertisement.imageUrl && (
-              <div className="flex-shrink-0 mb-3">
-                <img
-                  src={getImageUrlWithCacheBuster(advertisement.imageUrl)}
-                  alt={advertisement.title}
-                  className="w-full h-32 object-contain rounded bg-gray-50"
-                />
+              <div className="flex-shrink-0 mb-3 bg-gray-50 rounded overflow-hidden">
+                {renderMedia("w-full h-32 object-contain rounded bg-gray-50")}
               </div>
             )}
 
@@ -269,15 +295,10 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
         ) : (
           // Layout horizontal para otras posiciones
           <>
-            {/* Imagen del anuncio */}
+            {/* Contenido multimedia del anuncio */}
             {advertisement.imageUrl && (
-              <div key={`horizontal-container-${advertisement.id}-${refreshKey}-${forceRender}`} className="flex-shrink-0 mr-4">
-                <img
-                  key={`horizontal-${advertisement.id}-${refreshKey}-${forceRender}`}
-                  src={getImageUrlWithCacheBuster(advertisement.imageUrl)}
-                  alt={advertisement.title}
-                  className="h-full w-auto max-h-16 object-contain rounded"
-                />
+              <div key={`horizontal-container-${advertisement.id}-${refreshKey}-${forceRender}`} className="flex-shrink-0 mr-4 rounded overflow-hidden">
+                {renderMedia("h-full w-auto max-h-16 object-contain rounded", false)}
               </div>
             )}
 
