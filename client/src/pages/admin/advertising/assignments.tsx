@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { CalendarIcon, Clock, Target, BarChart3, Settings, Plus, Edit, Trash2, CheckCircle, XCircle, AlertCircle, Image } from 'lucide-react';
+import { CalendarIcon, Clock, Target, BarChart3, Settings, Plus, Edit, Trash2, CheckCircle, XCircle, AlertCircle, Camera } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -88,7 +88,7 @@ const ImagePreview: React.FC<{ src?: string; alt: string }> = ({ src, alt }) => 
   if (!src || imageError) {
     return (
       <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-        <Image className="w-6 h-6 text-gray-400" />
+        <Camera className="w-6 h-6 text-gray-400" />
       </div>
     );
   }
