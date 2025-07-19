@@ -708,9 +708,9 @@ const AdAdvertisements = () => {
                         id="file_upload"
                         type="file"
                         accept={
-                          formData.media_type === 'image' ? 'image/jpeg,image/jpg,image/png,image/webp,image/*' : 
-                          formData.media_type === 'video' ? 'video/mp4,video/webm,video/ogg,video/avi,video/mov,video/*' : 
-                          'image/gif'
+                          formData.media_type === 'image' ? 'image/*' : 
+                          formData.media_type === 'video' ? 'video/*' : 
+                          formData.media_type === 'gif' ? 'image/gif' : '*/*'
                         }
                         onChange={async (e) => {
                           const file = e.target.files?.[0];
@@ -1196,9 +1196,9 @@ const AdAdvertisements = () => {
                     id="edit_file_upload"
                     type="file"
                     accept={
-                      formData.media_type === 'image' ? 'image/jpeg,image/jpg,image/png,image/webp,image/*' : 
-                      formData.media_type === 'video' ? 'video/mp4,video/webm,video/ogg,video/avi,video/mov,video/*' : 
-                      'image/gif'
+                      formData.media_type === 'image' ? 'image/*' : 
+                      formData.media_type === 'video' ? 'video/*' : 
+                      formData.media_type === 'gif' ? 'image/gif' : '*/*'
                     }
                     onChange={async (e) => {
                       const file = e.target.files?.[0];
