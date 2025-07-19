@@ -295,7 +295,6 @@ export default function ConcessionsList() {
               <AdSpace spaceId="19" position="card" pageType="concessions" />
               <AdSpace spaceId="23" position="card" pageType="concessions" />
               <AdSpace spaceId="24" position="card" pageType="concessions" />
-              <AdSpace spaceId="25" position="card" pageType="concessions" />
             </div>
           </div>
         </div>
