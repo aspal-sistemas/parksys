@@ -1147,7 +1147,10 @@ const AdAdvertisements = () => {
               {/* Tipo de contenido multimedia */}
               <div>
                 <Label htmlFor="edit_media_type">Tipo de Contenido *</Label>
-                <Select value={formData.media_type} onValueChange={(value) => setFormData({...formData, media_type: value as 'image' | 'video' | 'gif'})}>
+                <Select value={formData.media_type} onValueChange={(value) => {
+                  console.log('Cambiando media_type a:', value); // Debug
+                  setFormData({...formData, media_type: value as 'image' | 'video' | 'gif'})
+                }}>
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccionar tipo de contenido" />
                   </SelectTrigger>
@@ -1157,6 +1160,7 @@ const AdAdvertisements = () => {
                     <SelectItem value="gif">GIF Animado</SelectItem>
                   </SelectContent>
                 </Select>
+                <p className="text-xs text-gray-500 mt-1">Actual: {formData.media_type}</p>
               </div>
 
               {/* Método de almacenamiento */}
@@ -1192,6 +1196,13 @@ const AdAdvertisements = () => {
                     {formData.media_type === 'image' && 'Formatos: JPG, PNG, WEBP (máx 5MB)'}
                     {formData.media_type === 'video' && 'Formatos: MP4, WEBM, OGG (máx 10MB, 30 segundos recomendado)'}
                     {formData.media_type === 'gif' && 'Formato: GIF animado (máx 3MB)'}
+                  </div>
+                  <div className="text-xs text-blue-600 mb-2">
+                    DEBUG: Tipo={formData.media_type}, Accept={
+                      formData.media_type === 'image' ? 'image/*' : 
+                      formData.media_type === 'video' ? 'video/*' : 
+                      formData.media_type === 'gif' ? 'image/gif' : '*/*'
+                    }
                   </div>
                   <Input
                     id="edit_file_upload"
