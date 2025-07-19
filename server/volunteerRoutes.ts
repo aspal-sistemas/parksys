@@ -473,40 +473,88 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
         });
       }
       
-      // Preparar datos para inserción con status 'pending' por defecto
+      // Usar SQL directo para insertar en volunteers con los nombres de columnas correctos
       const volunteerData = {
-        fullName: req.body.fullName,
+        user_id: 0, // Temporal, vamos a usar una consulta SQL directa
+        full_name: req.body.fullName,
+        age: req.body.age || null,
+        gender: req.body.gender || null,
         email: req.body.email,
-        phoneNumber: req.body.phoneNumber,
-        address: req.body.address,
-        birthDate: birthDate,
-        emergencyContact: req.body.emergencyContact,
-        emergencyPhone: req.body.emergencyPhone,
-        occupation: req.body.occupation,
-        availability: req.body.availability,
-        skills: req.body.skills,
-        interests: req.body.interests,
-        previousExperience: req.body.previousExperience,
-        healthConditions: req.body.healthConditions,
-        additionalComments: req.body.additionalComments || null,
-        status: 'pending', // Los voluntarios registrados inician con estado pendiente
-        totalHours: 0,
-        // Si hay archivo de imagen, guardar la ruta
-        profileImageUrl: req.file ? `/uploads/volunteers/${req.file.filename}` : null,
-        createdAt: new Date(),
-        updatedAt: new Date()
+        phone: req.body.phoneNumber || null,
+        profile_image_url: req.file ? `/uploads/volunteers/${req.file.filename}` : null,
+        preferred_park_id: req.body.preferredParkId ? parseInt(req.body.preferredParkId) : null,
+        interest_areas: null, // Simplificar por ahora
+        available_days: null, // Simplificar por ahora
+        available_hours: req.body.availableHours || null,
+        previous_experience: req.body.previousExperience || null,
+        legal_consent: req.body.termsAccepted === 'true',
+        status: 'pending',
+        address: req.body.address || null,
+        emergency_contact: req.body.emergencyContact || null,
+        emergency_phone: req.body.emergencyPhone || null,
+        skills: req.body.skills || null
       };
       
-      // Insertar en la base de datos
-      const [newVolunteer] = await db
-        .insert(volunteers)
-        .values(volunteerData)
-        .returning();
+      // Primero crear un usuario temporal para el voluntario
+      const escapeSql = (str) => str ? str.replace(/'/g, "''") : null;
+      
+      // Crear usuario temporal en la tabla users
+      const username = `${req.body.email.split('@')[0]}_${Date.now()}`;
+      const userInsertQuery = `
+        INSERT INTO users (
+          username, email, password, full_name, phone, role, 
+          gender, municipality_id, created_at, updated_at
+        ) VALUES (
+          '${username}',
+          '${escapeSql(req.body.email)}',
+          '',
+          '${escapeSql(req.body.fullName)}',
+          ${req.body.phoneNumber ? `'${escapeSql(req.body.phoneNumber)}'` : 'NULL'},
+          'volunteer',
+          'no especificado',
+          2,
+          NOW(),
+          NOW()
+        ) RETURNING id
+      `;
+      
+      console.log('Usuario SQL Query:', userInsertQuery);
+      const userResult = await db.execute(sql.raw(userInsertQuery));
+      const newUserId = userResult.rows[0].id;
+      
+      // Ahora crear el registro de voluntario
+      const volunteerInsertQuery = `
+        INSERT INTO volunteers (
+          user_id, full_name, gender, email, phone, address, emergency_contact,
+          emergency_phone, previous_experience, legal_consent, status,
+          skills, created_at, updated_at
+        ) VALUES (
+          ${newUserId}, 
+          '${escapeSql(req.body.fullName)}', 
+          'no especificado', 
+          '${escapeSql(req.body.email)}', 
+          ${req.body.phoneNumber ? `'${escapeSql(req.body.phoneNumber)}'` : 'NULL'}, 
+          ${req.body.address ? `'${escapeSql(req.body.address)}'` : 'NULL'}, 
+          ${req.body.emergencyContact ? `'${escapeSql(req.body.emergencyContact)}'` : 'NULL'}, 
+          ${req.body.emergencyPhone ? `'${escapeSql(req.body.emergencyPhone)}'` : 'NULL'}, 
+          ${req.body.previousExperience ? `'${escapeSql(req.body.previousExperience)}'` : 'NULL'}, 
+          ${req.body.termsAccepted === 'true' ? 'true' : 'false'}, 
+          'pending', 
+          ${req.body.skills ? `'${escapeSql(req.body.skills)}'` : 'NULL'}, 
+          NOW(), 
+          NOW()
+        ) RETURNING id, full_name, email, status, gender
+      `;
+      
+      console.log('Voluntario SQL Query:', volunteerInsertQuery);
+      const result = await db.execute(sql.raw(volunteerInsertQuery));
+      
+      const newVolunteer = result.rows[0];
       
       // Responder con éxito y datos básicos del voluntario
       res.status(201).json({
         id: newVolunteer.id,
-        fullName: newVolunteer.fullName,
+        fullName: newVolunteer.full_name,
         email: newVolunteer.email,
         status: newVolunteer.status,
         message: "Solicitud de registro enviada exitosamente. En breve nos pondremos en contacto contigo."
