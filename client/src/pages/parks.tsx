@@ -26,35 +26,9 @@ const Parks: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const parksPerPage = 5;
   
-  // Estado para forzar actualización de anuncios estáticos
-  const [forceUpdateKey, setForceUpdateKey] = useState(Date.now());
-  
   // Reset scroll to top when component mounts
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, []);
-
-  // Escuchar cambios en localStorage para actualizar anuncios
-  useEffect(() => {
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'adForceUpdate') {
-        console.log('🔄 Forzando actualización de anuncios en /parks por cambio en localStorage');
-        setForceUpdateKey(Date.now());
-      }
-    };
-
-    const handleCustomUpdate = (e: CustomEvent) => {
-      console.log('🔄 Forzando actualización de anuncios en /parks por evento personalizado');
-      setForceUpdateKey(Date.now());
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('adForceUpdate', handleCustomUpdate as EventListener);
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('adForceUpdate', handleCustomUpdate as EventListener);
-    };
   }, []);
   
   // Build query string from filters
@@ -261,81 +235,11 @@ const Parks: React.FC = () => {
                 {/* Espacio publicitario principal */}
                 <AdSpace spaceId="2" position="sidebar" pageType="parks" />
                 
-                {/* Espacio publicitario secundario - deportes */}
-                <div key={`sports-ad-${forceUpdateKey}`} className="bg-white rounded-lg border shadow-sm p-4">
-                  <div className="text-center">
-                    <img 
-                      key={`sports-img-${forceUpdateKey}`}
-                      src={`https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=200&q=80&t=${forceUpdateKey}`}
-                      alt="Clases de deportes en parques"
-                      className="w-full h-40 object-cover rounded-lg mb-3"
-                    />
-                    <h3 className="font-semibold text-gray-900 mb-2">Clases de Deportes</h3>
-                    <p className="text-sm text-gray-600 mb-3">
-                      Actividades deportivas gratuitas en parques públicos
-                    </p>
-                    <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors text-sm">
-                      Inscríbete Ahora
-                    </button>
-                  </div>
-                </div>
-
-                {/* Espacio publicitario terciario - eventos */}
-                <div key={`events-ad-${forceUpdateKey}`} className="bg-white rounded-lg border shadow-sm p-4">
-                  <div className="text-center">
-                    <img 
-                      key={`events-img-${forceUpdateKey}`}
-                      src={`https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=200&q=80&t=${forceUpdateKey}`}
-                      alt="Eventos culturales en parques"
-                      className="w-full h-40 object-cover rounded-lg mb-3"
-                    />
-                    <h3 className="font-semibold text-gray-900 mb-2">Eventos Culturales</h3>
-                    <p className="text-sm text-gray-600 mb-3">
-                      Disfruta de conciertos y festivales al aire libre
-                    </p>
-                    <button className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors text-sm">
-                      Ver Calendario
-                    </button>
-                  </div>
-                </div>
-
-                {/* Espacio publicitario cuaternario - naturaleza */}
-                <div key={`nature-ad-${forceUpdateKey}`} className="bg-white rounded-lg border shadow-sm p-4">
-                  <div className="text-center">
-                    <img 
-                      key={`nature-img-${forceUpdateKey}`}
-                      src={`https://images.unsplash.com/photo-1441974231531-c6227db76b6e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=200&q=80&t=${forceUpdateKey}`}
-                      alt="Talleres de naturaleza"
-                      className="w-full h-40 object-cover rounded-lg mb-3"
-                    />
-                    <h3 className="font-semibold text-gray-900 mb-2">Talleres de Naturaleza</h3>
-                    <p className="text-sm text-gray-600 mb-3">
-                      Aprende sobre flora y fauna local
-                    </p>
-                    <button className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors text-sm">
-                      Más Información
-                    </button>
-                  </div>
-                </div>
-
-                {/* Espacio publicitario quinario - familia */}
-                <div key={`family-ad-${forceUpdateKey}`} className="bg-white rounded-lg border shadow-sm p-4">
-                  <div className="text-center">
-                    <img 
-                      key={`family-img-${forceUpdateKey}`}
-                      src={`https://images.unsplash.com/photo-1511632765486-a01980e01a18?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=200&q=80&t=${forceUpdateKey}`}
-                      alt="Actividades familiares"
-                      className="w-full h-40 object-cover rounded-lg mb-3"
-                    />
-                    <h3 className="font-semibold text-gray-900 mb-2">Actividades Familiares</h3>
-                    <p className="text-sm text-gray-600 mb-3">
-                      Diversión para toda la familia en espacios verdes
-                    </p>
-                    <button className="w-full bg-orange-600 text-white py-2 px-4 rounded-lg hover:bg-orange-700 transition-colors text-sm">
-                      Explorar
-                    </button>
-                  </div>
-                </div>
+                {/* Espacios publicitarios administrables */}
+                <AdSpace spaceId={39} position="sidebar-sports" pageType="parks" />
+                <AdSpace spaceId={40} position="sidebar-events" pageType="parks" />
+                <AdSpace spaceId={41} position="sidebar-nature" pageType="parks" />
+                <AdSpace spaceId={42} position="sidebar-family" pageType="parks" />
               </div>
             </div>
           </div>
