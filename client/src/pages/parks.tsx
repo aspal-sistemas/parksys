@@ -8,8 +8,7 @@ import ParkDetail from '@/components/ParkDetail';
 import ExtendedParksList from '@/components/ExtendedParksList';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, MapPin, Trees, Users, Search } from 'lucide-react';
-// Usar URL de Unsplash optimizada para mejor rendimiento (jpg optimizado a 1920x1080, 80% calidad)
-const heroImage = 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1920&h=1080&q=80';
+import heroImage from '@assets/group-of-tourists-walking-through-natural-reserve-2024-05-27-02-02-13-utc_1751508792698.jpg';
 import logoImage from '@assets/logo_1751306368691.png';
 import AdSpace from '@/components/AdSpace';
 const Parks: React.FC = () => {
