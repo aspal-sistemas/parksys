@@ -9,7 +9,7 @@ import ExtendedParksList from '@/components/ExtendedParksList';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, MapPin, Trees, Users, Search } from 'lucide-react';
 import heroImage from '@assets/group-of-tourists-walking-through-natural-reserve-2024-05-27-02-02-13-utc_1752940583323.jpg';
-import logoImage from '@assets/park-11-people-leisure_1752942068617.jpg';
+import logoImage from '@assets/logo_1751306368691.png';
 import AdSpace from '@/components/AdSpace';
 const Parks: React.FC = () => {
   const [filters, setFilters] = useState<{
@@ -380,7 +380,7 @@ const Parks: React.FC = () => {
             <img 
               src={logoImage} 
               alt="Agencia Metropolitana de Bosques Urbanos" 
-              className="h-32 w-auto mx-auto mb-6"
+              className="h-16 w-auto mx-auto mb-6 filter brightness-0 invert"
             />
             <h2 className="text-2xl font-bold mb-4">Agencia Metropolitana de Bosques Urbanos</h2>
             <p className="text-lg text-emerald-100 max-w-3xl mx-auto">
