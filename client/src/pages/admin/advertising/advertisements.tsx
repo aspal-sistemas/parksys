@@ -1166,7 +1166,10 @@ const AdAdvertisements = () => {
               {/* Método de almacenamiento */}
               <div>
                 <Label htmlFor="edit_storage_type">Método de Almacenamiento *</Label>
-                <Select value={formData.storage_type} onValueChange={(value) => setFormData({...formData, storage_type: value as 'url' | 'upload'})}>
+                <Select value={formData.storage_type} onValueChange={(value) => {
+                  console.log('Cambiando storage_type a:', value); // Debug
+                  setFormData({...formData, storage_type: value as 'url' | 'upload'})
+                }}>
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccionar método" />
                   </SelectTrigger>
@@ -1175,6 +1178,7 @@ const AdAdvertisements = () => {
                     <SelectItem value="upload">Subir Archivo</SelectItem>
                   </SelectContent>
                 </Select>
+                <p className="text-xs text-gray-500 mt-1">Actual: {formData.storage_type}</p>
               </div>
 
               {/* Campo condicional según el tipo de almacenamiento */}
@@ -1214,8 +1218,14 @@ const AdAdvertisements = () => {
                     }
                     onChange={async (e) => {
                       const file = e.target.files?.[0];
+                      console.log('Archivo seleccionado:', file); // Debug
                       if (file) {
                         // Validar tipo de archivo
+                        console.log('Validando archivo:', { 
+                          fileName: file.name, 
+                          fileType: file.type, 
+                          expectedType: formData.media_type 
+                        }); // Debug
                         const isValidType = 
                           (formData.media_type === 'image' && file.type.startsWith('image/')) ||
                           (formData.media_type === 'video' && file.type.startsWith('video/')) ||
