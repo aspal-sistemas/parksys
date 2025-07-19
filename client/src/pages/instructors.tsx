@@ -512,7 +512,6 @@ const InstructorsPage: React.FC = () => {
               <AdSpace spaceId="26" position="card" pageType="instructors" />
               <AdSpace spaceId="27" position="card" pageType="instructors" />
               <AdSpace spaceId="28" position="card" pageType="instructors" />
-              <AdSpace spaceId="29" position="card" pageType="instructors" />
             </div>
           </div>
         </div>
