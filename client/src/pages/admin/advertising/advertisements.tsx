@@ -699,14 +699,50 @@ const AdAdvertisements = () => {
                   ) : (
                     <div>
                       <Label htmlFor="file_upload">Subir Archivo *</Label>
+                      <div className="text-xs text-gray-600 mb-2">
+                        {formData.media_type === 'image' && 'Formatos: JPG, PNG, WEBP (máx 5MB)'}
+                        {formData.media_type === 'video' && 'Formatos: MP4, WEBM, OGG (máx 10MB, 30 segundos recomendado)'}
+                        {formData.media_type === 'gif' && 'Formato: GIF animado (máx 3MB)'}
+                      </div>
                       <Input
                         id="file_upload"
                         type="file"
-                        accept={formData.media_type === 'image' ? 'image/*' : formData.media_type === 'video' ? 'video/*' : 'image/gif'}
+                        accept={
+                          formData.media_type === 'image' ? 'image/jpeg,image/jpg,image/png,image/webp,image/*' : 
+                          formData.media_type === 'video' ? 'video/mp4,video/webm,video/ogg,video/avi,video/mov,video/*' : 
+                          'image/gif'
+                        }
                         onChange={async (e) => {
                           const file = e.target.files?.[0];
                           if (file) {
+                            // Validar tipo de archivo
+                            const isValidType = 
+                              (formData.media_type === 'image' && file.type.startsWith('image/')) ||
+                              (formData.media_type === 'video' && file.type.startsWith('video/')) ||
+                              (formData.media_type === 'gif' && file.type === 'image/gif');
+                            
+                            if (!isValidType) {
+                              toast({
+                                title: "Error",
+                                description: `Tipo de archivo inválido. Se esperaba ${formData.media_type === 'video' ? 'un video' : 'una imagen'}.`,
+                                variant: "destructive",
+                              });
+                              return;
+                            }
+
+                            // Validar tamaño
+                            const maxSize = formData.media_type === 'video' ? 10 * 1024 * 1024 : 5 * 1024 * 1024; // 10MB video, 5MB imagen
+                            if (file.size > maxSize) {
+                              toast({
+                                title: "Error",
+                                description: `Archivo demasiado grande. Máximo ${formData.media_type === 'video' ? '10MB' : '5MB'}.`,
+                                variant: "destructive",
+                              });
+                              return;
+                            }
+
                             try {
+                              setIsUploading(true);
                               const uploadedUrl = await uploadFile(file);
                               setFormData({...formData, image_url: uploadedUrl});
                               toast({
@@ -714,11 +750,14 @@ const AdAdvertisements = () => {
                                 description: "Archivo subido correctamente",
                               });
                             } catch (error) {
+                              console.error('Error uploading file:', error);
                               toast({
                                 title: "Error",
                                 description: "Error al subir el archivo",
                                 variant: "destructive",
                               });
+                            } finally {
+                              setIsUploading(false);
                             }
                           }
                         }}
@@ -737,9 +776,12 @@ const AdAdvertisements = () => {
                           <div className="mt-1 border border-gray-300 rounded-lg p-2">
                             {formData.media_type === 'image' || formData.media_type === 'gif' ? (
                               <img src={formData.image_url} alt="Vista previa" className="max-w-full h-32 object-cover rounded" />
-                            ) : (
-                              <video src={formData.image_url} controls className="max-w-full h-32 rounded" />
-                            )}
+                            ) : formData.media_type === 'video' ? (
+                              <video src={formData.image_url} controls muted className="max-w-full h-32 rounded">
+                                <source src={formData.image_url} type="video/mp4" />
+                                Tu navegador no soporta videos.
+                              </video>
+                            ) : null}
                           </div>
                         </div>
                       )}
