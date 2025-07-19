@@ -233,13 +233,13 @@ const Parks: React.FC = () => {
             <div className="lg:col-span-1">
               <div className="sticky top-4 space-y-6">
                 {/* Espacio publicitario principal */}
-                <AdSpace spaceId="2" position="sidebar" pageType="parks" />
+                <AdSpace spaceId="2" position="card" pageType="parks" />
                 
-                {/* Espacios publicitarios administrables */}
-                <AdSpace spaceId={39} position="sidebar-sports" pageType="parks" />
-                <AdSpace spaceId={40} position="sidebar-events" pageType="parks" />
-                <AdSpace spaceId={41} position="sidebar-nature" pageType="parks" />
-                <AdSpace spaceId={42} position="sidebar-family" pageType="parks" />
+                {/* Espacios publicitarios administrables - Diseño Tipo Tarjeta */}
+                <AdSpace spaceId={39} position="card" pageType="parks" />
+                <AdSpace spaceId={40} position="card" pageType="parks" />
+                <AdSpace spaceId={41} position="card" pageType="parks" />
+                <AdSpace spaceId={42} position="card" pageType="parks" />
               </div>
             </div>
           </div>

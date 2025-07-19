@@ -609,15 +609,6 @@ function ActivitiesPage() {
                 position="card" 
                 pageType="activities" 
               />
-
-              {/* Espacio publicitario quinario */}
-              <div className="bg-white rounded-lg border shadow-sm">
-                <AdSpace 
-                  spaceId="18" 
-                  position="sidebar" 
-                  pageType="activities" 
-                />
-              </div>
             </div>
           </div>
         </div>
