@@ -1121,7 +1121,7 @@ function ParkLandingPage() {
             <div className="sticky top-4">
               <AdSpace 
                 spaceId="30"
-                position="sidebar"
+                position="card"
                 pageType="park-landing"
               />
             </div>
