@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import PublicLayout from '@/components/PublicLayout';
 import AdSpace from '@/components/AdSpace';
-import volunteerHeroImage from '@assets/happy-volunteer-couple-planting-trees-together-by-2025-01-16-13-28-02-utc_1752871919358.jpg';
+import volunteerHeroImage from '@assets/happy-volunteer-couple-planting-trees-together-by-2025-01-16-13-28-02-utc_1752941777071.jpg';
 
 interface Volunteer {
   id: number;
