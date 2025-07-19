@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { AdminLayout } from '@/components/AdminLayout';
-import { Plus, Edit, Trash2, Eye, Activity, ImageIcon, Upload, Calendar, DollarSign, BarChart3, AlertCircle, RefreshCw, Grid, List, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, Activity, ImageIcon, Upload, Calendar, DollarSign, BarChart3, AlertCircle, RefreshCw, Grid, List, ChevronLeft, ChevronRight, Video } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 
 interface Advertisement {
@@ -44,6 +44,27 @@ interface Campaign {
   budget: number;
   status: string;
 }
+
+const ImagePreview: React.FC<{ src?: string; alt: string }> = ({ src, alt }) => {
+  const [imageError, setImageError] = useState(false);
+  
+  if (!src || imageError) {
+    return (
+      <div className="w-full h-full bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center border border-blue-200">
+        <Video className="w-6 h-6 text-blue-500" />
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className="w-full h-full object-cover"
+      onError={() => setImageError(true)}
+    />
+  );
+};
 
 const AdAdvertisements = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -985,14 +1006,7 @@ const AdAdvertisements = () => {
             {paginatedAds.map((ad: Advertisement) => (
             <Card key={`${ad.id}-${refreshKey}-${forceRender}`} className="overflow-hidden" data-ad-id={ad.id}>
               <div className="aspect-video relative overflow-hidden">
-                <img
-                  src={ad.imageUrl}
-                  alt={ad.title}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDQwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0iI2ZmZiI+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSIzMDAiIGZpbGw9IiNmNGY0ZjQiLz48L2c+PC9zdmc+';
-                  }}
-                />
+                <ImagePreview src={ad.imageUrl} alt={ad.title} />
                 <div className="absolute top-2 right-2">
                   <span className={`px-2 py-1 text-xs rounded-full ${
                     ad.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
@@ -1040,14 +1054,7 @@ const AdAdvertisements = () => {
                   <div className="flex items-center space-x-6">
                     {/* Imagen */}
                     <div className="flex-shrink-0 w-32 h-24 relative overflow-hidden rounded-lg">
-                      <img
-                        src={ad.imageUrl}
-                        alt={ad.title}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDQwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0iI2ZmZiI+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSIzMDAiIGZpbGw9IiNmNGY0ZjQiLz48L2c+PC9zdmc+';
-                        }}
-                      />
+                      <ImagePreview src={ad.imageUrl} alt={ad.title} />
                     </div>
                     
                     {/* Información */}
