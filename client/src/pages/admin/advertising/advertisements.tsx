@@ -1147,10 +1147,7 @@ const AdAdvertisements = () => {
               {/* Tipo de contenido multimedia */}
               <div>
                 <Label htmlFor="edit_media_type">Tipo de Contenido *</Label>
-                <Select value={formData.media_type} onValueChange={(value) => {
-                  console.log('Cambiando media_type a:', value); // Debug
-                  setFormData({...formData, media_type: value as 'image' | 'video' | 'gif'})
-                }}>
+                <Select value={formData.media_type} onValueChange={(value) => setFormData({...formData, media_type: value as 'image' | 'video' | 'gif'})}>
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccionar tipo de contenido" />
                   </SelectTrigger>
@@ -1160,16 +1157,13 @@ const AdAdvertisements = () => {
                     <SelectItem value="gif">GIF Animado</SelectItem>
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-gray-500 mt-1">Actual: {formData.media_type}</p>
+
               </div>
 
               {/* Método de almacenamiento */}
               <div>
                 <Label htmlFor="edit_storage_type">Método de Almacenamiento *</Label>
-                <Select value={formData.storage_type} onValueChange={(value) => {
-                  console.log('Cambiando storage_type a:', value); // Debug
-                  setFormData({...formData, storage_type: value as 'url' | 'upload'})
-                }}>
+                <Select value={formData.storage_type} onValueChange={(value) => setFormData({...formData, storage_type: value as 'url' | 'upload'})}>
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccionar método" />
                   </SelectTrigger>
@@ -1178,7 +1172,7 @@ const AdAdvertisements = () => {
                     <SelectItem value="upload">Subir Archivo</SelectItem>
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-gray-500 mt-1">Actual: {formData.storage_type}</p>
+
               </div>
 
               {/* Campo condicional según el tipo de almacenamiento */}
@@ -1201,13 +1195,7 @@ const AdAdvertisements = () => {
                     {formData.media_type === 'video' && 'Formatos: MP4, WEBM, OGG (máx 10MB, 30 segundos recomendado)'}
                     {formData.media_type === 'gif' && 'Formato: GIF animado (máx 3MB)'}
                   </div>
-                  <div className="text-xs text-blue-600 mb-2">
-                    DEBUG: Tipo={formData.media_type}, Accept={
-                      formData.media_type === 'video' ? 'video/*,.mp4,.webm,.ogg,.avi,.mov' : 
-                      formData.media_type === 'image' ? 'image/*' : 
-                      formData.media_type === 'gif' ? 'image/gif' : '*/*'
-                    }
-                  </div>
+
                   <Input
                     id="edit_file_upload"
                     type="file"
@@ -1218,14 +1206,8 @@ const AdAdvertisements = () => {
                     }
                     onChange={async (e) => {
                       const file = e.target.files?.[0];
-                      console.log('Archivo seleccionado:', file); // Debug
                       if (file) {
                         // Validar tipo de archivo
-                        console.log('Validando archivo:', { 
-                          fileName: file.name, 
-                          fileType: file.type, 
-                          expectedType: formData.media_type 
-                        }); // Debug
                         const isValidType = 
                           (formData.media_type === 'image' && file.type.startsWith('image/')) ||
                           (formData.media_type === 'video' && file.type.startsWith('video/')) ||
