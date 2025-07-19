@@ -415,6 +415,7 @@ const AdAdvertisements = () => {
   };
 
   const handleEdit = (ad: Advertisement) => {
+    console.log('Editando anuncio:', ad); // Debug
     setSelectedAd(ad);
     setFormData({
       title: ad.title || '',
@@ -424,8 +425,8 @@ const AdAdvertisements = () => {
       button_text: ad.button_text || '',
       campaign_id: ad.campaignId || 0,
       is_active: ad.isActive || false,
-      media_type: (ad as any).media_type || (ad as any).mediaType || 'image',
-      storage_type: (ad as any).storage_type || (ad as any).storageType || 'url',
+      media_type: (ad as any).mediaType || 'image',
+      storage_type: (ad as any).storageType || 'url',
       duration: (ad as any).duration || 0,
       alt_text: ad.altText || ''
     });

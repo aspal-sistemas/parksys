@@ -206,6 +206,9 @@ router.get('/advertisements', async (req, res) => {
       altText: row.alt_text,
       campaignId: row.campaign_id,
       isActive: row.is_active,
+      mediaType: row.media_type || 'image',
+      storageType: row.storage_type || 'url',
+      duration: row.duration || 0,
       createdAt: row.created_at,
       updatedAt: row.updated_at
     }));
