@@ -490,10 +490,10 @@ function ActivitiesPage() {
       </div>
 
       {/* Contenido Principal */}
-      <section className="max-w-7xl mx-auto px-4 py-8">
+      <section className="max-w-7xl mx-auto px-4 py-2">
         <div className="flex gap-8 items-start">
           {/* Contenido principal - 3/4 del ancho */}
-          <div className="flex-1 mt-6">
+          <div className="flex-1">
             {currentActivities.length === 0 ? (
               <div className="text-center py-16">
                 <Activity className="h-16 w-16 text-gray-400 mx-auto mb-4" />
@@ -583,7 +583,7 @@ function ActivitiesPage() {
           </div>
 
           {/* Sidebar publicitario - 1/4 del ancho */}
-          <div className="w-80 space-y-6 sticky top-6 self-start">
+          <div className="w-80 space-y-6 sticky top-2 self-start">
             <div className="space-y-6">
               {/* Espacios publicitarios con diseño tipo tarjeta */}
               <AdSpace 
