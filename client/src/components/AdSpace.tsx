@@ -3,8 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { ExternalLink } from 'lucide-react';
 
 interface AdSpaceProps {
-  spaceId: string;
-  position: 'header' | 'sidebar' | 'footer' | 'hero' | 'profile' | 'banner';
+  spaceId: string | number;
+  position: 'header' | 'sidebar' | 'footer' | 'hero' | 'profile' | 'banner' | 'sidebar-sports' | 'sidebar-events' | 'sidebar-nature' | 'sidebar-family';
   pageType: 'homepage' | 'parks' | 'tree-species' | 'activities' | 'concessions' | 'activity-detail' | 'instructors' | 'instructor-profile' | 'volunteers';
   className?: string;
 }
@@ -165,17 +165,26 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
     sidebar: 'w-full h-64 bg-white border border-gray-200 rounded-lg shadow-sm mb-6',
     profile: 'w-full h-48 bg-white border border-gray-200 rounded-lg shadow-sm',
     footer: 'w-full max-w-6xl mx-auto h-20 bg-white border border-gray-200 rounded-lg shadow-sm mt-6',
-    banner: 'w-full h-[150px] bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden'
+    banner: 'w-full h-[150px] bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden',
+    'sidebar-sports': 'bg-white rounded-lg border shadow-sm p-4',
+    'sidebar-events': 'bg-white rounded-lg border shadow-sm p-4',
+    'sidebar-nature': 'bg-white rounded-lg border shadow-sm p-4',
+    'sidebar-family': 'bg-white rounded-lg border shadow-sm p-4'
   };
 
-  const containerStyle = baseStyles[position];
+  const containerStyle = baseStyles[position as keyof typeof baseStyles] || baseStyles.sidebar;
 
   return (
-    <div className={`${containerStyle} ${className} relative overflow-hidden cursor-pointer hover:shadow-md transition-shadow duration-200`} onClick={handleAdClick}>
+    <div 
+      className={`${containerStyle} ${className} relative overflow-hidden hover:shadow-md transition-shadow duration-200 ${
+        position.startsWith('sidebar-') ? '' : 'cursor-pointer'
+      }`} 
+      onClick={position.startsWith('sidebar-') ? undefined : handleAdClick}
+    >
       {/* Botón de cerrar removido para usuarios públicos */}
 
       {/* Contenido del anuncio */}
-      <div className={`h-full ${position === 'sidebar' ? 'flex flex-col' : position === 'banner' ? 'flex items-center justify-center' : 'flex items-center justify-between'} ${position === 'banner' ? 'p-0' : 'p-4'}`}>
+      <div className={`h-full ${position === 'sidebar' ? 'flex flex-col' : position === 'banner' ? 'flex items-center justify-center' : position.startsWith('sidebar-') ? 'text-center' : 'flex items-center justify-between'} ${position === 'banner' ? 'p-0' : position.startsWith('sidebar-') ? '' : 'p-4'}`}>
         {position === 'banner' ? (
           // Layout específico para banner - imagen completa
           <div className="w-full h-full">
@@ -186,6 +195,40 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
                 className="w-full h-full object-cover"
               />
             )}
+          </div>
+        ) : position.startsWith('sidebar-') ? (
+          // Layout tipo tarjeta para espacios promocionales
+          <div className="text-center">
+            {advertisement.imageUrl && (
+              <img 
+                src={getImageUrlWithCacheBuster(advertisement.imageUrl)}
+                alt={advertisement.title}
+                className="w-full h-40 object-cover rounded-lg mb-3"
+              />
+            )}
+            <h3 className="font-semibold text-gray-900 mb-2">{advertisement.title}</h3>
+            <p className="text-sm text-gray-600 mb-3">
+              {advertisement.description}
+            </p>
+            <button 
+              className={`w-full text-white py-2 px-4 rounded-lg transition-colors text-sm ${
+                position === 'sidebar-sports' ? 'bg-blue-600 hover:bg-blue-700' :
+                position === 'sidebar-events' ? 'bg-purple-600 hover:bg-purple-700' :
+                position === 'sidebar-nature' ? 'bg-green-600 hover:bg-green-700' :
+                position === 'sidebar-family' ? 'bg-orange-600 hover:bg-orange-700' :
+                'bg-blue-600 hover:bg-blue-700'
+              }`}
+              onClick={(e) => {
+                e.stopPropagation(); // Evitar doble click
+                handleAdClick(e);
+              }}
+            >
+              {position === 'sidebar-sports' ? 'Inscríbete Ahora' :
+               position === 'sidebar-events' ? 'Ver Calendario' :
+               position === 'sidebar-nature' ? 'Más Información' :
+               position === 'sidebar-family' ? 'Explorar' :
+               'Ver Más'}
+            </button>
           </div>
         ) : position === 'sidebar' ? (
           // Layout vertical para sidebar
