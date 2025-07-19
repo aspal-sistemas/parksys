@@ -11,7 +11,7 @@ import { Search, Filter, Grid, List, Star, Phone, Mail, Award, Clock, User, Mess
 import PublicInstructorEvaluationForm from '@/components/PublicInstructorEvaluationForm';
 import PublicLayout from '@/components/PublicLayout';
 import AdSpace from '@/components/AdSpace';
-import heroImage from '@assets/cropped-shot-of-handsome-young-rugby-coach-standin-2025-04-06-09-42-40-utc_1751510249661.jpg';
+import heroImage from '@assets/cropped-shot-of-handsome-young-rugby-coach-standin-2025-04-06-09-42-40-utc_1752941593303.jpg';
 
 // Tipo de datos para un instructor
 interface Instructor {
