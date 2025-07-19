@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { CalendarIcon, Clock, Target, BarChart3, Settings, Plus, Edit, Trash2, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { CalendarIcon, Clock, Target, BarChart3, Settings, Plus, Edit, Trash2, CheckCircle, XCircle, AlertCircle, Image } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -81,6 +81,28 @@ interface Advertisement {
   targetUrl: string;
   isActive: boolean;
 }
+
+const ImagePreview: React.FC<{ src?: string; alt: string }> = ({ src, alt }) => {
+  const [imageError, setImageError] = useState(false);
+  
+  if (!src || imageError) {
+    return (
+      <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+        <Image className="w-6 h-6 text-gray-400" />
+      </div>
+    );
+  }
+  
+  return (
+    <img 
+      src={src} 
+      alt={alt}
+      className="w-full h-full object-cover"
+      loading="lazy"
+      onError={() => setImageError(true)}
+    />
+  );
+};
 
 const AssignmentCard: React.FC<{ assignment: Assignment; onEdit: (assignment: Assignment) => void; onDelete: (id: number) => void }> = ({ assignment, onEdit, onDelete }) => {
   // Safe date parsing for status calculations
@@ -198,28 +220,10 @@ const AssignmentCard: React.FC<{ assignment: Assignment; onEdit: (assignment: As
             <p className="text-xs text-gray-500 mb-2">Vista previa:</p>
             <div className="flex items-start gap-3">
               <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex-shrink-0 overflow-hidden border border-blue-200">
-                {assignment.advertisement.imageUrl ? (
-                  <img 
-                    src={assignment.advertisement.imageUrl} 
-                    alt={assignment.advertisement.title}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                    onError={(e) => {
-                      const target = e.currentTarget;
-                      target.style.display = 'none';
-                      const parent = target.parentElement;
-                      if (parent) {
-                        parent.innerHTML = '<div class="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center"><svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>';
-                      }
-                    }}
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                    <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                    </svg>
-                  </div>
-                )}
+                <ImagePreview 
+                  src={assignment.advertisement.imageUrl} 
+                  alt={assignment.advertisement.title || 'Vista previa del anuncio'}
+                />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-sm truncate">{assignment.advertisement.title || 'Sin título'}</p>
