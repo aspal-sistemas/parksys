@@ -257,9 +257,9 @@ export default function VolunteersList() {
       </div>
 
       {/* Lista de voluntarios con sidebar */}
-      <div className="py-8">
+      <div className="py-2">
         <div className="container mx-auto px-4">
-          <div className="flex gap-8">
+          <div className="flex gap-8 items-start">
             {/* Contenido principal */}
             <div className="flex-1">
               {/* Información de paginación */}
@@ -460,7 +460,7 @@ export default function VolunteersList() {
 
             {/* Sidebar Publicitario */}
             <div className="w-80 flex-shrink-0 hidden lg:block">
-              <div className="sticky top-4 space-y-6">
+              <div className="sticky top-4 space-y-6 mt-12">
                 {/* Espacios publicitarios con diseño tipo tarjeta */}
                 <AdSpace spaceId="20" position="card" pageType="volunteers" />
                 <AdSpace spaceId="21" position="card" pageType="volunteers" />
