@@ -584,7 +584,7 @@ function ActivitiesPage() {
 
           {/* Sidebar publicitario - 1/4 del ancho */}
           <div className="w-80 space-y-6 sticky top-4 self-start">
-            <div className="space-y-6 mt-16">
+            <div className="space-y-6 mt-14">
               {/* Espacios publicitarios con diseño tipo tarjeta */}
               <AdSpace 
                 spaceId="7" 
