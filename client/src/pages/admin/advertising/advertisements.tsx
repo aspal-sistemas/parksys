@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { AdminLayout } from '@/components/AdminLayout';
-import { Plus, Edit, Trash2, Eye, Activity, ImageIcon, Upload, Calendar, DollarSign, BarChart3, AlertCircle, RefreshCw } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, Activity, ImageIcon, Upload, Calendar, DollarSign, BarChart3, AlertCircle, RefreshCw, Grid, List, ChevronLeft, ChevronRight } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 
 interface Advertisement {
@@ -56,6 +56,9 @@ const AdAdvertisements = () => {
   const [forceRender, setForceRender] = useState(Date.now());
   const [ad13Timestamp, setAd13Timestamp] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
+  const recordsPerPage = 12;
   
   const [formData, setFormData] = useState({
     title: '',
@@ -447,6 +450,81 @@ const AdAdvertisements = () => {
     return matchesSearch && matchesCampaign && matchesStatus;
   });
 
+  // Pagination calculations
+  const totalRecords = filteredAds.length;
+  const totalPages = Math.ceil(totalRecords / recordsPerPage);
+  const startIndex = (currentPage - 1) * recordsPerPage;
+  const endIndex = Math.min(startIndex + recordsPerPage, totalRecords);
+  const paginatedAds = filteredAds.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  const handleFiltersChange = (callback: () => void) => {
+    callback();
+    setCurrentPage(1);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const renderPagination = () => {
+    if (totalPages <= 1) return null;
+
+    const pageNumbers = [];
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    if (endPage - startPage < maxVisiblePages - 1) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pageNumbers.push(i);
+    }
+
+    return (
+      <div className="flex items-center justify-between mt-6">
+        <div className="text-sm text-gray-700">
+          Mostrando {startIndex + 1} a {endIndex} de {totalRecords} anuncios
+        </div>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Anterior
+          </Button>
+          
+          {pageNumbers.map((page) => (
+            <Button
+              key={page}
+              variant={currentPage === page ? "default" : "outline"}
+              size="sm"
+              onClick={() => handlePageChange(page)}
+              className={currentPage === page ? "bg-[#00a587] hover:bg-[#067f5f]" : ""}
+            >
+              {page}
+            </Button>
+          ))}
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+          >
+            Siguiente
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    );
+  };
+
   // Statistics
   const totalAds = advertisements.length;
   const activeAds = advertisements.filter((ad: Advertisement) => ad.isActive).length;
@@ -799,46 +877,69 @@ const AdAdvertisements = () => {
         </div>
 
         {/* Filters */}
-        <div className="flex flex-wrap gap-4 items-center">
-          <div className="flex-1 min-w-[200px]">
-            <Input
-              placeholder="Buscar anuncios..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+        <div className="flex flex-wrap gap-4 items-center justify-between">
+          <div className="flex flex-wrap gap-4 items-center">
+            <div className="flex-1 min-w-[250px]">
+              <Input
+                placeholder="Buscar anuncios..."
+                value={searchTerm}
+                onChange={(e) => handleFiltersChange(() => setSearchTerm(e.target.value))}
+              />
+            </div>
+            <div className="min-w-[150px]">
+              <Select value={campaignFilter} onValueChange={(value) => handleFiltersChange(() => setCampaignFilter(value))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filtrar por campaña" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas las campañas</SelectItem>
+                  {campaigns.map((campaign: Campaign) => (
+                    <SelectItem key={campaign.id} value={campaign.id.toString()}>
+                      {campaign.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="min-w-[120px]">
+              <Select value={statusFilter} onValueChange={(value) => handleFiltersChange(() => setStatusFilter(value))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Estado" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="active">Activos</SelectItem>
+                  <SelectItem value="inactive">Inactivos</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-          <div className="min-w-[150px]">
-            <Select value={campaignFilter} onValueChange={setCampaignFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="Filtrar por campaña" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas las campañas</SelectItem>
-                {campaigns.map((campaign: Campaign) => (
-                  <SelectItem key={campaign.id} value={campaign.id.toString()}>
-                    {campaign.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="min-w-[120px]">
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="Estado" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                <SelectItem value="active">Activos</SelectItem>
-                <SelectItem value="inactive">Inactivos</SelectItem>
-              </SelectContent>
-            </Select>
+          
+          {/* View Mode Toggle */}
+          <div className="flex items-center space-x-2">
+            <Button
+              variant={viewMode === 'list' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('list')}
+              className={viewMode === 'list' ? 'bg-[#00a587] hover:bg-[#067f5f]' : ''}
+            >
+              <List className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={viewMode === 'grid' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('grid')}
+              className={viewMode === 'grid' ? 'bg-[#00a587] hover:bg-[#067f5f]' : ''}
+            >
+              <Grid className="h-4 w-4" />
+            </Button>
           </div>
         </div>
 
-        {/* Advertisements Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredAds.map((ad: Advertisement) => (
+        {/* Advertisements Display */}
+        {viewMode === 'grid' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {paginatedAds.map((ad: Advertisement) => (
             <Card key={`${ad.id}-${refreshKey}-${forceRender}`} className="overflow-hidden" data-ad-id={ad.id}>
               <div className="aspect-video relative overflow-hidden">
                 <img
@@ -887,7 +988,72 @@ const AdAdvertisements = () => {
               </CardContent>
             </Card>
           ))}
-        </div>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {paginatedAds.map((ad: Advertisement) => (
+              <Card key={`${ad.id}-${refreshKey}-${forceRender}`} className="overflow-hidden" data-ad-id={ad.id}>
+                <CardContent className="p-6">
+                  <div className="flex items-center space-x-6">
+                    {/* Imagen */}
+                    <div className="flex-shrink-0 w-32 h-24 relative overflow-hidden rounded-lg">
+                      <img
+                        src={ad.imageUrl}
+                        alt={ad.title}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDQwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0iI2ZmZiI+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSIzMDAiIGZpbGw9IiNmNGY0ZjQiLz48L2c+PC9zdmc+';
+                        }}
+                      />
+                    </div>
+                    
+                    {/* Información */}
+                    <div className="flex-grow">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h3 className="text-xl font-semibold text-gray-900 mb-2">{ad.title}</h3>
+                          <p className="text-gray-600 mb-3">{ad.description}</p>
+                          <div className="flex items-center space-x-4 text-sm text-gray-500">
+                            <span>Campaña: <span className="font-medium">{getCampaignName(ad.campaignId)}</span></span>
+                            <span>Creado: {formatDate(ad.createdAt)}</span>
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              ad.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                            }`}>
+                              {ad.isActive ? 'Activo' : 'Inactivo'}
+                            </span>
+                          </div>
+                        </div>
+                        
+                        {/* Acciones */}
+                        <div className="flex items-center space-x-2 ml-4">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEdit(ad)}
+                          >
+                            <Edit className="h-4 w-4 mr-1" />
+                            Editar
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDelete(ad.id)}
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Eliminar
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {renderPagination()}
 
         {/* Edit Modal */}
         <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
