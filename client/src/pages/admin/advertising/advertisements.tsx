@@ -702,7 +702,7 @@ const AdAdvertisements = () => {
                       <Label htmlFor="file_upload">Subir Archivo *</Label>
                       <div className="text-xs text-gray-600 mb-2">
                         {formData.media_type === 'image' && 'Formatos: JPG, PNG, WEBP (máx 5MB)'}
-                        {formData.media_type === 'video' && 'Formatos: MP4, WEBM, OGG (máx 10MB, 30 segundos recomendado)'}
+                        {formData.media_type === 'video' && 'Formatos: MP4, WEBM, OGG, AVI, MOV (máx 10MB, 30 segundos recomendado)'}
                         {formData.media_type === 'gif' && 'Formato: GIF animado (máx 3MB)'}
                       </div>
                       <Input
@@ -1203,8 +1203,8 @@ const AdAdvertisements = () => {
                   </div>
                   <div className="text-xs text-blue-600 mb-2">
                     DEBUG: Tipo={formData.media_type}, Accept={
+                      formData.media_type === 'video' ? 'video/*,.mp4,.webm,.ogg,.avi,.mov' : 
                       formData.media_type === 'image' ? 'image/*' : 
-                      formData.media_type === 'video' ? 'video/*' : 
                       formData.media_type === 'gif' ? 'image/gif' : '*/*'
                     }
                   </div>
@@ -1212,8 +1212,8 @@ const AdAdvertisements = () => {
                     id="edit_file_upload"
                     type="file"
                     accept={
+                      formData.media_type === 'video' ? 'video/*,.mp4,.webm,.ogg,.avi,.mov' : 
                       formData.media_type === 'image' ? 'image/*' : 
-                      formData.media_type === 'video' ? 'video/*' : 
                       formData.media_type === 'gif' ? 'image/gif' : '*/*'
                     }
                     onChange={async (e) => {
