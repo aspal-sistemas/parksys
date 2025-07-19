@@ -202,6 +202,7 @@ router.get('/advertisements', async (req, res) => {
       imageUrl: row.image_url,
       content: row.content,
       targetUrl: row.content, // Asegurar que targetUrl existe para el formulario de assignments
+      button_text: row.button_text,
       altText: row.alt_text,
       campaignId: row.campaign_id,
       isActive: row.is_active,
@@ -264,6 +265,7 @@ router.get('/campaigns/:campaignId/advertisements', async (req, res) => {
       description: row.description,
       imageUrl: row.image_url,
       content: row.content,
+      button_text: row.button_text,
       campaignId: row.campaign_id,
       startDate: row.start_date,
       endDate: row.end_date,
@@ -288,6 +290,7 @@ router.post('/advertisements', isAuthenticated, upload.single('image'), async (r
       description, 
       content, 
       image_url, 
+      button_text,
       media_type, 
       storage_type, 
       duration, 
@@ -305,6 +308,7 @@ router.post('/advertisements', isAuthenticated, upload.single('image'), async (r
         description, 
         content, 
         image_url, 
+        button_text,
         media_type, 
         storage_type, 
         duration, 
@@ -312,7 +316,7 @@ router.post('/advertisements', isAuthenticated, upload.single('image'), async (r
         is_active,
         created_at,
         updated_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
       RETURNING *
     `, [
       campaign_id && campaign_id !== 0 ? parseInt(campaign_id) : null,
@@ -320,6 +324,7 @@ router.post('/advertisements', isAuthenticated, upload.single('image'), async (r
       description || '',
       content || '',
       image_url || '',
+      button_text || '',
       media_type || 'image',
       storage_type || 'url',
       duration ? parseInt(duration) : 0,
@@ -358,8 +363,9 @@ router.put('/advertisements/:id', isAuthenticated, upload.single('image'), async
         storage_type = $8,
         duration = $9,
         alt_text = $10,
+        button_text = $11,
         updated_at = CURRENT_TIMESTAMP
-      WHERE id = $11
+      WHERE id = $12
       RETURNING *
     `;
     
@@ -374,6 +380,7 @@ router.put('/advertisements/:id', isAuthenticated, upload.single('image'), async
       data.storage_type || 'url',
       data.duration || 0,
       data.alt_text || '',
+      data.button_text || '',
       parseInt(id)
     ];
     
@@ -391,6 +398,7 @@ router.put('/advertisements/:id', isAuthenticated, upload.single('image'), async
       description: updatedAd.description,
       imageUrl: updatedAd.image_url,
       content: updatedAd.content,
+      button_text: updatedAd.button_text,
       campaignId: updatedAd.campaign_id,
       isActive: updatedAd.is_active,
       mediaType: updatedAd.media_type,
@@ -432,6 +440,7 @@ router.get('/placements', async (req, res) => {
         a.image_url,
         a.content as target_url,
         a.alt_text,
+        a.button_text,
         a.is_active as ad_is_active,
         a.updated_at as ad_updated_at
       FROM ad_placements ap
@@ -479,6 +488,7 @@ router.get('/placements', async (req, res) => {
         imageUrl: row.image_url,
         targetUrl: row.target_url,
         altText: row.alt_text,
+        buttonText: row.button_text,
         isActive: row.ad_is_active,
         updatedAt: row.ad_updated_at
       }

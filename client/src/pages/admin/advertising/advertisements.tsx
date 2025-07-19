@@ -16,11 +16,18 @@ interface Advertisement {
   id: number;
   title: string;
   description: string;
+  imageUrl: string;
   image_url: string;
   content: string;
+  button_text?: string;
+  campaignId: number;
   campaign_id: number;
+  isActive: boolean;
   is_active: boolean;
+  altText?: string;
+  createdAt: string;
   created_at: string;
+  updatedAt: string;
   updated_at: string;
   campaign?: {
     id: number;
@@ -55,6 +62,7 @@ const AdAdvertisements = () => {
     description: '',
     image_url: '',
     content: '',
+    button_text: '',
     campaign_id: 0,
     is_active: true,
     media_type: 'image' as 'image' | 'video' | 'gif',
@@ -377,6 +385,7 @@ const AdAdvertisements = () => {
       image_url: formData.image_url,
       link_url: '',
       alt_text: formData.alt_text || '',
+      button_text: formData.button_text || '',
       ad_type: 'institutional',
       media_type: formData.media_type,
       frequency: 'always',
@@ -409,6 +418,7 @@ const AdAdvertisements = () => {
       description: ad.description || '',
       image_url: ad.imageUrl || '',
       content: ad.content || '',
+      button_text: ad.button_text || '',
       campaign_id: ad.campaignId || 0,
       is_active: ad.isActive || false,
       media_type: 'image',
@@ -695,6 +705,21 @@ const AdAdvertisements = () => {
                     />
                     <p className="text-xs text-gray-500 mt-1">
                       Esta es la URL donde será dirigido el usuario cuando haga clic en el banner publicitario
+                    </p>
+                  </div>
+                  
+                  {/* Texto del Botón */}
+                  <div>
+                    <Label htmlFor="button_text">Texto del Botón</Label>
+                    <Input
+                      id="button_text"
+                      value={formData.button_text}
+                      onChange={(e) => setFormData({...formData, button_text: e.target.value})}
+                      placeholder="Ej: Inscríbete Ahora, Ver Más, Obtener Info"
+                      maxLength={50}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Texto personalizado que aparecerá en el botón del anuncio (máx. 50 caracteres)
                     </p>
                   </div>
                   
@@ -1038,6 +1063,21 @@ const AdAdvertisements = () => {
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   Esta es la URL donde será dirigido el usuario cuando haga clic en el banner publicitario
+                </p>
+              </div>
+              
+              {/* Texto del Botón */}
+              <div>
+                <Label htmlFor="edit_button_text">Texto del Botón</Label>
+                <Input
+                  id="edit_button_text"
+                  value={formData.button_text || ''}
+                  onChange={(e) => setFormData({...formData, button_text: e.target.value})}
+                  placeholder="Ej: Inscríbete Ahora, Ver Más, Obtener Info"
+                  maxLength={50}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Texto personalizado que aparecerá en el botón del anuncio (máx. 50 caracteres)
                 </p>
               </div>
               

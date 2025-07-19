@@ -23,6 +23,7 @@ interface AdPlacement {
     imageUrl: string;
     targetUrl: string;
     altText: string;
+    buttonText?: string;
     isActive: boolean;
     updatedAt?: string;
   };
@@ -223,11 +224,12 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
                 handleAdClick(e);
               }}
             >
-              {position === 'sidebar-sports' ? 'Inscríbete Ahora' :
-               position === 'sidebar-events' ? 'Ver Calendario' :
-               position === 'sidebar-nature' ? 'Más Información' :
-               position === 'sidebar-family' ? 'Explorar' :
-               'Ver Más'}
+              {advertisement.buttonText || 
+               (position === 'sidebar-sports' ? 'Inscríbete Ahora' :
+                position === 'sidebar-events' ? 'Ver Calendario' :
+                position === 'sidebar-nature' ? 'Más Información' :
+                position === 'sidebar-family' ? 'Explorar' :
+                'Ver Más')}
             </button>
           </div>
         ) : position === 'sidebar' ? (
