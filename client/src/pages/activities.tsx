@@ -22,7 +22,8 @@ import {
   DollarSign,
   Trophy
 } from 'lucide-react';
-import heroImage from '@assets/park-with-lake-and-stone-bridge-old-european-town-2024-12-04-10-14-36-utc_1751508535544.jpg';
+// Usar URL optimizada para mejor rendimiento (1920x1080, 80% calidad)
+const heroImage = 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1920&h=1080&q=80';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
