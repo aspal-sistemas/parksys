@@ -15,6 +15,94 @@
     "reports": "Reports",
     "settings": "Settings"
   },
+  "dashboard": {
+    "title": "Executive Dashboard",
+    "subtitle": "Comprehensive control panel for ParkSys system",
+    "metrics": {
+      "totalParks": "Total Parks",
+      "activeStaff": "Active Staff",
+      "activeActivities": "Active Activities",
+      "monthlyBalance": "Monthly Balance",
+      "growthThisMonth": "+2 this month",
+      "staffGrowthThisMonth": "+5 this month",
+      "activitiesThisWeek": "15 this week",
+      "vsLastMonth": "+18% vs last month",
+      "capacityTarget": "85% of target capacity",
+      "averageAttendance": "92% average attendance",
+      "averageParticipation": "78% average participation",
+      "annualBudget": "68% of annual budget"
+    },
+    "charts": {
+      "growthTrends": "Growth Trends",
+      "growthTrendsDescription": "Monthly evolution of key indicators",
+      "moduleAdoption": "Module Adoption",
+      "moduleAdoptionDescription": "Active usage percentage by system module",
+      "financialFlow": "Financial Flow",
+      "financialFlowDescription": "Income vs Expenses (Thousands of pesos)",
+      "parkTypes": "Park Types",
+      "parkTypesDescription": "Distribution by category",
+      "income": "Income",
+      "expenses": "Expenses"
+    },
+    "modules": {
+      "parks": "Parks",
+      "hr": "HR",
+      "finance": "Finance",
+      "activities": "Activities",
+      "volunteers": "Volunteers",
+      "concessions": "Concessions"
+    },
+    "parkCategories": {
+      "urban": "Urban",
+      "metropolitan": "Metropolitan",
+      "neighborhood": "Neighborhood",
+      "linear": "Linear",
+      "natural": "Natural"
+    },
+    "months": {
+      "jan": "Jan",
+      "feb": "Feb",
+      "mar": "Mar",
+      "apr": "Apr",
+      "may": "May",
+      "jun": "Jun",
+      "jul": "Jul"
+    },
+    "kpis": {
+      "criticalIndicators": "Critical Indicators",
+      "pendingMaintenance": "Pending Maintenance",
+      "urgentItems": "3 urgent",
+      "availableBudget": "Available Budget",
+      "remainingBudget": "32% remaining",
+      "upcomingEvents": "Upcoming Events",
+      "thisWeekEvents": "8 this week",
+      "expiringContracts": "Expiring Contracts",
+      "thisMonthContracts": "2 this month",
+      "systemStatus": "System Status",
+      "activeUsers24h": "Active Users (24h)",
+      "systemUptime": "System Uptime",
+      "automaticBackup": "Automatic Backup",
+      "security": "Security",
+      "updated": "Updated",
+      "optimal": "Optimal",
+      "pendingActions": "Pending Actions",
+      "eventApprovals": "Event Approvals",
+      "concessionReviews": "Concession Reviews",
+      "pendingEvaluations": "Pending Evaluations",
+      "viewAllTasks": "View All Tasks"
+    },
+    "moduleSummary": {
+      "volunteers": "Volunteers",
+      "activeThisMonth": "38 active this month",
+      "concessions": "Concessions",
+      "activeContracts": "9 active contracts",
+      "forestry": "Forestry",
+      "catalogedSpecies": "14 cataloged species",
+      "communication": "Communication",
+      "emailsSent": "emails sent",
+      "manage": "Manage"
+    }
+  },
   "common": {
     "save": "Save",
     "cancel": "Cancel",
