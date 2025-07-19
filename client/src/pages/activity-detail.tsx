@@ -326,10 +326,10 @@ function ActivityDetailPage() {
               </CardContent>
             </Card>
 
-            {/* Espacio Publicitario */}
+            {/* Espacio Publicitario - Diseño Tipo Tarjeta */}
             <AdSpace 
               spaceId="11" 
-              position="sidebar" 
+              position="card" 
               pageType="activity-detail" 
             />
 

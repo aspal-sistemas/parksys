@@ -782,11 +782,11 @@ function ParkLandingPage() {
               </CardContent>
             </Card>
 
-            {/* Publicidad Sidebar */}
+            {/* Publicidad Sidebar - Diseño Tipo Tarjeta */}
             <div className="sticky top-4">
               <AdSpace 
                 spaceId="2"
-                position="sidebar"
+                position="card"
                 pageType="parks"
               />
             </div>

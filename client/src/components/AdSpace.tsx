@@ -4,8 +4,8 @@ import { ExternalLink } from 'lucide-react';
 
 interface AdSpaceProps {
   spaceId: string | number;
-  position: 'header' | 'sidebar' | 'footer' | 'hero' | 'profile' | 'banner' | 'sidebar-sports' | 'sidebar-events' | 'sidebar-nature' | 'sidebar-family';
-  pageType: 'homepage' | 'parks' | 'tree-species' | 'activities' | 'concessions' | 'activity-detail' | 'instructors' | 'instructor-profile' | 'volunteers';
+  position: 'header' | 'sidebar' | 'footer' | 'hero' | 'profile' | 'banner' | 'sidebar-sports' | 'sidebar-events' | 'sidebar-nature' | 'sidebar-family' | 'card';
+  pageType: 'homepage' | 'parks' | 'tree-species' | 'activities' | 'concessions' | 'activity-detail' | 'instructors' | 'instructor-profile' | 'volunteers' | 'park-landing';
   className?: string;
 }
 
@@ -197,14 +197,50 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
 
 
   
+  // Función para determinar si es un contenedor tipo tarjeta
+  const isCardType = (pos: string) => {
+    return pos.startsWith('sidebar-') || pos === 'card' || pos === 'profile';
+  };
+
+  // Función para obtener colores de botón basados en posición o hash del spaceId
+  const getButtonColor = (pos: string, spaceId: string | number) => {
+    // Colores predefinidos para posiciones específicas
+    const positionColors = {
+      'sidebar-sports': 'bg-blue-600 hover:bg-blue-700',
+      'sidebar-events': 'bg-purple-600 hover:bg-purple-700',
+      'sidebar-nature': 'bg-green-600 hover:bg-green-700',
+      'sidebar-family': 'bg-orange-600 hover:bg-orange-700'
+    };
+
+    if (positionColors[pos as keyof typeof positionColors]) {
+      return positionColors[pos as keyof typeof positionColors];
+    }
+
+    // Para otros contenedores, usar un color basado en el spaceId
+    const colors = [
+      'bg-blue-600 hover:bg-blue-700',
+      'bg-purple-600 hover:bg-purple-700', 
+      'bg-green-600 hover:bg-green-700',
+      'bg-orange-600 hover:bg-orange-700',
+      'bg-red-600 hover:bg-red-700',
+      'bg-indigo-600 hover:bg-indigo-700',
+      'bg-pink-600 hover:bg-pink-700',
+      'bg-teal-600 hover:bg-teal-700'
+    ];
+    
+    const spaceIdNum = typeof spaceId === 'string' ? parseInt(spaceId) || 0 : spaceId;
+    return colors[spaceIdNum % colors.length];
+  };
+
   // Estilos base según la posición
   const baseStyles = {
     header: 'w-full max-w-6xl mx-auto h-24 bg-white border border-gray-200 rounded-lg shadow-sm mb-6',
     hero: 'w-full max-w-4xl mx-auto h-20 bg-white/95 backdrop-blur-sm border border-white/20 rounded-lg shadow-lg',
     sidebar: 'w-full h-64 bg-white border border-gray-200 rounded-lg shadow-sm mb-6',
-    profile: 'w-full h-48 bg-white border border-gray-200 rounded-lg shadow-sm',
+    profile: 'bg-white rounded-lg border shadow-sm p-4',
     footer: 'w-full max-w-6xl mx-auto h-20 bg-white border border-gray-200 rounded-lg shadow-sm mt-6',
     banner: 'w-full h-[150px] bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden',
+    card: 'bg-white rounded-lg border shadow-sm p-4',
     'sidebar-sports': 'bg-white rounded-lg border shadow-sm p-4',
     'sidebar-events': 'bg-white rounded-lg border shadow-sm p-4',
     'sidebar-nature': 'bg-white rounded-lg border shadow-sm p-4',
@@ -216,21 +252,21 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
   return (
     <div 
       className={`${containerStyle} ${className} relative overflow-hidden hover:shadow-md transition-shadow duration-200 ${
-        position.startsWith('sidebar-') ? '' : 'cursor-pointer'
+        isCardType(position) ? '' : 'cursor-pointer'
       }`} 
-      onClick={position.startsWith('sidebar-') ? undefined : handleAdClick}
+      onClick={isCardType(position) ? undefined : handleAdClick}
     >
       {/* Botón de cerrar removido para usuarios públicos */}
 
       {/* Contenido del anuncio */}
-      <div className={`h-full ${position === 'sidebar' ? 'flex flex-col' : position === 'banner' ? 'flex items-center justify-center' : position.startsWith('sidebar-') ? 'text-center' : 'flex items-center justify-between'} ${position === 'banner' ? 'p-0' : position.startsWith('sidebar-') ? '' : 'p-4'}`}>
+      <div className={`h-full ${position === 'sidebar' ? 'flex flex-col' : position === 'banner' ? 'flex items-center justify-center' : isCardType(position) ? 'text-center' : 'flex items-center justify-between'} ${position === 'banner' ? 'p-0' : isCardType(position) ? '' : 'p-4'}`}>
         {position === 'banner' ? (
           // Layout específico para banner - contenido multimedia completo
           <div className="w-full h-full">
             {advertisement.imageUrl && renderMedia("w-full h-full object-cover")}
           </div>
-        ) : position.startsWith('sidebar-') ? (
-          // Layout tipo tarjeta para espacios promocionales
+        ) : isCardType(position) ? (
+          // Layout tipo tarjeta para TODOS los espacios promocionales
           <div className="text-center">
             {advertisement.imageUrl && (
               <div className="w-full h-40 rounded-lg mb-3 overflow-hidden">
@@ -238,17 +274,13 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
               </div>
             )}
             <h3 className="font-semibold text-gray-900 mb-2">{advertisement.title}</h3>
-            <p className="text-sm text-gray-600 mb-3">
-              {advertisement.description}
-            </p>
+            {advertisement.description && (
+              <p className="text-sm text-gray-600 mb-3">
+                {advertisement.description}
+              </p>
+            )}
             <button 
-              className={`w-full text-white py-2 px-4 rounded-lg transition-colors text-sm ${
-                position === 'sidebar-sports' ? 'bg-blue-600 hover:bg-blue-700' :
-                position === 'sidebar-events' ? 'bg-purple-600 hover:bg-purple-700' :
-                position === 'sidebar-nature' ? 'bg-green-600 hover:bg-green-700' :
-                position === 'sidebar-family' ? 'bg-orange-600 hover:bg-orange-700' :
-                'bg-blue-600 hover:bg-blue-700'
-              }`}
+              className={`w-full text-white py-2 px-4 rounded-lg transition-colors text-sm ${getButtonColor(position, spaceId)}`}
               onClick={(e) => {
                 e.stopPropagation(); // Evitar doble click
                 handleAdClick(e);

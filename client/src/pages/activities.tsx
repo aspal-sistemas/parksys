@@ -585,41 +585,30 @@ function ActivitiesPage() {
           {/* Sidebar publicitario - 1/4 del ancho */}
           <div className="w-80 space-y-6 sticky top-24 self-start">
             <div className="space-y-6">
-              {/* Espacio publicitario principal - sistema */}
-              <div className="bg-white rounded-lg border shadow-sm">
-                <AdSpace 
-                  spaceId="7" 
-                  position="sidebar" 
-                  pageType="activities" 
-                />
-              </div>
+              {/* Espacios publicitarios con diseño tipo tarjeta */}
+              <AdSpace 
+                spaceId="7" 
+                position="card" 
+                pageType="activities" 
+              />
 
-              {/* Espacio publicitario secundario */}
-              <div className="bg-white rounded-lg border shadow-sm">
-                <AdSpace 
-                  spaceId="15" 
-                  position="sidebar" 
-                  pageType="activities" 
-                />
-              </div>
+              <AdSpace 
+                spaceId="15" 
+                position="card" 
+                pageType="activities" 
+              />
 
-              {/* Espacio publicitario terciario */}
-              <div className="bg-white rounded-lg border shadow-sm">
-                <AdSpace 
-                  spaceId="16" 
-                  position="sidebar" 
-                  pageType="activities" 
-                />
-              </div>
+              <AdSpace 
+                spaceId="16" 
+                position="card" 
+                pageType="activities" 
+              />
 
-              {/* Espacio publicitario cuaternario */}
-              <div className="bg-white rounded-lg border shadow-sm">
-                <AdSpace 
-                  spaceId="17" 
-                  position="sidebar" 
-                  pageType="activities" 
-                />
-              </div>
+              <AdSpace 
+                spaceId="17" 
+                position="card" 
+                pageType="activities" 
+              />
 
               {/* Espacio publicitario quinario */}
               <div className="bg-white rounded-lg border shadow-sm">

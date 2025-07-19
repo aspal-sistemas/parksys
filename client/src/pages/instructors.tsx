@@ -507,26 +507,12 @@ const InstructorsPage: React.FC = () => {
 
           {/* Sidebar Publicitario */}
           <div className="w-80 flex-shrink-0 hidden lg:block">
-            <div className="sticky top-4 space-y-4">
-              {/* Espacio 1 - Certificaciones */}
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
-                <AdSpace spaceId="26" position="sidebar" pageType="instructors" />
-              </div>
-
-              {/* Espacio 2 - Capacitación */}
-              <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
-                <AdSpace spaceId="27" position="sidebar" pageType="instructors" />
-              </div>
-
-              {/* Espacio 3 - Oportunidades */}
-              <div className="bg-gradient-to-br from-purple-50 to-violet-50 p-4 rounded-lg border border-purple-200">
-                <AdSpace spaceId="28" position="sidebar" pageType="instructors" />
-              </div>
-
-              {/* Espacio 4 - Eventos */}
-              <div className="bg-gradient-to-br from-orange-50 to-red-50 p-4 rounded-lg border border-orange-200">
-                <AdSpace spaceId="29" position="sidebar" pageType="instructors" />
-              </div>
+            <div className="sticky top-4 space-y-6">
+              {/* Espacios publicitarios con diseño tipo tarjeta */}
+              <AdSpace spaceId="26" position="card" pageType="instructors" />
+              <AdSpace spaceId="27" position="card" pageType="instructors" />
+              <AdSpace spaceId="28" position="card" pageType="instructors" />
+              <AdSpace spaceId="29" position="card" pageType="instructors" />
             </div>
           </div>
         </div>

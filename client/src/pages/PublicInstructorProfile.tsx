@@ -243,7 +243,7 @@ function PublicInstructorProfile() {
 
             {/* Espacio Publicitario - Debajo de Información del Instructor */}
             <div className="mt-6">
-              <AdSpace spaceId="13" position="sidebar" pageType="instructor-profile" />
+              <AdSpace spaceId="13" position="card" pageType="instructor-profile" />
             </div>
           </div>
 

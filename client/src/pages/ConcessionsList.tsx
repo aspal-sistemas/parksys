@@ -289,31 +289,13 @@ export default function ConcessionsList() {
 
           {/* Sidebar Publicitario */}
           <div className="w-80 flex-shrink-0 hidden lg:block">
-            <div className="sticky top-4 space-y-4">
-              {/* Espacio 1 - Servicios */}
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
-                <AdSpace spaceId="9" position="sidebar" pageType="concessions" />
-              </div>
-
-              {/* Espacio 2 - Oportunidades */}
-              <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
-                <AdSpace spaceId="19" position="sidebar" pageType="concessions" />
-              </div>
-
-              {/* Espacio 3 - Inversión */}
-              <div className="bg-gradient-to-br from-purple-50 to-violet-50 p-4 rounded-lg border border-purple-200">
-                <AdSpace spaceId="23" position="sidebar" pageType="concessions" />
-              </div>
-
-              {/* Espacio 4 - Eventos */}
-              <div className="bg-gradient-to-br from-orange-50 to-red-50 p-4 rounded-lg border border-orange-200">
-                <AdSpace spaceId="24" position="sidebar" pageType="concessions" />
-              </div>
-
-              {/* Espacio 5 - Recursos */}
-              <div className="bg-gradient-to-br from-teal-50 to-cyan-50 p-4 rounded-lg border border-teal-200">
-                <AdSpace spaceId="25" position="sidebar" pageType="concessions" />
-              </div>
+            <div className="sticky top-4 space-y-6">
+              {/* Espacios publicitarios con diseño tipo tarjeta */}
+              <AdSpace spaceId="9" position="card" pageType="concessions" />
+              <AdSpace spaceId="19" position="card" pageType="concessions" />
+              <AdSpace spaceId="23" position="card" pageType="concessions" />
+              <AdSpace spaceId="24" position="card" pageType="concessions" />
+              <AdSpace spaceId="25" position="card" pageType="concessions" />
             </div>
           </div>
         </div>
