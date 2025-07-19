@@ -22,8 +22,7 @@ import {
   DollarSign,
   Trophy
 } from 'lucide-react';
-// Usar URL optimizada para mejor rendimiento (1920x1080, 80% calidad)
-const heroImage = 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1920&h=1080&q=80';
+import heroImage from '@assets/a-teenage-girl-choosing-books-near-a-street-bookst-2025-01-07-12-36-32-utc_1752940964207.jpg';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
