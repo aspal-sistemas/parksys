@@ -166,7 +166,7 @@ export default function VolunteersList() {
               <Button 
                 className="bg-[#00a587] hover:bg-[#067f5f] text-white px-8 py-3 text-lg font-semibold shadow-lg"
                 size="lg"
-                onClick={() => navigate('/registro-voluntario')}
+                onClick={() => navigate('/volunteers/register')}
               >
                 Únete como Voluntario
               </Button>
