@@ -35,7 +35,9 @@ const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilt
     'video/webm',
     'video/ogg',
     'video/avi',
-    'video/mov'
+    'video/mov',
+    'video/quicktime', // Para archivos .mov con MIME de QuickTime
+    'video/x-quicktime' // Variante alternativa
   ];
   
   if (allowedMimes.includes(file.mimetype)) {
