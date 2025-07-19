@@ -197,17 +197,31 @@ const AssignmentCard: React.FC<{ assignment: Assignment; onEdit: (assignment: As
           <div className="p-3 bg-gray-50 rounded-lg">
             <p className="text-xs text-gray-500 mb-2">Vista previa:</p>
             <div className="flex items-start gap-3">
-              <img 
-                src={assignment.advertisement.imageUrl} 
-                alt={assignment.advertisement.title}
-                className="w-12 h-12 object-cover rounded flex-shrink-0"
-                onError={(e) => {
-                  e.currentTarget.src = 'https://via.placeholder.com/48x48?text=IMG';
-                }}
-              />
+              <div className="w-12 h-12 bg-gray-200 rounded flex-shrink-0 overflow-hidden">
+                {assignment.advertisement.imageUrl ? (
+                  <img 
+                    src={assignment.advertisement.imageUrl} 
+                    alt={assignment.advertisement.title}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                    onError={(e) => {
+                      const target = e.currentTarget;
+                      target.style.display = 'none';
+                      const parent = target.parentElement;
+                      if (parent) {
+                        parent.innerHTML = '<div class="w-full h-full bg-gray-300 flex items-center justify-center text-xs text-gray-500">IMG</div>';
+                      }
+                    }}
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gray-300 flex items-center justify-center text-xs text-gray-500">
+                    IMG
+                  </div>
+                )}
+              </div>
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm truncate">{assignment.advertisement.title}</p>
-                <p className="text-xs text-gray-600 line-clamp-2 mt-1">{assignment.advertisement.description}</p>
+                <p className="font-medium text-sm truncate">{assignment.advertisement.title || 'Sin título'}</p>
+                <p className="text-xs text-gray-600 line-clamp-2 mt-1">{assignment.advertisement.description || 'Sin descripción'}</p>
               </div>
             </div>
           </div>
@@ -495,21 +509,14 @@ export default function AdvertisingAssignments() {
       });
     },
     onSuccess: () => {
-      // Invalidación múltiple del cache con delays escalonados para asegurar actualizaciones inmediatas
-      [0, 500, 1000, 1500, 2000].forEach((delay) => {
-        setTimeout(() => {
-          queryClient.invalidateQueries({ queryKey: ['/api/advertising-management/assignments'] });
-          queryClient.invalidateQueries({ queryKey: ['/api/advertising/placements'] });
-          queryClient.removeQueries({ queryKey: ['/api/advertising/placements'] });
-          queryClient.refetchQueries({ queryKey: ['/api/advertising/placements'] });
-        }, delay);
-      });
+      // Invalidación simple del cache
+      queryClient.invalidateQueries({ queryKey: ['/api/advertising-management/assignments'] });
       
       setShowForm(false);
       setEditingAssignment(undefined);
       toast({
         title: "Asignación creada",
-        description: "La asignación publicitaria ha sido creada exitosamente - Actualizando banners...",
+        description: "La asignación publicitaria ha sido creada exitosamente.",
       });
     },
     onError: (error) => {
@@ -529,15 +536,8 @@ export default function AdvertisingAssignments() {
       });
     },
     onSuccess: () => {
-      // Invalidación múltiple del cache con delays escalonados
-      [0, 500, 1000, 1500, 2000].forEach((delay) => {
-        setTimeout(() => {
-          queryClient.invalidateQueries({ queryKey: ['/api/advertising-management/assignments'] });
-          queryClient.invalidateQueries({ queryKey: ['/api/advertising/placements'] });
-          queryClient.removeQueries({ queryKey: ['/api/advertising/placements'] });
-          queryClient.refetchQueries({ queryKey: ['/api/advertising/placements'] });
-        }, delay);
-      });
+      // Invalidación simple del cache
+      queryClient.invalidateQueries({ queryKey: ['/api/advertising-management/assignments'] });
       
       toast({
         title: "Asignación eliminada",
@@ -575,14 +575,30 @@ export default function AdvertisingAssignments() {
   };
 
   const filteredAssignments = Array.isArray(assignments) ? assignments.filter(assignment => {
-    const matchesSearch = assignment.advertisement.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         assignment.space.name.toLowerCase().includes(searchTerm.toLowerCase());
+    // Validar que el assignment tenga las propiedades necesarias
+    if (!assignment || !assignment.advertisement || !assignment.space) {
+      return false;
+    }
+    
+    const matchesSearch = (assignment.advertisement.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (assignment.space.name || '').toLowerCase().includes(searchTerm.toLowerCase());
     
     if (statusFilter === 'all') return matchesSearch;
     
+    // Validación segura de fechas
     const now = new Date();
-    const startDate = new Date(assignment.startDate);
-    const endDate = new Date(assignment.endDate);
+    let startDate, endDate;
+    
+    try {
+      startDate = assignment.startDate ? new Date(assignment.startDate) : null;
+      endDate = assignment.endDate ? new Date(assignment.endDate) : null;
+    } catch (error) {
+      return false; // Excluir asignaciones con fechas inválidas
+    }
+    
+    if (!startDate || !endDate || isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+      return false;
+    }
     
     const isActive = assignment.isActive && now >= startDate && now <= endDate;
     const isExpired = now > endDate;
@@ -596,16 +612,37 @@ export default function AdvertisingAssignments() {
     return false;
   }) : [];
 
-  // Estadísticas
-  const totalAssignments = assignments?.length || 0;
-  const activeAssignments = assignments?.filter(a => {
-    const now = new Date();
-    const startDate = new Date(a.startDate);
-    const endDate = new Date(a.endDate);
-    return a.isActive && now >= startDate && now <= endDate;
-  }).length || 0;
-  const expiredAssignments = assignments?.filter(a => new Date() > new Date(a.endDate)).length || 0;
-  const pendingAssignments = assignments?.filter(a => new Date() < new Date(a.startDate)).length || 0;
+  // Estadísticas con validación segura
+  const totalAssignments = Array.isArray(assignments) ? assignments.length : 0;
+  const activeAssignments = Array.isArray(assignments) ? assignments.filter(a => {
+    if (!a || !a.startDate || !a.endDate) return false;
+    try {
+      const now = new Date();
+      const startDate = new Date(a.startDate);
+      const endDate = new Date(a.endDate);
+      return a.isActive && !isNaN(startDate.getTime()) && !isNaN(endDate.getTime()) && now >= startDate && now <= endDate;
+    } catch (error) {
+      return false;
+    }
+  }).length : 0;
+  const expiredAssignments = Array.isArray(assignments) ? assignments.filter(a => {
+    if (!a || !a.endDate) return false;
+    try {
+      const endDate = new Date(a.endDate);
+      return !isNaN(endDate.getTime()) && new Date() > endDate;
+    } catch (error) {
+      return false;
+    }
+  }).length : 0;
+  const pendingAssignments = Array.isArray(assignments) ? assignments.filter(a => {
+    if (!a || !a.startDate) return false;
+    try {
+      const startDate = new Date(a.startDate);
+      return !isNaN(startDate.getTime()) && new Date() < startDate;
+    } catch (error) {
+      return false;
+    }
+  }).length : 0;
 
   return (
     <AdminLayout>
