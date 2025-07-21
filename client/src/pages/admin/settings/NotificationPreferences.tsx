@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Bell, Settings, Users, Mail, AlertTriangle, CheckCircle, BarChart3 } from "lucide-react";
+import { Bell, Settings, Users, Mail, AlertTriangle, CheckCircle, BarChart3, Search, X } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import AdminLayout from "@/components/AdminLayout";
 
@@ -37,6 +39,8 @@ interface PreferenceSummary {
 
 export default function NotificationPreferences() {
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [roleFilter, setRoleFilter] = useState<string>("all");
   const queryClient = useQueryClient();
 
   // Obtener usuarios para seleccionar
@@ -148,6 +152,26 @@ export default function NotificationPreferences() {
     ['admin', 'super_admin', 'manager', 'instructor', 'volunteer', 'concessionaire'].includes(user.role)
   ) || [];
 
+  // Aplicar filtros de búsqueda y rol
+  const filteredUsers = relevantUsers.filter((user: any) => {
+    const matchesSearch = searchTerm === "" || 
+      (user.fullName || user.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (user.email || "").toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesRole = roleFilter === "all" || user.role === roleFilter;
+    
+    return matchesSearch && matchesRole;
+  });
+
+  // Obtener roles únicos para el filtro
+  const availableRoles = [...new Set(relevantUsers.map((user: any) => user.role))];
+
+  // Limpiar filtros
+  const clearFilters = () => {
+    setSearchTerm("");
+    setRoleFilter("all");
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -188,19 +212,84 @@ export default function NotificationPreferences() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
+                  {/* Filtros */}
+                  <div className="space-y-4 mb-4">
+                    {/* Búsqueda por nombre */}
+                    <div className="relative">
+                      <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Input
+                        placeholder="Buscar por nombre o email..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-9 pr-9"
+                      />
+                      {searchTerm && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSearchTerm("")}
+                          className="absolute right-1 top-1 h-8 w-8 p-0 hover:bg-gray-100"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+
+                    {/* Filtro por rol */}
+                    <Select value={roleFilter} onValueChange={setRoleFilter}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Filtrar por rol" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos los roles</SelectItem>
+                        {availableRoles.map((role) => (
+                          <SelectItem key={role} value={role}>
+                            {getRoleLabel(role)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    {/* Información de filtros y botón limpiar */}
+                    <div className="flex items-center justify-between text-sm text-gray-500">
+                      <span>
+                        {filteredUsers.length} de {relevantUsers.length} usuarios
+                      </span>
+                      {(searchTerm || roleFilter !== "all") && (
+                        <Button
+                          variant="ghost" 
+                          size="sm"
+                          onClick={clearFilters}
+                          className="h-6 text-xs"
+                        >
+                          <X className="h-3 w-3 mr-1" />
+                          Limpiar
+                        </Button>
+                      )}
+                    </div>
+                  </div>
                   {usersLoading ? (
                     <div className="space-y-2">
                       {[1, 2, 3].map(i => (
                         <div key={i} className="h-12 bg-gray-200 animate-pulse rounded"></div>
                       ))}
                     </div>
-                  ) : relevantUsers.length === 0 ? (
+                  ) : filteredUsers.length === 0 ? (
                     <div className="p-4 text-center text-gray-500">
-                      <p>No se encontraron usuarios relevantes</p>
+                      <AlertTriangle className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                      <p className="font-medium mb-1">
+                        {searchTerm || roleFilter !== "all" ? "Sin resultados" : "No hay usuarios"}
+                      </p>
+                      <p className="text-xs">
+                        {searchTerm || roleFilter !== "all" ? 
+                          "Prueba ajustando los filtros de búsqueda" : 
+                          "No se encontraron usuarios relevantes"
+                        }
+                      </p>
                     </div>
                   ) : (
-                    <div className="space-y-2 max-h-96 overflow-y-auto">
-                      {relevantUsers.map((user: any) => (
+                    <div className="space-y-2 max-h-80 overflow-y-auto">
+                      {filteredUsers.map((user: any) => (
                         <div
                           key={user.id}
                           onClick={() => setSelectedUserId(user.id)}
