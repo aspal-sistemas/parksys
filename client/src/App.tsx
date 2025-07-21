@@ -273,11 +273,7 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/dashboard-incidencias')))}
           </Suspense>
         </Route>
-        <Route path="/admin/users">
-          <Suspense fallback={<div className="p-8 text-center">Cargando gestión de usuarios...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/users')))}
-          </Suspense>
-        </Route>
+        <Route path="/admin/users" component={AdminUsers} />
 
         {/* Rutas para concesionarios movidas al módulo de Concesiones */}
         <Route path="/admin/amenities" component={AdminAmenities} />
