@@ -159,6 +159,20 @@ app.get('/debug/notifications', (req: Request, res: Response) => {
   });
 });
 
+// Endpoint robusto para resolver 503s específicos de Replit
+app.get('/replit-ready', (req: Request, res: Response) => {
+  res.status(200).send('ParkSys Ready - Production Mode');
+});
+
+app.get('/health-check', (req: Request, res: Response) => {
+  res.status(200).json({
+    status: 'healthy',
+    service: 'ParkSys',
+    mode: 'production',
+    timestamp: Date.now()
+  });
+});
+
 // Root API endpoint for deployment verification
 app.get('/api', (req: Request, res: Response) => {
   try {
@@ -1562,25 +1576,35 @@ async function initializeDatabaseAsync() {
   // Forzar modo producción para resolver problemas con proxy de Replit
   console.log("🔧 Configurando servidor para resolver problemas de proxy de Replit...");
   
-  // Configurar headers y timeout para mejor compatibilidad con Replit
+  // Headers agresivos para compatibilidad extrema con Replit
   app.use((req: Request, res: Response, next: NextFunction) => {
-    // Headers para mejor compatibilidad con proxy de Replit
-    res.setHeader('X-Powered-By', 'ParkSys');
-    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
+    // Headers robustos para proxy de Replit
+    res.setHeader('X-Powered-By', 'ParkSys-Production');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.setHeader('Server', 'ParkSys/1.0');
+    res.setHeader('Connection', 'keep-alive');
     
-    // Timeout más largo para evitar 503s
-    res.setTimeout(15000, () => {
+    // Headers específicos para evitar 503
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+    
+    // Timeout extendido para operaciones complejas
+    res.setTimeout(30000, () => {
       if (!res.headersSent) {
-        console.error(`⚠️ Timeout en ruta: ${req.method} ${req.path}`);
-        res.status(408).json({ error: 'Request timeout', path: req.path });
+        console.error(`⚠️ Timeout crítico en ruta: ${req.method} ${req.path}`);
+        res.status(408).json({ 
+          error: 'Request timeout - Replit environment issue', 
+          path: req.path,
+          timestamp: new Date().toISOString()
+        });
       }
     });
     next();
   });
   
-  // Forzar modo producción para resolver problemas de 503 en Replit
+  // Forzar modo producción COMPLETO para resolver problemas de 503 en Replit
+  process.env.NODE_ENV = 'production'; // Forzar production environment
   const isDeployment = true; // Usar producción para evitar problemas de proxy
   
   // Setup Vite in development mode with error handling
@@ -1654,10 +1678,11 @@ async function initializeDatabaseAsync() {
     });
     
     appServer = app.listen(PORT, HOST, () => {
-      console.log(`🚀 ParkSys servidor ejecutándose en ${HOST}:${PORT}`);
+      console.log(`🚀 ParkSys servidor PRODUCCIÓN ejecutándose en ${HOST}:${PORT}`);
       console.log(`🌐 Aplicación disponible en http://${HOST}:${PORT}`);
       console.log(`📊 Sistema de notificaciones granulares operativo`);
-      console.log(`✅ Resolviendo problemas de 503 Service Unavailable en Replit`);
+      console.log(`✅ MODO PRODUCCIÓN FORZADO - Resolviendo 503s en Replit`);
+      console.log(`🔥 Headers optimizados para proxy de Replit`);
       console.log(`🏛️ Bosques Urbanos de Guadalajara - Sistema listo para presentación`);
       
       setTimeout(() => {
