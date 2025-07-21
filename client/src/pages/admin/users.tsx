@@ -378,18 +378,11 @@ export default function UsersPage() {
 
   const { data: users = [], isLoading, error } = useQuery({
     queryKey: ['/api/users'],
-    staleTime: 30000, // 30 segundos
+    staleTime: 0, // Sin cache para forzar carga
     refetchOnWindowFocus: false,
     refetchOnMount: true,
-    retry: (failureCount, error) => {
-      // Reintentar hasta 3 veces para errores de red
-      if (error.message.includes('Failed to fetch') && failureCount < 3) {
-        console.log(`🔄 Reintentando consulta de usuarios (intento ${failureCount + 1})`);
-        return true;
-      }
-      return false;
-    },
-    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
+    retry: 3,
+    retryDelay: 1000,
   });
 
   console.log('🔍 Estado de la consulta usuarios:', { 

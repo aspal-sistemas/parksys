@@ -1236,8 +1236,7 @@ async function initializeDatabaseAsync() {
     app.use("/api/users", userPreferencesRouter);
     
     // Registrar rutas principales de usuarios (archivo principal completo)
-    const { registerUserRoutes } = await import('./userRoutes');
-    registerUserRoutes(app);
+    // userRoutes eliminado para evitar conflictos - usando endpoint directo en routes.ts
     console.log("Rutas principales de usuarios registradas correctamente");
     console.log("Rutas del sistema de preferencias de usuario registradas correctamente");
   } catch (error) {

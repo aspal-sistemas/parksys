@@ -501,39 +501,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Endpoint directo para usuarios (resolver problema de carga)
+  // Endpoint PRIORITARIO para usuarios (eliminar conflictos)
   apiRouter.get("/users", async (req: Request, res: Response) => {
     try {
-      console.log('📋 Endpoint /api/users solicitado directamente');
+      console.log('🚀 [PRIORITY] Endpoint /api/users solicitado - RESPUESTA DIRECTA');
       
-      // Headers mejorados para evitar problemas de conectividad
-      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-      res.setHeader('Pragma', 'no-cache');
-      res.setHeader('Expires', '0');
+      // Headers críticos para Replit
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Cache-Control', 'no-cache');
       res.setHeader('Access-Control-Allow-Origin', '*');
-      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      res.setHeader('Connection', 'keep-alive');
       
       const users = await storage.getUsers();
-      console.log(`📋 ${users.length} usuarios obtenidos del storage`);
+      console.log(`🚀 [PRIORITY] Usuarios encontrados: ${users.length}`);
       
-      // No enviamos las contraseñas al cliente
-      const safeUsers = users.map(user => {
-        const { password, ...userWithoutPassword } = user;
-        return userWithoutPassword;
-      });
+      // Respuesta simplificada y directa
+      const safeUsers = users.map(({ password, ...user }) => user);
       
-      console.log('📋 Enviando respuesta con usuarios seguros');
+      console.log('🚀 [PRIORITY] Enviando respuesta JSON directa');
+      return res.json(safeUsers);
       
-      // Respuesta robusta con timeout
-      const response = JSON.stringify(safeUsers);
-      res.status(200).send(response);
     } catch (error) {
-      console.error('Error fetching users:', error);
-      res.status(500).json({ 
-        message: 'Error al obtener usuarios',
-        error: error.message,
-        timestamp: new Date().toISOString()
+      console.error('🚨 [PRIORITY] Error en endpoint usuarios:', error);
+      return res.status(500).json({ 
+        error: 'Error al cargar usuarios',
+        details: error.message
       });
     }
   });
