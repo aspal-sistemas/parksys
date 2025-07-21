@@ -381,6 +381,15 @@ export default function UsersPage() {
     staleTime: 30000, // 30 segundos
     refetchOnWindowFocus: false,
     refetchOnMount: true,
+    retry: (failureCount, error) => {
+      // Reintentar hasta 3 veces para errores de red
+      if (error.message.includes('Failed to fetch') && failureCount < 3) {
+        console.log(`🔄 Reintentando consulta de usuarios (intento ${failureCount + 1})`);
+        return true;
+      }
+      return false;
+    },
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 
   console.log('🔍 Estado de la consulta usuarios:', { 
@@ -388,6 +397,35 @@ export default function UsersPage() {
     isLoading, 
     error: error?.message 
   });
+
+  // Estado alternativo cuando hay problemas de red
+  if (error && error.message.includes('Failed to fetch')) {
+    return (
+      <AdminLayout>
+        <div className="p-8 text-center">
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 max-w-md mx-auto">
+            <div className="text-yellow-600 mb-4">
+              <svg className="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 15.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-yellow-800 mb-2">
+              Problema de Conectividad
+            </h3>
+            <p className="text-yellow-700 mb-4">
+              No se puede conectar con el servidor. Esto puede ser temporal.
+            </p>
+            <Button 
+              onClick={() => window.location.reload()}
+              className="bg-yellow-600 hover:bg-yellow-700"
+            >
+              Recargar Página
+            </Button>
+          </div>
+        </div>
+      </AdminLayout>
+    );
+  }
 
   const saveUserMutation = useMutation({
     mutationFn: async (userData: UserFormData) => {
