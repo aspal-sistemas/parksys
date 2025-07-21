@@ -42,7 +42,7 @@ class EmailService {
   private defaultFrom: string;
 
   constructor() {
-    this.defaultFrom = process.env.GMAIL_USER || process.env.DEFAULT_FROM_EMAIL || 'noreply@parquesdemexico.com';
+    this.defaultFrom = 'aspallatam@gmail.com';
   }
 
   /**

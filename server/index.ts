@@ -1184,7 +1184,7 @@ async function initializeDatabaseAsync() {
   try {
     const { default: feedbackRouter } = await import("./feedback-routes");
     console.log("Registrando rutas del sistema de retroalimentación...");
-    app.use("/api", feedbackRouter);
+    app.use("/api/feedback", feedbackRouter);
     console.log("Rutas del sistema de retroalimentación registradas correctamente");
   } catch (error) {
     console.error("Error al registrar rutas de retroalimentación:", error);
