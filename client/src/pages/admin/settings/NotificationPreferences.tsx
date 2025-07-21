@@ -46,7 +46,7 @@ export default function NotificationPreferences() {
 
   // Obtener preferencias del usuario seleccionado
   const { data: userPreferences, isLoading: preferencesLoading } = useQuery<UserPreferences>({
-    queryKey: ['/api/users', selectedUserId, 'notification-preferences'],
+    queryKey: [`/api/users/${selectedUserId}/notification-preferences`],
     enabled: !!selectedUserId,
   });
 
@@ -68,7 +68,7 @@ export default function NotificationPreferences() {
         title: "Preferencias actualizadas",
         description: "Las preferencias de notificación se han guardado correctamente.",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/users', selectedUserId, 'notification-preferences'] });
+      queryClient.invalidateQueries({ queryKey: [`/api/users/${selectedUserId}/notification-preferences`] });
       queryClient.invalidateQueries({ queryKey: ['/api/users/notification-preferences/summary'] });
     },
     onError: (error: any) => {
@@ -274,7 +274,7 @@ export default function NotificationPreferences() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Settings className="h-5 w-5" />
-                  Preferencias de {userPreferences.fullName}
+                  Preferencias de {userPreferences.fullName || 'Usuario'}
                 </CardTitle>
                 <CardDescription>
                   <div className="flex items-center gap-2">
