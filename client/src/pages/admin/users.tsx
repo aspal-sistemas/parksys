@@ -376,11 +376,17 @@ export default function UsersPage() {
   const [isNewUser, setIsNewUser] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const { data: users = [], isLoading } = useQuery({
-    queryKey: ['/api/users', Date.now()],
-    staleTime: 0,
-    refetchOnWindowFocus: true,
+  const { data: users = [], isLoading, error } = useQuery({
+    queryKey: ['/api/users'],
+    staleTime: 30000, // 30 segundos
+    refetchOnWindowFocus: false,
     refetchOnMount: true,
+  });
+
+  console.log('🔍 Estado de la consulta usuarios:', { 
+    users: users?.length, 
+    isLoading, 
+    error: error?.message 
   });
 
   const saveUserMutation = useMutation({
