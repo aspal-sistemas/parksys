@@ -82,14 +82,17 @@ const AdminUsers = () => {
   };
 
   useEffect(() => {
+    console.log('🚀 [NUEVO COMPONENTE] useEffect ejecutado - users-new.tsx cargado');
     const loadUsers = async () => {
       try {
+        console.log('🚀 [NUEVO COMPONENTE] Iniciando carga de usuarios');
         setIsLoading(true);
         setError(null);
         const data = await fetchUsersWithFallback();
         setUsers(data || []);
+        console.log('🚀 [NUEVO COMPONENTE] Usuarios cargados exitosamente:', data?.length);
       } catch (err) {
-        console.error('Error final cargando usuarios:', err);
+        console.error('🚀 [NUEVO COMPONENTE] Error final cargando usuarios:', err);
         setError('Error de conectividad con el servidor');
         setUsers([]);
       } finally {
