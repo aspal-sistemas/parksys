@@ -422,24 +422,45 @@ export default function UsersPage() {
     mutationFn: async (userData: UserFormData) => {
       const isUpdate = selectedUser !== null;
       
-      const formData = new FormData();
-      
-      Object.entries(userData).forEach(([key, value]) => {
-        if (key !== 'profileImageFile' && value !== null && value !== undefined) {
-          formData.append(key, value.toString());
-        }
-      });
-      
+      // 1. Primero subir imagen si existe
+      let imageUrl = null;
       if (userData.profileImageFile) {
-        formData.append('profileImage', userData.profileImageFile);
+        const imageFormData = new FormData();
+        imageFormData.append('image', userData.profileImageFile);
+        if (isUpdate && selectedUser?.id) {
+          imageFormData.append('userId', selectedUser.id.toString());
+        }
+        
+        const imageResponse = await fetch('/api/upload/user-profile', {
+          method: 'POST',
+          body: imageFormData,
+        });
+        
+        if (imageResponse.ok) {
+          const imageResult = await imageResponse.json();
+          imageUrl = imageResult.url;
+          console.log('✅ Imagen subida correctamente:', imageUrl);
+        } else {
+          console.error('❌ Error subiendo imagen');
+        }
       }
+      
+      // 2. Luego guardar/actualizar usuario
+      const userDataToSend = {
+        ...userData,
+        profileImageUrl: imageUrl || (isUpdate ? selectedUser?.profileImageUrl : null)
+      };
+      delete userDataToSend.profileImageFile; // Remover archivo del objeto
       
       const url = isUpdate ? `/api/users/${selectedUser?.id}` : '/api/users';
       const method = isUpdate ? 'PUT' : 'POST';
 
       const response = await fetch(url, {
         method,
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userDataToSend),
       });
 
       if (!response.ok) {
