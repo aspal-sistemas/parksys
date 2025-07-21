@@ -501,32 +501,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Endpoint PRIORITARIO para usuarios (eliminar conflictos)
+  // Endpoint DIRECTO para usuarios - SOLUCIÓN FINAL
   apiRouter.get("/users", async (req: Request, res: Response) => {
     try {
-      console.log('🚀 [PRIORITY] Endpoint /api/users solicitado - RESPUESTA DIRECTA');
-      
-      // Headers críticos para Replit
-      res.setHeader('Content-Type', 'application/json');
-      res.setHeader('Cache-Control', 'no-cache');
-      res.setHeader('Access-Control-Allow-Origin', '*');
-      res.setHeader('Connection', 'keep-alive');
+      console.log('✅ [FINAL] GET /api/users - SOLUCIÓN DIRECTA');
       
       const users = await storage.getUsers();
-      console.log(`🚀 [PRIORITY] Usuarios encontrados: ${users.length}`);
+      console.log(`✅ [FINAL] ${users.length} usuarios obtenidos de storage`);
       
-      // Respuesta simplificada y directa
       const safeUsers = users.map(({ password, ...user }) => user);
+      console.log(`✅ [FINAL] Enviando ${safeUsers.length} usuarios sin contraseñas`);
       
-      console.log('🚀 [PRIORITY] Enviando respuesta JSON directa');
-      return res.json(safeUsers);
+      res.json(safeUsers);
       
     } catch (error) {
-      console.error('🚨 [PRIORITY] Error en endpoint usuarios:', error);
-      return res.status(500).json({ 
-        error: 'Error al cargar usuarios',
-        details: error.message
-      });
+      console.error('❌ [FINAL] Error:', error);
+      res.status(500).json({ error: 'Error interno' });
     }
   });
 

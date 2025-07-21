@@ -386,9 +386,9 @@ export default function UsersPage() {
       try {
         setIsLoading(true);
         setError(null);
-        console.log('🚀 Iniciando fetch directo a /api/users-bypass (ALTERNATIVO)');
+        console.log('✅ Iniciando fetch a /api/users SIMPLIFICADO');
         
-        const response = await fetch('/api/users-bypass', {
+        const response = await fetch('/api/users', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
