@@ -1580,8 +1580,8 @@ async function initializeDatabaseAsync() {
     next();
   });
   
-  // Usar modo desarrollo para Vite, pero con configuración mejorada
-  const isDeployment = false; // Habilitar Vite para desarrollo
+  // Forzar modo producción para resolver problemas de 503 en Replit
+  const isDeployment = true; // Usar producción para evitar problemas de proxy
   
   // Setup Vite in development mode with error handling
   if (app.get("env") === "development" && !isDeployment) {
@@ -1624,9 +1624,10 @@ async function initializeDatabaseAsync() {
     }
   } else {
     // Modo producción - servir archivos estáticos
-    console.log("🏭 Configurando servidor para producción...");
+    console.log("🏭 Configurando servidor para producción (resolviendo 503s)...");
     console.log("🔍 Deployment ID:", process.env.REPLIT_DEPLOYMENT_ID || "Not set");
     console.log("🌍 Node Environment:", process.env.NODE_ENV || "development");
+    console.log("🔧 Usando modo producción para resolver problemas de proxy en Replit");
     
     // Servir archivos estáticos desde public
     app.use(express.static(path.join(process.cwd(), 'public')));
@@ -1653,9 +1654,10 @@ async function initializeDatabaseAsync() {
     });
     
     appServer = app.listen(PORT, HOST, () => {
-      console.log(`🚀 ParkSys servidor en producción ejecutándose en ${HOST}:${PORT}`);
+      console.log(`🚀 ParkSys servidor ejecutándose en ${HOST}:${PORT}`);
       console.log(`🌐 Aplicación disponible en http://${HOST}:${PORT}`);
-      console.log(`📊 Sistema de evaluaciones de parques operativo con 169 evaluaciones`);
+      console.log(`📊 Sistema de notificaciones granulares operativo`);
+      console.log(`✅ Resolviendo problemas de 503 Service Unavailable en Replit`);
       console.log(`🏛️ Bosques Urbanos de Guadalajara - Sistema listo para presentación`);
       
       setTimeout(() => {
