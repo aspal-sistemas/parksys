@@ -445,7 +445,7 @@ const UserParksSection: React.FC<UserParksProps> = ({ userId }) => {
 
       {/* Dialog de detalles del parque */}
       <Dialog open={showParkDetails} onOpenChange={setShowParkDetails}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl" aria-describedby="park-form-description">
           {selectedPark && (
             <>
               <DialogHeader>

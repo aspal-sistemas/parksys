@@ -266,7 +266,7 @@ export function ParkImageManager({ parkId }: ParkImageManagerProps) {
 
       {/* Upload Dialog */}
       <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px]" aria-describedby="image-upload-description">
           <DialogHeader>
             <DialogTitle>Agregar nueva imagen</DialogTitle>
             <DialogDescription>
@@ -319,7 +319,7 @@ export function ParkImageManager({ parkId }: ParkImageManagerProps) {
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px]" aria-describedby="image-edit-description">
           <DialogHeader>
             <DialogTitle>Confirmar eliminación</DialogTitle>
             <DialogDescription>

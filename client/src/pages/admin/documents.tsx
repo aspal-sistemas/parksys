@@ -527,10 +527,13 @@ const AdminDocuments = () => {
       
       {/* Delete confirmation dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md" aria-describedby="document-delete-description">
           <DialogHeader>
             <DialogTitle>Confirmar eliminación</DialogTitle>
           </DialogHeader>
+          <div id="document-delete-description" className="sr-only">
+            Confirmación para eliminar el documento seleccionado permanentemente
+          </div>
           
           <div className="py-4">
             <p>
@@ -554,10 +557,13 @@ const AdminDocuments = () => {
 
       {/* Diálogo para agregar documentos */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px]" aria-describedby="document-edit-description">
           <DialogHeader>
             <DialogTitle>Agregar nuevo documento</DialogTitle>
           </DialogHeader>
+          <div id="document-edit-description" className="sr-only">
+            Formulario para agregar un nuevo documento al sistema
+          </div>
           
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">

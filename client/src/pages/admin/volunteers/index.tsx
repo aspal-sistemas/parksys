@@ -563,7 +563,7 @@ export default function VolunteersPage() {
 
         {/* Dialog de detalles */}
         <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" aria-describedby="volunteer-edit-description">
             <DialogHeader>
               <DialogTitle className="text-2xl">
                 Perfil del Voluntario
@@ -572,6 +572,9 @@ export default function VolunteersPage() {
                 Información completa y detallada del voluntario seleccionado
               </DialogDescription>
             </DialogHeader>
+            <div id="volunteer-edit-description" className="sr-only">
+              Perfil completo del voluntario con información personal, contacto y actividades
+            </div>
             {selectedVolunteer && (
               <div className="grid gap-6 py-4">
                 {/* Sección de encabezado con foto y datos principales */}

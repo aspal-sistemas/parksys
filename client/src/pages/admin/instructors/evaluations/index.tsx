@@ -587,13 +587,16 @@ export default function InstructorEvaluationsPage() {
       {/* Diálogo de detalles de evaluación */}
       {selectedEvaluation && (
         <Dialog open={showEvaluationDetails} onOpenChange={setShowEvaluationDetails}>
-          <DialogContent className="sm:max-w-[600px]">
+          <DialogContent className="sm:max-w-[600px]" aria-describedby="instructor-evaluation-description">
             <DialogHeader>
               <DialogTitle>Detalles de Evaluación</DialogTitle>
               <DialogDescription>
                 Evaluación realizada el {formatDate(selectedEvaluation.evaluation_date || selectedEvaluation.created_at)}
               </DialogDescription>
             </DialogHeader>
+            <div id="instructor-evaluation-description" className="sr-only">
+              Detalles completos de la evaluación del instructor con puntuaciones y comentarios
+            </div>
             
             <div className="space-y-6">
               {/* Información de contexto */}

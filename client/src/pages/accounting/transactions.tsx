@@ -572,10 +572,13 @@ export default function AccountingTransactions() {
                   <span>Importar CSV</span>
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent aria-describedby="transaction-details-description">
                 <DialogHeader>
                   <DialogTitle>Importar Transacciones desde CSV</DialogTitle>
                 </DialogHeader>
+                <div id="transaction-details-description" className="sr-only">
+                  Formulario para importar transacciones contables desde archivo CSV
+                </div>
                 <div className="space-y-4">
                   <div>
                     <label className="text-sm font-medium">Seleccionar archivo CSV</label>
@@ -623,12 +626,15 @@ export default function AccountingTransactions() {
                   <span>Nueva Transacción</span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+              <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto" aria-describedby="transaction-form-description">
                 <DialogHeader>
                   <DialogTitle>
                     {editingTransaction ? 'Editar Transacción' : 'Nueva Transacción'}
                   </DialogTitle>
                 </DialogHeader>
+                <div id="transaction-form-description" className="sr-only">
+                  Formulario completo para crear o editar transacciones contables
+                </div>
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-3">
                     <p className="text-sm text-gray-600 mb-3">
@@ -1115,10 +1121,13 @@ export default function AccountingTransactions() {
 
             {/* Diálogo de visualización */}
             <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
-              <DialogContent className="max-w-2xl">
+              <DialogContent className="max-w-2xl" aria-describedby="transaction-delete-description">
                 <DialogHeader>
                   <DialogTitle>Detalles de la Transacción</DialogTitle>
                 </DialogHeader>
+                <div id="transaction-delete-description" className="sr-only">
+                  Visualización detallada de la información completa de la transacción
+                </div>
                 {viewingTransaction && (
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">

@@ -416,12 +416,15 @@ function ActiveConcessionsList() {
 
       {/* Modal de Detalle */}
       <Dialog open={showDetailModal} onOpenChange={setShowDetailModal}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" aria-describedby="concession-details-description">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold">
               {selectedConcession?.name}
             </DialogTitle>
           </DialogHeader>
+          <div id="concession-details-description" className="sr-only">
+            Detalles completos de la concesión incluyendo información contractual y servicios
+          </div>
           
           {selectedConcession && (
             <div className="space-y-6">

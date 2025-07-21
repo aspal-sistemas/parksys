@@ -410,13 +410,16 @@ export default function ParkTreeSpeciesManager({ parkId }: ParkTreeSpeciesManage
 
       {/* Dialog para asignar nueva especie */}
       <Dialog open={isAssignDialogOpen} onOpenChange={setIsAssignDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px]" aria-describedby="assign-species-description">
           <DialogHeader>
             <DialogTitle>Asignar Especie al Parque</DialogTitle>
             <DialogDescription>
               Configura los detalles de la asignación de {selectedSpecies?.commonName}
             </DialogDescription>
           </DialogHeader>
+          <div id="assign-species-description" className="sr-only">
+            Formulario para asignar una especie arbórea al parque con cantidades y notas
+          </div>
           <Form {...assignForm}>
             <form onSubmit={assignForm.handleSubmit((data) => assignSpeciesMutation.mutate(data))} className="space-y-4">
               <FormField
@@ -528,13 +531,16 @@ export default function ParkTreeSpeciesManager({ parkId }: ParkTreeSpeciesManage
 
       {/* Dialog para editar asignación */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px]" aria-describedby="edit-species-description">
           <DialogHeader>
             <DialogTitle>Editar Asignación de Especie</DialogTitle>
             <DialogDescription>
               Modifica los detalles de la asignación de {editingAssignment?.commonName}
             </DialogDescription>
           </DialogHeader>
+          <div id="edit-species-description" className="sr-only">
+            Formulario para editar la asignación existente de la especie arbórea
+          </div>
           <Form {...editForm}>
             <form onSubmit={editForm.handleSubmit((data) => editAssignmentMutation.mutate(data))} className="space-y-4">
               <FormField
