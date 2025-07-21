@@ -188,6 +188,129 @@ class EmailService {
   }
 
   /**
+   * Envía notificación de nueva retroalimentación ciudadana
+   */
+  async sendFeedbackNotification(
+    adminEmail: string, 
+    feedbackData: {
+      parkName: string;
+      formType: string;
+      fullName: string;
+      email: string;
+      subject?: string;
+      message: string;
+      priority: string;
+      createdAt: string;
+    }
+  ): Promise<boolean> {
+    const formTypeLabels = {
+      share: 'Comentario General',
+      report_problem: 'Reporte de Problema',
+      suggest_improvement: 'Sugerencia de Mejora',
+      propose_event: 'Propuesta de Evento'
+    };
+
+    const priorityLabels = {
+      low: 'Baja',
+      medium: 'Media',
+      high: 'Alta',
+      urgent: 'Urgente'
+    };
+
+    const formTypeLabel = formTypeLabels[feedbackData.formType as keyof typeof formTypeLabels] || feedbackData.formType;
+    const priorityLabel = priorityLabels[feedbackData.priority as keyof typeof priorityLabels] || feedbackData.priority;
+
+    const subject = `Nueva Retroalimentación Ciudadana: ${formTypeLabel} - ${feedbackData.parkName}`;
+    
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f8f9fa; padding: 20px;">
+        <div style="background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #00a587; margin: 0;">🏞️ ParkSys</h1>
+            <p style="color: #6c757d; margin: 5px 0 0 0;">Sistema de Gestión de Parques</p>
+          </div>
+          
+          <div style="background: #e8f5e8; padding: 20px; border-radius: 8px; border-left: 4px solid #00a587; margin-bottom: 25px;">
+            <h2 style="color: #067f5f; margin: 0 0 10px 0;">📝 Nueva Retroalimentación Ciudadana</h2>
+            <p style="margin: 0; color: #28a745; font-weight: bold;">Se ha recibido una nueva ${formTypeLabel.toLowerCase()}</p>
+          </div>
+
+          <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
+            <h3 style="color: #067f5f; margin: 0 0 15px 0;">Detalles de la Retroalimentación</h3>
+            
+            <div style="margin-bottom: 15px;">
+              <strong style="color: #495057;">🏞️ Parque:</strong>
+              <span style="color: #6c757d; margin-left: 10px;">${feedbackData.parkName}</span>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+              <strong style="color: #495057;">📋 Tipo:</strong>
+              <span style="color: #6c757d; margin-left: 10px;">${formTypeLabel}</span>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+              <strong style="color: #495057;">⚡ Prioridad:</strong>
+              <span style="color: ${feedbackData.priority === 'urgent' ? '#dc3545' : feedbackData.priority === 'high' ? '#fd7e14' : '#28a745'}; margin-left: 10px; font-weight: bold;">
+                ${priorityLabel}
+              </span>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+              <strong style="color: #495057;">👤 Ciudadano:</strong>
+              <span style="color: #6c757d; margin-left: 10px;">${feedbackData.fullName}</span>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+              <strong style="color: #495057;">📧 Email:</strong>
+              <span style="color: #6c757d; margin-left: 10px;">${feedbackData.email}</span>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+              <strong style="color: #495057;">📅 Fecha:</strong>
+              <span style="color: #6c757d; margin-left: 10px;">${new Date(feedbackData.createdAt).toLocaleDateString('es-MX', { 
+                year: 'numeric', month: 'long', day: 'numeric', 
+                hour: '2-digit', minute: '2-digit' 
+              })}</span>
+            </div>
+
+            ${feedbackData.subject ? `
+              <div style="margin-bottom: 15px;">
+                <strong style="color: #495057;">💬 Asunto:</strong>
+                <span style="color: #6c757d; margin-left: 10px;">${feedbackData.subject}</span>
+              </div>
+            ` : ''}
+          </div>
+
+          <div style="background: white; border: 1px solid #dee2e6; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
+            <h3 style="color: #067f5f; margin: 0 0 15px 0;">💬 Mensaje del Ciudadano</h3>
+            <p style="color: #495057; line-height: 1.6; white-space: pre-wrap; margin: 0;">${feedbackData.message}</p>
+          </div>
+
+          <div style="text-align: center; margin-bottom: 25px;">
+            <a href="${process.env.APP_URL || 'https://parquesistema.com'}/admin/visitors/feedback" 
+               style="background: #00a587; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
+              📊 Ver en Panel Administrativo
+            </a>
+          </div>
+
+          <div style="border-top: 1px solid #dee2e6; padding-top: 20px; text-align: center;">
+            <p style="color: #6c757d; font-size: 14px; margin: 0;">
+              Este es un mensaje automático del Sistema ParkSys<br>
+              <strong>Gestión de Retroalimentación Ciudadana</strong>
+            </p>
+          </div>
+        </div>
+      </div>
+    `;
+
+    return await this.sendEmail({
+      to: adminEmail,
+      subject,
+      html,
+    });
+  }
+
+  /**
    * Envía recordatorio de mantenimiento de activos
    */
   async sendMaintenanceReminder(userEmail: string, assetName: string, dueDate: string): Promise<boolean> {

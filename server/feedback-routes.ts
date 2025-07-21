@@ -1,8 +1,29 @@
 import { Router, Request, Response } from "express";
 import { pool } from "./db";
 import { z } from "zod";
+import { emailService } from "./email/emailService";
 
 const router = Router();
+
+// Función para obtener emails de administradores que deben recibir notificaciones
+async function getAdminEmailsForNotifications(): Promise<string[]> {
+  try {
+    // Obtener usuarios administradores activos
+    const query = `
+      SELECT DISTINCT email 
+      FROM users 
+      WHERE (role = 'admin' OR role = 'super_admin') 
+        AND email IS NOT NULL 
+        AND email != ''
+    `;
+    
+    const result = await pool.query(query);
+    return result.rows.map(row => row.email);
+  } catch (error) {
+    console.error('Error obteniendo emails de administradores:', error);
+    return [];
+  }
+}
 
 // Esquema de validación para crear retroalimentación
 const createFeedbackSchema = z.object({
@@ -52,8 +73,55 @@ router.post("/", async (req: Request, res: Response) => {
       validatedData.socialMedia || null,
     ]);
 
+    const newFeedback = result.rows[0];
     console.log(`✅ Nueva retroalimentación creada: ${validatedData.formType} para parque ${validatedData.parkId}`);
-    res.status(201).json(result.rows[0]);
+
+    // Obtener información del parque para incluir en la notificación
+    const parkQuery = `SELECT name FROM parks WHERE id = $1`;
+    const parkResult = await pool.query(parkQuery, [validatedData.parkId]);
+    const parkName = parkResult.rows[0]?.name || 'Parque desconocido';
+
+    // Enviar notificaciones por email a administradores (proceso asíncrono)
+    setImmediate(async () => {
+      try {
+        const adminEmails = await getAdminEmailsForNotifications();
+        
+        if (adminEmails.length > 0) {
+          console.log(`📧 Enviando notificaciones a ${adminEmails.length} administradores`);
+          
+          const feedbackData = {
+            parkName,
+            formType: validatedData.formType,
+            fullName: validatedData.fullName,
+            email: validatedData.email,
+            subject: validatedData.subject,
+            message: validatedData.message,
+            priority: validatedData.priority || 'medium',
+            createdAt: newFeedback.created_at,
+          };
+
+          // Enviar email a cada administrador
+          for (const adminEmail of adminEmails) {
+            try {
+              const emailSent = await emailService.sendFeedbackNotification(adminEmail, feedbackData);
+              if (emailSent) {
+                console.log(`✅ Notificación enviada a: ${adminEmail}`);
+              } else {
+                console.log(`❌ Error enviando notificación a: ${adminEmail}`);
+              }
+            } catch (emailError) {
+              console.error(`❌ Error enviando email a ${adminEmail}:`, emailError);
+            }
+          }
+        } else {
+          console.log('⚠️ No se encontraron administradores para enviar notificaciones');
+        }
+      } catch (notificationError) {
+        console.error('❌ Error en proceso de notificaciones:', notificationError);
+      }
+    });
+
+    res.status(201).json(newFeedback);
   } catch (error) {
     console.error("❌ Error al crear retroalimentación:", error);
     res.status(500).json({ error: "Error interno del servidor" });
