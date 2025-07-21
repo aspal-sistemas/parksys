@@ -1612,49 +1612,84 @@ async function initializeDatabaseAsync() {
   const distPath = path.join(process.cwd(), 'dist/public');
   
   if (fs.existsSync(distPath)) {
-    console.log("📁 Sirviendo archivos estáticos desde dist/public/");
+    console.log("📁 Configurando archivos estáticos con handlers especializados...");
     
-    // MÉTODO DIRECTO: Servir archivos estáticos sin conflictos
-    app.use(express.static(distPath, {
-      dotfiles: 'ignore',
-      etag: false,
-      extensions: ['html', 'js', 'css'],
-      index: false, // No servir index automáticamente
-      maxAge: 0, // Sin cache por ahora
-      redirect: false,
-      setHeaders: function (res, filePath, stat) {
-        console.log(`📄 Sirviendo: ${filePath}`);
-        
-        if (filePath.endsWith('.js') || filePath.includes('index-VG22aPDC.js')) {
-          res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
-          res.setHeader('X-Content-Type-Options', 'nosniff');
-          console.log(`✅ JavaScript content-type aplicado a: ${filePath}`);
-        } else if (filePath.endsWith('.css')) {
-          res.setHeader('Content-Type', 'text/css; charset=utf-8');
-          console.log(`✅ CSS content-type aplicado a: ${filePath}`);
-        } else if (filePath.endsWith('.html')) {
-          res.setHeader('Content-Type', 'text/html; charset=utf-8');
-          res.setHeader('Cache-Control', 'no-cache');
-          console.log(`✅ HTML content-type aplicado a: ${filePath}`);
-        }
+    // Handler específico para EL archivo JavaScript principal
+    app.get('/assets/index-VG22aPDC.js', (req, res) => {
+      console.log(`🚀🚀🚀 HANDLER ESPECÍFICO PARA INDEX JS: ${req.url} 🚀🚀🚀`);
+      const filePath = path.join(distPath, 'assets', 'index-VG22aPDC.js');
+      
+      if (fs.existsSync(filePath)) {
+        console.log(`✅ Archivo JS principal encontrado: ${filePath}`);
+        res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+        res.setHeader('X-Content-Type-Options', 'nosniff');
+        res.setHeader('Cache-Control', 'no-cache');
+        console.log(`🔥 Headers JS establecidos correctamente para archivo principal`);
+        res.sendFile(filePath);
+      } else {
+        console.log(`❌ Archivo JS principal NO encontrado: ${filePath}`);
+        res.status(404).send('JS file not found');
       }
+    });
+    
+    // Handler general para otros archivos JavaScript
+    app.get('/assets/*.js', (req, res, next) => {
+      console.log(`🔥 REQUEST JS GENÉRICO: ${req.url}`);
+      const filePath = path.join(distPath, req.url);
+      
+      if (fs.existsSync(filePath)) {
+        res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+        res.setHeader('X-Content-Type-Options', 'nosniff');
+        res.sendFile(filePath);
+      } else {
+        next();
+      }
+    });
+    
+    // Handler específico para archivos CSS
+    app.get('/assets/*.css', (req, res, next) => {
+      console.log(`🎨 REQUEST CSS: ${req.url}`);
+      const filePath = path.join(distPath, req.url);
+      
+      if (fs.existsSync(filePath)) {
+        res.setHeader('Content-Type', 'text/css; charset=utf-8');
+        res.sendFile(filePath);
+      } else {
+        next();
+      }
+    });
+    
+    // Handler general para archivos estáticos restantes
+    app.use(express.static(distPath, {
+      index: false,
+      dotfiles: 'ignore'
     }));
+    
+    // Agregar middleware de logging para todas las requests
+    app.use('*', (req, res, next) => {
+      console.log(`🌐🌐🌐 REQUEST: ${req.method} ${req.url} - Headers: ${JSON.stringify(req.headers).slice(0, 150)}... 🌐🌐🌐`);
+      next();
+    });
     
     // Agregar fallback SPA solo para rutas de navegación
     app.get('*', (req, res) => {
+      console.log(`🎯🎯🎯 FALLBACK SPA EJECUTADO PARA: ${req.url} 🎯🎯🎯`);
+      
       // Verificar que no sea un archivo estático
       if (req.url.startsWith('/api/') || 
           req.url.match(/\.(js|css|png|jpg|ico|woff|woff2|ttf)$/)) {
+        console.log(`❌❌❌ ARCHIVO ESTÁTICO NO ENCONTRADO: ${req.url} ❌❌❌`);
         return res.status(404).json({ error: 'File not found' });
       }
       
       // Servir index.html para rutas SPA
       const indexPath = path.join(distPath, 'index.html');
       if (fs.existsSync(indexPath)) {
-        console.log(`🌐 SPA fallback para: ${req.url}`);
+        console.log(`✅✅✅ SPA FALLBACK APLICADO PARA: ${req.url} ✅✅✅`);
         res.setHeader('Content-Type', 'text/html; charset=utf-8');
         res.sendFile(indexPath);
       } else {
+        console.log(`💥💥💥 INDEX.HTML NO ENCONTRADO: ${indexPath} 💥💥💥`);
         res.status(404).json({ error: 'Application not built' });
       }
     });
