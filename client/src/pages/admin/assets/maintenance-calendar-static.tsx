@@ -475,9 +475,12 @@ const MaintenanceCalendarStaticPage = () => {
         
         {/* Diálogo para programar mantenimiento */}
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto" aria-describedby="static-maintenance-description">
             <DialogHeader>
               <DialogTitle>Programar Mantenimiento</DialogTitle>
+              <div id="static-maintenance-description" className="sr-only">
+                Formulario para programar mantenimiento estático en el calendario
+              </div>
               <DialogDescription>
                 {selectedDate && (
                   <>Fecha seleccionada: {format(selectedDate, 'dd/MM/yyyy')}</>

@@ -441,9 +441,12 @@ const MaintenanceCalendarPage = () => {
         
         {/* Diálogo para programar mantenimiento */}
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto" aria-describedby="maintenance-calendar-description">
             <DialogHeader>
               <DialogTitle>Programar Mantenimiento</DialogTitle>
+              <div id="maintenance-calendar-description" className="sr-only">
+                Formulario para programar un nuevo mantenimiento en el calendario
+              </div>
               <DialogDescription>
                 {selectedDate && (
                   <>Fecha seleccionada: {format(selectedDate, 'dd/MM/yyyy')}</>

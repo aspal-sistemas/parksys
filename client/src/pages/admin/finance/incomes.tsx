@@ -318,9 +318,12 @@ const IncomesPage = () => {
               Nuevo Ingreso
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-lg">
+          <DialogContent className="max-w-lg" aria-describedby="income-form-description">
             <DialogHeader>
               <DialogTitle>Registrar Nuevo Ingreso</DialogTitle>
+              <div id="income-form-description" className="sr-only">
+                Formulario para registrar un nuevo ingreso financiero en el sistema
+              </div>
               <DialogDescription>
                 Completa la información del ingreso a registrar.
               </DialogDescription>
@@ -709,9 +712,12 @@ const IncomesPage = () => {
 
         {/* Dialog de edición */}
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent className="max-w-lg">
+          <DialogContent className="max-w-lg" aria-describedby="income-edit-description">
             <DialogHeader>
               <DialogTitle>Editar Ingreso</DialogTitle>
+              <div id="income-edit-description" className="sr-only">
+                Formulario para editar un ingreso financiero existente
+              </div>
               <DialogDescription>
                 Modifica la información del ingreso.
               </DialogDescription>
