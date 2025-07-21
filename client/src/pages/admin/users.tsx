@@ -506,11 +506,11 @@ const AdminUsers = () => {
       {/* Delete Confirmation Dialog */}
       {showDeleteConfirm && (
         <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
-          <DialogContent>
+          <DialogContent aria-describedby="delete-confirmation-description">
             <DialogHeader>
               <DialogTitle>Confirmar eliminación</DialogTitle>
             </DialogHeader>
-            <div className="py-4">
+            <div id="delete-confirmation-description" className="py-4">
               <p>¿Estás seguro de que deseas eliminar al usuario {userToDelete?.fullName || userToDelete?.username}?</p>
             </div>
             <DialogFooter>
