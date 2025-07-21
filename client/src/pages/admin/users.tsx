@@ -414,9 +414,11 @@ export default function UsersPage() {
   const [searchTerm, setSearchTerm] = useState('');
 
   const { data: users = [], isLoading } = useQuery({
-    queryKey: ['/api/users'],
-    staleTime: 0, // Sin cache para ver cambios inmediatamente
-    refetchInterval: 5000, // Refrescar cada 5 segundos
+    queryKey: ['/api/users', Date.now()], // Cache único por timestamp
+    staleTime: 0,
+    cacheTime: 0, // No guardar en cache
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
   });
 
   const saveUserMutation = useMutation({
