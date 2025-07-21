@@ -183,14 +183,21 @@ function ParkLandingPage() {
   }, [isImageModalOpen, selectedImage]);
 
   // Funciones para manejar las acciones de los botones
-  const handleSharePark = () => {
+  const handleSharePark = async () => {
     const parkUrl = window.location.href;
+    
+    // First perform the sharing action
     if (navigator.share) {
-      navigator.share({
-        title: `${park?.name} - ParkSys`,
-        text: `¡Descubre ${park?.name}! Un hermoso parque en ${park?.location}`,
-        url: parkUrl,
-      });
+      try {
+        await navigator.share({
+          title: `${park?.name} - ParkSys`,
+          text: `¡Descubre ${park?.name}! Un hermoso parque en ${park?.location}`,
+          url: parkUrl,
+        });
+      } catch (error) {
+        // User cancelled sharing
+        return;
+      }
     } else {
       navigator.clipboard.writeText(parkUrl);
       toast({
@@ -198,14 +205,34 @@ function ParkLandingPage() {
         description: "El enlace del parque se ha copiado al portapapeles",
       });
     }
+    
     setIsShareDialogOpen(false);
   };
 
   const handleReportSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // Aquí se enviaría el reporte al backend
-      console.log('Reporte enviado:', { ...reportForm, parkId, parkName: park?.name });
+      const response = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          parkId: parseInt(parkId),
+          formType: 'report_problem',
+          fullName: reportForm.name,
+          email: reportForm.email,
+          phone: reportForm.phone || undefined,
+          subject: `Reporte de problema: ${reportForm.issueType}`,
+          message: reportForm.description,
+          category: reportForm.issueType,
+          priority: reportForm.urgency
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al enviar el reporte');
+      }
       
       toast({
         title: "Reporte enviado",
@@ -223,6 +250,7 @@ function ParkLandingPage() {
       });
       setIsReportDialogOpen(false);
     } catch (error) {
+      console.error('Error al enviar reporte:', error);
       toast({
         title: "Error",
         description: "Hubo un problema al enviar tu reporte. Por favor, inténtalo de nuevo.",
@@ -234,8 +262,25 @@ function ParkLandingPage() {
   const handleSuggestionSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // Aquí se enviaría la sugerencia al backend
-      console.log('Sugerencia enviada:', { ...suggestionForm, parkId, parkName: park?.name });
+      const response = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          parkId: parseInt(parkId),
+          formType: 'suggest_improvement',
+          fullName: suggestionForm.name,
+          email: suggestionForm.email,
+          subject: `Sugerencia de mejora para ${park?.name}`,
+          message: suggestionForm.suggestion,
+          category: suggestionForm.category
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al enviar la sugerencia');
+      }
       
       toast({
         title: "Sugerencia enviada",
@@ -251,6 +296,7 @@ function ParkLandingPage() {
       });
       setIsSuggestionDialogOpen(false);
     } catch (error) {
+      console.error('Error al enviar sugerencia:', error);
       toast({
         title: "Error",
         description: "Hubo un problema al enviar tu sugerencia. Por favor, inténtalo de nuevo.",
@@ -262,8 +308,28 @@ function ParkLandingPage() {
   const handleEventSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // Aquí se enviaría la propuesta de evento al backend
-      console.log('Propuesta de evento enviada:', { ...eventForm, parkId, parkName: park?.name });
+      const response = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          parkId: parseInt(parkId),
+          formType: 'propose_event',
+          fullName: eventForm.name,
+          email: eventForm.email,
+          phone: eventForm.phone || undefined,
+          subject: `Propuesta de evento: ${eventForm.eventName}`,
+          message: eventForm.description,
+          eventType: eventForm.eventType,
+          suggestedDate: eventForm.eventDate,
+          expectedAttendance: eventForm.expectedAttendees ? parseInt(eventForm.expectedAttendees) : undefined
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al enviar la propuesta');
+      }
       
       toast({
         title: "Propuesta enviada",
@@ -283,6 +349,7 @@ function ParkLandingPage() {
       });
       setIsEventDialogOpen(false);
     } catch (error) {
+      console.error('Error al enviar propuesta de evento:', error);
       toast({
         title: "Error",
         description: "Hubo un problema al enviar tu propuesta. Por favor, inténtalo de nuevo.",

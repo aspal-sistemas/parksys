@@ -3386,4 +3386,56 @@ export type InsertEvaluationCriteria = z.infer<typeof insertEvaluationCriteriaSc
 export type EvaluationResponse = typeof evaluationResponses.$inferSelect;
 export type InsertEvaluationResponse = z.infer<typeof insertEvaluationResponseSchema>;
 
+// ===== SISTEMA DE RETROALIMENTACIÓN =====
+
+// Enum para tipos de formulario
+export const formTypeEnum = pgEnum("form_type", ["share", "report_problem", "suggest_improvement", "propose_event"]);
+
+// Tabla para retroalimentación de acciones de parques
+export const parkFeedback = pgTable("park_feedback", {
+  id: serial("id").primaryKey(),
+  parkId: integer("park_id").notNull().references(() => parks.id),
+  formType: formTypeEnum("form_type").notNull(),
+  // Datos del usuario
+  fullName: varchar("full_name", { length: 255 }).notNull(),
+  email: varchar("email", { length: 255 }).notNull(),
+  phone: varchar("phone", { length: 20 }),
+  // Contenido de la retroalimentación
+  subject: varchar("subject", { length: 500 }),
+  message: text("message").notNull(),
+  // Campos específicos para cada tipo de formulario
+  category: varchar("category", { length: 100 }), // Para reportes y sugerencias
+  priority: varchar("priority", { length: 20 }), // Para reportes: low, medium, high, urgent
+  eventType: varchar("event_type", { length: 100 }), // Para propuestas de eventos
+  suggestedDate: date("suggested_date"), // Para propuestas de eventos
+  expectedAttendance: integer("expected_attendance"), // Para propuestas de eventos
+  socialMedia: varchar("social_media", { length: 255 }), // Para compartir
+  // Metadatos
+  status: varchar("status", { length: 50 }).default("pending"), // pending, reviewed, in_progress, resolved, closed
+  tags: json("tags").$type<string[]>().default([]),
+  adminNotes: text("admin_notes"),
+  assignedTo: integer("assigned_to").references(() => users.id),
+  resolvedAt: timestamp("resolved_at"),
+  // Auditoría
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Relaciones para retroalimentación de parques
+export const parkFeedbackRelations = relations(parkFeedback, ({ one }) => ({
+  park: one(parks, { fields: [parkFeedback.parkId], references: [parks.id] }),
+  assignedUser: one(users, { fields: [parkFeedback.assignedTo], references: [users.id] }),
+}));
+
+// Esquemas de validación para retroalimentación
+export const insertParkFeedbackSchema = createInsertSchema(parkFeedback).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// Tipos TypeScript para retroalimentación
+export type ParkFeedback = typeof parkFeedback.$inferSelect;
+export type InsertParkFeedback = z.infer<typeof insertParkFeedbackSchema>;
+
 

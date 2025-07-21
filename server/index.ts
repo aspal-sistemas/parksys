@@ -1180,6 +1180,16 @@ async function initializeDatabaseAsync() {
     console.error("Error al registrar rutas de conteo de visitantes:", error);
   }
 
+  // Registrar rutas del sistema de retroalimentación
+  try {
+    const { default: feedbackRouter } = await import("./feedback-routes");
+    console.log("Registrando rutas del sistema de retroalimentación...");
+    app.use("/api/feedback", feedbackRouter);
+    console.log("Rutas del sistema de retroalimentación registradas correctamente");
+  } catch (error) {
+    console.error("Error al registrar rutas de retroalimentación:", error);
+  }
+
   // Inicializar tablas de comunicaciones
   try {
     const { seedEmailTemplates } = await import("./communications/seedCommunications");

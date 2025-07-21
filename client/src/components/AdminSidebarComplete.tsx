@@ -447,6 +447,13 @@ const AdminSidebarComplete: React.FC = () => {
               >
                 Criterios
               </NavItem>
+              <NavItem 
+                href="/admin/visitors/feedback" 
+                icon={<MessageSquare className="h-4 w-4" />}
+                active={location === '/admin/visitors/feedback'}
+              >
+                Retroalimentación
+              </NavItem>
             </CollapsibleSubmenu>
 
             {/* PARQUES */}
