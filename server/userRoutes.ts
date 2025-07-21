@@ -416,6 +416,8 @@ export function registerUserRoutes(app: any, apiRouter: Router) {
     try {
       const userId = Number(req.params.id);
       
+      console.log(`🔄 Actualizando usuario ${userId} con datos:`, req.body);
+      
       // Verificar si el usuario existe
       const existingUser = await storage.getUser(userId);
       if (!existingUser) {
@@ -472,6 +474,7 @@ export function registerUserRoutes(app: any, apiRouter: Router) {
       
       if (updateData.profileImageUrl !== undefined) {
         userData.profileImageUrl = updateData.profileImageUrl || null;
+        console.log(`📸 IMAGEN INCLUIDA EN ACTUALIZACIÓN: ${userData.profileImageUrl}`);
       }
       
       // Actualizar timestamp
