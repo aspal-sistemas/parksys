@@ -309,6 +309,33 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
+// ENDPOINT ALTERNATIVO PARA USUARIOS - BYPASS COMPLETO
+app.get("/api/users-bypass", async (req: Request, res: Response) => {
+  try {
+    console.log('🔥 [BYPASS] Endpoint alternativo solicitado - SIN PROXY');
+    
+    // Headers ultra-específicos para Replit
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Accept');
+    
+    const users = await storage.getUsers();
+    console.log(`🔥 [BYPASS] ${users.length} usuarios obtenidos`);
+    
+    const safeUsers = users.map(({ password, ...user }) => user);
+    const jsonResponse = JSON.stringify(safeUsers);
+    
+    console.log(`🔥 [BYPASS] Enviando respuesta de ${jsonResponse.length} chars`);
+    res.status(200).end(jsonResponse);
+    
+  } catch (error) {
+    console.error('🔥 [BYPASS] Error:', error);
+    res.status(500).end(JSON.stringify({ error: 'Error interno' }));
+  }
+});
+
 // ENDPOINT DUPLICADO ELIMINADO - USANDO ÚNICO ENDPOINT EN routes.ts
 
 // ENDPOINT PARA OBTENER ACTIVIDAD ESPECÍFICA

@@ -386,14 +386,15 @@ export default function UsersPage() {
       try {
         setIsLoading(true);
         setError(null);
-        console.log('🚀 Iniciando fetch directo a /api/users');
+        console.log('🚀 Iniciando fetch directo a /api/users-bypass (ALTERNATIVO)');
         
-        const response = await fetch('/api/users', {
+        const response = await fetch('/api/users-bypass', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
           },
+          cache: 'no-cache'
         });
         
         console.log('🚀 Respuesta recibida:', response.status, response.statusText);
