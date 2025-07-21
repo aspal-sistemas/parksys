@@ -471,13 +471,21 @@ export default function UsersPage() {
       return response.json();
     },
     onSuccess: () => {
+      // Invalidar cache de manera más agresiva
       queryClient.invalidateQueries({ queryKey: ['/api/users'] });
+      queryClient.refetchQueries({ queryKey: ['/api/users'] });
+      
       toast({
         title: "¡Éxito!",
         description: selectedUser ? "Usuario actualizado correctamente" : "Usuario creado correctamente",
       });
       setSelectedUser(null);
       setIsNewUser(false);
+      
+      // Forzar recarga de la página para mostrar cambios inmediatamente
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     },
     onError: (error: Error) => {
       toast({
