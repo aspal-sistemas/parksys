@@ -1607,7 +1607,42 @@ async function initializeDatabaseAsync() {
   process.env.NODE_ENV = 'production'; // Forzar production environment
   const isDeployment = true; // Usar producción para evitar problemas de proxy
   
-  // Setup Vite in development mode with error handling
+  // Configurar servidor de archivos estáticos ANTES de Vite
+  console.log("🏭 Configurando servidor para producción (resolviendo 503s)...");
+  const distPath = path.join(process.cwd(), 'dist/public');
+  
+  if (fs.existsSync(distPath)) {
+    console.log("📁 Sirviendo archivos estáticos desde dist/public/");
+    app.use('/', express.static(distPath, {
+      setHeaders: (res, filePath) => {
+        if (filePath.endsWith('.js')) {
+          res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+        }
+        if (filePath.endsWith('.css')) {
+          res.setHeader('Content-Type', 'text/css; charset=utf-8');
+        }
+        if (filePath.endsWith('.html')) {
+          res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        }
+      }
+    }));
+    
+    // Fallback para SPA - servir index.html para rutas no encontradas
+    app.get('*', (req, res, next) => {
+      // Solo para rutas que no son API
+      if (!req.url.startsWith('/api/')) {
+        const indexPath = path.join(distPath, 'index.html');
+        if (fs.existsSync(indexPath)) {
+          res.setHeader('Content-Type', 'text/html; charset=utf-8');
+          res.sendFile(indexPath);
+          return;
+        }
+      }
+      next();
+    });
+  }
+  
+  // Skip Vite in deployment mode (usar archivos estáticos compilados)
   if (app.get("env") === "development" && !isDeployment) {
     console.log("Configurando servidor de desarrollo Vite...");
     
@@ -1653,29 +1688,16 @@ async function initializeDatabaseAsync() {
     console.log("🌍 Node Environment:", process.env.NODE_ENV || "development");
     console.log("🔧 Usando modo producción para resolver problemas de proxy en Replit");
     
-    // Servir archivos estáticos desde public
-    app.use(express.static(path.join(process.cwd(), 'public')));
+    // Los archivos estáticos ya están configurados arriba desde dist/public/
+    console.log("📂 Usando archivos estáticos compilados desde dist/public/");
     
-    // Fallback para rutas no encontradas - servir index.html
-    app.get('*', (req, res) => {
-      try {
-        // Solo servir HTML para rutas que no son API
-        if (!req.path.startsWith('/api/')) {
-          const indexPath = path.join(process.cwd(), 'public', 'index.html');
-          console.log(`🔍 Serving fallback for: ${req.path} - indexPath: ${indexPath} - exists: ${fs.existsSync(indexPath)}`);
-          if (fs.existsSync(indexPath)) {
-            res.sendFile(indexPath);
-          } else {
-            res.status(404).send('Application not built. Please run npm run build first.');
-          }
-        } else {
-          res.status(404).json({ error: 'API endpoint not found' });
-        }
-      } catch (error) {
-        console.error('Error in fallback handler:', error);
-        res.status(500).send('Internal server error in fallback handler');
-      }
-    });
+    // Verificar que los archivos compilados existen
+    const compiledIndexPath = path.join(process.cwd(), 'dist/public', 'index.html');
+    const compiledJSExists = fs.existsSync(path.join(process.cwd(), 'dist/public/assets'));
+    console.log(`✅ Index HTML compilado: ${fs.existsSync(compiledIndexPath)}`);
+    console.log(`✅ Archivos JS compilados: ${compiledJSExists}`);
+    
+    // El fallback ya está configurado arriba
     
     appServer = app.listen(PORT, HOST, () => {
       console.log(`🚀 ParkSys servidor PRODUCCIÓN ejecutándose en ${HOST}:${PORT}`);
