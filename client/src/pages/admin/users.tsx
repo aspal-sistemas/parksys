@@ -630,8 +630,8 @@ const UserDetail: React.FC<{
             </div>
           )}
           
-          {/* Sección específica para voluntarios */}
-          {userData.role === 'voluntario' && (
+          {/* Formulario simplificado - sin secciones extendidas */}
+          {false && (
             <div className="space-y-4 mt-6 pt-6 border-t border-gray-200">
               <h3 className="font-medium text-lg">Información de Voluntario</h3>
               
