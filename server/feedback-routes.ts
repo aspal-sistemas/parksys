@@ -117,7 +117,6 @@ router.get("/", async (req: Request, res: Response) => {
       SELECT 
         pf.*,
         p.name as park_name,
-        p.slug as park_slug,
         u.full_name as assigned_user_name
       FROM park_feedback pf
       LEFT JOIN parks p ON pf.park_id = p.id
@@ -149,7 +148,6 @@ router.get("/", async (req: Request, res: Response) => {
         id: row.id,
         parkId: row.park_id,
         parkName: row.park_name,
-        parkSlug: row.park_slug,
         formType: row.form_type,
         fullName: row.full_name,
         email: row.email,

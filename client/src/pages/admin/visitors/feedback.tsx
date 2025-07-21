@@ -127,15 +127,17 @@ function FeedbackManagement() {
   });
 
   // Fetch parks for filter
-  const { data: parks } = useQuery({
+  const { data: parksResponse } = useQuery({
     queryKey: ['/api/parks'],
     queryFn: async () => {
       const response = await fetch('/api/parks');
       if (!response.ok) throw new Error('Error al cargar parques');
       const result = await response.json();
-      return result.data || result;
+      return result;
     },
   });
+
+  const parks = parksResponse?.data || [];
 
   // Fetch feedback stats
   const { data: stats } = useQuery({
@@ -292,7 +294,7 @@ function FeedbackManagement() {
     );
   }
 
-  const feedback = feedbackData?.data || [];
+  const feedback = feedbackData?.feedback || [];
 
   return (
     <div className="p-6 space-y-6">
