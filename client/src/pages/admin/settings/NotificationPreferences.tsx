@@ -39,9 +39,9 @@ export default function NotificationPreferences() {
   const queryClient = useQueryClient();
 
   // Obtener usuarios para seleccionar
-  const { data: usersData } = useQuery({
+  const { data: usersData, isLoading: usersLoading } = useQuery({
     queryKey: ['/api/users'],
-    select: (data: any) => data?.users || []
+    select: (data: any) => data?.users || data || []
   });
 
   // Obtener preferencias del usuario seleccionado
@@ -161,20 +161,20 @@ export default function NotificationPreferences() {
         </div>
 
         {/* Resumen por Roles */}
-        {summaryData?.summary && (
+        {summaryData?.summary && Array.isArray(summaryData.summary) && summaryData.summary.length > 0 && (
           <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              Resumen por Roles
-            </CardTitle>
-            <CardDescription>
-              Vista general de las preferencias de notificación por tipo de usuario
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {summaryData.summary.map((summary: PreferenceSummary) => (
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Resumen por Roles
+              </CardTitle>
+              <CardDescription>
+                Vista general de las preferencias de notificación por tipo de usuario
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {summaryData.summary.map((summary: PreferenceSummary) => (
                 <div key={summary.role} className="border rounded-lg p-4">
                   <div className="flex items-center justify-between mb-2">
                     <Badge className={getRoleColor(summary.role)}>
@@ -222,29 +222,41 @@ export default function NotificationPreferences() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2 max-h-96 overflow-y-auto">
-              {relevantUsers.map((user: any) => (
-                <div
-                  key={user.id}
-                  onClick={() => setSelectedUserId(user.id)}
-                  className={`p-3 rounded-lg border cursor-pointer transition-colors ${
-                    selectedUserId === user.id
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-sm">{user.fullName || user.username}</p>
-                      <p className="text-xs text-gray-500">{user.email}</p>
-                    </div>
-                    <Badge className={getRoleColor(user.role)}>
-                      {getRoleLabel(user.role)}
-                    </Badge>
-                  </div>
+              {usersLoading ? (
+                <div className="p-4 text-center">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+                  <p className="mt-2 text-sm text-gray-500">Cargando usuarios...</p>
                 </div>
-              ))}
-              </div>
+              ) : relevantUsers.length === 0 ? (
+                <div className="p-4 text-center text-gray-500">
+                  <Users className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                  <p>No se encontraron usuarios relevantes</p>
+                </div>
+              ) : (
+                <div className="space-y-2 max-h-96 overflow-y-auto">
+                  {relevantUsers.map((user: any) => (
+                    <div
+                      key={user.id}
+                      onClick={() => setSelectedUserId(user.id)}
+                      className={`p-3 rounded-lg border cursor-pointer transition-colors ${
+                        selectedUserId === user.id
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium text-sm">{user.fullName || user.username}</p>
+                          <p className="text-xs text-gray-500">{user.email}</p>
+                        </div>
+                        <Badge className={getRoleColor(user.role)}>
+                          {getRoleLabel(user.role)}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -275,7 +287,7 @@ export default function NotificationPreferences() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                {userPreferences.availableNotifications.map((notification, index) => (
+                {userPreferences.availableNotifications?.map((notification, index) => (
                   <div key={notification.key}>
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -293,11 +305,16 @@ export default function NotificationPreferences() {
                         disabled={updatePreferencesMutation.isPending}
                       />
                     </div>
-                    {index < userPreferences.availableNotifications.length - 1 && (
+                    {index < (userPreferences.availableNotifications?.length || 0) - 1 && (
                       <Separator className="mt-4" />
                     )}
                   </div>
-                ))}
+                )) || (
+                  <div className="p-4 text-center text-gray-500">
+                    <AlertTriangle className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                    <p>No hay preferencias de notificación disponibles para este usuario</p>
+                  </div>
+                )}
 
                 {updatePreferencesMutation.isPending && (
                   <div className="flex items-center gap-2 text-sm text-blue-600">
