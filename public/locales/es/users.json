@@ -38,6 +38,8 @@
     "resetPassword": "Restablecer Contraseña",
     "uploadPhoto": "Subir Foto"
   },
+  "newUser": "Nuevo Usuario",
+  "deleteUser": "Eliminar Usuario",
   "status": {
     "active": "Activo",
     "inactive": "Inactivo",
