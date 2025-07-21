@@ -1607,48 +1607,58 @@ async function initializeDatabaseAsync() {
   process.env.NODE_ENV = 'production'; // Forzar production environment
   const isDeployment = true; // Usar producción para evitar problemas de proxy
   
-  // Configurar servidor de archivos estáticos ANTES de Vite
+  // Configurar servidor de archivos estáticos ANTES de cualquier middleware
   console.log("🏭 Configurando servidor para producción (resolviendo 503s)...");
   const distPath = path.join(process.cwd(), 'dist/public');
   
   if (fs.existsSync(distPath)) {
     console.log("📁 Sirviendo archivos estáticos desde dist/public/");
-    app.use('/', express.static(distPath, {
+    
+    // PRIORIDAD ABSOLUTA: Servir archivos estáticos primero
+    app.use('/assets', express.static(path.join(distPath, 'assets'), {
       setHeaders: (res, filePath) => {
+        console.log(`📄 Sirviendo archivo estático: ${filePath}`);
         if (filePath.endsWith('.js')) {
           res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+          console.log(`✅ Content-Type JS aplicado: ${filePath}`);
         }
         if (filePath.endsWith('.css')) {
           res.setHeader('Content-Type', 'text/css; charset=utf-8');
+          console.log(`✅ Content-Type CSS aplicado: ${filePath}`);
         }
+      },
+      maxAge: '1y', // Cache largo para assets
+      immutable: true
+    }));
+    
+    // Servir otros archivos estáticos (raíz)
+    app.use(express.static(distPath, {
+      setHeaders: (res, filePath) => {
         if (filePath.endsWith('.html')) {
           res.setHeader('Content-Type', 'text/html; charset=utf-8');
         }
       }
     }));
     
-    // Fallback para SPA - servir index.html SOLO para rutas que no son archivos estáticos
+    // Fallback SPA SOLO después de configurar archivos estáticos
     app.get('*', (req, res, next) => {
-      // Skip fallback para archivos estáticos (JS, CSS, assets, etc.)
+      // Verificar que no sea un archivo estático que se perdió
       if (req.url.startsWith('/api/') || 
           req.url.startsWith('/assets/') || 
-          req.url.includes('.js') || 
-          req.url.includes('.css') || 
-          req.url.includes('.png') || 
-          req.url.includes('.jpg') || 
-          req.url.includes('.ico')) {
-        next();
-        return;
+          req.url.includes('.')) {
+        console.log(`⚠️ Archivo no encontrado: ${req.url}`);
+        return res.status(404).json({ error: 'File not found', url: req.url });
       }
       
-      // Solo aplicar fallback SPA para rutas de navegación
+      // Servir HTML para rutas SPA
       const indexPath = path.join(distPath, 'index.html');
       if (fs.existsSync(indexPath)) {
+        console.log(`🌐 SPA fallback para: ${req.url}`);
         res.setHeader('Content-Type', 'text/html; charset=utf-8');
         res.sendFile(indexPath);
-        return;
+      } else {
+        res.status(404).json({ error: 'Application not built' });
       }
-      next();
     });
   }
   
