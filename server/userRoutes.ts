@@ -1037,7 +1037,7 @@ function createUserRoutes() {
     }
   });
   
-  return userApiRouter;
+  return apiRouter;
 }
 
 // Crear y exportar el router
