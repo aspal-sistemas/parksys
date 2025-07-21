@@ -501,6 +501,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Endpoint directo para usuarios (resolver problema de carga)
+  apiRouter.get("/users", async (req: Request, res: Response) => {
+    try {
+      console.log('📋 Endpoint /api/users solicitado directamente');
+      const users = await storage.getUsers();
+      console.log(`📋 ${users.length} usuarios obtenidos del storage`);
+      
+      // No enviamos las contraseñas al cliente
+      const safeUsers = users.map(user => {
+        const { password, ...userWithoutPassword } = user;
+        return userWithoutPassword;
+      });
+      
+      console.log('📋 Enviando respuesta con usuarios seguros');
+      res.json(safeUsers);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      res.status(500).json({ message: 'Error al obtener usuarios' });
+    }
+  });
+
   // Montamos todas las rutas de la API bajo el prefijo /api
   app.use('/api', apiRouter);
   
