@@ -452,6 +452,13 @@ export default function UsersPage() {
       };
       delete userDataToSend.profileImageFile; // Remover archivo del objeto
       
+      console.log('📤 Enviando datos con imagen:', {
+        imageUrl,
+        profileImageUrl: userDataToSend.profileImageUrl,
+        isUpdate,
+        userId: selectedUser?.id
+      });
+      
       const url = isUpdate ? `/api/users/${selectedUser?.id}` : '/api/users';
       const method = isUpdate ? 'PUT' : 'POST';
 
