@@ -197,7 +197,7 @@ export default function NotificationPreferences() {
             <Bell className="h-6 w-6 text-blue-600" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Preferencias de Notificaciones</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Notificaciones</h1>
             <p className="text-gray-500">Configura qué tipos de notificaciones recibe cada usuario del sistema</p>
           </div>
         </div>
