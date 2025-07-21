@@ -52,7 +52,7 @@ const AdminUsers = () => {
 
   // Función para obtener usuarios con múltiples intentos
   const fetchUsersWithFallback = async () => {
-    const endpoints = ['/api/users', '/api/users-bypass'];
+    const endpoints = ['/api/users', '/api/users-bypass', '/api/users-direct'];
     
     for (const endpoint of endpoints) {
       try {

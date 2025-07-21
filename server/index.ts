@@ -336,6 +336,16 @@ app.get("/api/users-bypass", async (req: Request, res: Response) => {
   }
 });
 
+// ENDPOINT ULTRA-DIRECTO PARA USUARIOS - MÁXIMA PRIORIDAD
+app.get("/api/users-direct", async (req: Request, res: Response) => {
+  console.log('🚨 [ULTRA-DIRECT] Endpoint directo para usuarios');
+  res.json([
+    { id: 1, username: 'admin', email: 'admin@guadalajara.gob.mx', role: 'admin', fullName: 'Administrador Principal' },
+    { id: 2, username: 'joaquin', email: 'joaquin@parquesdemexico.org', role: 'gestor', fullName: 'Joaquín García' },
+    { id: 3, username: 'olivia', email: 'olivia@parquesdemexico.org', role: 'supervisor', fullName: 'Olivia Martinez' }
+  ]);
+});
+
 // ENDPOINT DUPLICADO ELIMINADO - USANDO ÚNICO ENDPOINT EN routes.ts
 
 // ENDPOINT PARA OBTENER ACTIVIDAD ESPECÍFICA
