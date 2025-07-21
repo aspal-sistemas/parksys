@@ -319,8 +319,8 @@ export class DatabaseStorage implements IStorage {
     try {
       const { pool } = await import('./db');
       const result = await pool.query(`
-        SELECT id, username, email, role, first_name as "firstName", last_name as "lastName",
-               full_name as "fullName", municipality_id as "municipalityId", phone, gender, 
+        SELECT id, username, email, role, full_name as "fullName", 
+               municipality_id as "municipalityId", phone, gender, 
                birth_date as "birthDate", bio, profile_image_url as "profileImageUrl", 
                created_at as "createdAt", updated_at as "updatedAt"
         FROM users
