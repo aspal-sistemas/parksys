@@ -1627,16 +1627,26 @@ async function initializeDatabaseAsync() {
       }
     }));
     
-    // Fallback para SPA - servir index.html para rutas no encontradas
+    // Fallback para SPA - servir index.html SOLO para rutas que no son archivos estáticos
     app.get('*', (req, res, next) => {
-      // Solo para rutas que no son API
-      if (!req.url.startsWith('/api/')) {
-        const indexPath = path.join(distPath, 'index.html');
-        if (fs.existsSync(indexPath)) {
-          res.setHeader('Content-Type', 'text/html; charset=utf-8');
-          res.sendFile(indexPath);
-          return;
-        }
+      // Skip fallback para archivos estáticos (JS, CSS, assets, etc.)
+      if (req.url.startsWith('/api/') || 
+          req.url.startsWith('/assets/') || 
+          req.url.includes('.js') || 
+          req.url.includes('.css') || 
+          req.url.includes('.png') || 
+          req.url.includes('.jpg') || 
+          req.url.includes('.ico')) {
+        next();
+        return;
+      }
+      
+      // Solo aplicar fallback SPA para rutas de navegación
+      const indexPath = path.join(distPath, 'index.html');
+      if (fs.existsSync(indexPath)) {
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        res.sendFile(indexPath);
+        return;
       }
       next();
     });
