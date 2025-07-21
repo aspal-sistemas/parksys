@@ -18,7 +18,7 @@ import AdminAnalytics from "@/pages/admin/analytics";
 import AdminDocuments from "@/pages/admin/documents";
 import AdminComments from "@/pages/admin/comments";
 import AdminIncidents from "@/pages/admin/incidents";
-import AdminUsers from "@/pages/admin/users";
+import AdminUsers from "@/pages/admin/users-new";
 import AdminActivities from "@/pages/admin/activities";
 import AdminAmenities from "@/pages/admin/amenities";
 import AdminSettings from "@/pages/admin/settings";
