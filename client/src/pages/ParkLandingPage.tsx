@@ -770,11 +770,28 @@ function ParkLandingPage() {
                 </div>
                 
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="flex-1 text-xs">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex-1 text-xs"
+                    onClick={() => {
+                      const coords = `${park.latitude},${park.longitude}`;
+                      const destination = encodeURIComponent(`${park.name}, ${park.address}`);
+                      window.open(`https://www.google.com/maps/dir/?api=1&destination=${destination}&destination_place_id=${coords}`, '_blank');
+                    }}
+                  >
                     <MapPin className="h-3 w-3 mr-1" />
                     Cómo llegar
                   </Button>
-                  <Button variant="outline" size="sm" className="flex-1 text-xs">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex-1 text-xs"
+                    onClick={() => {
+                      const coords = `${park.latitude},${park.longitude}`;
+                      window.open(`https://www.google.com/maps/@${coords},17z`, '_blank');
+                    }}
+                  >
                     <ExternalLink className="h-3 w-3 mr-1" />
                     Ver en Google Maps
                   </Button>

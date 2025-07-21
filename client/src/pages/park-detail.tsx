@@ -358,13 +358,30 @@ const ParkDetail: React.FC = () => {
                 <p className="text-gray-600 text-sm mb-3">{park.address}</p>
                 
                 <div className="flex space-x-2">
-                  <Button variant="outline" size="sm" className="flex-1">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex-1"
+                    onClick={() => {
+                      const coords = `${park.latitude},${park.longitude}`;
+                      const destination = encodeURIComponent(`${park.name}, ${park.address}`);
+                      window.open(`https://www.google.com/maps/dir/?api=1&destination=${destination}&destination_place_id=${coords}`, '_blank');
+                    }}
+                  >
                     <MapPin className="h-4 w-4 mr-1" />
                     Cómo llegar
                   </Button>
-                  <Button variant="outline" size="sm" className="flex-1">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex-1"
+                    onClick={() => {
+                      const coords = `${park.latitude},${park.longitude}`;
+                      window.open(`https://www.google.com/maps/@${coords},17z`, '_blank');
+                    }}
+                  >
                     <Share2 className="h-4 w-4 mr-1" />
-                    Compartir
+                    Ver en Google Maps
                   </Button>
                 </div>
               </div>
