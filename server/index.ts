@@ -1614,43 +1614,41 @@ async function initializeDatabaseAsync() {
   if (fs.existsSync(distPath)) {
     console.log("📁 Sirviendo archivos estáticos desde dist/public/");
     
-    // PRIORIDAD ABSOLUTA: Servir archivos estáticos primero
-    app.use('/assets', express.static(path.join(distPath, 'assets'), {
-      setHeaders: (res, filePath) => {
-        console.log(`📄 Sirviendo archivo estático: ${filePath}`);
-        if (filePath.endsWith('.js')) {
-          res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
-          console.log(`✅ Content-Type JS aplicado: ${filePath}`);
-        }
-        if (filePath.endsWith('.css')) {
-          res.setHeader('Content-Type', 'text/css; charset=utf-8');
-          console.log(`✅ Content-Type CSS aplicado: ${filePath}`);
-        }
-      },
-      maxAge: '1y', // Cache largo para assets
-      immutable: true
-    }));
-    
-    // Servir otros archivos estáticos (raíz)
+    // MÉTODO DIRECTO: Servir archivos estáticos sin conflictos
     app.use(express.static(distPath, {
-      setHeaders: (res, filePath) => {
-        if (filePath.endsWith('.html')) {
+      dotfiles: 'ignore',
+      etag: false,
+      extensions: ['html', 'js', 'css'],
+      index: false, // No servir index automáticamente
+      maxAge: 0, // Sin cache por ahora
+      redirect: false,
+      setHeaders: function (res, filePath, stat) {
+        console.log(`📄 Sirviendo: ${filePath}`);
+        
+        if (filePath.endsWith('.js') || filePath.includes('index-VG22aPDC.js')) {
+          res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+          res.setHeader('X-Content-Type-Options', 'nosniff');
+          console.log(`✅ JavaScript content-type aplicado a: ${filePath}`);
+        } else if (filePath.endsWith('.css')) {
+          res.setHeader('Content-Type', 'text/css; charset=utf-8');
+          console.log(`✅ CSS content-type aplicado a: ${filePath}`);
+        } else if (filePath.endsWith('.html')) {
           res.setHeader('Content-Type', 'text/html; charset=utf-8');
+          res.setHeader('Cache-Control', 'no-cache');
+          console.log(`✅ HTML content-type aplicado a: ${filePath}`);
         }
       }
     }));
     
-    // Fallback SPA SOLO después de configurar archivos estáticos
-    app.get('*', (req, res, next) => {
-      // Verificar que no sea un archivo estático que se perdió
+    // Agregar fallback SPA solo para rutas de navegación
+    app.get('*', (req, res) => {
+      // Verificar que no sea un archivo estático
       if (req.url.startsWith('/api/') || 
-          req.url.startsWith('/assets/') || 
-          req.url.includes('.')) {
-        console.log(`⚠️ Archivo no encontrado: ${req.url}`);
-        return res.status(404).json({ error: 'File not found', url: req.url });
+          req.url.match(/\.(js|css|png|jpg|ico|woff|woff2|ttf)$/)) {
+        return res.status(404).json({ error: 'File not found' });
       }
       
-      // Servir HTML para rutas SPA
+      // Servir index.html para rutas SPA
       const indexPath = path.join(distPath, 'index.html');
       if (fs.existsSync(indexPath)) {
         console.log(`🌐 SPA fallback para: ${req.url}`);
