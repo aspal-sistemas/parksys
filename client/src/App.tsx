@@ -274,6 +274,7 @@ function Router() {
           </Suspense>
         </Route>
         <Route path="/admin/users" component={AdminUsers} />
+        <Route path="/admin/users-fixed" component={AdminUsers} />
 
         {/* Rutas para concesionarios movidas al módulo de Concesiones */}
         <Route path="/admin/amenities" component={AdminAmenities} />
