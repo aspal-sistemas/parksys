@@ -5,8 +5,9 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
-import { Bell, Settings, Users, Mail, AlertTriangle, CheckCircle } from "lucide-react";
+import { Bell, Settings, Users, Mail, AlertTriangle, CheckCircle, BarChart3 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import AdminLayout from "@/components/AdminLayout";
 
@@ -91,32 +92,33 @@ export default function NotificationPreferences() {
   }, [usersData, selectedUserId]);
 
   const handlePreferenceChange = (key: string, value: boolean) => {
-    if (!selectedUserId || !userPreferences) return;
-
+    if (!userPreferences) return;
+    
     const updatedPreferences = {
       ...userPreferences.preferences,
-      [key]: value
+      [key]: value,
     };
-
+    
     updatePreferencesMutation.mutate({
-      userId: selectedUserId,
-      preferences: updatedPreferences
+      userId: userPreferences.userId,
+      preferences: updatedPreferences,
     });
   };
 
   const getRoleColor = (role: string) => {
     switch (role) {
       case 'admin':
-      case 'super_admin':
         return 'bg-red-100 text-red-800';
+      case 'super_admin':
+        return 'bg-purple-100 text-purple-800';
       case 'manager':
         return 'bg-blue-100 text-blue-800';
       case 'instructor':
         return 'bg-green-100 text-green-800';
       case 'volunteer':
-        return 'bg-purple-100 text-purple-800';
-      case 'concessionaire':
         return 'bg-orange-100 text-orange-800';
+      case 'concessionaire':
+        return 'bg-yellow-100 text-yellow-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -160,185 +162,213 @@ export default function NotificationPreferences() {
           </div>
         </div>
 
-        {/* Resumen por Roles */}
-        {summaryData?.summary && Array.isArray(summaryData.summary) && summaryData.summary.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                Resumen por Roles
-              </CardTitle>
-              <CardDescription>
-                Vista general de las preferencias de notificación por tipo de usuario
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {summaryData.summary.map((summary: PreferenceSummary) => (
-                <div key={summary.role} className="border rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <Badge className={getRoleColor(summary.role)}>
-                      {getRoleLabel(summary.role)}
-                    </Badge>
-                    <span className="text-sm text-gray-500">
-                      {summary.total_users} usuarios
-                    </span>
-                  </div>
-                  <div className="space-y-1 text-xs">
-                    <div className="flex justify-between">
-                      <span>Feedback:</span>
-                      <span className="font-medium">{summary.feedback_enabled}/{summary.total_users}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Eventos:</span>
-                      <span className="font-medium">{summary.events_enabled}/{summary.total_users}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Mantenimiento:</span>
-                      <span className="font-medium">{summary.maintenance_enabled}/{summary.total_users}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Nómina:</span>
-                      <span className="font-medium">{summary.payroll_enabled}/{summary.total_users}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-          </Card>
-        )}
+        <Tabs defaultValue="configuracion" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-6">
+            <TabsTrigger value="configuracion" className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              Configuración de Usuario
+            </TabsTrigger>
+            <TabsTrigger value="resumen" className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4" />
+              Resumen por Roles
+            </TabsTrigger>
+          </TabsList>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Selector de Usuario */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                Seleccionar Usuario
-              </CardTitle>
-              <CardDescription>
-                Elige un usuario para configurar sus preferencias
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {usersLoading ? (
-                <div className="p-4 text-center">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
-                  <p className="mt-2 text-sm text-gray-500">Cargando usuarios...</p>
-                </div>
-              ) : relevantUsers.length === 0 ? (
-                <div className="p-4 text-center text-gray-500">
-                  <Users className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-                  <p>No se encontraron usuarios relevantes</p>
-                </div>
-              ) : (
-                <div className="space-y-2 max-h-96 overflow-y-auto">
-                  {relevantUsers.map((user: any) => (
-                    <div
-                      key={user.id}
-                      onClick={() => setSelectedUserId(user.id)}
-                      className={`p-3 rounded-lg border cursor-pointer transition-colors ${
-                        selectedUserId === user.id
-                          ? 'border-blue-500 bg-blue-50'
-                          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium text-sm">{user.fullName || user.username}</p>
-                          <p className="text-xs text-gray-500">{user.email}</p>
+          <TabsContent value="configuracion">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Columna 1: Selección de usuario */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="h-5 w-5" />
+                    Seleccionar Usuario
+                  </CardTitle>
+                  <CardDescription>
+                    Elige el usuario para configurar sus preferencias
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {usersLoading ? (
+                    <div className="space-y-2">
+                      {[1, 2, 3].map(i => (
+                        <div key={i} className="h-12 bg-gray-200 animate-pulse rounded"></div>
+                      ))}
+                    </div>
+                  ) : relevantUsers.length === 0 ? (
+                    <div className="p-4 text-center text-gray-500">
+                      <p>No se encontraron usuarios relevantes</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2 max-h-96 overflow-y-auto">
+                      {relevantUsers.map((user: any) => (
+                        <div
+                          key={user.id}
+                          onClick={() => setSelectedUserId(user.id)}
+                          className={`p-3 rounded-lg border cursor-pointer transition-colors ${
+                            selectedUserId === user.id
+                              ? 'border-blue-500 bg-blue-50'
+                              : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="font-medium text-sm">{user.fullName || user.name}</div>
+                              <div className="text-xs text-gray-500">{user.email}</div>
+                            </div>
+                            <Badge className={getRoleColor(user.role)} variant="secondary">
+                              {getRoleLabel(user.role)}
+                            </Badge>
+                          </div>
                         </div>
-                        <Badge className={getRoleColor(user.role)}>
-                          {getRoleLabel(user.role)}
-                        </Badge>
-                      </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                  )}
+                </CardContent>
+              </Card>
 
-          {/* Configuración de Preferencias */}
-          <div className="lg:col-span-2">
-          {preferencesLoading ? (
-            <Card>
-              <CardContent className="p-8 text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                <p className="mt-2 text-sm text-gray-500">Cargando preferencias...</p>
-              </CardContent>
-            </Card>
-          ) : userPreferences ? (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Settings className="h-5 w-5" />
-                  Preferencias de {userPreferences.fullName || 'Usuario'}
-                </CardTitle>
-                <CardDescription>
-                  <div className="flex items-center gap-2">
-                    <Mail className="h-4 w-4" />
-                    {userPreferences.email}
-                    <Badge className={getRoleColor(userPreferences.role)}>
-                      {getRoleLabel(userPreferences.role)}
-                    </Badge>
-                  </div>
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {userPreferences.availableNotifications?.map((notification, index) => (
-                  <div key={notification.key}>
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h4 className="font-medium text-sm">{notification.label}</h4>
-                          {notification.key === 'emergency' && (
-                            <AlertTriangle className="h-4 w-4 text-amber-500" />
+              {/* Columnas 2-3: Configuración de preferencias */}
+              <div className="lg:col-span-2">
+                {preferencesLoading ? (
+                  <Card>
+                    <CardContent className="p-8 text-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                      <p className="mt-2 text-sm text-gray-500">Cargando preferencias...</p>
+                    </CardContent>
+                  </Card>
+                ) : userPreferences ? (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Settings className="h-5 w-5" />
+                        Preferencias de {userPreferences.fullName || 'Usuario'}
+                      </CardTitle>
+                      <CardDescription>
+                        <div className="flex items-center gap-2">
+                          <Mail className="h-4 w-4" />
+                          {userPreferences.email}
+                          <Badge className={getRoleColor(userPreferences.role)} variant="secondary">
+                            {getRoleLabel(userPreferences.role)}
+                          </Badge>
+                        </div>
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {userPreferences.availableNotifications?.map((notification, index) => (
+                        <div key={notification.key} className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2">
+                                <CheckCircle className="h-4 w-4 text-green-600" />
+                                <span className="font-medium text-sm">{notification.label}</span>
+                              </div>
+                              <p className="text-xs text-gray-500 ml-6">
+                                {notification.description}
+                              </p>
+                            </div>
+                            <Switch
+                              checked={userPreferences.preferences?.[notification.key] || false}
+                              onCheckedChange={(checked) => handlePreferenceChange(notification.key, checked)}
+                              disabled={updatePreferencesMutation.isPending}
+                            />
+                          </div>
+                          {index < (userPreferences.availableNotifications?.length || 0) - 1 && (
+                            <Separator className="mt-4" />
                           )}
                         </div>
-                        <p className="text-xs text-gray-500">{notification.description}</p>
-                      </div>
-                      <Switch
-                        checked={userPreferences.preferences[notification.key] || false}
-                        onCheckedChange={(checked) => handlePreferenceChange(notification.key, checked)}
-                        disabled={updatePreferencesMutation.isPending}
-                      />
-                    </div>
-                    {index < (userPreferences.availableNotifications?.length || 0) - 1 && (
-                      <Separator className="mt-4" />
-                    )}
-                  </div>
-                )) || (
-                  <div className="p-4 text-center text-gray-500">
-                    <AlertTriangle className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-                    <p>No hay preferencias de notificación disponibles para este usuario</p>
-                  </div>
-                )}
+                      )) || (
+                        <div className="p-4 text-center text-gray-500">
+                          <AlertTriangle className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                          <p>No hay preferencias de notificación disponibles para este usuario</p>
+                        </div>
+                      )}
 
-                {updatePreferencesMutation.isPending && (
-                  <div className="flex items-center gap-2 text-sm text-blue-600">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                    Guardando cambios...
-                  </div>
+                      {updatePreferencesMutation.isPending && (
+                        <div className="flex items-center gap-2 text-sm text-blue-600">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                          Guardando cambios...
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <Card>
+                    <CardContent className="p-8 text-center">
+                      <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">
+                        Selecciona un usuario
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        Elige un usuario de la lista para configurar sus preferencias de notificación
+                      </p>
+                    </CardContent>
+                  </Card>
                 )}
-              </CardContent>
-            </Card>
-          ) : (
-            <Card>
-              <CardContent className="p-8 text-center">
-                <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  Selecciona un usuario
-                </h3>
-                <p className="text-sm text-gray-500">
-                  Elige un usuario de la lista para configurar sus preferencias de notificación
-                </p>
-              </CardContent>
-            </Card>
-          )}
-          </div>
-        </div>
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="resumen">
+            {summaryData?.summary && Array.isArray(summaryData.summary) && summaryData.summary.length > 0 ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart3 className="h-5 w-5" />
+                    Resumen por Roles
+                  </CardTitle>
+                  <CardDescription>
+                    Vista general de las preferencias de notificación por tipo de usuario
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {summaryData.summary.map((summary: PreferenceSummary) => (
+                      <div key={summary.role} className="border rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <Badge className={getRoleColor(summary.role)}>
+                            {getRoleLabel(summary.role)}
+                          </Badge>
+                          <span className="text-sm text-gray-500">
+                            {summary.total_users} usuarios
+                          </span>
+                        </div>
+                        <div className="space-y-1 text-xs">
+                          <div className="flex justify-between">
+                            <span>Feedback:</span>
+                            <span className="font-medium">{summary.feedback_enabled}/{summary.total_users}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Eventos:</span>
+                            <span className="font-medium">{summary.events_enabled}/{summary.total_users}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Mantenimiento:</span>
+                            <span className="font-medium">{summary.maintenance_enabled}/{summary.total_users}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Nómina:</span>
+                            <span className="font-medium">{summary.payroll_enabled}/{summary.total_users}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    Sin datos de resumen
+                  </h3>
+                  <p className="text-sm text-gray-500">
+                    No hay datos disponibles para mostrar el resumen por roles
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
     </AdminLayout>
   );
