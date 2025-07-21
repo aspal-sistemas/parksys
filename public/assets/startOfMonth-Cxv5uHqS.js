@@ -1,0 +1,1 @@
+import{bJ as s,bz as n}from"./index-BBGHPKhn.js";function f(a,t){const e=s(a),o=s(t);return+e==+o}function u(a){const t=n(a),e=t.getMonth();return t.setFullYear(t.getFullYear(),e+1,0),t.setHours(23,59,59,999),t}function c(a){const t=n(a);return t.setDate(1),t.setHours(0,0,0,0),t}export{u as e,f as i,c as s};
