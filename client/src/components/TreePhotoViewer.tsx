@@ -56,7 +56,7 @@ export default function TreePhotoViewer({
 
       {/* Modal del visualizador */}
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="max-w-4xl w-full max-h-[90vh] p-0">
+        <DialogContent className="max-w-4xl w-full max-h-[90vh] p-0" aria-describedby="tree-photo-description">
           <DialogHeader className="p-6 pb-4">
             <div className="flex items-center justify-between">
               <DialogTitle className="text-xl font-semibold text-green-800">
@@ -105,6 +105,10 @@ export default function TreePhotoViewer({
             </div>
             <p className="text-sm text-green-600 italic">{scientificName}</p>
           </DialogHeader>
+          
+          <div id="tree-photo-description" className="sr-only">
+            Visualizador ampliado de la foto de {commonName} con controles de zoom
+          </div>
 
           {/* Contenedor de la imagen */}
           <div className="flex-1 overflow-auto p-6 pt-0">

@@ -63,7 +63,7 @@ const ParkDetail: React.FC<ParkDetailProps> = ({
   
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl w-full max-h-[90vh] p-0 overflow-hidden">
+      <DialogContent className="max-w-4xl w-full max-h-[90vh] p-0 overflow-hidden" aria-describedby="park-detail-description">
         <DialogHeader className="px-6 py-4 border-b sticky top-0 bg-white z-10">
           <div className="flex justify-between items-center">
             <DialogTitle className="font-heading font-semibold text-2xl text-gray-900">
@@ -89,6 +89,9 @@ const ParkDetail: React.FC<ParkDetailProps> = ({
               <TabsContent value="general" className="mt-0">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
+                    <div id="park-detail-description" className="sr-only">
+                      Detalles completos del parque {park.name} incluyendo información general, actividades y documentos
+                    </div>
                     {/* Park hero image */}
                     <div className="rounded-lg overflow-hidden">
                       <img 

@@ -391,10 +391,13 @@ export default function ParkMultimediaManager({ parkId }: ParkMultimediaManagerP
                     Agregar Imagen
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-md">
+                <DialogContent className="max-w-md" aria-describedby="multimedia-description">
                   <DialogHeader>
                     <DialogTitle>Agregar Nueva Imagen</DialogTitle>
                   </DialogHeader>
+                  <div id="multimedia-description" className="sr-only">
+                    Formulario para subir una nueva imagen al sistema multimedia del parque
+                  </div>
                   <div className="space-y-4">
                     <div>
                       <label className="text-sm font-medium mb-2 block">Subir archivo</label>
@@ -524,10 +527,13 @@ export default function ParkMultimediaManager({ parkId }: ParkMultimediaManagerP
                   Agregar Documento
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-md">
+              <DialogContent className="max-w-md" aria-describedby="document-description">
                 <DialogHeader>
                   <DialogTitle>Agregar Nuevo Documento</DialogTitle>
                 </DialogHeader>
+                <div id="document-description" className="sr-only">
+                  Formulario para agregar un nuevo documento al sistema multimedia del parque
+                </div>
                 <div className="space-y-4">
                   <div>
                     <label className="text-sm font-medium mb-2 block">Título</label>
