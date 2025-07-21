@@ -65,8 +65,6 @@ const getRoleColor = (role: string) => {
     case 'manager': return 'bg-purple-500 text-white';
     case 'supervisor': return 'bg-orange-500 text-white';
     case 'instructor': return 'bg-blue-500 text-white';
-    case 'volunteer': return 'bg-green-500 text-white';
-    case 'concessionaire': return 'bg-yellow-500 text-black';
     default: return 'bg-gray-500 text-white';
   }
 };
@@ -77,8 +75,6 @@ const getRoleText = (role: string) => {
     case 'manager': return 'Gestor';
     case 'supervisor': return 'Supervisor';
     case 'instructor': return 'Instructor';
-    case 'volunteer': return 'Voluntario';
-    case 'concessionaire': return 'Concesionario';
     default: return role;
   }
 };
@@ -93,7 +89,7 @@ const FormularioUsuario: React.FC<{
   const { toast } = useToast();
   
   const [formData, setFormData] = useState<UserFormData>({
-    role: user?.role || 'user',
+    role: user?.role || 'instructor',
     username: user?.username || '',
     email: user?.email || '',
     firstName: user?.firstName || user?.fullName?.split(' ')[0] || '',
@@ -296,8 +292,6 @@ const FormularioUsuario: React.FC<{
                   <SelectItem value="manager">🟣 Gestor</SelectItem>
                   <SelectItem value="supervisor">🟠 Supervisor</SelectItem>
                   <SelectItem value="instructor">🔵 Instructor</SelectItem>
-                  <SelectItem value="volunteer">🟢 Voluntario</SelectItem>
-                  <SelectItem value="concessionaire">🟡 Concesionario</SelectItem>
                 </SelectContent>
               </Select>
             </div>
