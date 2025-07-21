@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import React, { useState, useEffect } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import AdminLayout from '@/components/AdminLayout';
 import { 
   Dialog, 
@@ -376,23 +376,55 @@ export default function UsersPage() {
   const [isNewUser, setIsNewUser] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const { data: users = [], isLoading, error } = useQuery({
-    queryKey: ['/api/users'],
-    staleTime: 0, // Sin cache para forzar carga
-    refetchOnWindowFocus: false,
-    refetchOnMount: true,
-    retry: 3,
-    retryDelay: 1000,
-  });
+  const [users, setUsers] = useState<UserData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  console.log('🔍 Estado de la consulta usuarios:', { 
-    users: users?.length, 
-    isLoading, 
-    error: error?.message 
+  // Usar fetch nativo para evitar problemas de React Query
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        console.log('🚀 Iniciando fetch directo a /api/users');
+        
+        const response = await fetch('/api/users', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+        });
+        
+        console.log('🚀 Respuesta recibida:', response.status, response.statusText);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const userData = await response.json();
+        console.log('🚀 Datos parseados:', userData?.length, 'usuarios');
+        
+        setUsers(userData || []);
+      } catch (err) {
+        console.error('🚨 Error en fetch directo:', err);
+        setError(err instanceof Error ? err.message : 'Error desconocido');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchUsers();
+  }, []);
+
+  console.log('🔍 Estado actual:', { 
+    usuarios: users?.length, 
+    cargando: isLoading, 
+    error 
   });
 
   // Estado alternativo cuando hay problemas de red
-  if (error && error.message.includes('Failed to fetch')) {
+  if (error && error.includes('Failed to fetch')) {
     return (
       <AdminLayout>
         <div className="p-8 text-center">
@@ -468,8 +500,19 @@ export default function UsersPage() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/users'] });
-      queryClient.refetchQueries({ queryKey: ['/api/users'] });
+      // Recargar usuarios con fetch directo
+      const fetchUsers = async () => {
+        try {
+          const response = await fetch('/api/users');
+          if (response.ok) {
+            const userData = await response.json();
+            setUsers(userData || []);
+          }
+        } catch (err) {
+          console.error('Error recargando usuarios:', err);
+        }
+      };
+      fetchUsers();
       
       toast({
         title: "¡Éxito!",
@@ -477,10 +520,6 @@ export default function UsersPage() {
       });
       setSelectedUser(null);
       setIsNewUser(false);
-      
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
     },
     onError: (error: Error) => {
       toast({
@@ -502,7 +541,20 @@ export default function UsersPage() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/users'] });
+      // Recargar usuarios con fetch directo
+      const fetchUsers = async () => {
+        try {
+          const response = await fetch('/api/users');
+          if (response.ok) {
+            const userData = await response.json();
+            setUsers(userData || []);
+          }
+        } catch (err) {
+          console.error('Error recargando usuarios:', err);
+        }
+      };
+      fetchUsers();
+      
       toast({
         title: "Usuario eliminado",
         description: "El usuario ha sido eliminado correctamente",
