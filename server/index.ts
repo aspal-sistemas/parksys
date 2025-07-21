@@ -1602,8 +1602,8 @@ async function initializeDatabaseAsync() {
   });
   
   // Forzar modo producción COMPLETO para resolver problemas de 503 en Replit
-  process.env.NODE_ENV = 'production'; // Forzar production environment
-  const isDeployment = true; // Usar producción para evitar problemas de proxy
+  // process.env.NODE_ENV = 'production'; // Forzar production environment (DESACTIVADO para debugging)
+  const isDeployment = false; // Usar desarrollo para debugging (DESACTIVADO modo producción)
   
   // Configurar servidor de archivos estáticos ANTES de cualquier middleware
   console.log("🏭 Configurando servidor para producción (resolviendo 503s)...");
@@ -1713,9 +1713,9 @@ async function initializeDatabaseAsync() {
     });
   }
   
-  // FORZAR SKIP de Vite para usar archivos estáticos
-  console.log("🚫 FORZANDO SKIP DE VITE - Modo archivos estáticos");
-  if (false) { // Deshabilitado completamente
+  // ACTIVAR Vite para modo desarrollo
+  console.log("🚫 DESACTIVANDO SKIP DE VITE - Modo desarrollo activado");
+  if (!isDeployment) { // Activado para desarrollo
     console.log("Configurando servidor de desarrollo Vite...");
     
     // Configurar Vite antes de iniciar el servidor
