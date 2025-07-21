@@ -497,6 +497,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Esta línea asegura que todas las rutas definidas en publicRouter sean accesibles bajo /public-api
   app.use('/public-api', publicRouter);
   
+  // También montamos las rutas públicas bajo /api/public para compatibilidad con el frontend
+  app.use('/api/public', publicRouter);
+  
   // Añadir router especial para actualizar habilidades
   app.use('/api', updateSkillsRouter);
 
