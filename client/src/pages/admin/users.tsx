@@ -1,13 +1,48 @@
 import React, { useState, useEffect } from 'react';
-import { User, Search, Plus, Edit, Trash2, Loader, Phone, Calendar } from 'lucide-react';
+import { User, Search, Plus, Edit, Trash2, Loader, Phone, Calendar, Upload, X, Camera } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Card } from '@/components/ui/card';
 import { toast } from '@/hooks/use-toast';
+import AdminLayout from '@/components/AdminLayout';
+
+// Función para obtener colores por rol
+const getRoleColor = (role: string) => {
+  const colors = {
+    admin: 'bg-red-100 text-red-800',
+    manager: 'bg-purple-100 text-purple-800', 
+    supervisor: 'bg-orange-100 text-orange-800',
+    instructor: 'bg-green-100 text-green-800',
+    voluntario: 'bg-blue-100 text-blue-800',
+    ciudadano: 'bg-gray-100 text-gray-800',
+    guardaparques: 'bg-emerald-100 text-emerald-800',
+    guardia: 'bg-yellow-100 text-yellow-800',
+    concesionario: 'bg-indigo-100 text-indigo-800',
+    user: 'bg-slate-100 text-slate-800'
+  };
+  return colors[role as keyof typeof colors] || 'bg-gray-100 text-gray-800';
+};
+
+// Función para obtener etiqueta en español
+const getRoleLabel = (role: string) => {
+  const labels = {
+    admin: 'Administrador',
+    manager: 'Gestor',
+    supervisor: 'Supervisor', 
+    instructor: 'Instructor',
+    voluntario: 'Voluntario',
+    ciudadano: 'Ciudadano',
+    guardaparques: 'Guardaparques',
+    guardia: 'Guardia',
+    concesionario: 'Concesionario',
+    user: 'Usuario'
+  };
+  return labels[role as keyof typeof labels] || role;
+};
 
 // Interfaces simplificadas
 interface UserData {
@@ -41,6 +76,8 @@ interface UserFormData {
   birthDate?: string;
   bio?: string;
   municipalityId?: number | null;
+  profileImageFile?: File | null;
+  profileImageUrl?: string;
 }
 
 // Formulario simplificado para todos los roles - UNIFORME
@@ -63,13 +100,55 @@ const UserFormDialog: React.FC<{
     birthDate: user?.birthDate || '',
     bio: user?.bio || '',
     municipalityId: user?.municipalityId || null,
+    profileImageFile: null,
   });
+
+  const [previewImage, setPreviewImage] = useState<string | null>(user?.profileImageUrl || null);
 
   const handleChange = (field: keyof UserFormData, value: string | number | null) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "Error de archivo",
+          description: "La imagen no puede superar 5MB",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!file.type.match(/^image\/(jpeg|jpg|png|webp)$/)) {
+        toast({
+          title: "Error de formato",
+          description: "Solo se permiten archivos JPG, PNG, WEBP",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setFormData(prev => ({ ...prev, profileImageFile: file }));
+      
+      // Crear preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setFormData(prev => ({ ...prev, profileImageFile: null }));
+    setPreviewImage(user?.profileImageUrl || null);
+    const fileInput = document.getElementById('profile-image-input') as HTMLInputElement;
+    if (fileInput) fileInput.value = '';
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -101,12 +180,58 @@ const UserFormDialog: React.FC<{
       <DialogContent className="max-w-2xl" aria-describedby="user-form-description">
         <DialogHeader>
           <DialogTitle>{isNew ? 'Nuevo Usuario' : 'Editar Usuario'}</DialogTitle>
+          <DialogDescription id="user-form-description">
+            Formulario simplificado para {isNew ? 'crear un nuevo usuario' : 'editar información del usuario'}
+          </DialogDescription>
         </DialogHeader>
-        <div id="user-form-description" className="sr-only">
-          Formulario simplificado para {isNew ? 'crear un nuevo usuario' : 'editar información del usuario'}
-        </div>
         
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Fotografía de perfil */}
+          <div className="flex flex-col items-center space-y-4 p-4 border rounded-lg bg-gray-50">
+            <div className="flex items-center space-x-4">
+              {previewImage ? (
+                <div className="relative">
+                  <img 
+                    src={previewImage} 
+                    alt="Vista previa" 
+                    className="w-20 h-20 rounded-full object-cover border-2 border-gray-300"
+                  />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    className="absolute -top-2 -right-2 w-6 h-6 p-0 rounded-full"
+                    onClick={removeImage}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center border-2 border-gray-300">
+                  <Camera className="h-8 w-8 text-gray-400" />
+                </div>
+              )}
+              
+              <div className="flex flex-col space-y-2">
+                <label 
+                  htmlFor="profile-image-input"
+                  className="cursor-pointer bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md flex items-center space-x-2 transition-colors"
+                >
+                  <Upload className="h-4 w-4" />
+                  <span>Seleccionar foto</span>
+                </label>
+                <input
+                  id="profile-image-input"
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/webp"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+                <p className="text-xs text-gray-500">JPG, PNG, WEBP (máx. 5MB)</p>
+              </div>
+            </div>
+          </div>
+
           {/* Campos básicos - IGUALES PARA TODOS LOS ROLES */}
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -281,12 +406,33 @@ const AdminUsers = () => {
   const saveUserMutation = useMutation({
     mutationFn: async (userData: UserFormData) => {
       const isUpdate = !!selectedUser;
+      
+      // Si hay archivo de imagen, subir primero
+      if (userData.profileImageFile) {
+        const formDataImage = new FormData();
+        formDataImage.append('image', userData.profileImageFile);
+        
+        const uploadResponse = await fetch('/api/upload/user-profile', {
+          method: 'POST',
+          body: formDataImage,
+        });
+        
+        if (uploadResponse.ok) {
+          const uploadResult = await uploadResponse.json();
+          userData.profileImageUrl = uploadResult.filePath;
+        }
+      }
+
+      // Remover el archivo del objeto antes de enviarlo
+      const { profileImageFile, ...userDataWithoutFile } = userData;
+      
       const url = isUpdate ? `/api/users/${selectedUser?.id}` : '/api/users';
       const method = isUpdate ? 'PUT' : 'POST';
 
+      let finalUserData = userDataWithoutFile;
       if (isUpdate && !userData.password) {
-        const { password, ...dataWithoutPassword } = userData;
-        userData = dataWithoutPassword as UserFormData;
+        const { password, ...dataWithoutPassword } = userDataWithoutFile;
+        finalUserData = dataWithoutPassword;
       }
 
       const response = await fetch(url, {
@@ -294,7 +440,7 @@ const AdminUsers = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(userData),
+        body: JSON.stringify(finalUserData),
       });
 
       if (!response.ok) {
@@ -399,9 +545,10 @@ const AdminUsers = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Gestión de Usuarios</h1>
+    <AdminLayout>
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold">Gestión de Usuarios</h1>
         <Button onClick={handleNewUser}>
           <Plus className="h-4 w-4 mr-2" />
           Nuevo Usuario
@@ -456,8 +603,8 @@ const AdminUsers = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                      {user.role}
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(user.role)}`}>
+                      {getRoleLabel(user.role)}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -529,7 +676,8 @@ const AdminUsers = () => {
           </DialogContent>
         </Dialog>
       )}
-    </div>
+      </div>
+    </AdminLayout>
   );
 };
 
