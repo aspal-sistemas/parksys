@@ -403,9 +403,9 @@ const AdminSidebarComplete: React.FC = () => {
               {t('navigation.permissions')}
             </NavItem>
             <NavItem 
-              href="/admin/settings/notifications" 
+              href="/admin/users/notifications" 
               icon={<Bell className="h-5 w-5" />}
-              active={location === '/admin/settings/notifications'}
+              active={location === '/admin/users/notifications'}
             >
               Preferencias de Notificaciones
             </NavItem>

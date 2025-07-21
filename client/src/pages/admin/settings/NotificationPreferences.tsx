@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "@/hooks/use-toast";
 import { Bell, Settings, Users, Mail, AlertTriangle, CheckCircle } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
+import AdminLayout from "@/components/AdminLayout";
 
 interface NotificationPreference {
   key: string;
@@ -146,21 +147,22 @@ export default function NotificationPreferences() {
   ) || [];
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <div className="p-3 bg-blue-100 rounded-full">
-          <Bell className="h-6 w-6 text-blue-600" />
+    <AdminLayout>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-blue-100 rounded-full">
+            <Bell className="h-6 w-6 text-blue-600" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Preferencias de Notificaciones</h1>
+            <p className="text-gray-500">Configura qué tipos de notificaciones recibe cada usuario del sistema</p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Preferencias de Notificaciones</h1>
-          <p className="text-gray-500">Configura qué tipos de notificaciones recibe cada usuario del sistema</p>
-        </div>
-      </div>
 
-      {/* Resumen por Roles */}
-      {summaryData?.summary && (
-        <Card>
+        {/* Resumen por Roles */}
+        {summaryData?.summary && (
+          <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5" />
@@ -204,23 +206,23 @@ export default function NotificationPreferences() {
               ))}
             </div>
           </CardContent>
-        </Card>
-      )}
+          </Card>
+        )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Selector de Usuario */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              Seleccionar Usuario
-            </CardTitle>
-            <CardDescription>
-              Elige un usuario para configurar sus preferencias
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2 max-h-96 overflow-y-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Selector de Usuario */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Seleccionar Usuario
+              </CardTitle>
+              <CardDescription>
+                Elige un usuario para configurar sus preferencias
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2 max-h-96 overflow-y-auto">
               {relevantUsers.map((user: any) => (
                 <div
                   key={user.id}
@@ -242,12 +244,12 @@ export default function NotificationPreferences() {
                   </div>
                 </div>
               ))}
-            </div>
-          </CardContent>
-        </Card>
+              </div>
+            </CardContent>
+          </Card>
 
-        {/* Configuración de Preferencias */}
-        <div className="lg:col-span-2">
+          {/* Configuración de Preferencias */}
+          <div className="lg:col-span-2">
           {preferencesLoading ? (
             <Card>
               <CardContent className="p-8 text-center">
@@ -318,8 +320,9 @@ export default function NotificationPreferences() {
               </CardContent>
             </Card>
           )}
+          </div>
         </div>
       </div>
-    </div>
+    </AdminLayout>
   );
 }
