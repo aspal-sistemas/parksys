@@ -570,9 +570,13 @@ export default function UsersPage() {
                         <div className="flex-shrink-0 h-12 w-12">
                           {user.profileImageUrl ? (
                             <img 
-                              className="h-12 w-12 rounded-full object-cover border-2 border-blue-300" 
+                              className="h-12 w-12 rounded-full object-cover border-2 border-blue-300 shadow-sm" 
                               src={user.profileImageUrl} 
                               alt={user.fullName}
+                              onError={(e) => {
+                                console.log('Error cargando imagen:', user.profileImageUrl);
+                                e.currentTarget.style.display = 'none';
+                              }}
                             />
                           ) : (
                             <div className="h-12 w-12 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center">

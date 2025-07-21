@@ -336,7 +336,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     limits: {
       fileSize: 5 * 1024 * 1024 // 5MB máximo
     }
-  }).single('file');
+  }).single('image');
   
   apiRouter.post('/upload/user-profile', (req: Request, res: Response) => {
     console.log('📸 Recibida solicitud de subida de imagen de usuario');
