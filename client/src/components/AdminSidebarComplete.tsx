@@ -1234,9 +1234,7 @@ const AdminSidebarComplete: React.FC = () => {
             />
             <div className="flex flex-col">
               <span className="text-sm font-medium text-gray-900">
-                {user?.firstName && user?.lastName 
-                  ? `${user.firstName} ${user.lastName}` 
-                  : user?.fullName || user?.username || 'Usuario'}
+                {user?.fullName || user?.username || 'Usuario'}
               </span>
               <span className="text-xs text-gray-500">{user?.role || 'usuario'}</span>
             </div>

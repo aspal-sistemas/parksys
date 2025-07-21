@@ -15,8 +15,7 @@ import path from 'path';
 const createUserSchema = z.object({
   username: z.string().min(3, "El nombre de usuario debe tener al menos 3 caracteres"),
   email: z.string().email("Email inválido"),
-  firstName: z.string().min(1, "El nombre es requerido"),
-  lastName: z.string().min(1, "El apellido es requerido"),
+  fullName: z.string().min(1, "El nombre completo es requerido"),
   password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
   role: z.enum(['admin', 'director', 'manager', 'supervisor', 'ciudadano', 'voluntario', 'instructor', 'user', 'guardaparques', 'guardia', 'concesionario']),
   municipalityId: z.number().nullable(),
@@ -26,8 +25,7 @@ const createUserSchema = z.object({
 const updateUserSchema = z.object({
   username: z.string().min(3, "El nombre de usuario debe tener al menos 3 caracteres").optional(),
   email: z.string().email("Email inválido").optional(),
-  firstName: z.string().min(1, "El nombre es requerido").optional(),
-  lastName: z.string().min(1, "El apellido es requerido").optional(),
+  fullName: z.string().min(1, "El nombre completo es requerido").optional(),
   password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres").optional(),
   role: z.enum(['admin', 'director', 'manager', 'supervisor', 'ciudadano', 'voluntario', 'instructor', 'user', 'guardaparques', 'guardia', 'concesionario']).optional(),
   municipalityId: z.number().nullable().optional(),

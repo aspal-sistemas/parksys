@@ -29,8 +29,7 @@ export type ProfileCompletionState = {
 // Requerimientos por cada tipo de perfil/rol
 const ADMIN_REQUIREMENTS: FieldRequirement[] = [
   { fieldName: 'email', label: 'Correo electrónico', required: true, icon: <UserCircle className="h-4 w-4" />, description: 'Tu correo electrónico principal' },
-  { fieldName: 'firstName', label: 'Nombre', required: true, icon: <UserCircle className="h-4 w-4" />, description: 'Tu nombre' },
-  { fieldName: 'lastName', label: 'Apellido', required: true, icon: <UserCircle className="h-4 w-4" />, description: 'Tu apellido' },
+  { fieldName: 'fullName', label: 'Nombre Completo', required: true, icon: <UserCircle className="h-4 w-4" />, description: 'Tu nombre completo' },
   { fieldName: 'profileImageUrl', label: 'Foto de perfil', required: false, icon: <UserCircle className="h-4 w-4" />, description: 'Una foto para identificarte' },
   { fieldName: 'phone', label: 'Teléfono', required: false, icon: <CreditCard className="h-4 w-4" />, description: 'Número telefónico para contactarte' },
 ];
