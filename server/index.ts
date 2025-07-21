@@ -1681,29 +1681,6 @@ async function initializeDatabaseAsync() {
       console.log(`🌐 REQUEST: ${req.method} ${req.url}`);
       next();
     });
-    
-    // Agregar fallback SPA solo para rutas de navegación
-    app.get('*', (req, res) => {
-      console.log(`🎯🎯🎯 FALLBACK SPA EJECUTADO PARA: ${req.url} 🎯🎯🎯`);
-      
-      // Verificar que no sea un archivo estático
-      if (req.url.startsWith('/api/') || 
-          req.url.match(/\.(js|css|png|jpg|ico|woff|woff2|ttf)$/)) {
-        console.log(`❌❌❌ ARCHIVO ESTÁTICO NO ENCONTRADO: ${req.url} ❌❌❌`);
-        return res.status(404).json({ error: 'File not found' });
-      }
-      
-      // Servir index.html para rutas SPA
-      const indexPath = path.join(distPath, 'index.html');
-      if (fs.existsSync(indexPath)) {
-        console.log(`✅✅✅ SPA FALLBACK APLICADO PARA: ${req.url} ✅✅✅`);
-        res.setHeader('Content-Type', 'text/html; charset=utf-8');
-        res.sendFile(indexPath);
-      } else {
-        console.log(`💥💥💥 INDEX.HTML NO ENCONTRADO: ${indexPath} 💥💥💥`);
-        res.status(404).json({ error: 'Application not built' });
-      }
-    });
   }
   
   // FORZAR SKIP de Vite para usar archivos estáticos
@@ -1746,6 +1723,28 @@ async function initializeDatabaseAsync() {
         }, 3000);
       });
     }
+    // Agregar fallback SPA DESPUÉS de archivos estáticos
+    app.get('*', (req, res) => {
+      console.log(`🎯 FALLBACK SPA EJECUTADO PARA: ${req.url}`);
+      
+      // Verificar que no sea un archivo estático
+      if (req.url.startsWith('/api/') || 
+          req.url.match(/\.(js|css|png|jpg|ico|woff|woff2|ttf)$/)) {
+        console.log(`❌ ARCHIVO ESTÁTICO NO ENCONTRADO: ${req.url}`);
+        return res.status(404).json({ error: 'File not found' });
+      }
+      
+      // Servir index.html para rutas SPA
+      const indexPath = path.join(distPath, 'index.html');
+      if (fs.existsSync(indexPath)) {
+        console.log(`✅ SPA FALLBACK APLICADO PARA: ${req.url}`);
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        res.sendFile(indexPath);
+      } else {
+        console.log(`💥 INDEX.HTML NO ENCONTRADO: ${indexPath}`);
+        res.status(404).json({ error: 'Application not built' });
+      }
+    });
   } else {
     // Modo producción - servir archivos estáticos
     console.log("🏭 Configurando servidor para producción (resolviendo 503s)...");
