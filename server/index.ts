@@ -1612,8 +1612,8 @@ async function initializeDatabaseAsync() {
   if (fs.existsSync(distPath)) {
     console.log("📁 Configurando archivos estáticos con handlers especializados...");
     
-    // Handler específico para EL archivo JavaScript principal (con o sin query params)
-    app.get('/assets/index-VG22aPDC.js*', (req, res) => {
+    // Handler específico para EL archivo JavaScript principal (DEBE ser ANTES de express.static)
+    app.get('/assets/index-VG22aPDC.js', (req, res) => {
       console.log(`🚀🚀🚀 HANDLER MANUAL PARA INDEX JS: ${req.url} 🚀🚀🚀`);
       const filePath = path.join(distPath, 'assets', 'index-VG22aPDC.js');
       
