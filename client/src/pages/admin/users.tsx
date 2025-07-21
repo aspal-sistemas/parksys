@@ -415,7 +415,8 @@ export default function UsersPage() {
 
   const { data: users = [], isLoading } = useQuery({
     queryKey: ['/api/users'],
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0, // Sin cache para ver cambios inmediatamente
+    refetchInterval: 5000, // Refrescar cada 5 segundos
   });
 
   const saveUserMutation = useMutation({
