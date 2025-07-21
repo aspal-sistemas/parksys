@@ -30,6 +30,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
 import AmenityIcon from '@/components/ui/amenity-icon';
 import TreeSpeciesIcon from '@/components/ui/tree-species-icon';
 import TreePhotoViewer from '@/components/TreePhotoViewer';
@@ -41,12 +46,47 @@ import greenFlagLogo from '@assets/PHOTO-2025-07-01-12-36-16_1751396336894.jpg';
 
 function ParkLandingPage() {
   const { slug } = useParams<{ slug: string }>();
+  const { toast } = useToast();
   const [selectedInstructor, setSelectedInstructor] = React.useState<any>(null);
   const [selectedImage, setSelectedImage] = React.useState<string | null>(null);
   const [isImageModalOpen, setIsImageModalOpen] = React.useState(false);
   const [selectedSpeciesData, setSelectedSpeciesData] = React.useState<any>(null);
   const [selectedActivityData, setSelectedActivityData] = React.useState<any>(null);
   const [isActivityModalOpen, setIsActivityModalOpen] = React.useState(false);
+  
+  // Estados para los formularios de acciones
+  const [isShareDialogOpen, setIsShareDialogOpen] = React.useState(false);
+  const [isReportDialogOpen, setIsReportDialogOpen] = React.useState(false);
+  const [isSuggestionDialogOpen, setIsSuggestionDialogOpen] = React.useState(false);
+  const [isEventDialogOpen, setIsEventDialogOpen] = React.useState(false);
+  
+  // Estados para los formularios
+  const [reportForm, setReportForm] = React.useState({
+    name: '',
+    email: '',
+    phone: '',
+    issueType: '',
+    description: '',
+    urgency: 'media'
+  });
+  
+  const [suggestionForm, setSuggestionForm] = React.useState({
+    name: '',
+    email: '',
+    suggestion: '',
+    category: ''
+  });
+  
+  const [eventForm, setEventForm] = React.useState({
+    name: '',
+    email: '',
+    phone: '',
+    eventName: '',
+    eventType: '',
+    expectedAttendees: '',
+    eventDate: '',
+    description: ''
+  });
   
   // Extraer ID del slug (formato: nombre-parque-id)
   const parkId = slug?.split('-').pop();
@@ -141,6 +181,115 @@ function ParkLandingPage() {
       return () => document.removeEventListener('keydown', handleKeyDown);
     }
   }, [isImageModalOpen, selectedImage]);
+
+  // Funciones para manejar las acciones de los botones
+  const handleSharePark = () => {
+    const parkUrl = window.location.href;
+    if (navigator.share) {
+      navigator.share({
+        title: `${park?.name} - ParkSys`,
+        text: `¡Descubre ${park?.name}! Un hermoso parque en ${park?.location}`,
+        url: parkUrl,
+      });
+    } else {
+      navigator.clipboard.writeText(parkUrl);
+      toast({
+        title: "Enlace copiado",
+        description: "El enlace del parque se ha copiado al portapapeles",
+      });
+    }
+    setIsShareDialogOpen(false);
+  };
+
+  const handleReportSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      // Aquí se enviaría el reporte al backend
+      console.log('Reporte enviado:', { ...reportForm, parkId, parkName: park?.name });
+      
+      toast({
+        title: "Reporte enviado",
+        description: "Tu reporte ha sido enviado exitosamente. Nos pondremos en contacto contigo pronto.",
+      });
+      
+      // Limpiar formulario
+      setReportForm({
+        name: '',
+        email: '',
+        phone: '',
+        issueType: '',
+        description: '',
+        urgency: 'media'
+      });
+      setIsReportDialogOpen(false);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Hubo un problema al enviar tu reporte. Por favor, inténtalo de nuevo.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSuggestionSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      // Aquí se enviaría la sugerencia al backend
+      console.log('Sugerencia enviada:', { ...suggestionForm, parkId, parkName: park?.name });
+      
+      toast({
+        title: "Sugerencia enviada",
+        description: "Tu sugerencia ha sido enviada exitosamente. ¡Gracias por ayudarnos a mejorar!",
+      });
+      
+      // Limpiar formulario
+      setSuggestionForm({
+        name: '',
+        email: '',
+        suggestion: '',
+        category: ''
+      });
+      setIsSuggestionDialogOpen(false);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Hubo un problema al enviar tu sugerencia. Por favor, inténtalo de nuevo.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleEventSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      // Aquí se enviaría la propuesta de evento al backend
+      console.log('Propuesta de evento enviada:', { ...eventForm, parkId, parkName: park?.name });
+      
+      toast({
+        title: "Propuesta enviada",
+        description: "Tu propuesta de evento ha sido enviada exitosamente. Te contactaremos para coordinar los detalles.",
+      });
+      
+      // Limpiar formulario
+      setEventForm({
+        name: '',
+        email: '',
+        phone: '',
+        eventName: '',
+        eventType: '',
+        expectedAttendees: '',
+        eventDate: '',
+        description: ''
+      });
+      setIsEventDialogOpen(false);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Hubo un problema al enviar tu propuesta. Por favor, inténtalo de nuevo.",
+        variant: "destructive",
+      });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -846,22 +995,306 @@ function ParkLandingPage() {
                 <CardTitle>Acciones</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button className="w-full" variant="default">
-                  <Share2 className="h-4 w-4 mr-2" />
-                  Compartir este parque
-                </Button>
-                <Button variant="outline" className="w-full">
-                  <AlertCircle className="h-4 w-4 mr-2" />
-                  Reportar un problema
-                </Button>
-                <Button variant="outline" className="w-full">
-                  <MessageSquare className="h-4 w-4 mr-2" />
-                  Sugerir mejoras
-                </Button>
-                <Button variant="outline" className="w-full">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  Proponer evento
-                </Button>
+                <Dialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="w-full" variant="default">
+                      <Share2 className="h-4 w-4 mr-2" />
+                      Compartir este parque
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Compartir {park?.name}</DialogTitle>
+                      <DialogDescription>
+                        Comparte este parque con tus amigos y familiares
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <p className="text-sm text-gray-600">
+                        URL del parque: {window.location.href}
+                      </p>
+                      <Button onClick={handleSharePark} className="w-full">
+                        {navigator.share ? 'Compartir' : 'Copiar enlace'}
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+
+                <Dialog open={isReportDialogOpen} onOpenChange={setIsReportDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="w-full">
+                      <AlertCircle className="h-4 w-4 mr-2" />
+                      Reportar un problema
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Reportar un problema</DialogTitle>
+                      <DialogDescription>
+                        Cuéntanos qué problema has encontrado en {park?.name}
+                      </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleReportSubmit} className="space-y-4">
+                      <div>
+                        <Label htmlFor="report-name">Nombre completo</Label>
+                        <Input
+                          id="report-name"
+                          value={reportForm.name}
+                          onChange={(e) => setReportForm({...reportForm, name: e.target.value})}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="report-email">Correo electrónico</Label>
+                        <Input
+                          id="report-email"
+                          type="email"
+                          value={reportForm.email}
+                          onChange={(e) => setReportForm({...reportForm, email: e.target.value})}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="report-phone">Teléfono (opcional)</Label>
+                        <Input
+                          id="report-phone"
+                          value={reportForm.phone}
+                          onChange={(e) => setReportForm({...reportForm, phone: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="issue-type">Tipo de problema</Label>
+                        <Select value={reportForm.issueType} onValueChange={(value) => setReportForm({...reportForm, issueType: value})}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecciona el tipo de problema" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="infraestructura">Infraestructura dañada</SelectItem>
+                            <SelectItem value="limpieza">Problema de limpieza</SelectItem>
+                            <SelectItem value="seguridad">Seguridad</SelectItem>
+                            <SelectItem value="iluminacion">Iluminación</SelectItem>
+                            <SelectItem value="vandalismo">Vandalismo</SelectItem>
+                            <SelectItem value="otro">Otro</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="urgency">Urgencia</Label>
+                        <Select value={reportForm.urgency} onValueChange={(value) => setReportForm({...reportForm, urgency: value})}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="baja">Baja</SelectItem>
+                            <SelectItem value="media">Media</SelectItem>
+                            <SelectItem value="alta">Alta</SelectItem>
+                            <SelectItem value="urgente">Urgente</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="description">Descripción del problema</Label>
+                        <Textarea
+                          id="description"
+                          value={reportForm.description}
+                          onChange={(e) => setReportForm({...reportForm, description: e.target.value})}
+                          placeholder="Describe detalladamente el problema..."
+                          required
+                        />
+                      </div>
+                      <div className="flex gap-2">
+                        <Button type="button" variant="outline" onClick={() => setIsReportDialogOpen(false)} className="flex-1">
+                          Cancelar
+                        </Button>
+                        <Button type="submit" className="flex-1">
+                          Enviar reporte
+                        </Button>
+                      </div>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+
+                <Dialog open={isSuggestionDialogOpen} onOpenChange={setIsSuggestionDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="w-full">
+                      <MessageSquare className="h-4 w-4 mr-2" />
+                      Sugerir mejoras
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Sugerir mejoras</DialogTitle>
+                      <DialogDescription>
+                        Comparte tus ideas para mejorar {park?.name}
+                      </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleSuggestionSubmit} className="space-y-4">
+                      <div>
+                        <Label htmlFor="suggestion-name">Nombre completo</Label>
+                        <Input
+                          id="suggestion-name"
+                          value={suggestionForm.name}
+                          onChange={(e) => setSuggestionForm({...suggestionForm, name: e.target.value})}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="suggestion-email">Correo electrónico</Label>
+                        <Input
+                          id="suggestion-email"
+                          type="email"
+                          value={suggestionForm.email}
+                          onChange={(e) => setSuggestionForm({...suggestionForm, email: e.target.value})}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="suggestion-category">Categoría</Label>
+                        <Select value={suggestionForm.category} onValueChange={(value) => setSuggestionForm({...suggestionForm, category: value})}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecciona una categoría" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="amenidades">Nuevas amenidades</SelectItem>
+                            <SelectItem value="actividades">Actividades y eventos</SelectItem>
+                            <SelectItem value="accesibilidad">Accesibilidad</SelectItem>
+                            <SelectItem value="paisajismo">Paisajismo y jardinería</SelectItem>
+                            <SelectItem value="deportes">Instalaciones deportivas</SelectItem>
+                            <SelectItem value="general">General</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="suggestion-text">Tu sugerencia</Label>
+                        <Textarea
+                          id="suggestion-text"
+                          value={suggestionForm.suggestion}
+                          onChange={(e) => setSuggestionForm({...suggestionForm, suggestion: e.target.value})}
+                          placeholder="Describe tu idea para mejorar este parque..."
+                          required
+                        />
+                      </div>
+                      <div className="flex gap-2">
+                        <Button type="button" variant="outline" onClick={() => setIsSuggestionDialogOpen(false)} className="flex-1">
+                          Cancelar
+                        </Button>
+                        <Button type="submit" className="flex-1">
+                          Enviar sugerencia
+                        </Button>
+                      </div>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+
+                <Dialog open={isEventDialogOpen} onOpenChange={setIsEventDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="w-full">
+                      <Calendar className="h-4 w-4 mr-2" />
+                      Proponer evento
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>Proponer un evento</DialogTitle>
+                      <DialogDescription>
+                        Propón un evento para realizarse en {park?.name}
+                      </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleEventSubmit} className="space-y-4">
+                      <div>
+                        <Label htmlFor="event-name">Nombre completo</Label>
+                        <Input
+                          id="event-name"
+                          value={eventForm.name}
+                          onChange={(e) => setEventForm({...eventForm, name: e.target.value})}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="event-email">Correo electrónico</Label>
+                        <Input
+                          id="event-email"
+                          type="email"
+                          value={eventForm.email}
+                          onChange={(e) => setEventForm({...eventForm, email: e.target.value})}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="event-phone">Teléfono</Label>
+                        <Input
+                          id="event-phone"
+                          value={eventForm.phone}
+                          onChange={(e) => setEventForm({...eventForm, phone: e.target.value})}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="event-event-name">Nombre del evento</Label>
+                        <Input
+                          id="event-event-name"
+                          value={eventForm.eventName}
+                          onChange={(e) => setEventForm({...eventForm, eventName: e.target.value})}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="event-type">Tipo de evento</Label>
+                        <Select value={eventForm.eventType} onValueChange={(value) => setEventForm({...eventForm, eventType: value})}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecciona el tipo de evento" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="cultural">Cultural</SelectItem>
+                            <SelectItem value="deportivo">Deportivo</SelectItem>
+                            <SelectItem value="social">Social</SelectItem>
+                            <SelectItem value="educativo">Educativo</SelectItem>
+                            <SelectItem value="benefico">Benéfico</SelectItem>
+                            <SelectItem value="empresarial">Empresarial</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="expected-attendees">Asistentes esperados</Label>
+                        <Input
+                          id="expected-attendees"
+                          type="number"
+                          value={eventForm.expectedAttendees}
+                          onChange={(e) => setEventForm({...eventForm, expectedAttendees: e.target.value})}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="event-date">Fecha propuesta</Label>
+                        <Input
+                          id="event-date"
+                          type="date"
+                          value={eventForm.eventDate}
+                          onChange={(e) => setEventForm({...eventForm, eventDate: e.target.value})}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="event-description">Descripción del evento</Label>
+                        <Textarea
+                          id="event-description"
+                          value={eventForm.description}
+                          onChange={(e) => setEventForm({...eventForm, description: e.target.value})}
+                          placeholder="Describe tu evento..."
+                          required
+                        />
+                      </div>
+                      <div className="flex gap-2">
+                        <Button type="button" variant="outline" onClick={() => setIsEventDialogOpen(false)} className="flex-1">
+                          Cancelar
+                        </Button>
+                        <Button type="submit" className="flex-1">
+                          Enviar propuesta
+                        </Button>
+                      </div>
+                    </form>
+                  </DialogContent>
+                </Dialog>
               </CardContent>
             </Card>
 
