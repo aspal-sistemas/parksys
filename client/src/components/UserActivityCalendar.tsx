@@ -382,12 +382,12 @@ const UserActivityCalendar: React.FC<UserActivityCalendarProps> = ({ userId }) =
 
       {/* Dialog de detalles de actividad */}
       <Dialog open={showActivityDetails} onOpenChange={setShowActivityDetails}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl" aria-describedby="activity-details-description">
           {selectedActivity && (
             <>
               <DialogHeader>
                 <DialogTitle className="text-xl">{selectedActivity.title}</DialogTitle>
-                <DialogDescription className="text-base">
+                <DialogDescription id="activity-details-description" className="text-base">
                   {selectedActivity.description}
                 </DialogDescription>
               </DialogHeader>
