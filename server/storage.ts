@@ -394,14 +394,7 @@ export class DatabaseStorage implements IStorage {
         fieldsToUpdate.push(`email = $${paramCounter++}`);
         values.push(userData.email);
       }
-      if (userData.firstName) {
-        fieldsToUpdate.push(`first_name = $${paramCounter++}`);
-        values.push(userData.firstName);
-      }
-      if (userData.lastName) {
-        fieldsToUpdate.push(`last_name = $${paramCounter++}`);
-        values.push(userData.lastName);
-      }
+      // firstName y lastName se combinan en fullName
       if (userData.fullName) {
         fieldsToUpdate.push(`full_name = $${paramCounter++}`);
         values.push(userData.fullName);

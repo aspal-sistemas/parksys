@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { 
   UserRound, 
   Plus,
@@ -30,8 +31,6 @@ interface UserData {
   id: number;
   username: string;
   email: string;
-  firstName: string;
-  lastName: string;
   fullName: string;
   role: string;
   municipalityId: number | null;
@@ -47,8 +46,7 @@ interface UserData {
 interface UserFormData {
   username: string;
   email: string;
-  firstName: string;
-  lastName: string;
+  fullName: string;
   role: string;
   password: string;
   phone: string;
@@ -92,8 +90,7 @@ const FormularioUsuario: React.FC<{
     role: user?.role || 'instructor',
     username: user?.username || '',
     email: user?.email || '',
-    firstName: user?.firstName || user?.fullName?.split(' ')[0] || '',
-    lastName: user?.lastName || user?.fullName?.split(' ').slice(1).join(' ') || '',
+    fullName: user?.fullName || '',
     password: '',
     phone: user?.phone || '',
     gender: user?.gender || 'no_especificar',
@@ -153,7 +150,7 @@ const FormularioUsuario: React.FC<{
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.username || !formData.email || !formData.firstName || !formData.lastName) {
+    if (!formData.username || !formData.email || !formData.fullName) {
       toast({
         title: "Error de validación",
         description: "Los campos básicos son obligatorios.",
@@ -243,26 +240,14 @@ const FormularioUsuario: React.FC<{
           <div className="bg-gray-50 p-4 rounded-lg space-y-4">
             <h4 className="font-semibold text-gray-700">Información Básica</h4>
             
-            <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-4">
               <div>
-                <label htmlFor="firstName" className="text-sm font-medium text-gray-700 mb-1 block">Nombre *</label>
+                <label htmlFor="fullName" className="text-sm font-medium text-gray-700 mb-1 block">Nombre Completo *</label>
                 <Input
-                  id="firstName"
-                  value={formData.firstName}
-                  onChange={(e) => handleChange('firstName', e.target.value)}
-                  placeholder="Nombre"
-                  className="border-2 focus:border-blue-500"
-                  required
-                />
-              </div>
-              
-              <div>
-                <label htmlFor="lastName" className="text-sm font-medium text-gray-700 mb-1 block">Apellido *</label>
-                <Input
-                  id="lastName"
-                  value={formData.lastName}
-                  onChange={(e) => handleChange('lastName', e.target.value)}
-                  placeholder="Apellido"
+                  id="fullName"
+                  value={formData.fullName}
+                  onChange={(e) => handleChange('fullName', e.target.value)}
+                  placeholder="Nombre completo del usuario"
                   className="border-2 focus:border-blue-500"
                   required
                 />
