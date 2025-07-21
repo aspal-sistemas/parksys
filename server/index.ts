@@ -1636,8 +1636,14 @@ async function initializeDatabaseAsync() {
       const filePath = path.join(distPath, req.url);
       
       if (fs.existsSync(filePath)) {
+        // Headers anti-cache para evitar problemas de MIME type en Replit
         res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
         res.setHeader('X-Content-Type-Options', 'nosniff');
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+        res.setHeader('Content-Disposition', 'inline');
+        console.log(`🔥 Headers anti-cache aplicados para: ${req.url}`);
         res.sendFile(filePath);
       } else {
         next();
