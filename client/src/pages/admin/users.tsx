@@ -607,18 +607,25 @@ export default function UsersPage() {
                           {user.profileImageUrl ? (
                             <img 
                               className="h-12 w-12 rounded-full object-cover border-2 border-blue-300 shadow-sm" 
-                              src={user.profileImageUrl} 
+                              src={`${user.profileImageUrl}?t=${Date.now()}`}
                               alt={user.fullName}
                               onError={(e) => {
-                                console.log('Error cargando imagen:', user.profileImageUrl);
+                                console.log('❌ Error cargando imagen:', user.profileImageUrl);
+                                console.log('Usuario:', user.fullName, 'ID:', user.id);
                                 e.currentTarget.style.display = 'none';
+                                e.currentTarget.nextElementSibling.style.display = 'flex';
+                              }}
+                              onLoad={() => {
+                                console.log('✅ Imagen cargada correctamente:', user.profileImageUrl);
                               }}
                             />
-                          ) : (
-                            <div className="h-12 w-12 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center">
-                              <UserRound className="h-7 w-7 text-gray-600" />
-                            </div>
-                          )}
+                          ) : null}
+                          <div 
+                            className="h-12 w-12 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center"
+                            style={{ display: user.profileImageUrl ? 'none' : 'flex' }}
+                          >
+                            <UserRound className="h-7 w-7 text-gray-600" />
+                          </div>
                         </div>
                         <div className="ml-4">
                           <div className="text-sm font-bold text-gray-900">{user.fullName}</div>
