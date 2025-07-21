@@ -48,7 +48,7 @@ import {
   generateImportTemplate, 
   processImportFile 
 } from "./api/parksImport";
-import { registerUserRoutes } from "./userRoutes";
+// import { registerUserRoutes } from "./userRoutes"; // Movido a index.ts
 import { updateSkillsRouter } from "./updateSkills";
 import { registerEventRoutes } from "./events-routes";
 import { registerActivityRoutes } from "./activitiesRoutes";
@@ -266,7 +266,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerTreeDetailsRoutes(app, apiRouter, isAuthenticated);
   
   // Registramos las rutas del módulo de usuarios (SIN AUTENTICACIÓN PARA DEBUG)
-  registerUserRoutes(app, apiRouter);
+  // registerUserRoutes(app, apiRouter); // Movido a index.ts
   
   // Registramos las rutas del módulo de concesiones
   registerConcessionRoutes(app, apiRouter, isAuthenticated);

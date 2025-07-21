@@ -377,34 +377,96 @@ export class DatabaseStorage implements IStorage {
     try {
       console.log(`🔄 Actualizando usuario ${id} con datos:`, userData);
       
-      // Mapear camelCase a snake_case para la base de datos
-      const dbUserData: any = {
-        updated_at: new Date()
-      };
+      // Preparar campos para actualizar
+      const fieldsToUpdate = [];
+      const values = [];
+      let paramCounter = 1;
       
-      if (userData.role) dbUserData.role = userData.role;
-      if (userData.username) dbUserData.username = userData.username;
-      if (userData.email) dbUserData.email = userData.email;
-      if (userData.firstName) dbUserData.first_name = userData.firstName;
-      if (userData.lastName) dbUserData.last_name = userData.lastName;
-      if (userData.fullName) dbUserData.full_name = userData.fullName;
-      if (userData.password) dbUserData.password = userData.password;
-      if (userData.phone) dbUserData.phone = userData.phone;
-      if (userData.gender) dbUserData.gender = userData.gender;
-      if (userData.birthDate) dbUserData.birth_date = userData.birthDate;
-      if (userData.bio) dbUserData.bio = userData.bio;
-      if (userData.municipalityId) dbUserData.municipality_id = userData.municipalityId;
-      if (userData.profileImageUrl) dbUserData.profile_image_url = userData.profileImageUrl;
+      if (userData.role) {
+        fieldsToUpdate.push(`role = $${paramCounter++}`);
+        values.push(userData.role);
+      }
+      if (userData.username) {
+        fieldsToUpdate.push(`username = $${paramCounter++}`);
+        values.push(userData.username);
+      }
+      if (userData.email) {
+        fieldsToUpdate.push(`email = $${paramCounter++}`);
+        values.push(userData.email);
+      }
+      if (userData.firstName) {
+        fieldsToUpdate.push(`first_name = $${paramCounter++}`);
+        values.push(userData.firstName);
+      }
+      if (userData.lastName) {
+        fieldsToUpdate.push(`last_name = $${paramCounter++}`);
+        values.push(userData.lastName);
+      }
+      if (userData.fullName) {
+        fieldsToUpdate.push(`full_name = $${paramCounter++}`);
+        values.push(userData.fullName);
+      }
+      if (userData.password) {
+        fieldsToUpdate.push(`password = $${paramCounter++}`);
+        values.push(userData.password);
+      }
+      if (userData.phone) {
+        fieldsToUpdate.push(`phone = $${paramCounter++}`);
+        values.push(userData.phone);
+      }
+      if (userData.gender) {
+        fieldsToUpdate.push(`gender = $${paramCounter++}`);
+        values.push(userData.gender);
+      }
+      if (userData.birthDate) {
+        fieldsToUpdate.push(`birth_date = $${paramCounter++}`);
+        values.push(userData.birthDate);
+      }
+      if (userData.bio) {
+        fieldsToUpdate.push(`bio = $${paramCounter++}`);
+        values.push(userData.bio);
+      }
+      if (userData.municipalityId !== undefined) {
+        fieldsToUpdate.push(`municipality_id = $${paramCounter++}`);
+        values.push(userData.municipalityId);
+      }
+      if (userData.profileImageUrl) {
+        fieldsToUpdate.push(`profile_image_url = $${paramCounter++}`);
+        values.push(userData.profileImageUrl);
+      }
       
-      console.log(`📝 Datos mapeados para DB:`, dbUserData);
+      // Siempre actualizar updated_at
+      fieldsToUpdate.push(`updated_at = $${paramCounter++}`);
+      values.push(new Date());
       
-      const [updatedUser] = await db.update(users)
-        .set(dbUserData)
-        .where(eq(users.id, id))
-        .returning();
-        
+      // Agregar el ID al final
+      values.push(id);
+      
+      if (fieldsToUpdate.length === 1) { // Solo updated_at
+        throw new Error('No fields to update');
+      }
+      
+      const query = `
+        UPDATE users 
+        SET ${fieldsToUpdate.join(', ')} 
+        WHERE id = $${paramCounter}
+        RETURNING id, username, email, role, full_name as "fullName", 
+                 municipality_id as "municipalityId", phone, gender, 
+                 birth_date as "birthDate", bio, profile_image_url as "profileImageUrl", 
+                 created_at as "createdAt", updated_at as "updatedAt"
+      `;
+      
+      console.log(`📝 Query SQL:`, query);
+      console.log(`📝 Valores:`, values);
+      
+      const result = await pool.query(query, values);
+      
+      if (result.rows.length === 0) {
+        throw new Error('Usuario no encontrado');
+      }
+      
       console.log(`✅ Usuario ${id} actualizado exitosamente`);
-      return updatedUser;
+      return result.rows[0];
     } catch (error) {
       console.error(`❌ Error al actualizar usuario ${id}:`, error);
       throw error;

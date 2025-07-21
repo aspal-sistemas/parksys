@@ -7,6 +7,9 @@ import { fromZodError } from 'zod-validation-error';
 import { db } from './db';
 import { sql } from 'drizzle-orm';
 import { syncInstructorProfileWithUser } from './syncInstructorProfile';
+import multer from 'multer';
+import fs from 'fs';
+import path from 'path';
 
 // Esquema para validar la creación de un usuario
 const createUserSchema = z.object({
@@ -197,7 +200,30 @@ async function syncUserWithConcessionaireTable(user: any, userData: any) {
   }
 }
 
-export function registerUserRoutes(app: any, apiRouter: Router) {
+function createUserRoutes() {
+  const apiRouter = Router();
+  
+  // Configurar multer para subida de imágenes
+  const upload = multer({
+    storage: multer.diskStorage({
+      destination: (req, file, cb) => {
+        const uploadPath = 'uploads/users';
+        if (!fs.existsSync(uploadPath)) {
+          fs.mkdirSync(uploadPath, { recursive: true });
+        }
+        cb(null, uploadPath);
+      },
+      filename: (req, file, cb) => {
+        const uniqueName = `user-profile-${Date.now()}-${Math.round(Math.random() * 1E9)}${path.extname(file.originalname)}`;
+        cb(null, uniqueName);
+      }
+    }),
+    fileFilter: (req, file, cb) => {
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+      cb(null, allowedTypes.includes(file.mimetype));
+    },
+    limits: { fileSize: 5 * 1024 * 1024 } // 5MB
+  });
   // Middleware para verificar si el usuario es administrador
   const isAdmin = (req: Request, res: Response, next: Function) => {
     // Para Replit, siempre permitir acceso con usuario admin simulado
@@ -1010,4 +1036,10 @@ export function registerUserRoutes(app: any, apiRouter: Router) {
       res.status(500).json({ message: 'Error fetching favorite parks activities' });
     }
   });
+  
+  return userApiRouter;
 }
+
+// Crear y exportar el router
+const userApiRouter = createUserRoutes();
+export default userApiRouter;
