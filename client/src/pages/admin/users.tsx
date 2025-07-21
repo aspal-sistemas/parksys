@@ -173,12 +173,12 @@ const FormularioUsuario: React.FC<{
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" aria-describedby="dialog-description">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-center">
             {isNew ? '👤 Nuevo Usuario' : '✏️ Editar Usuario'}
           </DialogTitle>
-          <DialogDescription className="text-center text-gray-600">
+          <DialogDescription id="dialog-description" className="text-center text-gray-600">
             {isNew ? 'Crear un nuevo usuario del sistema' : 'Modificar información del usuario'}
           </DialogDescription>
         </DialogHeader>
