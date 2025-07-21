@@ -1184,10 +1184,20 @@ async function initializeDatabaseAsync() {
   try {
     const { default: feedbackRouter } = await import("./feedback-routes");
     console.log("Registrando rutas del sistema de retroalimentación...");
-    app.use("/api/feedback", feedbackRouter);
+    app.use("/api", feedbackRouter);
     console.log("Rutas del sistema de retroalimentación registradas correctamente");
   } catch (error) {
     console.error("Error al registrar rutas de retroalimentación:", error);
+  }
+
+  // Registrar rutas del sistema de preferencias de usuario
+  try {
+    const { userPreferencesRouter } = await import("./user-preferences-routes");
+    console.log("Registrando rutas del sistema de preferencias de usuario...");
+    app.use("/api/users", userPreferencesRouter);
+    console.log("Rutas del sistema de preferencias de usuario registradas correctamente");
+  } catch (error) {
+    console.error("Error al registrar rutas de preferencias de usuario:", error);
   }
 
   // Inicializar tablas de comunicaciones

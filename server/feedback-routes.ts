@@ -5,22 +5,28 @@ import { emailService } from "./email/emailService";
 
 const router = Router();
 
-// Función para obtener emails de administradores que deben recibir notificaciones
-async function getAdminEmailsForNotifications(): Promise<string[]> {
+// Función para obtener emails de usuarios que deben recibir notificaciones específicas
+async function getUserEmailsForNotifications(notificationType: string = 'feedback', roles: string[] = ['admin', 'super_admin']): Promise<string[]> {
   try {
-    // Obtener usuarios administradores activos
+    // Obtener usuarios con las preferencias de notificación activadas
     const query = `
-      SELECT DISTINCT email 
+      SELECT DISTINCT email, notification_preferences
       FROM users 
-      WHERE (role = 'admin' OR role = 'super_admin') 
+      WHERE role = ANY($1::text[])
         AND email IS NOT NULL 
         AND email != ''
+        AND (
+          notification_preferences IS NULL 
+          OR notification_preferences->$2 IS NULL 
+          OR (notification_preferences->$2)::boolean = true
+        )
     `;
     
-    const result = await pool.query(query);
+    const result = await pool.query(query, [roles, notificationType]);
+    console.log(`📧 Encontrados ${result.rows.length} usuarios para notificaciones de ${notificationType}`);
     return result.rows.map(row => row.email);
   } catch (error) {
-    console.error('Error obteniendo emails de administradores:', error);
+    console.error(`Error obteniendo emails para notificaciones de ${notificationType}:`, error);
     return [];
   }
 }
@@ -84,7 +90,7 @@ router.post("/", async (req: Request, res: Response) => {
     // Enviar notificaciones por email a administradores (proceso asíncrono)
     setImmediate(async () => {
       try {
-        const adminEmails = await getAdminEmailsForNotifications();
+        const adminEmails = await getUserEmailsForNotifications('feedback', ['admin', 'super_admin']);
         
         if (adminEmails.length > 0) {
           console.log(`📧 Enviando notificaciones a ${adminEmails.length} administradores`);

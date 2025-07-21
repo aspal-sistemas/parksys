@@ -402,6 +402,13 @@ const AdminSidebarComplete: React.FC = () => {
             >
               {t('navigation.permissions')}
             </NavItem>
+            <NavItem 
+              href="/admin/settings/notifications" 
+              icon={<Bell className="h-5 w-5" />}
+              active={location === '/admin/settings/notifications'}
+            >
+              Preferencias de Notificaciones
+            </NavItem>
           </ModuleNav>
 
           {/* 2. GESTIÓN - MENÚ PRINCIPAL CON SUBMENÚS COLAPSABLES */}
