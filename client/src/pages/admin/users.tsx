@@ -55,15 +55,6 @@ interface UserFormData {
   bio: string;
   municipalityId: number | null;
   profileImageFile?: File | null;
-  // Campos adicionales para voluntarios
-  address?: string;
-  emergencyContactName?: string;
-  emergencyContactPhone?: string;
-  preferredParkId?: number | null;
-  volunteerExperience?: string;
-  skills?: string;
-  availability?: string;
-  legalConsent?: boolean;
 }
 
 const getRoleColor = (role: string) => {
@@ -111,20 +102,11 @@ const FormularioUsuario: React.FC<{
     bio: user?.bio || '',
     municipalityId: user?.municipalityId || null,
     profileImageFile: null,
-    // Campos adicionales para voluntarios
-    address: user?.address || '',
-    emergencyContactName: user?.emergencyContactName || '',
-    emergencyContactPhone: user?.emergencyContactPhone || '',
-    preferredParkId: user?.preferredParkId || null,
-    volunteerExperience: user?.volunteerExperience || '',
-    skills: user?.skills || '',
-    availability: user?.availability || '',
-    legalConsent: user?.legalConsent || false,
   });
 
   const [previewImage, setPreviewImage] = useState<string | null>(user?.profileImageUrl || null);
 
-  const handleChange = (field: keyof UserFormData, value: string | number | boolean | null) => {
+  const handleChange = (field: keyof UserFormData, value: string | number | null) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
