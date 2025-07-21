@@ -1235,9 +1235,9 @@ async function initializeDatabaseAsync() {
     console.log("Registrando rutas del sistema de preferencias de usuario...");
     app.use("/api/users", userPreferencesRouter);
     
-    // Registrar rutas principales de usuarios (versión simplificada)
-    const { default: userSimpleRoutes } = await import('./users-simple');
-    app.use('/api', userSimpleRoutes);
+    // Registrar rutas principales de usuarios (archivo principal completo)
+    const { registerUserRoutes } = await import('./userRoutes');
+    registerUserRoutes(app);
     console.log("Rutas principales de usuarios registradas correctamente");
     console.log("Rutas del sistema de preferencias de usuario registradas correctamente");
   } catch (error) {

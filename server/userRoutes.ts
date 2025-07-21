@@ -361,8 +361,7 @@ function createUserRoutes() {
         // Crear el usuario con logging detallado
         console.log("Datos que se enviarán a createUser:", {
           ...userData,
-          password: "[REDACTED]",
-          fullName: `${userData.firstName} ${userData.lastName}`
+          password: "[REDACTED]"
         });
         
         try {
@@ -372,9 +371,7 @@ function createUserRoutes() {
             email: userData.email,
             password: hashedPassword,
             role: userData.role,
-            firstName: userData.firstName,
-            lastName: userData.lastName,
-            fullName: `${userData.firstName} ${userData.lastName}`,
+            fullName: userData.fullName,
             municipalityId: userData.municipalityId,
             phone: userData.phone || null,
             gender: userData.gender || null,
@@ -470,14 +467,7 @@ function createUserRoutes() {
       // Preparar los datos para la actualización
       const userData: any = { ...updateData };
       
-      // Si se proporcionaron nombre y apellido, actualizar el nombre completo
-      if (updateData.firstName && updateData.lastName) {
-        userData.fullName = `${updateData.firstName} ${updateData.lastName}`;
-      } else if (updateData.firstName) {
-        userData.fullName = `${updateData.firstName} ${existingUser.lastName || ''}`;
-      } else if (updateData.lastName) {
-        userData.fullName = `${existingUser.firstName || ''} ${updateData.lastName}`;
-      }
+      // El fullName viene directamente del frontend, no necesitamos concatenación
       
       // Procesar campos adicionales de perfil
       if (updateData.phone !== undefined) {
@@ -792,8 +782,7 @@ function createUserRoutes() {
       // Formatear datos para el frontend
       const formattedVolunteer = {
         id: volunteerData.id,
-        firstName: volunteerData.first_name,
-        lastName: volunteerData.last_name,
+        fullName: volunteerData.full_name || `${volunteerData.first_name || ''} ${volunteerData.last_name || ''}`.trim(),
         email: volunteerData.email,
         phone: volunteerData.phone,
         gender: volunteerData.gender || 'no_especificar',
@@ -853,8 +842,7 @@ function createUserRoutes() {
       
       // Actualizar los datos del usuario primero
       const userUpdateData = {
-        firstName: volunteerData.firstName,
-        lastName: volunteerData.lastName,
+        fullName: volunteerData.fullName,
         email: volunteerData.email,
         phone: volunteerData.phone,
         gender: volunteerData.gender,
@@ -865,8 +853,7 @@ function createUserRoutes() {
       // Actualizar tabla users
       await db.execute(
         sql`UPDATE users 
-            SET first_name = ${userUpdateData.firstName},
-                last_name = ${userUpdateData.lastName},
+            SET full_name = ${userUpdateData.fullName},
                 email = ${userUpdateData.email},
                 phone = ${userUpdateData.phone},
                 gender = ${userUpdateData.gender},
@@ -878,7 +865,7 @@ function createUserRoutes() {
       // Actualizar tabla volunteers
       await db.execute(
         sql`UPDATE volunteers 
-            SET full_name = ${`${volunteerData.firstName} ${volunteerData.lastName}`},
+            SET full_name = ${volunteerData.fullName},
                 email = ${volunteerData.email},
                 phone = ${volunteerData.phone},
                 gender = ${volunteerData.gender},
@@ -1038,6 +1025,13 @@ function createUserRoutes() {
   return apiRouter;
 }
 
-// Crear y exportar el router
+// Función principal de registro de rutas para compatibilidad con index.ts
+export function registerUserRoutes(app: any) {
+  const apiRouter = createUserRoutes();
+  app.use('/api', apiRouter);
+  console.log("✅ Rutas principales de usuarios registradas correctamente desde userRoutes.ts");
+}
+
+// Crear y exportar el router (fallback)
 const userApiRouter = createUserRoutes();
 export default userApiRouter;
