@@ -439,7 +439,8 @@ export default function UsersPage() {
       };
       delete (userDataToSend as any).profileImageFile; // Remover archivo del objeto
       
-      console.log('📤 Enviando datos con imagen:', {
+      console.log('📤 DATOS FINALES ENVIADOS AL SERVIDOR:', userDataToSend);
+      console.log('📤 Imagen info:', {
         imageUrl,
         profileImageUrl: userDataToSend.profileImageUrl,
         isUpdate,
