@@ -1612,39 +1612,63 @@ async function initializeDatabaseAsync() {
   if (fs.existsSync(distPath)) {
     console.log("📁 Configurando archivos estáticos con handlers especializados...");
     
-    // Handler específico para EL archivo JavaScript principal
-    app.get('/assets/index-VG22aPDC.js', (req, res) => {
-      console.log(`🚀🚀🚀 HANDLER ESPECÍFICO PARA INDEX JS: ${req.url} 🚀🚀🚀`);
+    // Handler específico para EL archivo JavaScript principal (con o sin query params)
+    app.get('/assets/index-VG22aPDC.js*', (req, res) => {
+      console.log(`🚀🚀🚀 HANDLER MANUAL PARA INDEX JS: ${req.url} 🚀🚀🚀`);
       const filePath = path.join(distPath, 'assets', 'index-VG22aPDC.js');
       
       if (fs.existsSync(filePath)) {
         console.log(`✅ Archivo JS principal encontrado: ${filePath}`);
+        
+        // Leer archivo manualmente y servir con headers forzados
+        const jsContent = fs.readFileSync(filePath, 'utf8');
+        
+        // Headers ultra-agresivos para evitar cache
         res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
         res.setHeader('X-Content-Type-Options', 'nosniff');
-        res.setHeader('Cache-Control', 'no-cache');
-        console.log(`🔥 Headers JS establecidos correctamente para archivo principal`);
-        res.sendFile(filePath);
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+        res.setHeader('ETag', ''); // Deshabilitar ETag
+        res.setHeader('Last-Modified', ''); // Deshabilitar Last-Modified
+        res.setHeader('Content-Length', Buffer.byteLength(jsContent, 'utf8'));
+        res.setHeader('X-Manual-JS-Serve', 'true');
+        res.setHeader('X-Cache-Bust', Date.now().toString());
+        
+        console.log(`🔥 MANUAL SERVE: ${req.url} - Tamaño: ${Buffer.byteLength(jsContent, 'utf8')} bytes`);
+        console.log(`🔥 Content-Type ULTRA-FORZADO: application/javascript`);
+        console.log(`🔥 Cache completamente deshabilitado`);
+        
+        // Enviar contenido directamente
+        res.status(200).send(jsContent);
       } else {
         console.log(`❌ Archivo JS principal NO encontrado: ${filePath}`);
         res.status(404).send('JS file not found');
       }
     });
     
-    // Handler general para otros archivos JavaScript
+    // Handler general para otros archivos JavaScript - SERVIR MANUALMENTE
     app.get('/assets/*.js', (req, res, next) => {
-      console.log(`🔥 REQUEST JS GENÉRICO: ${req.url}`);
+      console.log(`🔥 REQUEST JS GENÉRICO MANUAL: ${req.url}`);
       const filePath = path.join(distPath, req.url);
       
       if (fs.existsSync(filePath)) {
-        // Headers anti-cache para evitar problemas de MIME type en Replit
+        console.log(`✅ Archivo JS encontrado: ${filePath}`);
+        
+        // Leer archivo manualmente
+        const jsContent = fs.readFileSync(filePath, 'utf8');
+        
+        // Headers ultra-forzados
         res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
         res.setHeader('X-Content-Type-Options', 'nosniff');
         res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
         res.setHeader('Pragma', 'no-cache');
         res.setHeader('Expires', '0');
-        res.setHeader('Content-Disposition', 'inline');
-        console.log(`🔥 Headers anti-cache aplicados para: ${req.url}`);
-        res.sendFile(filePath);
+        res.setHeader('Content-Length', Buffer.byteLength(jsContent, 'utf8'));
+        res.setHeader('X-Manual-JS-Serve', 'true');
+        
+        console.log(`🔥 Servido MANUALMENTE: ${req.url} - Tamaño: ${Buffer.byteLength(jsContent, 'utf8')} bytes`);
+        res.status(200).send(jsContent);
       } else {
         next();
       }
