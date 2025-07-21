@@ -305,27 +305,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.error("Error al registrar rutas del sistema de cobro híbrido:", error);
   }
   
-  // Endpoint específico para subir imágenes de perfil de voluntarios
+  // Endpoint específico para subir imágenes de perfil de usuarios
   
-  // Configurar multer para subida de imágenes de voluntarios
-  const volunteerUploadDir = path.resolve('./public/uploads/volunteers');
-  if (!fs.existsSync(volunteerUploadDir)) {
-    fs.mkdirSync(volunteerUploadDir, { recursive: true });
+  // Configurar multer para subida de imágenes de usuarios
+  const userUploadDir = path.resolve('./public/uploads/users');
+  if (!fs.existsSync(userUploadDir)) {
+    fs.mkdirSync(userUploadDir, { recursive: true });
   }
   
-  const volunteerStorage = multer.diskStorage({
+  const userStorage = multer.diskStorage({
     destination: (req, file, cb) => {
-      cb(null, volunteerUploadDir);
+      cb(null, userUploadDir);
     },
     filename: (req, file, cb) => {
       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
       const ext = path.extname(file.originalname).toLowerCase();
-      cb(null, 'volunteer-' + uniqueSuffix + ext);
+      cb(null, 'user-profile-' + uniqueSuffix + ext);
     }
   });
   
-  const volunteerUpload = multer({
-    storage: volunteerStorage,
+  const userUpload = multer({
+    storage: userStorage,
     fileFilter: (req, file, cb) => {
       if (file.mimetype.startsWith('image/')) {
         cb(null, true);
@@ -338,9 +338,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }).single('file');
   
-  apiRouter.post('/upload/volunteer-profile', (req: Request, res: Response) => {
-    volunteerUpload(req, res, async (err) => {
+  apiRouter.post('/upload/user-profile', (req: Request, res: Response) => {
+    console.log('📸 Recibida solicitud de subida de imagen de usuario');
+    userUpload(req, res, async (err) => {
       if (err) {
+        console.error('❌ Error en multer:', err);
         if (err instanceof multer.MulterError) {
           if (err.code === 'LIMIT_FILE_SIZE') {
             return res.status(400).json({
@@ -356,23 +358,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       if (!req.file) {
+        console.error('❌ No se recibió archivo');
         return res.status(400).json({
           success: false,
           message: 'No se seleccionó ninguna imagen'
         });
       }
       
-      const imageUrl = `/uploads/volunteers/${req.file.filename}`;
+      const imageUrl = `/uploads/users/${req.file.filename}`;
+      console.log(`✅ Imagen subida: ${imageUrl}`);
       
-      // Si se proporciona volunteerId, actualizar la base de datos
-      const volunteerId = req.body.volunteerId;
-      if (volunteerId) {
+      // Si se proporciona userId, actualizar la base de datos
+      const userId = req.body.userId;
+      if (userId) {
         try {
           await pool.query(
-            'UPDATE volunteers SET profile_image_url = $1, updated_at = NOW() WHERE id = $2',
-            [imageUrl, parseInt(volunteerId)]
+            'UPDATE users SET profile_image_url = $1, updated_at = NOW() WHERE id = $2',
+            [imageUrl, parseInt(userId)]
           );
-          console.log(`✅ Imagen de perfil actualizada en BD para voluntario ${volunteerId}: ${imageUrl}`);
+          console.log(`✅ Imagen de perfil actualizada en BD para usuario ${userId}: ${imageUrl}`);
         } catch (dbError) {
           console.error('Error actualizando imagen en base de datos:', dbError);
           // Continuamos aunque falle la actualización de BD
