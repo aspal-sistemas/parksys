@@ -22,15 +22,21 @@ const app = express();
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// Middleware CORS para Replit
+// Middleware CORS y manejo de errores para Replit
 app.use((req: Request, res: Response, next: NextFunction) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('X-Powered-By', 'ParkSys');
   
   if (req.method === 'OPTIONS') {
     res.status(200).end();
     return;
+  }
+  
+  // Log para debug en Replit
+  if (req.url.includes('/admin/users/notifications') || req.url === '/') {
+    console.log(`🔍 Request recibido: ${req.method} ${req.url} - ${new Date().toISOString()}`);
   }
   
   next();
@@ -1627,16 +1633,22 @@ async function initializeDatabaseAsync() {
     
     // Fallback para rutas no encontradas - servir index.html
     app.get('*', (req, res) => {
-      // Solo servir HTML para rutas que no son API
-      if (!req.path.startsWith('/api/')) {
-        const indexPath = path.join(process.cwd(), 'public', 'index.html');
-        if (fs.existsSync(indexPath)) {
-          res.sendFile(indexPath);
+      try {
+        // Solo servir HTML para rutas que no son API
+        if (!req.path.startsWith('/api/')) {
+          const indexPath = path.join(process.cwd(), 'public', 'index.html');
+          console.log(`🔍 Serving fallback for: ${req.path} - indexPath: ${indexPath} - exists: ${fs.existsSync(indexPath)}`);
+          if (fs.existsSync(indexPath)) {
+            res.sendFile(indexPath);
+          } else {
+            res.status(404).send('Application not built. Please run npm run build first.');
+          }
         } else {
-          res.status(404).send('Application not built. Please run npm run build first.');
+          res.status(404).json({ error: 'API endpoint not found' });
         }
-      } else {
-        res.status(404).json({ error: 'API endpoint not found' });
+      } catch (error) {
+        console.error('Error in fallback handler:', error);
+        res.status(500).send('Internal server error in fallback handler');
       }
     });
     
