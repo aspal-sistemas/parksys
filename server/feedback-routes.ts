@@ -6,6 +6,18 @@ import { emailService } from "./email/emailService";
 const router = Router();
 
 // Función para obtener emails de usuarios que deben recibir notificaciones específicas
+// Función para mapear el tipo de formulario a la preferencia de notificación específica
+function getNotificationTypeByFormType(formType: string): string {
+  const mapping: Record<string, string> = {
+    'share': 'feedback_share',
+    'report_problem': 'feedback_report_problem', 
+    'suggest_improvement': 'feedback_suggest_improvement',
+    'propose_event': 'feedback_propose_event'
+  };
+  
+  return mapping[formType] || 'feedback'; // Fallback al feedback general si no hay mapeo específico
+}
+
 async function getUserEmailsForNotifications(notificationType: string = 'feedback', roles: string[] = ['admin', 'super_admin']): Promise<string[]> {
   try {
     // Obtener usuarios con las preferencias de notificación activadas
@@ -90,7 +102,9 @@ router.post("/", async (req: Request, res: Response) => {
     // Enviar notificaciones por email a administradores (proceso asíncrono)
     setImmediate(async () => {
       try {
-        const adminEmails = await getUserEmailsForNotifications('feedback', ['admin', 'super_admin']);
+        // Obtener emails usando preferencias granulares según el tipo de formulario
+        const notificationType = getNotificationTypeByFormType(validatedData.formType);
+        const adminEmails = await getUserEmailsForNotifications(notificationType, ['admin', 'super_admin']);
         
         if (adminEmails.length > 0) {
           console.log(`📧 Enviando notificaciones a ${adminEmails.length} administradores`);

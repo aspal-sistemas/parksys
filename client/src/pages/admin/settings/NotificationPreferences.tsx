@@ -32,6 +32,10 @@ interface PreferenceSummary {
   role: string;
   total_users: number;
   feedback_enabled: number;
+  feedback_share_enabled: number;
+  feedback_report_problem_enabled: number;
+  feedback_suggest_improvement_enabled: number;
+  feedback_propose_event_enabled: number;
   events_enabled: number;
   maintenance_enabled: number;
   payroll_enabled: number;
@@ -342,29 +346,51 @@ export default function NotificationPreferences() {
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      {userPreferences.availableNotifications?.map((notification, index) => (
-                        <div key={notification.key} className="space-y-3">
-                          <div className="flex items-center justify-between">
-                            <div className="space-y-1">
-                              <div className="flex items-center gap-2">
-                                <CheckCircle className="h-4 w-4 text-green-600" />
-                                <span className="font-medium text-sm">{notification.label}</span>
+                      {userPreferences.availableNotifications?.map((notification, index) => {
+                        // Detectar si es una notificación granular de feedback
+                        const isFeedbackSubNotification = notification.key.startsWith('feedback_');
+                        const isFeedbackMain = notification.key === 'feedback';
+                        
+                        return (
+                          <div key={notification.key} className="space-y-3">
+                            <div className="flex items-center justify-between">
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-2">
+                                  {isFeedbackMain ? (
+                                    <div className="flex items-center gap-2">
+                                      <CheckCircle className="h-4 w-4 text-blue-600" />
+                                      <span className="font-semibold text-sm text-blue-800">{notification.label}</span>
+                                    </div>
+                                  ) : isFeedbackSubNotification ? (
+                                    <div className="flex items-center gap-2 ml-2">
+                                      <div className="w-3 h-px bg-gray-300"></div>
+                                      <CheckCircle className="h-3 w-3 text-green-600" />
+                                      <span className="font-medium text-xs">{notification.label.replace('  └─ ', '')}</span>
+                                    </div>
+                                  ) : (
+                                    <div className="flex items-center gap-2">
+                                      <CheckCircle className="h-4 w-4 text-green-600" />
+                                      <span className="font-medium text-sm">{notification.label}</span>
+                                    </div>
+                                  )}
+                                </div>
+                                <p className={`text-xs text-gray-500 ${isFeedbackSubNotification ? 'ml-8' : 'ml-6'}`}>
+                                  {notification.description}
+                                </p>
                               </div>
-                              <p className="text-xs text-gray-500 ml-6">
-                                {notification.description}
-                              </p>
+                              <Switch
+                                checked={userPreferences.preferences?.[notification.key] || false}
+                                onCheckedChange={(checked) => handlePreferenceChange(notification.key, checked)}
+                                disabled={updatePreferencesMutation.isPending}
+                                className={isFeedbackSubNotification ? "scale-90" : ""}
+                              />
                             </div>
-                            <Switch
-                              checked={userPreferences.preferences?.[notification.key] || false}
-                              onCheckedChange={(checked) => handlePreferenceChange(notification.key, checked)}
-                              disabled={updatePreferencesMutation.isPending}
-                            />
+                            {index < (userPreferences.availableNotifications?.length || 0) - 1 && (
+                              <Separator className="mt-4" />
+                            )}
                           </div>
-                          {index < (userPreferences.availableNotifications?.length || 0) - 1 && (
-                            <Separator className="mt-4" />
-                          )}
-                        </div>
-                      )) || (
+                        );
+                      }) || (
                         <div className="p-4 text-center text-gray-500">
                           <AlertTriangle className="h-8 w-8 mx-auto mb-2 text-gray-400" />
                           <p>No hay preferencias de notificación disponibles para este usuario</p>
@@ -422,10 +448,26 @@ export default function NotificationPreferences() {
                         </div>
                         <div className="space-y-1 text-xs">
                           <div className="flex justify-between">
-                            <span>Feedback:</span>
+                            <span>Feedback general:</span>
                             <span className="font-medium">{summary.feedback_enabled}/{summary.total_users}</span>
                           </div>
-                          <div className="flex justify-between">
+                          <div className="flex justify-between ml-2">
+                            <span>├ Experiencias:</span>
+                            <span className="font-medium text-green-600">{summary.feedback_share_enabled}/{summary.total_users}</span>
+                          </div>
+                          <div className="flex justify-between ml-2">
+                            <span>├ Problemas:</span>
+                            <span className="font-medium text-red-600">{summary.feedback_report_problem_enabled}/{summary.total_users}</span>
+                          </div>
+                          <div className="flex justify-between ml-2">
+                            <span>├ Mejoras:</span>
+                            <span className="font-medium text-blue-600">{summary.feedback_suggest_improvement_enabled}/{summary.total_users}</span>
+                          </div>
+                          <div className="flex justify-between ml-2">
+                            <span>└ Eventos:</span>
+                            <span className="font-medium text-purple-600">{summary.feedback_propose_event_enabled}/{summary.total_users}</span>
+                          </div>
+                          <div className="flex justify-between pt-1">
                             <span>Eventos:</span>
                             <span className="font-medium">{summary.events_enabled}/{summary.total_users}</span>
                           </div>

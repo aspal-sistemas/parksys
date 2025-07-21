@@ -7,6 +7,11 @@ const router = Router();
 // Esquema de validación para preferencias de notificaciones
 const notificationPreferencesSchema = z.object({
   feedback: z.boolean().optional(),
+  // Notificaciones granulares de retroalimentación ciudadana
+  feedback_share: z.boolean().optional(),
+  feedback_report_problem: z.boolean().optional(),
+  feedback_suggest_improvement: z.boolean().optional(),
+  feedback_propose_event: z.boolean().optional(),
   events: z.boolean().optional(),
   maintenance: z.boolean().optional(),
   payroll: z.boolean().optional(),
@@ -105,6 +110,10 @@ router.get("/notification-preferences/summary", async (req: Request, res: Respon
         role,
         COUNT(*) as total_users,
         COUNT(CASE WHEN (notification_preferences->>'feedback')::boolean = true OR notification_preferences IS NULL THEN 1 END) as feedback_enabled,
+        COUNT(CASE WHEN (notification_preferences->>'feedback_share')::boolean = true OR notification_preferences IS NULL THEN 1 END) as feedback_share_enabled,
+        COUNT(CASE WHEN (notification_preferences->>'feedback_report_problem')::boolean = true OR notification_preferences IS NULL THEN 1 END) as feedback_report_problem_enabled,
+        COUNT(CASE WHEN (notification_preferences->>'feedback_suggest_improvement')::boolean = true OR notification_preferences IS NULL THEN 1 END) as feedback_suggest_improvement_enabled,
+        COUNT(CASE WHEN (notification_preferences->>'feedback_propose_event')::boolean = true OR notification_preferences IS NULL THEN 1 END) as feedback_propose_event_enabled,
         COUNT(CASE WHEN (notification_preferences->>'events')::boolean = true OR notification_preferences IS NULL THEN 1 END) as events_enabled,
         COUNT(CASE WHEN (notification_preferences->>'maintenance')::boolean = true OR notification_preferences IS NULL THEN 1 END) as maintenance_enabled,
         COUNT(CASE WHEN (notification_preferences->>'payroll')::boolean = true OR notification_preferences IS NULL THEN 1 END) as payroll_enabled
@@ -130,6 +139,11 @@ router.get("/notification-preferences/summary", async (req: Request, res: Respon
 function getDefaultPreferencesForRole(role: string) {
   const basePreferences = {
     feedback: true,
+    // Notificaciones granulares de retroalimentación ciudadana
+    feedback_share: true,
+    feedback_report_problem: true,
+    feedback_suggest_improvement: true,
+    feedback_propose_event: true,
     events: true,
     maintenance: false,
     payroll: false,
@@ -158,6 +172,10 @@ function getDefaultPreferencesForRole(role: string) {
     case 'instructor':
       return {
         feedback: false,
+        feedback_share: false,
+        feedback_report_problem: false,
+        feedback_suggest_improvement: false,
+        feedback_propose_event: false,
         events: true,
         maintenance: false,
         payroll: true,
@@ -169,6 +187,10 @@ function getDefaultPreferencesForRole(role: string) {
     case 'volunteer':
       return {
         feedback: false,
+        feedback_share: false,
+        feedback_report_problem: false,
+        feedback_suggest_improvement: false,
+        feedback_propose_event: false,
         events: true,
         maintenance: false,
         payroll: false,
@@ -180,6 +202,10 @@ function getDefaultPreferencesForRole(role: string) {
     case 'concessionaire':
       return {
         feedback: false,
+        feedback_share: false,
+        feedback_report_problem: false,
+        feedback_suggest_improvement: false,
+        feedback_propose_event: false,
         events: true,
         maintenance: false,
         payroll: false,
@@ -197,6 +223,11 @@ function getDefaultPreferencesForRole(role: string) {
 function getAvailableNotificationsForRole(role: string) {
   const allNotifications = [
     { key: 'feedback', label: 'Retroalimentación ciudadana', description: 'Recibir notificaciones cuando los ciudadanos envíen formularios de feedback' },
+    // Notificaciones granulares de retroalimentación ciudadana
+    { key: 'feedback_share', label: '  └─ Compartir experiencia', description: 'Recibir notificaciones cuando los ciudadanos compartan experiencias positivas' },
+    { key: 'feedback_report_problem', label: '  └─ Reportar problema', description: 'Recibir notificaciones cuando los ciudadanos reporten problemas o incidencias' },
+    { key: 'feedback_suggest_improvement', label: '  └─ Sugerir mejora', description: 'Recibir notificaciones cuando los ciudadanos sugieran mejoras' },
+    { key: 'feedback_propose_event', label: '  └─ Proponer evento', description: 'Recibir notificaciones cuando los ciudadanos propongan nuevos eventos' },
     { key: 'events', label: 'Eventos y actividades', description: 'Notificaciones sobre nuevos eventos, cambios de horarios y solicitudes' },
     { key: 'maintenance', label: 'Mantenimiento e infraestructura', description: 'Reportes de mantenimiento, incidencias de activos y solicitudes de reparación' },
     { key: 'payroll', label: 'Nómina y recursos humanos', description: 'Notificaciones sobre recibos de nómina, vacaciones y temas de HR' },
