@@ -367,16 +367,38 @@ export class DatabaseStorage implements IStorage {
 
   async updateUser(id: number, userData: any): Promise<any> {
     try {
+      console.log(`🔄 Actualizando usuario ${id} con datos:`, userData);
+      
+      // Mapear camelCase a snake_case para la base de datos
+      const dbUserData: any = {
+        updated_at: new Date()
+      };
+      
+      if (userData.role) dbUserData.role = userData.role;
+      if (userData.username) dbUserData.username = userData.username;
+      if (userData.email) dbUserData.email = userData.email;
+      if (userData.firstName) dbUserData.first_name = userData.firstName;
+      if (userData.lastName) dbUserData.last_name = userData.lastName;
+      if (userData.fullName) dbUserData.full_name = userData.fullName;
+      if (userData.password) dbUserData.password = userData.password;
+      if (userData.phone) dbUserData.phone = userData.phone;
+      if (userData.gender) dbUserData.gender = userData.gender;
+      if (userData.birthDate) dbUserData.birth_date = userData.birthDate;
+      if (userData.bio) dbUserData.bio = userData.bio;
+      if (userData.municipalityId) dbUserData.municipality_id = userData.municipalityId;
+      if (userData.profileImageUrl) dbUserData.profile_image_url = userData.profileImageUrl;
+      
+      console.log(`📝 Datos mapeados para DB:`, dbUserData);
+      
       const [updatedUser] = await db.update(users)
-        .set({
-          ...userData,
-          updatedAt: new Date()
-        })
+        .set(dbUserData)
         .where(eq(users.id, id))
         .returning();
+        
+      console.log(`✅ Usuario ${id} actualizado exitosamente`);
       return updatedUser;
     } catch (error) {
-      console.error(`Error al actualizar usuario ${id}:`, error);
+      console.error(`❌ Error al actualizar usuario ${id}:`, error);
       throw error;
     }
   }
