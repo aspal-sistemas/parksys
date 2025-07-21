@@ -34,13 +34,7 @@ import {
   deleteEventEvaluation
 } from "./events-evaluations-handlers";
 
-import {
-  getEventVolunteers,
-  assignVolunteerToEvent,
-  updateVolunteerAssignment,
-  removeVolunteerFromEvent,
-  getAvailableVolunteers
-} from "./events-volunteers-handlers";
+
 
 export const eventRouter = Router();
 
@@ -89,12 +83,5 @@ export function registerEventRoutes(app: any, apiRouter: Router, isAuthenticated
   apiRouter.put("/events/:id/evaluations/:evaluationId", isAuthenticated, updateEventEvaluation);
   apiRouter.delete("/events/:id/evaluations/:evaluationId", isAuthenticated, deleteEventEvaluation);
   
-  // Rutas para voluntarios de eventos
-  apiRouter.get("/events/:id/volunteers", getEventVolunteers);
-  apiRouter.post("/events/:id/volunteers", isAuthenticated, assignVolunteerToEvent);
-  apiRouter.put("/events/:id/volunteers/:assignmentId", isAuthenticated, updateVolunteerAssignment);
-  apiRouter.delete("/events/:id/volunteers/:assignmentId", isAuthenticated, removeVolunteerFromEvent);
-  
-  // Ruta para obtener voluntarios disponibles
-  apiRouter.get("/volunteers/available", getAvailableVolunteers);
+  // Rutas para voluntarios de eventos - REMOVIDAS
 }

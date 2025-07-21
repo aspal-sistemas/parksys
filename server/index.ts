@@ -6,7 +6,7 @@ import fs from "fs";
 import multer from 'multer';
 import { activityRouter } from "./activityRoutes";
 import { testRouter } from "./testRoutes";
-import volunteerFieldRouter from "./volunteerFieldRoutes";
+
 import { skillsRouter } from "./update-skills-route";
 import { registerFinancialIntegrationsAPI } from "./financial-integrations-api";
 import { registerMultimediaRoutes, createMultimediaTables } from "./multimedia-system";
@@ -561,7 +561,7 @@ app.get("/api/employees", async (req: Request, res: Response) => {
 app.use('/api/test', testRouter);
 
 // Registrar las rutas de campos de voluntario
-app.use('/api/volunteer-fields', volunteerFieldRouter);
+
 
 // Registrar la ruta especializada para habilidades de voluntarios
 app.use('/api', skillsRouter);

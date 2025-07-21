@@ -21,8 +21,7 @@
     "admin": "Administrador",
     "manager": "Gestor",
     "instructor": "Instructor",
-    "volunteer": "Voluntario",
-    "concessionaire": "Concesionario"
+    "supervisor": "Supervisor"
   },
   "gender": {
     "masculino": "Masculino",

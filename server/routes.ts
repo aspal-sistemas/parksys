@@ -11,11 +11,11 @@ import { handleProfileImageUpload } from "./api/profileImageUpload";
 import { saveProfileImage, getProfileImage } from "./profileImageCache";
 import { db, pool } from "./db";
 import { sql, eq } from "drizzle-orm";
-import { deleteAllVolunteers, deleteVolunteer } from "./delete-all-volunteers";
+
 import * as schema from "@shared/schema";
 const { parkAmenities, amenities } = schema;
 import { videoRouter } from "./video_routes";
-import { registerVolunteerRoutes } from "./volunteerRoutes";
+
 // import { registerInstructorRoutes } from "./instructorRoutes"; // Comentado para evitar conflictos - se usa instructor-routes.ts
 import { registerPublicRoutes } from "./publicRoutes";
 import { registerAssetRoutes } from "./asset_routes";
@@ -141,7 +141,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.use(activityRouter);
   
   // Registramos las rutas del módulo de voluntariado
-  registerVolunteerRoutes(app, apiRouter, null, isAuthenticated);
+
   
   // Registramos las rutas del módulo de instructores
   // registerInstructorRoutes(app, apiRouter, publicRouter, isAuthenticated); // Comentado - se usa instructor-routes.ts
@@ -922,18 +922,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       `, [parkId]);
       console.log(`Instructores encontrados: ${instructorsResult.rows.length}`);
 
-      // Obtener voluntarios que prefieren este parque
-      console.log('Paso 6: Consultando voluntarios del parque...');
-      const volunteersResult = await pool.query(`
-        SELECT v.id, v.full_name as "fullName", v.email, v.phone,
-               v.skills, v.previous_experience as "previousExperience",
-               v.profile_image_url as "profileImageUrl", v.interest_areas as "interestAreas"
-        FROM volunteers v
-        WHERE v.preferred_park_id = $1
-        ORDER BY v.full_name
-        LIMIT 10
-      `, [parkId]);
-      console.log(`Voluntarios encontrados: ${volunteersResult.rows.length}`);
+      // Paso 6 eliminado - voluntarios removidos del sistema
 
       // Obtener activos del parque
       console.log('Paso 7: Consultando activos del parque...');
@@ -1014,7 +1003,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         activities: activitiesResult.rows,
         documents: documentsResult.rows,
         instructors: instructorsResult.rows,
-        volunteers: volunteersResult.rows,
+
         assets: assetsResult.rows,
         concessions: concessionsResult.rows,
         images: images,
