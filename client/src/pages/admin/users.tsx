@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { toast } from 'sonner';
+
 import { 
   UserRound, 
   Plus,
@@ -54,7 +54,7 @@ interface UserFormData {
   birthDate: string;
   bio: string;
   municipalityId: number | null;
-  profileImageFile: File | null;
+  profileImageFile?: File | null;
 }
 
 const getRoleColor = (role: string) => {
@@ -173,12 +173,12 @@ const FormularioUsuario: React.FC<{
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" aria-describedby="user-form-description">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-center">
             {isNew ? '👤 Nuevo Usuario' : '✏️ Editar Usuario'}
           </DialogTitle>
-          <DialogDescription id="user-form-description" className="text-center text-gray-600">
+          <DialogDescription className="text-center text-gray-600">
             {isNew ? 'Crear un nuevo usuario del sistema' : 'Modificar información del usuario'}
           </DialogDescription>
         </DialogHeader>
@@ -401,7 +401,6 @@ export default function UsersPage() {
   const { data: users = [], isLoading } = useQuery({
     queryKey: ['/api/users', Date.now()], // Cache único por timestamp
     staleTime: 0,
-    cacheTime: 0, // No guardar en cache
     refetchOnWindowFocus: true,
     refetchOnMount: true,
   });
@@ -438,7 +437,7 @@ export default function UsersPage() {
         ...userData,
         profileImageUrl: imageUrl || (isUpdate ? selectedUser?.profileImageUrl : null)
       };
-      delete userDataToSend.profileImageFile; // Remover archivo del objeto
+      delete (userDataToSend as any).profileImageFile; // Remover archivo del objeto
       
       console.log('📤 Enviando datos con imagen:', {
         imageUrl,
@@ -517,10 +516,10 @@ export default function UsersPage() {
     },
   });
 
-  const filteredUsers = users.filter((user: UserData) =>
-    user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.username.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredUsers = (users as UserData[]).filter((user: UserData) =>
+    user.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.username?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (isLoading) {
@@ -602,7 +601,10 @@ export default function UsersPage() {
                                 console.log('❌ Error cargando imagen:', user.profileImageUrl);
                                 console.log('Usuario:', user.fullName, 'ID:', user.id);
                                 e.currentTarget.style.display = 'none';
-                                e.currentTarget.nextElementSibling.style.display = 'flex';
+                                const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
+                                if (nextElement) {
+                                  nextElement.style.display = 'flex';
+                                }
                               }}
                               onLoad={() => {
                                 console.log('✅ Imagen cargada correctamente:', user.profileImageUrl);
