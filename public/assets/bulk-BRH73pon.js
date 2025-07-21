@@ -1,0 +1,1 @@
+import{j as i,aI as o}from"./index-Dzu3mJf5.js";import{B as t}from"./components-wtBZ3U6m.js";import"./radio-group-CeDg7LrT.js";import"./send-DKRtUueH.js";import"./play-5efn8UH2.js";import"./circle-x-C53LJYQf.js";const p=()=>i.jsx(o,{title:"Envío Masivo",children:i.jsx("div",{className:"space-y-6",children:i.jsx(t,{})})});export{p as default};

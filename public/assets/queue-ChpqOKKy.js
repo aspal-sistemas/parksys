@@ -1,1 +1,0 @@
-import{j as t,aI as e}from"./index-VG22aPDC.js";import{Q as i}from"./components-CZy1AAOn.js";import"./radio-group-BjTZrNrD.js";import"./send-U55zSg0n.js";import"./play-g1kART6K.js";import"./circle-x-DVpQ1AkT.js";const p=()=>t.jsx(e,{title:"Cola de Emails",children:t.jsx("div",{className:"space-y-6",children:t.jsx(i,{})})});export{p as default};
