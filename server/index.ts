@@ -1576,30 +1576,28 @@ async function initializeDatabaseAsync() {
   // Forzar modo producción para resolver problemas con proxy de Replit
   console.log("🔧 Configurando servidor para resolver problemas de proxy de Replit...");
   
-  // Headers agresivos para compatibilidad extrema con Replit
+  // Headers de depuración y compatibilidad extrema con Replit
   app.use((req: Request, res: Response, next: NextFunction) => {
+    console.log(`🔍 REQUEST INTERCEPTADO: ${req.method} ${req.url} - User-Agent: ${req.headers['user-agent']?.slice(0, 50)}...`);
+    
     // Headers robustos para proxy de Replit
     res.setHeader('X-Powered-By', 'ParkSys-Production');
-    res.setHeader('Cache-Control', 'public, max-age=3600');
     res.setHeader('Server', 'ParkSys/1.0');
     res.setHeader('Connection', 'keep-alive');
     
-    // Headers específicos para evitar 503
+    // Headers CORS permisivos
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
     
-    // Timeout extendido para operaciones complejas
-    res.setTimeout(30000, () => {
-      if (!res.headersSent) {
-        console.error(`⚠️ Timeout crítico en ruta: ${req.method} ${req.path}`);
-        res.status(408).json({ 
-          error: 'Request timeout - Replit environment issue', 
-          path: req.path,
-          timestamp: new Date().toISOString()
-        });
-      }
-    });
+    // Headers específicos para archivos JavaScript 
+    if (req.url.endsWith('.js')) {
+      console.log(`🚀 FORZANDO HEADERS JS PARA: ${req.url}`);
+      res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    }
+    
     next();
   });
   
@@ -1659,15 +1657,28 @@ async function initializeDatabaseAsync() {
       }
     });
     
-    // Handler general para archivos estáticos restantes
+    // Handler general para archivos estáticos con headers explícitos
     app.use(express.static(distPath, {
       index: false,
-      dotfiles: 'ignore'
+      dotfiles: 'ignore',
+      setHeaders: (res, path) => {
+        console.log(`📁 EXPRESS.STATIC sirviendo: ${path}`);
+        if (path.endsWith('.js')) {
+          res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+          res.setHeader('X-Content-Type-Options', 'nosniff');
+          console.log(`✅ Headers JS aplicados por express.static`);
+        } else if (path.endsWith('.css')) {
+          res.setHeader('Content-Type', 'text/css; charset=utf-8');
+        }
+      }
     }));
     
-    // Agregar middleware de logging para todas las requests
+    // Logging específico para debugging
     app.use('*', (req, res, next) => {
-      console.log(`🌐🌐🌐 REQUEST: ${req.method} ${req.url} - Headers: ${JSON.stringify(req.headers).slice(0, 150)}... 🌐🌐🌐`);
+      if (req.url.includes('.js')) {
+        console.log(`🚨🚨🚨 SOLICITUD JS DETECTADA: ${req.method} ${req.url} 🚨🚨🚨`);
+      }
+      console.log(`🌐 REQUEST: ${req.method} ${req.url}`);
       next();
     });
     
@@ -1695,8 +1706,9 @@ async function initializeDatabaseAsync() {
     });
   }
   
-  // Skip Vite in deployment mode (usar archivos estáticos compilados)
-  if (app.get("env") === "development" && !isDeployment) {
+  // FORZAR SKIP de Vite para usar archivos estáticos
+  console.log("🚫 FORZANDO SKIP DE VITE - Modo archivos estáticos");
+  if (false) { // Deshabilitado completamente
     console.log("Configurando servidor de desarrollo Vite...");
     
     // Configurar Vite antes de iniciar el servidor
