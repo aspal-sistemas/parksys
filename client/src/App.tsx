@@ -291,7 +291,7 @@ function Router() {
         </Route>
         <Route path="/admin/users">
           <Suspense fallback={<div className="p-8 text-center">Cargando gestión de usuarios...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/users-new')))}
+            {React.createElement(React.lazy(() => import('@/pages/admin/users')))}
           </Suspense>
         </Route>
 
