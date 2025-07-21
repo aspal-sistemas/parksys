@@ -477,6 +477,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Registramos las rutas públicas
   registerPublicRoutes(publicRouter);
   
+  // Endpoint simple para volunteers (resolver error 404)
+  apiRouter.get("/volunteers", async (req: Request, res: Response) => {
+    try {
+      const volunteersQuery = await pool.query(`
+        SELECT 
+          id,
+          full_name,
+          email,
+          phone,
+          status,
+          created_at
+        FROM volunteers 
+        WHERE status = 'active'
+        ORDER BY created_at DESC
+        LIMIT 50
+      `);
+      
+      res.json(volunteersQuery.rows || []);
+    } catch (error) {
+      console.error('Error fetching volunteers:', error);
+      res.json([]); // Devolver array vacío en lugar de error
+    }
+  });
+
   // Montamos todas las rutas de la API bajo el prefijo /api
   app.use('/api', apiRouter);
   
