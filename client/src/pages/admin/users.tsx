@@ -89,54 +89,13 @@ interface UserFormData {
   password: string;
   role: string;
   municipalityId: number | null;
-  // Campos comunes adicionales
+  // Campos básicos del perfil
   phone?: string;
   profileImageUrl?: string;
   profileImageFile?: File | null;
   bio?: string;
-  
-  // Campos para todos los usuarios
   gender?: 'masculino' | 'femenino' | 'no_especificar';
   birthDate?: string;
-  
-  // Campos específicos para instructores
-  experience?: string;
-  specialties?: string[];
-  curriculumFile?: File | null;
-  
-  // Campos específicos para voluntarios
-  address?: string;
-  emergencyContactName?: string;
-  emergencyContactPhone?: string;
-  preferredParkId?: number | null;
-  legalConsent?: boolean;
-  
-  // Nuevos campos para voluntarios - Experiencia y disponibilidad
-  volunteerExperience?: string;
-  skills?: string;
-  availability?: 'weekdays' | 'weekends' | 'evenings' | 'mornings' | 'flexible';
-  
-  // Campos para áreas de interés
-  interestNature?: boolean;
-  interestEvents?: boolean;
-  interestEducation?: boolean;
-  interestMaintenance?: boolean;
-  interestSports?: boolean;
-  interestCultural?: boolean;
-  
-  // Campos para documentos
-  idDocumentFile?: File | null;
-  addressDocumentFile?: File | null;
-  
-  // Campos para términos legales adicionales
-  ageConsent?: boolean;
-  conductConsent?: boolean;
-  
-  // Campos específicos para concesionarios
-  tipo?: 'persona_fisica' | 'persona_moral';
-  rfc?: string;
-  domicilioFiscal?: string;
-  representanteLegal?: string;
 }
 
 // User detail/edit component
@@ -160,106 +119,16 @@ const UserDetail: React.FC<{
     password: '',
     municipalityId: user?.municipalityId || null,
     
-    // Campos comunes para todos los usuarios
+    // Campos básicos del perfil
     phone: user?.phone || '',
     gender: user?.gender || 'no_especificar',
     birthDate: user?.birthDate || '',
     profileImageUrl: user?.profileImageUrl || '',
     profileImageFile: null,
     bio: user?.bio || '',
-    
-    // Campos para instructores
-    experience: user?.experience || '',
-    specialties: user?.specialties || [],
-    curriculumFile: null,
-    
-    // Campos para voluntarios
-    address: user?.address || '',
-    emergencyContactName: user?.emergencyContactName || '',
-    emergencyContactPhone: user?.emergencyContactPhone || '',
-    // Siempre asignamos un valor por defecto para el parque preferido (el parque con ID 3 como respaldo)
-    preferredParkId: user?.preferredParkId !== undefined ? user?.preferredParkId : 3,
-    legalConsent: user?.legalConsent !== undefined ? user?.legalConsent : false,
   });
 
-  // Efecto para cargar y sincronizar los datos del voluntario desde la API
-  useEffect(() => {
-    if (user && user.role === 'voluntario' && editingUserId) {
-      console.log("🔥 DATOS RECIBIDOS DEL USUARIO:", user);
-      
-      // Usar un efecto asíncrono para cargar los datos adicionales del voluntario
-      const loadVolunteerData = async () => {
-        try {
-          const response = await fetch(`/api/volunteers/by-user/${editingUserId}`, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-          });
-          
-          if (response.ok) {
-            const volunteerData = await response.json();
-            console.log("✅ DATOS DE VOLUNTARIO CARGADOS:", volunteerData);
-            
-            // Actualizamos el estado del formulario con los datos completos
-            setUserData(prevData => ({
-              ...prevData,
-              // Datos específicos del voluntario - Información básica
-              address: volunteerData.address || '',
-              emergencyContactName: volunteerData.emergency_contact || '',
-              emergencyContactPhone: volunteerData.emergency_phone || '',
-              preferredParkId: volunteerData.preferred_park_id || 3,
-              
-              // Experiencia y disponibilidad
-              volunteerExperience: volunteerData.previous_experience || '',
-              skills: volunteerData.skills || '',
-              availability: volunteerData.available_hours || 'flexible',
-              
-              // Áreas de interés (convertimos de array o JSON a booleanos individuales)
-              interestNature: volunteerData.interest_areas?.includes('nature') || false,
-              interestEvents: volunteerData.interest_areas?.includes('events') || false,
-              interestEducation: volunteerData.interest_areas?.includes('education') || false,
-              interestMaintenance: volunteerData.interest_areas?.includes('maintenance') || false,
-              interestSports: volunteerData.interest_areas?.includes('sports') || false,
-              interestCultural: volunteerData.interest_areas?.includes('cultural') || false,
-              
-              // Términos legales
-              legalConsent: volunteerData.legal_consent === true,
-              ageConsent: volunteerData.age_consent === true || false,
-              conductConsent: volunteerData.conduct_consent === true || false
-            }));
-          } else {
-            console.error("Error al cargar datos de voluntario:", await response.text());
-          }
-        } catch (error) {
-          console.error("Error al obtener datos de voluntario:", error);
-        }
-      };
-      
-      loadVolunteerData();
-    }
-  }, [user, editingUserId]);
-
-  // Cargar parques para el selector de parque preferido
-  const { data: parks = [] } = useQuery({
-    queryKey: ['/api/public/parks/list'],
-    // Siempre cargamos los parques para evitar problemas
-    enabled: true,
-    refetchOnWindowFocus: false,
-    staleTime: 5 * 60 * 1000, // 5 minutos
-    retry: 3
-  });
-  
-  // Debugger para el parque preferido
-  useEffect(() => {
-    if (user && userData.role === 'voluntario') {
-      console.log('Datos del usuario cargados:', {
-        userId: user.id,
-        userPreferredParkId: user?.preferredParkId,
-        formPreferredParkId: userData.preferredParkId,
-        availableParks: parks?.length || 0
-      });
-    }
-  }, [user, userData.role, userData.preferredParkId, parks]);
+  // Todos los roles usan el mismo formulario básico simplificado
 
   const handleChange = (field: keyof UserFormData, value: string | number | null | boolean | File | string[]) => {
     setUserData(prev => ({
@@ -604,83 +473,9 @@ const UserDetail: React.FC<{
             </div>
           </div>
           
-          {/* Sección de campos específicos para instructores */}
-          {userData.role === 'instructor' && (
-            <div className="space-y-4 mt-6 pt-6 border-t border-gray-200">
-              <h3 className="font-medium text-lg">Información Profesional de Instructor</h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label htmlFor="specialties" className="text-sm font-medium">Especialidades</label>
-                  <Textarea
-                    id="specialties"
-                    value={Array.isArray(userData.specialties) ? userData.specialties.join(', ') : ''}
-                    onChange={(e) => handleChange('specialties', e.target.value.split(', '))}
-                    placeholder="Yoga, Fitness, Artes marciales, Deportes infantiles, etc."
-                    rows={2}
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">Ingresa las especialidades separadas por comas</p>
-                </div>
-                
-                <div className="space-y-2">
-                  <label htmlFor="curriculumFile" className="text-sm font-medium">Curriculum Vitae</label>
-                  <div className="border border-gray-300 rounded-md p-4 bg-gray-50">
-                    {userData.curriculumFile ? (
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <FileSymlink className="h-5 w-5 text-blue-500" />
-                          <span className="text-sm text-gray-700 truncate max-w-[150px]">
-                            {userData.curriculumFile.name}
-                          </span>
-                        </div>
-                        <button
-                          type="button"
-                          className="text-red-500 hover:text-red-700"
-                          onClick={() => handleChange('curriculumFile', null)}
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="text-center">
-                        <label
-                          htmlFor="curriculumUpload"
-                          className="cursor-pointer inline-flex items-center gap-2 py-2 px-4 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50"
-                        >
-                          <FileSymlink className="h-4 w-4" />
-                          Subir CV
-                          <input
-                            id="curriculumUpload"
-                            type="file"
-                            accept=".pdf,.doc,.docx"
-                            className="hidden"
-                            onChange={handleCurriculumUpload}
-                          />
-                        </label>
-                        <p className="text-xs text-gray-500 mt-2">
-                          Formatos: PDF, DOC, DOCX. Máx: 5MB
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <label htmlFor="experience" className="text-sm font-medium">Experiencia y Certificaciones</label>
-                <Textarea
-                  id="experience"
-                  value={userData.experience}
-                  onChange={(e) => handleChange('experience', e.target.value)}
-                  placeholder="Describe tu experiencia profesional, certificaciones, logros y áreas de especialización."
-                  rows={4}
-                />
-              </div>
-            </div>
-          )}
+
           
-          {/* Sección específica para concesionarios */}
-          {userData.role === 'concesionario' && (
+          {/* Todos los roles usan el mismo formulario simplificado - sin secciones extendidas */}
             <div className="space-y-4 mt-6 pt-6 border-t border-gray-200">
               <h3 className="font-medium text-lg">Información de Concesionario</h3>
               
