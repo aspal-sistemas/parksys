@@ -468,10 +468,51 @@ export class DatabaseStorage implements IStorage {
 
   async deleteUser(id: number): Promise<boolean> {
     try {
-      const result = await db.delete(users).where(eq(users.id, id));
+      console.log(`Iniciando eliminación del usuario ${id} con todas sus dependencias`);
+      
+      // Eliminar todas las referencias del usuario en otras tablas antes de eliminar el usuario
+      await db.execute(sql`
+        BEGIN;
+        
+        -- Eliminar registros relacionados en orden correcto de dependencias
+        -- Primero las evaluaciones de instructores (que referencian instructors)
+        DELETE FROM instructor_evaluations WHERE instructor_id IN (
+          SELECT id FROM instructors WHERE user_id = ${id}
+        );
+        
+        -- Luego las asignaciones de instructores
+        DELETE FROM instructor_assignments WHERE instructor_id IN (
+          SELECT id FROM instructors WHERE user_id = ${id}
+        );
+        
+        -- Ahora los instructores
+        DELETE FROM instructors WHERE user_id = ${id};
+        
+        -- Voluntarios y otros perfiles
+        DELETE FROM volunteers WHERE user_id = ${id};
+        DELETE FROM concessionaire_profiles WHERE user_id = ${id};
+        
+        -- Referencias en otras tablas usando las columnas correctas
+        DELETE FROM incidents WHERE assigned_to_user_id = ${id};
+        DELETE FROM vacation_requests WHERE employee_id = ${id};
+        DELETE FROM employee_balances WHERE employee_id = ${id};
+        
+        -- Finalmente eliminar el usuario
+        DELETE FROM users WHERE id = ${id};
+        
+        COMMIT;
+      `);
+      
+      console.log(`Usuario ${id} y todas sus dependencias eliminados exitosamente`);
       return true;
     } catch (error) {
       console.error(`Error al eliminar usuario ${id}:`, error);
+      // Intentar rollback en caso de error
+      try {
+        await db.execute(sql`ROLLBACK;`);
+      } catch (rollbackError) {
+        console.error("Error en rollback:", rollbackError);
+      }
       throw error;
     }
   }
