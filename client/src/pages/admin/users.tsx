@@ -59,8 +59,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Checkbox } from '@/components/ui/checkbox';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { useProfileCompletion } from '@/components/ProfileCompletionContext';
-import ProfileCompletionIndicator from '@/components/ProfileCompletionIndicator';
+
 
 type User = {
   id: number;
@@ -276,17 +275,6 @@ const UserDetail: React.FC<{
           <div className="space-y-4 pt-6 border-t border-gray-200">
             <div className="flex justify-between items-center">
               <h3 className="font-medium text-lg">Información de Cuenta</h3>
-              
-              {/* Indicador de Completitud de Perfil */}
-              {userData.role && (
-                <div className="max-w-md">
-                  <ProfileCompletionIndicator 
-                    userData={userData} 
-                    role={userData.role} 
-                    showDetails={true}
-                  />
-                </div>
-              )}
             </div>
             
             <div className="grid grid-cols-2 gap-4">

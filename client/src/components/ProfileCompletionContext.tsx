@@ -53,13 +53,6 @@ const INSTRUCTOR_REQUIREMENTS: FieldRequirement[] = [
 
 const VOLUNTEER_REQUIREMENTS: FieldRequirement[] = [
   ...ADMIN_REQUIREMENTS,
-  { fieldName: 'address', label: 'Dirección', required: true, icon: <CreditCard className="h-4 w-4" />, description: 'Tu domicilio actual' },
-  { fieldName: 'legalConsent', label: 'Consentimiento legal', required: true, icon: <ClipboardCheck className="h-4 w-4" />, description: 'Aceptación de términos y condiciones' },
-  { fieldName: 'availableDays', label: 'Días disponibles', required: true, icon: <Calendar className="h-4 w-4" />, description: 'Tu disponibilidad semanal' },
-  { fieldName: 'availability', label: 'Horario disponible', required: false, icon: <Calendar className="h-4 w-4" />, description: 'Tus horarios preferidos' },
-  { fieldName: 'interestAreas', label: 'Áreas de interés', required: true, icon: <Clipboard className="h-4 w-4" />, description: 'Tus áreas de interés para voluntariado' },
-  { fieldName: 'previousExperience', label: 'Experiencia previa', required: false, icon: <Briefcase className="h-4 w-4" />, description: 'Tu experiencia previa en voluntariado' },
-  { fieldName: 'preferredParkId', label: 'Parque preferido', required: false, icon: <Medal className="h-4 w-4" />, description: 'El parque donde prefieres ser voluntario' },
 ];
 
 const CITIZEN_REQUIREMENTS: FieldRequirement[] = [
@@ -69,15 +62,15 @@ const CITIZEN_REQUIREMENTS: FieldRequirement[] = [
 
 const REQUIREMENTS_BY_ROLE: Record<string, FieldRequirement[]> = {
   admin: ADMIN_REQUIREMENTS,
-  director: MANAGER_REQUIREMENTS,
-  manager: MANAGER_REQUIREMENTS,
-  supervisor: MANAGER_REQUIREMENTS,
-  instructor: INSTRUCTOR_REQUIREMENTS,
-  voluntario: VOLUNTEER_REQUIREMENTS,
-  ciudadano: CITIZEN_REQUIREMENTS,
-  guardaparques: MANAGER_REQUIREMENTS,
+  director: ADMIN_REQUIREMENTS,
+  manager: ADMIN_REQUIREMENTS,
+  supervisor: ADMIN_REQUIREMENTS,
+  instructor: ADMIN_REQUIREMENTS,
+  voluntario: ADMIN_REQUIREMENTS,
+  ciudadano: ADMIN_REQUIREMENTS,
+  guardaparques: ADMIN_REQUIREMENTS,
   guardia: ADMIN_REQUIREMENTS,
-  concesionario: MANAGER_REQUIREMENTS,
+  concesionario: ADMIN_REQUIREMENTS,
   user: ADMIN_REQUIREMENTS,
 };
 
