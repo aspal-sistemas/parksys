@@ -81,7 +81,7 @@ const getRoleText = (role: string) => {
   }
 };
 
-const FormularioUsuarioLimpio: React.FC<{
+const FormularioUsuario: React.FC<{
   user: UserData | null;
   isNew: boolean;
   onClose: () => void;
@@ -113,108 +113,138 @@ const FormularioUsuarioLimpio: React.FC<{
     }));
   };
 
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
         toast({
-          title: "Archivo muy grande",
-          description: "La imagen debe ser menor a 5MB",
+          title: "Error de archivo",
+          description: "La imagen no puede superar 5MB",
           variant: "destructive",
         });
         return;
       }
 
+      if (!file.type.match(/^image\/(jpeg|jpg|png|webp)$/)) {
+        toast({
+          title: "Error de formato",
+          description: "Solo se permiten archivos JPG, PNG, WEBP",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setFormData(prev => ({ ...prev, profileImageFile: file }));
+      
       const reader = new FileReader();
-      reader.onload = (e) => {
-        setPreviewImage(e.target?.result as string);
+      reader.onloadend = () => {
+        setPreviewImage(reader.result as string);
       };
       reader.readAsDataURL(file);
-      
-      setFormData(prev => ({
-        ...prev,
-        profileImageFile: file
-      }));
     }
   };
 
   const removeImage = () => {
-    setPreviewImage(null);
-    setFormData(prev => ({
-      ...prev,
-      profileImageFile: null
-    }));
+    setFormData(prev => ({ ...prev, profileImageFile: null }));
+    setPreviewImage(user?.profileImageUrl || null);
+    const fileInput = document.getElementById('profile-image-input') as HTMLInputElement;
+    if (fileInput) fileInput.value = '';
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!formData.username || !formData.email || !formData.fullName) {
+      toast({
+        title: "Error de validación",
+        description: "Los campos básicos son obligatorios.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (isNew && !formData.password) {
+      toast({
+        title: "Error de validación", 
+        description: "La contraseña es obligatoria para nuevos usuarios.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     onSave(formData);
   };
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" aria-describedby="dialog-description">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">
-            {isNew ? '👤 Crear Nuevo Usuario' : '✏️ Editar Usuario'}
+          <DialogTitle className="text-2xl font-bold text-center">
+            {isNew ? '👤 Nuevo Usuario' : '✏️ Editar Usuario'}
           </DialogTitle>
-          <DialogDescription>
-            {isNew ? 'Agrega un nuevo usuario al sistema' : 'Modifica la información del usuario'}
+          <DialogDescription id="dialog-description" className="text-center text-gray-600">
+            {isNew ? 'Crear un nuevo usuario del sistema' : 'Modificar información del usuario'}
           </DialogDescription>
         </DialogHeader>
-
+        
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* SECCIÓN DE FOTOGRAFÍA */}
-          <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-6 rounded-lg border-2 border-blue-200">
-            <h4 className="font-semibold text-blue-800 mb-4">📸 Fotografía de Perfil</h4>
-            
-            <div className="flex items-center space-x-6">
-              <div className="flex-shrink-0">
+          {/* SECCIÓN FOTOGRAFÍA - MUY VISIBLE */}
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl border-2 border-blue-200">
+            <div className="text-center">
+              <h3 className="text-xl font-bold text-blue-800 mb-4">📷 Fotografía de Perfil</h3>
+              
+              <div className="flex flex-col items-center space-y-4">
                 {previewImage ? (
                   <div className="relative">
-                    <img
-                      src={previewImage}
-                      alt="Preview"
-                      className="w-24 h-24 rounded-full object-cover border-4 border-blue-300 shadow-lg"
+                    <img 
+                      src={previewImage} 
+                      alt="Foto de perfil" 
+                      className="w-32 h-32 rounded-full object-cover border-4 border-blue-300 shadow-lg"
                     />
-                    <button
+                    <Button
                       type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="absolute -top-2 -right-2 w-8 h-8 p-0 rounded-full shadow-md"
                       onClick={removeImage}
-                      className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
                     >
-                      <X className="h-3 w-3" />
-                    </button>
+                      <X className="h-4 w-4" />
+                    </Button>
                   </div>
                 ) : (
-                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center">
-                    <Camera className="h-8 w-8 text-gray-600" />
+                  <div className="w-32 h-32 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center border-4 border-gray-300 shadow-lg">
+                    <Camera className="h-12 w-12 text-gray-500" />
                   </div>
                 )}
-              </div>
-              
-              <div className="flex-1">
-                <label className="cursor-pointer">
-                  <div className="bg-white border-2 border-dashed border-blue-300 rounded-lg p-4 text-center hover:border-blue-400 transition-colors">
-                    <Upload className="h-8 w-8 text-blue-500 mx-auto mb-2" />
-                    <p className="text-sm text-blue-700 font-medium">Subir fotografía</p>
-                    <p className="text-xs text-blue-600">JPG, PNG o WEBP (máx. 5MB)</p>
-                  </div>
+                
+                <div className="flex flex-col space-y-3">
+                  <label 
+                    htmlFor="profile-image-input"
+                    className="cursor-pointer bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-lg flex items-center space-x-2 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105"
+                  >
+                    <Upload className="h-5 w-5" />
+                    <span className="font-medium">Subir Fotografía</span>
+                  </label>
                   <input
+                    id="profile-image-input"
                     type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
+                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    onChange={handleFileChange}
                     className="hidden"
                   />
-                </label>
+                  <p className="text-sm text-gray-600 bg-white px-3 py-1 rounded-full">
+                    📁 JPG, PNG, WEBP • Máximo 5MB
+                  </p>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* INFORMACIÓN BÁSICA */}
-          <div className="space-y-4">
+          {/* CAMPOS BÁSICOS */}
+          <div className="bg-gray-50 p-4 rounded-lg space-y-4">
             <h4 className="font-semibold text-gray-700">Información Básica</h4>
             
-            <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-4">
               <div>
                 <label htmlFor="fullName" className="text-sm font-medium text-gray-700 mb-1 block">Nombre Completo *</label>
                 <Input
@@ -226,70 +256,68 @@ const FormularioUsuarioLimpio: React.FC<{
                   required
                 />
               </div>
-
-              <div>
-                <label htmlFor="username" className="text-sm font-medium text-gray-700 mb-1 block">Usuario *</label>
-                <Input
-                  id="username"
-                  value={formData.username}
-                  onChange={(e) => handleChange('username', e.target.value)}
-                  placeholder="Nombre de usuario único"
-                  className="border-2 focus:border-blue-500"
-                  required
-                />
-              </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="role" className="text-sm font-medium text-gray-700 mb-1 block">Rol *</label>
-                <Select value={formData.role} onValueChange={(value: any) => handleChange('role', value)}>
-                  <SelectTrigger className="border-2 focus:border-blue-500">
-                    <SelectValue placeholder="Seleccionar rol" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="admin">🔴 Administrador</SelectItem>
-                    <SelectItem value="manager">🟣 Gestor</SelectItem>
-                    <SelectItem value="supervisor">🟠 Supervisor</SelectItem>
-                    <SelectItem value="instructor">🔵 Instructor</SelectItem>
-                    <SelectItem value="voluntario">🟢 Voluntario</SelectItem>
-                    <SelectItem value="concesionario">🟡 Concesionario</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <label htmlFor="email" className="text-sm font-medium text-gray-700 mb-1 block">Correo Electrónico *</label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => handleChange('email', e.target.value)}
-                  placeholder="usuario@ejemplo.com"
-                  className="border-2 focus:border-blue-500"
-                  required
-                />
-              </div>
+            <div>
+              <label htmlFor="username" className="text-sm font-medium text-gray-700 mb-1 block">Usuario *</label>
+              <Input
+                id="username"
+                value={formData.username}
+                onChange={(e) => handleChange('username', e.target.value)}
+                placeholder="Nombre de usuario único"
+                className="border-2 focus:border-blue-500"
+                required
+              />
             </div>
 
-            {isNew && (
-              <div>
-                <label htmlFor="password" className="text-sm font-medium text-gray-700 mb-1 block">Contraseña *</label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={formData.password}
-                  onChange={(e) => handleChange('password', e.target.value)}
-                  placeholder="Contraseña segura"
-                  className="border-2 focus:border-blue-500"
-                  required
-                />
-              </div>
-            )}
+            <div>
+              <label htmlFor="role" className="text-sm font-medium text-gray-700 mb-1 block">Rol del Sistema *</label>
+              <Select value={formData.role} onValueChange={(value: any) => handleChange('role', value)}>
+                <SelectTrigger className="border-2 focus:border-blue-500">
+                  <SelectValue placeholder="Seleccionar rol" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="admin">🔴 Administrador</SelectItem>
+                  <SelectItem value="manager">🟣 Gestor</SelectItem>
+                  <SelectItem value="supervisor">🟠 Supervisor</SelectItem>
+                  <SelectItem value="instructor">🔵 Instructor</SelectItem>
+                  <SelectItem value="voluntario">🟢 Voluntario</SelectItem>
+                  <SelectItem value="concesionario">🟡 Concesionario</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <label htmlFor="email" className="text-sm font-medium text-gray-700 mb-1 block">Correo Electrónico *</label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => handleChange('email', e.target.value)}
+                placeholder="usuario@ejemplo.com"
+                className="border-2 focus:border-blue-500"
+                required
+              />
+            </div>
+
+            <div>
+              <label htmlFor="password" className="text-sm font-medium text-gray-700 mb-1 block">
+                {isNew ? 'Contraseña *' : 'Nueva Contraseña (opcional)'}
+              </label>
+              <Input
+                id="password"
+                type="password"
+                value={formData.password}
+                onChange={(e) => handleChange('password', e.target.value)}
+                placeholder={isNew ? 'Contraseña segura' : 'Dejar vacío para mantener actual'}
+                className="border-2 focus:border-blue-500"
+                required={isNew}
+              />
+            </div>
           </div>
 
-          {/* INFORMACIÓN PERSONAL */}
-          <div className="space-y-4">
+          {/* INFORMACIÓN ADICIONAL */}
+          <div className="bg-gray-50 p-4 rounded-lg space-y-4">
             <h4 className="font-semibold text-gray-700">Información Personal</h4>
             
             <div className="grid grid-cols-2 gap-4">
@@ -299,7 +327,7 @@ const FormularioUsuarioLimpio: React.FC<{
                   id="phone"
                   value={formData.phone}
                   onChange={(e) => handleChange('phone', e.target.value)}
-                  placeholder="Número de teléfono"
+                  placeholder="Número de contacto"
                   className="border-2 focus:border-blue-500"
                 />
               </div>
@@ -343,6 +371,8 @@ const FormularioUsuarioLimpio: React.FC<{
             </div>
           </div>
 
+
+
           <DialogFooter className="pt-6 border-t">
             <Button 
               type="button" 
@@ -377,7 +407,7 @@ export default function UsersPage() {
   const [searchTerm, setSearchTerm] = useState('');
 
   const { data: users = [], isLoading } = useQuery({
-    queryKey: ['/api/users', Date.now()],
+    queryKey: ['/api/users', Date.now()], // Cache único por timestamp
     staleTime: 0,
     refetchOnWindowFocus: true,
     refetchOnMount: true,
@@ -387,6 +417,7 @@ export default function UsersPage() {
     mutationFn: async (userData: UserFormData) => {
       const isUpdate = selectedUser !== null;
       
+      // 1. Primero subir imagen si existe
       let imageUrl = null;
       if (userData.profileImageFile) {
         const imageFormData = new FormData();
@@ -403,14 +434,26 @@ export default function UsersPage() {
         if (imageResponse.ok) {
           const imageResult = await imageResponse.json();
           imageUrl = imageResult.url;
+          console.log('✅ Imagen subida correctamente:', imageUrl);
+        } else {
+          console.error('❌ Error subiendo imagen');
         }
       }
       
+      // 2. Luego guardar/actualizar usuario
       const userDataToSend = {
         ...userData,
         profileImageUrl: imageUrl || (isUpdate ? selectedUser?.profileImageUrl : null)
       };
-      delete (userDataToSend as any).profileImageFile;
+      delete (userDataToSend as any).profileImageFile; // Remover archivo del objeto
+      
+      console.log('📤 DATOS FINALES ENVIADOS AL SERVIDOR:', userDataToSend);
+      console.log('📤 Imagen info:', {
+        imageUrl,
+        profileImageUrl: userDataToSend.profileImageUrl,
+        isUpdate,
+        userId: selectedUser?.id
+      });
       
       const url = isUpdate ? `/api/users/${selectedUser?.id}` : '/api/users';
       const method = isUpdate ? 'PUT' : 'POST';
@@ -431,6 +474,7 @@ export default function UsersPage() {
       return response.json();
     },
     onSuccess: () => {
+      // Invalidar cache de manera más agresiva
       queryClient.invalidateQueries({ queryKey: ['/api/users'] });
       queryClient.refetchQueries({ queryKey: ['/api/users'] });
       
@@ -441,6 +485,7 @@ export default function UsersPage() {
       setSelectedUser(null);
       setIsNewUser(false);
       
+      // Forzar recarga de la página para mostrar cambios inmediatamente
       setTimeout(() => {
         window.location.reload();
       }, 1000);
@@ -511,7 +556,7 @@ export default function UsersPage() {
             size="lg"
           >
             <Plus className="h-5 w-5 mr-2" />
-            Nuevo Usuario
+            Agregar Usuario
           </Button>
         </div>
 
@@ -555,26 +600,41 @@ export default function UsersPage() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-12 w-12">
+
                           {user.profileImageUrl ? (
                             <img 
                               className="h-12 w-12 rounded-full object-cover border-2 border-blue-300 shadow-sm" 
                               src={`${user.profileImageUrl}?t=${Date.now()}`}
                               alt={user.fullName}
+                              onError={(e) => {
+                                console.log('❌ Error cargando imagen:', user.profileImageUrl);
+                                console.log('Usuario:', user.fullName, 'ID:', user.id);
+                                e.currentTarget.style.display = 'none';
+                                const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
+                                if (nextElement) {
+                                  nextElement.style.display = 'flex';
+                                }
+                              }}
+                              onLoad={() => {
+                                console.log('✅ Imagen cargada correctamente:', user.profileImageUrl);
+                              }}
                             />
-                          ) : (
-                            <div className="h-12 w-12 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center">
-                              <UserRound className="h-6 w-6 text-gray-600" />
-                            </div>
-                          )}
+                          ) : null}
+                          <div 
+                            className="h-12 w-12 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center"
+                            style={{ display: user.profileImageUrl ? 'none' : 'flex' }}
+                          >
+                            <UserRound className="h-7 w-7 text-gray-600" />
+                          </div>
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-semibold text-gray-900">{user.fullName}</div>
+                          <div className="text-sm font-bold text-gray-900">{user.fullName}</div>
                           <div className="text-sm text-gray-500">@{user.username}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-3 py-1 text-xs font-bold rounded-full ${getRoleColor(user.role)}`}>
+                      <span className={`inline-flex px-3 py-1 text-sm font-bold rounded-full ${getRoleColor(user.role)}`}>
                         {getRoleText(user.role)}
                       </span>
                     </td>
@@ -583,27 +643,31 @@ export default function UsersPage() {
                       <div className="text-sm text-gray-500">{user.phone || 'Sin teléfono'}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(user.createdAt).toLocaleDateString('es-ES')}
+                      {new Date(user.createdAt).toLocaleDateString('es-MX')}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                      <Button
-                        onClick={() => setSelectedUser(user)}
-                        variant="outline"
-                        size="sm"
-                        className="hover:bg-blue-50"
-                      >
-                        <Edit className="h-4 w-4 mr-1" />
-                        Editar
-                      </Button>
-                      <Button
-                        onClick={() => deleteUserMutation.mutate(user.id)}
-                        variant="outline"
-                        size="sm"
-                        className="hover:bg-red-50 text-red-600 border-red-200"
-                      >
-                        <Trash2 className="h-4 w-4 mr-1" />
-                        Eliminar
-                      </Button>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex items-center justify-end space-x-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setSelectedUser(user)}
+                          className="hover:bg-blue-50"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => {
+                            if (window.confirm(`¿Eliminar a ${user.fullName}?`)) {
+                              deleteUserMutation.mutate(user.id);
+                            }
+                          }}
+                          disabled={deleteUserMutation.isPending}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -612,8 +676,18 @@ export default function UsersPage() {
           </div>
         </div>
 
-        {(isNewUser || selectedUser) && (
-          <FormularioUsuarioLimpio
+        {filteredUsers.length === 0 && (
+          <div className="text-center py-12">
+            <UserRound className="mx-auto h-16 w-16 text-gray-400" />
+            <h3 className="mt-4 text-xl font-medium text-gray-900">No hay usuarios</h3>
+            <p className="mt-2 text-gray-500 text-lg">
+              {searchTerm ? 'No se encontraron usuarios que coincidan con tu búsqueda.' : 'Comienza agregando un nuevo usuario.'}
+            </p>
+          </div>
+        )}
+
+        {(selectedUser || isNewUser) && (
+          <FormularioUsuario
             user={selectedUser}
             isNew={isNewUser}
             onClose={() => {
