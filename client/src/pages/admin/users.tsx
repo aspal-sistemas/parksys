@@ -429,7 +429,7 @@ const AdminUsers = () => {
       const url = isUpdate ? `/api/users/${selectedUser?.id}` : '/api/users';
       const method = isUpdate ? 'PUT' : 'POST';
 
-      let finalUserData = userDataWithoutFile;
+      let finalUserData: any = userDataWithoutFile;
       if (isUpdate && !userData.password) {
         const { password, ...dataWithoutPassword } = userDataWithoutFile;
         finalUserData = dataWithoutPassword;
@@ -656,10 +656,10 @@ const AdminUsers = () => {
           <DialogContent aria-describedby="delete-confirmation-description">
             <DialogHeader>
               <DialogTitle>Confirmar eliminación</DialogTitle>
+              <DialogDescription id="delete-confirmation-description">
+                ¿Estás seguro de que deseas eliminar al usuario {userToDelete?.fullName || userToDelete?.username}? Esta acción no se puede deshacer.
+              </DialogDescription>
             </DialogHeader>
-            <div id="delete-confirmation-description" className="py-4">
-              <p>¿Estás seguro de que deseas eliminar al usuario {userToDelete?.fullName || userToDelete?.username}?</p>
-            </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowDeleteConfirm(false)}>
                 Cancelar
