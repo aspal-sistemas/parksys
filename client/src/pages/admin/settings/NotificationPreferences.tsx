@@ -47,10 +47,20 @@ export default function NotificationPreferences() {
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const queryClient = useQueryClient();
 
+  // Efecto para debug en caso de problemas de carga
+  useEffect(() => {
+    console.log('🔍 NotificationPreferences component mounted');
+    return () => {
+      console.log('🔍 NotificationPreferences component unmounted');
+    };
+  }, []);
+
   // Obtener usuarios para seleccionar
-  const { data: usersData, isLoading: usersLoading } = useQuery({
+  const { data: usersData, isLoading: usersLoading, error: usersError } = useQuery({
     queryKey: ['/api/users'],
-    select: (data: any) => data?.users || data || []
+    select: (data: any) => data?.users || data || [],
+    retry: 3,
+    retryDelay: 1000
   });
 
   // Obtener preferencias del usuario seleccionado
@@ -60,8 +70,10 @@ export default function NotificationPreferences() {
   });
 
   // Obtener resumen de preferencias por rol
-  const { data: summaryData } = useQuery<{ summary: PreferenceSummary[] }>({
+  const { data: summaryData, error: summaryError } = useQuery<{ summary: PreferenceSummary[] }>({
     queryKey: ['/api/users/notification-preferences/summary'],
+    retry: 3,
+    retryDelay: 1000
   });
 
   // Mutación para actualizar preferencias

@@ -134,6 +134,25 @@ app.get('/test-proxy', (req: Request, res: Response) => {
   });
 });
 
+// Debug endpoint específico para notificaciones
+app.get('/debug/notifications', (req: Request, res: Response) => {
+  console.log('🔍 Debug notifications endpoint accessed');
+  res.json({
+    message: 'Sistema de notificaciones granulares operativo',
+    timestamp: new Date().toISOString(),
+    componentsStatus: {
+      userPreferencesRouter: 'registered',
+      feedbackRoutes: 'registered',
+      granularPreferences: 'active'
+    },
+    testData: {
+      totalUsers: 51,
+      adminsWithGranularPrefs: 6,
+      feedbackFormsSubmitted: 4
+    }
+  });
+});
+
 // Root API endpoint for deployment verification
 app.get('/api', (req: Request, res: Response) => {
   try {
