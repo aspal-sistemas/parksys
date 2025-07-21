@@ -1,1 +1,0 @@
-import{j as a,aI as i}from"./index-Dzu3mJf5.js";import{C as m}from"./components-wtBZ3U6m.js";import"./radio-group-CeDg7LrT.js";import"./send-DKRtUueH.js";import"./play-5efn8UH2.js";import"./circle-x-C53LJYQf.js";const n=()=>a.jsx(i,{title:"Campañas de Email",children:a.jsx("div",{className:"space-y-6",children:a.jsx(m,{})})});export{n as default};

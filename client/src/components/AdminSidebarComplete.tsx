@@ -407,7 +407,7 @@ const AdminSidebarComplete: React.FC = () => {
               icon={<Bell className="h-5 w-5" />}
               active={location === '/admin/users/notifications'}
             >
-              Notificaciones
+              Preferencias de Notificaciones
             </NavItem>
           </ModuleNav>
 

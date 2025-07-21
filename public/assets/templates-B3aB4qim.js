@@ -1,1 +1,0 @@
-import{j as t,aI as a}from"./index-Dzu3mJf5.js";import{T as i}from"./components-wtBZ3U6m.js";import"./radio-group-CeDg7LrT.js";import"./send-DKRtUueH.js";import"./play-5efn8UH2.js";import"./circle-x-C53LJYQf.js";const p=()=>t.jsx(a,{title:"Plantillas de Email",children:t.jsx("div",{className:"space-y-6",children:t.jsx(i,{})})});export{p as default};

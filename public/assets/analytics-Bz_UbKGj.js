@@ -1,0 +1,1 @@
+import{j as i,aI as t}from"./index-VG22aPDC.js";import{A as s}from"./components-CZy1AAOn.js";import"./radio-group-BjTZrNrD.js";import"./send-U55zSg0n.js";import"./play-g1kART6K.js";import"./circle-x-DVpQ1AkT.js";const c=()=>i.jsx(t,{title:"Análisis de Comunicaciones",children:i.jsx("div",{className:"space-y-6",children:i.jsx(s,{})})});export{c as default};

@@ -1,0 +1,1 @@
+import{bQ as a,aZ as i,aV as s,aW as t,bR as e}from"./index-VG22aPDC.js";var x=a({chartName:"BarChart",GraphicalChild:i,defaultTooltipEventType:"axis",validateTooltipEventTypes:["axis","item"],axisComponents:[{axisType:"xAxis",AxisComp:s},{axisType:"yAxis",AxisComp:t}],formatAxisMap:e});export{x as B};
