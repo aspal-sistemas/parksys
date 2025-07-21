@@ -252,7 +252,7 @@ export default function VisitorDashboard() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todos los parques</SelectItem>
-                    {parks?.map(park => (
+                    {parks && Array.isArray(parks) && parks.map(park => (
                       <SelectItem key={park.id} value={park.id.toString()}>
                         {park.name}
                       </SelectItem>

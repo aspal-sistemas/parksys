@@ -647,7 +647,7 @@ export default function VisitorCountPage() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">Todos los parques</SelectItem>
-                        {parks?.filter(park => park.id && park.name).map((park) => (
+                        {parks && Array.isArray(parks) && parks.filter(park => park.id && park.name).map((park) => (
                           <SelectItem key={park.id} value={park.id.toString()}>
                             {park.name}
                           </SelectItem>
@@ -963,7 +963,7 @@ export default function VisitorCountPage() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="all">Todos los parques</SelectItem>
-                          {parks?.filter(park => park.id && park.name).map((park) => (
+                          {parks && Array.isArray(parks) && parks.filter(park => park.id && park.name).map((park) => (
                             <SelectItem key={park.id} value={park.id.toString()}>
                               {park.name}
                             </SelectItem>
@@ -1269,7 +1269,7 @@ export default function VisitorCountPage() {
                             <SelectValue placeholder="Selecciona un parque" />
                           </SelectTrigger>
                           <SelectContent>
-                            {parks?.filter(park => park.id && park.name).map((park) => (
+                            {parks && Array.isArray(parks) && parks.filter(park => park.id && park.name).map((park) => (
                               <SelectItem key={park.id} value={park.id.toString()}>
                                 {park.name}
                               </SelectItem>
