@@ -55,6 +55,15 @@ interface UserFormData {
   bio: string;
   municipalityId: number | null;
   profileImageFile?: File | null;
+  // Campos adicionales para voluntarios
+  address?: string;
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
+  preferredParkId?: number | null;
+  volunteerExperience?: string;
+  skills?: string;
+  availability?: string;
+  legalConsent?: boolean;
 }
 
 const getRoleColor = (role: string) => {
@@ -63,6 +72,8 @@ const getRoleColor = (role: string) => {
     case 'manager': return 'bg-purple-500 text-white';
     case 'supervisor': return 'bg-orange-500 text-white';
     case 'instructor': return 'bg-blue-500 text-white';
+    case 'voluntario': return 'bg-green-500 text-white';
+    case 'concesionario': return 'bg-yellow-600 text-white';
     default: return 'bg-gray-500 text-white';
   }
 };
@@ -73,6 +84,8 @@ const getRoleText = (role: string) => {
     case 'manager': return 'Gestor';
     case 'supervisor': return 'Supervisor';
     case 'instructor': return 'Instructor';
+    case 'voluntario': return 'Voluntario';
+    case 'concesionario': return 'Concesionario';
     default: return role;
   }
 };
@@ -98,11 +111,20 @@ const FormularioUsuario: React.FC<{
     bio: user?.bio || '',
     municipalityId: user?.municipalityId || null,
     profileImageFile: null,
+    // Campos adicionales para voluntarios
+    address: user?.address || '',
+    emergencyContactName: user?.emergencyContactName || '',
+    emergencyContactPhone: user?.emergencyContactPhone || '',
+    preferredParkId: user?.preferredParkId || null,
+    volunteerExperience: user?.volunteerExperience || '',
+    skills: user?.skills || '',
+    availability: user?.availability || '',
+    legalConsent: user?.legalConsent || false,
   });
 
   const [previewImage, setPreviewImage] = useState<string | null>(user?.profileImageUrl || null);
 
-  const handleChange = (field: keyof UserFormData, value: string | number | null) => {
+  const handleChange = (field: keyof UserFormData, value: string | number | boolean | null) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -277,6 +299,8 @@ const FormularioUsuario: React.FC<{
                   <SelectItem value="manager">🟣 Gestor</SelectItem>
                   <SelectItem value="supervisor">🟠 Supervisor</SelectItem>
                   <SelectItem value="instructor">🔵 Instructor</SelectItem>
+                  <SelectItem value="voluntario">🟢 Voluntario</SelectItem>
+                  <SelectItem value="concesionario">🟡 Concesionario</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -364,6 +388,118 @@ const FormularioUsuario: React.FC<{
               />
             </div>
           </div>
+
+          {/* CAMPOS ADICIONALES PARA VOLUNTARIOS */}
+          {formData.role === 'voluntario' && (
+            <div className="bg-green-50 p-4 rounded-lg space-y-4 border-2 border-green-200">
+              <h4 className="font-semibold text-green-800">🟢 Información Específica de Voluntario</h4>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="address" className="text-sm font-medium text-gray-700 mb-1 block">Dirección</label>
+                  <Input
+                    id="address"
+                    value={formData.address || ''}
+                    onChange={(e) => handleChange('address', e.target.value)}
+                    placeholder="Dirección completa"
+                    className="border-2 focus:border-green-500"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="preferredParkId" className="text-sm font-medium text-gray-700 mb-1 block">Parque Preferido</label>
+                  <Select value={formData.preferredParkId?.toString() || ''} onValueChange={(value: any) => handleChange('preferredParkId', value ? Number(value) : null)}>
+                    <SelectTrigger className="border-2 focus:border-green-500">
+                      <SelectValue placeholder="Seleccionar parque" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="3">Bosque Los Colomos</SelectItem>
+                      <SelectItem value="4">Parque Agua Azul</SelectItem>
+                      <SelectItem value="5">Parque Metropolitano</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="emergencyContactName" className="text-sm font-medium text-gray-700 mb-1 block">Contacto de Emergencia</label>
+                  <Input
+                    id="emergencyContactName"
+                    value={formData.emergencyContactName || ''}
+                    onChange={(e) => handleChange('emergencyContactName', e.target.value)}
+                    placeholder="Nombre del contacto"
+                    className="border-2 focus:border-green-500"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="emergencyContactPhone" className="text-sm font-medium text-gray-700 mb-1 block">Teléfono de Emergencia</label>
+                  <Input
+                    id="emergencyContactPhone"
+                    value={formData.emergencyContactPhone || ''}
+                    onChange={(e) => handleChange('emergencyContactPhone', e.target.value)}
+                    placeholder="Número de emergencia"
+                    className="border-2 focus:border-green-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="volunteerExperience" className="text-sm font-medium text-gray-700 mb-1 block">Experiencia Previa como Voluntario</label>
+                <Textarea
+                  id="volunteerExperience"
+                  value={formData.volunteerExperience || ''}
+                  onChange={(e) => handleChange('volunteerExperience', e.target.value)}
+                  placeholder="Describe tu experiencia previa en voluntariado"
+                  rows={3}
+                  className="border-2 focus:border-green-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="skills" className="text-sm font-medium text-gray-700 mb-1 block">Habilidades Especiales</label>
+                  <Input
+                    id="skills"
+                    value={formData.skills || ''}
+                    onChange={(e) => handleChange('skills', e.target.value)}
+                    placeholder="Primeros auxilios, jardinería, etc."
+                    className="border-2 focus:border-green-500"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="availability" className="text-sm font-medium text-gray-700 mb-1 block">Disponibilidad</label>
+                  <Select value={formData.availability || ''} onValueChange={(value: any) => handleChange('availability', value)}>
+                    <SelectTrigger className="border-2 focus:border-green-500">
+                      <SelectValue placeholder="Seleccionar disponibilidad" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="flexible">Flexible</SelectItem>
+                      <SelectItem value="weekends">Fines de semana</SelectItem>
+                      <SelectItem value="weekdays">Entre semana</SelectItem>
+                      <SelectItem value="mornings">Mañanas</SelectItem>
+                      <SelectItem value="afternoons">Tardes</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="legalConsent"
+                  checked={formData.legalConsent || false}
+                  onChange={(e) => handleChange('legalConsent', e.target.checked)}
+                  className="w-4 h-4 text-green-600 border-2 border-gray-300 rounded focus:ring-green-500"
+                />
+                <label htmlFor="legalConsent" className="text-sm font-medium text-gray-700">
+                  ✅ Acepto los términos y condiciones del programa de voluntariado
+                </label>
+              </div>
+            </div>
+          )}
 
           <DialogFooter className="pt-6 border-t">
             <Button 
