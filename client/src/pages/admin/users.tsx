@@ -607,9 +607,7 @@ export default function UsersPage() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-12 w-12">
-                          {/* DEBUG: Siempre loggear datos del usuario */}
-                          {console.log('🔍 Usuario completo:', user) || null}
-                          {console.log('📸 profileImageUrl específico:', user.profileImageUrl) || null}
+
                           {user.profileImageUrl ? (
                             <img 
                               className="h-12 w-12 rounded-full object-cover border-2 border-blue-300 shadow-sm" 
@@ -625,9 +623,7 @@ export default function UsersPage() {
                                 console.log('✅ Imagen cargada correctamente:', user.profileImageUrl);
                               }}
                             />
-                          ) : (
-                            console.log('⚠️ No hay profileImageUrl para:', user.fullName, 'ID:', user.id) || null
-                          )}
+                          ) : null}
                           <div 
                             className="h-12 w-12 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center"
                             style={{ display: user.profileImageUrl ? 'none' : 'flex' }}
