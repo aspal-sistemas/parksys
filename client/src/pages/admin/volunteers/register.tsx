@@ -16,48 +16,21 @@ import { useToast } from '@/hooks/use-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 
-// Schema de validación para registro de voluntarios
-const volunteerRegistrationSchema = z.object({
-  // Información personal básica
+// Schema básico simplificado para todos los roles
+const basicUserRegistrationSchema = z.object({
+  // Solo información personal básica
   firstName: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
   lastName: z.string().min(2, 'El apellido debe tener al menos 2 caracteres'),
   email: z.string().email('Debe ser un email válido'),
-  phone: z.string().min(10, 'El teléfono debe tener al menos 10 dígitos'),
-  birthDate: z.string().min(1, 'La fecha de nacimiento es requerida'),
-  gender: z.enum(['masculino', 'femenino', 'no_especificar']),
-  
-  // Información de contacto
-  address: z.string().min(10, 'La dirección debe tener al menos 10 caracteres'),
-  emergencyContactName: z.string().min(2, 'El nombre del contacto de emergencia es requerido'),
-  emergencyContactPhone: z.string().min(10, 'El teléfono de emergencia debe tener al menos 10 dígitos'),
-  
-  // Información de voluntariado
-  preferredParkId: z.string().optional(),
-  volunteerExperience: z.string().optional(),
-  skills: z.string().optional(),
-  availability: z.enum(['weekdays', 'weekends', 'evenings', 'mornings', 'flexible']),
-  
-  // Fotografía del voluntario
+  phone: z.string().optional(),
+  birthDate: z.string().optional(),
+  gender: z.enum(['masculino', 'femenino', 'no_especificar']).optional(),
+  bio: z.string().optional(),
   profileImage: z.any().optional(),
-  
-  // Áreas de interés
-  interestNature: z.boolean().optional(),
-  interestEvents: z.boolean().optional(),
-  interestEducation: z.boolean().optional(),
-  interestMaintenance: z.boolean().optional(),
-  interestSports: z.boolean().optional(),
-  interestCultural: z.boolean().optional(),
-  
-  // Consentimientos legales
-  legalConsent: z.boolean().refine(val => val === true, 'Debe aceptar los términos legales'),
-  ageConsent: z.boolean().refine(val => val === true, 'Debe confirmar ser mayor de edad'),
-  conductConsent: z.boolean().refine(val => val === true, 'Debe aceptar el código de conducta'),
-  
-  // Municipalidad
   municipalityId: z.number().optional(),
 });
 
-type VolunteerRegistrationForm = z.infer<typeof volunteerRegistrationSchema>;
+type BasicUserRegistrationForm = z.infer<typeof basicUserRegistrationSchema>;
 
 export default function VolunteerRegisterPage() {
   const [, setLocation] = useLocation();
@@ -67,8 +40,8 @@ export default function VolunteerRegisterPage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
 
-  const form = useForm<VolunteerRegistrationForm>({
-    resolver: zodResolver(volunteerRegistrationSchema),
+  const form = useForm<BasicUserRegistrationForm>({
+    resolver: zodResolver(basicUserRegistrationSchema),
     defaultValues: {
       firstName: '',
       lastName: '',
@@ -76,22 +49,7 @@ export default function VolunteerRegisterPage() {
       phone: '',
       birthDate: '',
       gender: 'no_especificar',
-      address: '',
-      emergencyContactName: '',
-      emergencyContactPhone: '',
-      preferredParkId: '',
-      volunteerExperience: '',
-      skills: '',
-      availability: 'flexible',
-      interestNature: false,
-      interestEvents: false,
-      interestEducation: false,
-      interestMaintenance: false,
-      interestSports: false,
-      interestCultural: false,
-      legalConsent: false,
-      ageConsent: false,
-      conductConsent: false,
+      bio: '',
       municipalityId: 2, // Guadalajara por defecto
       profileImage: null,
     },
@@ -140,20 +98,21 @@ export default function VolunteerRegisterPage() {
     form.setValue('profileImage', null);
   };
 
-  // Mutación para crear voluntario
+  // Mutación para crear usuario básico con rol voluntario
   const createVolunteerMutation = useMutation({
-    mutationFn: async (data: VolunteerRegistrationForm) => {
-      const volunteerData = {
+    mutationFn: async (data: BasicUserRegistrationForm) => {
+      const userData = {
         ...data,
         role: 'voluntario',
         username: data.email, // Usar email como username
         password: 'temp123', // Contraseña temporal
         profileImageUrl: uploadedImageUrl, // Incluir la URL de la imagen subida
+        fullName: `${data.firstName} ${data.lastName}`,
       };
 
       const response = await apiRequest('/api/users', {
         method: 'POST',
-        data: volunteerData,
+        data: userData,
       });
 
       return response;
@@ -176,7 +135,7 @@ export default function VolunteerRegisterPage() {
     },
   });
 
-  const onSubmit = (data: VolunteerRegistrationForm) => {
+  const onSubmit = (data: BasicUserRegistrationForm) => {
     createVolunteerMutation.mutate(data);
   };
 
@@ -204,7 +163,7 @@ export default function VolunteerRegisterPage() {
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Información Personal */}
+            {/* Información Personal Básica */}
             <Card>
               <CardHeader>
                 <CardTitle>Información Personal</CardTitle>
@@ -258,7 +217,7 @@ export default function VolunteerRegisterPage() {
                   name="phone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Teléfono</FormLabel>
+                      <FormLabel>Teléfono (opcional)</FormLabel>
                       <FormControl>
                         <Input placeholder="33-1234-5678" {...field} />
                       </FormControl>
@@ -272,7 +231,7 @@ export default function VolunteerRegisterPage() {
                   name="birthDate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Fecha de Nacimiento</FormLabel>
+                      <FormLabel>Fecha de Nacimiento (opcional)</FormLabel>
                       <FormControl>
                         <Input type="date" {...field} />
                       </FormControl>
@@ -286,7 +245,7 @@ export default function VolunteerRegisterPage() {
                   name="gender"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Género</FormLabel>
+                      <FormLabel>Género (opcional)</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
@@ -303,6 +262,27 @@ export default function VolunteerRegisterPage() {
                     </FormItem>
                   )}
                 />
+
+                {/* Campo de biografía opcional */}
+                <div className="md:col-span-2">
+                  <FormField
+                    control={form.control}
+                    name="bio"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Biografía (opcional)</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="Breve descripción personal" 
+                            {...field} 
+                            rows={3}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
                 {/* Campo de fotografía del voluntario */}
                 <div className="md:col-span-2">
