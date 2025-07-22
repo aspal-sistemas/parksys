@@ -166,7 +166,7 @@ const TreesDashboard: React.FC = () => {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-              <TreePine className="w-8 h-8" />
+              <Activity className="w-8 h-8" />
               Dashboard de Arbolado
             </h1>
             <p className="text-gray-600 mt-2">Análisis y estadísticas del arbolado urbano</p>
