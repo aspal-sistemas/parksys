@@ -267,7 +267,7 @@ const AdminActivities = () => {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
             <Calendar className="w-8 h-8" />
-            Dashboard
+            Listado
           </h1>
           <div className="flex items-center gap-3">
             {/* Toggle de vista */}
