@@ -209,16 +209,13 @@ const Incidents: React.FC = () => {
 
       {/* Diálogo para reportar incidente */}
       <Dialog open={isReportDialogOpen} onOpenChange={setIsReportDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]" aria-describedby="incident-report-description">
+        <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle>Reportar Incidente</DialogTitle>
             <DialogDescription>
               Informe sobre problemas encontrados en el parque para que puedan ser atendidos.
             </DialogDescription>
           </DialogHeader>
-          <div id="incident-report-description" className="sr-only">
-            Formulario para reportar incidentes en parques con detalles y ubicación
-          </div>
 
           {!isLoadingParks && selectedParkId ? (
             <div className="py-4">

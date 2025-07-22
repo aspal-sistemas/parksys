@@ -353,12 +353,9 @@ export default function SpaceReservationsCalendarPage() {
 
       {/* Reservation Details Dialog */}
       <Dialog open={!!selectedReservation} onOpenChange={(open) => !open && setSelectedReservation(null)}>
-        <DialogContent className="max-w-2xl" aria-describedby="reservation-details-description">
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Detalles de la Reserva</DialogTitle>
-            <div id="reservation-details-description" className="sr-only">
-              Información completa de la reserva seleccionada con detalles del cliente y espacio
-            </div>
           </DialogHeader>
           {selectedReservation && (
             <div className="space-y-4">

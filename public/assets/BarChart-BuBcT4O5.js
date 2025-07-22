@@ -1,1 +1,0 @@
-import{bQ as a,aS as i,aO as s,aP as t,bR as e}from"./index-BBGHPKhn.js";var x=a({chartName:"BarChart",GraphicalChild:i,defaultTooltipEventType:"axis",validateTooltipEventTypes:["axis","item"],axisComponents:[{axisType:"xAxis",AxisComp:s},{axisType:"yAxis",AxisComp:t}],formatAxisMap:e});export{x as B};

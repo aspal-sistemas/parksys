@@ -18,14 +18,21 @@ import AdminAnalytics from "@/pages/admin/analytics";
 import AdminDocuments from "@/pages/admin/documents";
 import AdminComments from "@/pages/admin/comments";
 import AdminIncidents from "@/pages/admin/incidents";
-import AdminUsers from "@/pages/admin/users-fixed";
+import AdminUsers from "@/pages/admin/users";
 import AdminActivities from "@/pages/admin/activities";
 import AdminAmenities from "@/pages/admin/amenities";
 import AdminSettings from "@/pages/admin/settings";
 import AdminLogin from "@/pages/admin/login";
 import TestAccess from "@/pages/test-access";
+import AdminVolunteers from "@/pages/admin/volunteers";
 import Landing from "@/pages/Landing";
 import ParksModuleShowcase from "@/pages/ParksModuleShowcase";
+// El import de AdminVolunteerNew ha sido eliminado
+import AdminVolunteerParticipations from "@/pages/admin/volunteers/participations";
+import AdminParticipationEdit from "@/pages/admin/volunteers/participations/edit";
+import AdminVolunteerEvaluations from "@/pages/admin/volunteers/evaluations";
+import AdminEvaluationEdit from "@/pages/admin/volunteers/evaluations/edit";
+import DashboardPage from "@/pages/admin/volunteers/dashboard-page";
 import Header from "@/components/Header";
 
 function Router() {
@@ -84,7 +91,16 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/ConcessionDetail')))}
           </Suspense>
         </Route>
-
+        <Route path="/volunteers">
+          <Suspense fallback={<div className="p-8 text-center">Cargando voluntarios...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/VolunteersList')))}
+          </Suspense>
+        </Route>
+        <Route path="/volunteers/register">
+          <Suspense fallback={<div className="p-8 text-center">Cargando formulario de registro...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/VolunteerRegistration')))}
+          </Suspense>
+        </Route>
         <Route path="/tree-species">
           <Suspense fallback={<div className="p-8 text-center">Cargando especies arbóreas...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/TreeSpecies')))}
@@ -274,18 +290,8 @@ function Router() {
           </Suspense>
         </Route>
         <Route path="/admin/users">
-          <Suspense fallback={<div className="p-8 text-center">Cargando...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/users-emergency')))}
-          </Suspense>
-        </Route>
-        <Route path="/admin/users-fixed">
-          <Suspense fallback={<div className="p-8 text-center">Cargando...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/users-emergency')))}
-          </Suspense>
-        </Route>
-        <Route path="/admin/users-emergency">
-          <Suspense fallback={<div className="p-8 text-center">Cargando...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/users-emergency')))}
+          <Suspense fallback={<div className="p-8 text-center">Cargando gestión de usuarios...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/users')))}
           </Suspense>
         </Route>
 
@@ -319,7 +325,40 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/permissions')))}
           </Suspense>
         </Route>
-
+        <Route path="/admin/volunteers">
+          <Suspense fallback={<div className="p-8 text-center">Cargando gestión de voluntarios...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/volunteers/index')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/volunteers/participations" component={AdminVolunteerParticipations} />
+        <Route path="/admin/volunteers/participations/:id" component={AdminParticipationEdit} />
+        <Route path="/admin/volunteers/evaluations" component={AdminVolunteerEvaluations} />
+        <Route path="/admin/volunteers/evaluations/:id" component={AdminEvaluationEdit} />
+        <Route path="/admin/volunteers/recognition">
+          <Suspense fallback={<div className="p-8 text-center">Cargando reconocimientos...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/volunteers/recognition')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/volunteers/dashboard">
+          <Suspense fallback={<div className="p-8 text-center">Cargando dashboard de voluntariado...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/volunteers/dashboard/index')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/volunteers/settings">
+          <Suspense fallback={<div className="p-8 text-center">Cargando configuración de voluntariado...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/volunteers/settings/index')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/volunteers/register">
+          <Suspense fallback={<div className="p-8 text-center">Cargando registro de voluntarios...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/volunteers/register')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/volunteers/edit/:id">
+          <Suspense fallback={<div className="p-8 text-center">Cargando edición de voluntario...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/volunteers/edit')))}
+          </Suspense>
+        </Route>
         
         {/* La ruta de registro y edición de voluntarios ha sido eliminada del módulo de Voluntarios
              ya que ahora se gestiona desde el módulo de Usuarios */}
@@ -831,7 +870,11 @@ function Router() {
           </Suspense>
         </Route>
         
-
+        <Route path="/admin/concessions/concessionaires">
+          <Suspense fallback={<div className="p-8 text-center">Cargando gestión de concesionarios...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/concessions/concessionaires/ConcessionairesTabbed')))}
+          </Suspense>
+        </Route>
         
         <Route path="/admin/concessions/contracts">
           <Suspense fallback={<div className="p-8 text-center">Cargando contratos de concesiones...</div>}>

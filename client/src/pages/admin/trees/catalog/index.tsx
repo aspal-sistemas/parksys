@@ -698,12 +698,9 @@ function TreeSpeciesCatalog() {
             >
               <Upload className="mr-2 h-4 w-4" /> Subir Iconos
             </Button>
-              <DialogContent className="max-w-2xl" aria-describedby="tree-catalog-view-description">
+              <DialogContent className="max-w-2xl">
                 <DialogHeader>
                   <DialogTitle>Importar Especies desde CSV</DialogTitle>
-                  <div id="tree-catalog-view-description" className="sr-only">
-                    Diálogo para importar especies de árboles desde archivo CSV
-                  </div>
                   <DialogDescription>
                     {csvPreview.length > 0 
                       ? "Vista previa de los primeros 5 registros. Confirma para importar todos los datos."
@@ -805,12 +802,9 @@ function TreeSpeciesCatalog() {
 
         {/* Diálogo para subida masiva de iconos */}
         <Dialog open={isIconUploadDialogOpen} onOpenChange={setIsIconUploadDialogOpen}>
-          <DialogContent className="max-w-md" aria-describedby="tree-catalog-delete-description">
+          <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>Subir Iconos para Especies de Árboles</DialogTitle>
-              <div id="tree-catalog-delete-description" className="sr-only">
-                Diálogo para subir iconos masivos de especies de árboles
-              </div>
               <DialogDescription>
                 Sube múltiples iconos para crear o actualizar especies de árboles automáticamente.
               </DialogDescription>

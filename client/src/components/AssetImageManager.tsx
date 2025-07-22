@@ -406,7 +406,7 @@ const AssetImageManager: React.FC<AssetImageManagerProps> = ({ assetId, assetNam
                             <Edit className="h-4 w-4" />
                           </Button>
                         </DialogTrigger>
-                        <DialogContent aria-describedby="image-preview-description">
+                        <DialogContent>
                           <DialogHeader>
                             <DialogTitle>Editar Imagen</DialogTitle>
                             <DialogDescription>

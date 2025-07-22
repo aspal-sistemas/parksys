@@ -106,8 +106,8 @@ export default function InstructorProfileDialog({
   if (isLoading) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[600px]" aria-describedby="profile-loading-description">
-          <div id="profile-loading-description" className="flex items-center justify-center h-40">
+        <DialogContent className="sm:max-w-[600px]">
+          <div className="flex items-center justify-center h-40">
             <Spinner size="lg" />
           </div>
         </DialogContent>
@@ -121,7 +121,7 @@ export default function InstructorProfileDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto" aria-describedby="instructor-profile-description">
+      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-start mb-4">
             <Avatar className="h-16 w-16 mr-4">
@@ -152,9 +152,6 @@ export default function InstructorProfileDialog({
             </div>
           </div>
         </DialogHeader>
-        <div id="instructor-profile-description" className="sr-only">
-          Perfil detallado del instructor con información profesional
-        </div>
 
         <Tabs defaultValue="profile">
           <TabsList className="grid w-full grid-cols-4">

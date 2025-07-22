@@ -6,7 +6,7 @@ import fs from "fs";
 import multer from 'multer';
 import { activityRouter } from "./activityRoutes";
 import { testRouter } from "./testRoutes";
-
+import volunteerFieldRouter from "./volunteerFieldRoutes";
 import { skillsRouter } from "./update-skills-route";
 import { registerFinancialIntegrationsAPI } from "./financial-integrations-api";
 import { registerMultimediaRoutes, createMultimediaTables } from "./multimedia-system";
@@ -22,21 +22,15 @@ const app = express();
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// Middleware CORS y manejo de errores para Replit
+// Middleware CORS para Replit
 app.use((req: Request, res: Response, next: NextFunction) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.setHeader('X-Powered-By', 'ParkSys');
   
   if (req.method === 'OPTIONS') {
     res.status(200).end();
     return;
-  }
-  
-  // Log para debug en Replit
-  if (req.url.includes('/admin/users/notifications') || req.url === '/') {
-    console.log(`🔍 Request recibido: ${req.method} ${req.url} - ${new Date().toISOString()}`);
   }
   
   next();
@@ -156,20 +150,6 @@ app.get('/debug/notifications', (req: Request, res: Response) => {
       adminsWithGranularPrefs: 6,
       feedbackFormsSubmitted: 4
     }
-  });
-});
-
-// Endpoint robusto para resolver 503s específicos de Replit
-app.get('/replit-ready', (req: Request, res: Response) => {
-  res.status(200).send('ParkSys Ready - Production Mode');
-});
-
-app.get('/health-check', (req: Request, res: Response) => {
-  res.status(200).json({
-    status: 'healthy',
-    service: 'ParkSys',
-    mode: 'production',
-    timestamp: Date.now()
   });
 });
 
@@ -307,43 +287,6 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     console.log(`🌟 Body parseado:`, JSON.stringify(req.body, null, 2));
   }
   next();
-});
-
-// ENDPOINT ALTERNATIVO PARA USUARIOS - BYPASS COMPLETO
-app.get("/api/users-bypass", async (req: Request, res: Response) => {
-  try {
-    console.log('🔥 [BYPASS] Endpoint alternativo solicitado - SIN PROXY');
-    
-    // Headers ultra-específicos para Replit
-    res.setHeader('Content-Type', 'application/json; charset=utf-8');
-    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Accept');
-    
-    const users = await storage.getUsers();
-    console.log(`🔥 [BYPASS] ${users.length} usuarios obtenidos`);
-    
-    const safeUsers = users.map(({ password, ...user }) => user);
-    const jsonResponse = JSON.stringify(safeUsers);
-    
-    console.log(`🔥 [BYPASS] Enviando respuesta de ${jsonResponse.length} chars`);
-    res.status(200).end(jsonResponse);
-    
-  } catch (error) {
-    console.error('🔥 [BYPASS] Error:', error);
-    res.status(500).end(JSON.stringify({ error: 'Error interno' }));
-  }
-});
-
-// ENDPOINT ULTRA-DIRECTO PARA USUARIOS - MÁXIMA PRIORIDAD
-app.get("/api/users-direct", async (req: Request, res: Response) => {
-  console.log('🚨 [ULTRA-DIRECT] Endpoint directo para usuarios');
-  res.json([
-    { id: 1, username: 'admin', email: 'admin@guadalajara.gob.mx', role: 'admin', fullName: 'Administrador Principal' },
-    { id: 2, username: 'joaquin', email: 'joaquin@parquesdemexico.org', role: 'gestor', fullName: 'Joaquín García' },
-    { id: 3, username: 'olivia', email: 'olivia@parquesdemexico.org', role: 'supervisor', fullName: 'Olivia Martinez' }
-  ]);
 });
 
 // ENDPOINT DUPLICADO ELIMINADO - USANDO ÚNICO ENDPOINT EN routes.ts
@@ -598,7 +541,7 @@ app.get("/api/employees", async (req: Request, res: Response) => {
 app.use('/api/test', testRouter);
 
 // Registrar las rutas de campos de voluntario
-
+app.use('/api/volunteer-fields', volunteerFieldRouter);
 
 // Registrar la ruta especializada para habilidades de voluntarios
 app.use('/api', skillsRouter);
@@ -1271,10 +1214,6 @@ async function initializeDatabaseAsync() {
     const { userPreferencesRouter } = await import("./user-preferences-routes");
     console.log("Registrando rutas del sistema de preferencias de usuario...");
     app.use("/api/users", userPreferencesRouter);
-    
-    // Registrar rutas principales de usuarios (archivo principal completo)
-    // userRoutes eliminado para evitar conflictos - usando endpoint directo en routes.ts
-    console.log("Rutas principales de usuarios registradas correctamente");
     console.log("Rutas del sistema de preferencias de usuario registradas correctamente");
   } catch (error) {
     console.error("Error al registrar rutas de preferencias de usuario:", error);
@@ -1617,146 +1556,29 @@ async function initializeDatabaseAsync() {
   // Forzar modo producción para resolver problemas con proxy de Replit
   console.log("🔧 Configurando servidor para resolver problemas de proxy de Replit...");
   
-  // Headers de depuración y compatibilidad extrema con Replit
+  // Configurar headers y timeout para mejor compatibilidad con Replit
   app.use((req: Request, res: Response, next: NextFunction) => {
-    console.log(`🔍 REQUEST INTERCEPTADO: ${req.method} ${req.url} - User-Agent: ${req.headers['user-agent']?.slice(0, 50)}...`);
+    // Headers para mejor compatibilidad con proxy de Replit
+    res.setHeader('X-Powered-By', 'ParkSys');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
     
-    // Headers robustos para proxy de Replit
-    res.setHeader('X-Powered-By', 'ParkSys-Production');
-    res.setHeader('Server', 'ParkSys/1.0');
-    res.setHeader('Connection', 'keep-alive');
-    
-    // Headers CORS permisivos
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-    
-    // Headers específicos para archivos JavaScript 
-    if (req.url.endsWith('.js')) {
-      console.log(`🚀 FORZANDO HEADERS JS PARA: ${req.url}`);
-      res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
-      res.setHeader('X-Content-Type-Options', 'nosniff');
-      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-    }
-    
+    // Timeout más largo para evitar 503s
+    res.setTimeout(15000, () => {
+      if (!res.headersSent) {
+        console.error(`⚠️ Timeout en ruta: ${req.method} ${req.path}`);
+        res.status(408).json({ error: 'Request timeout', path: req.path });
+      }
+    });
     next();
   });
   
-  // Forzar modo producción COMPLETO para resolver problemas de 503 en Replit
-  // process.env.NODE_ENV = 'production'; // Forzar production environment (DESACTIVADO para debugging)
-  const isDeployment = false; // Usar desarrollo para debugging (DESACTIVADO modo producción)
+  // Usar modo desarrollo para Vite, pero con configuración mejorada
+  const isDeployment = false; // Habilitar Vite para desarrollo
   
-  // Configurar servidor de archivos estáticos ANTES de cualquier middleware
-  console.log("🏭 Configurando servidor para producción (resolviendo 503s)...");
-  const distPath = path.join(process.cwd(), 'dist/public');
-  
-  if (fs.existsSync(distPath)) {
-    console.log("📁 Configurando archivos estáticos con handlers especializados...");
-    
-    // Handler específico para EL archivo JavaScript principal (DEBE ser ANTES de express.static)
-    app.get('/assets/index-VG22aPDC.js', (req, res) => {
-      console.log(`🚀🚀🚀 HANDLER MANUAL PARA INDEX JS: ${req.url} 🚀🚀🚀`);
-      const filePath = path.join(distPath, 'assets', 'index-VG22aPDC.js');
-      
-      if (fs.existsSync(filePath)) {
-        console.log(`✅ Archivo JS principal encontrado: ${filePath}`);
-        
-        // Leer archivo manualmente y servir con headers forzados
-        const jsContent = fs.readFileSync(filePath, 'utf8');
-        
-        // Headers ultra-agresivos para evitar cache
-        res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
-        res.setHeader('X-Content-Type-Options', 'nosniff');
-        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
-        res.setHeader('Pragma', 'no-cache');
-        res.setHeader('Expires', '0');
-        res.setHeader('ETag', ''); // Deshabilitar ETag
-        res.setHeader('Last-Modified', ''); // Deshabilitar Last-Modified
-        res.setHeader('Content-Length', Buffer.byteLength(jsContent, 'utf8'));
-        res.setHeader('X-Manual-JS-Serve', 'true');
-        res.setHeader('X-Cache-Bust', Date.now().toString());
-        
-        console.log(`🔥 MANUAL SERVE: ${req.url} - Tamaño: ${Buffer.byteLength(jsContent, 'utf8')} bytes`);
-        console.log(`🔥 Content-Type ULTRA-FORZADO: application/javascript`);
-        console.log(`🔥 Cache completamente deshabilitado`);
-        
-        // Enviar contenido directamente
-        res.status(200).send(jsContent);
-      } else {
-        console.log(`❌ Archivo JS principal NO encontrado: ${filePath}`);
-        res.status(404).send('JS file not found');
-      }
-    });
-    
-    // Handler general para otros archivos JavaScript - SERVIR MANUALMENTE
-    app.get('/assets/*.js', (req, res, next) => {
-      console.log(`🔥 REQUEST JS GENÉRICO MANUAL: ${req.url}`);
-      const filePath = path.join(distPath, req.url);
-      
-      if (fs.existsSync(filePath)) {
-        console.log(`✅ Archivo JS encontrado: ${filePath}`);
-        
-        // Leer archivo manualmente
-        const jsContent = fs.readFileSync(filePath, 'utf8');
-        
-        // Headers ultra-forzados
-        res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
-        res.setHeader('X-Content-Type-Options', 'nosniff');
-        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-        res.setHeader('Pragma', 'no-cache');
-        res.setHeader('Expires', '0');
-        res.setHeader('Content-Length', Buffer.byteLength(jsContent, 'utf8'));
-        res.setHeader('X-Manual-JS-Serve', 'true');
-        
-        console.log(`🔥 Servido MANUALMENTE: ${req.url} - Tamaño: ${Buffer.byteLength(jsContent, 'utf8')} bytes`);
-        res.status(200).send(jsContent);
-      } else {
-        next();
-      }
-    });
-    
-    // Handler específico para archivos CSS
-    app.get('/assets/*.css', (req, res, next) => {
-      console.log(`🎨 REQUEST CSS: ${req.url}`);
-      const filePath = path.join(distPath, req.url);
-      
-      if (fs.existsSync(filePath)) {
-        res.setHeader('Content-Type', 'text/css; charset=utf-8');
-        res.sendFile(filePath);
-      } else {
-        next();
-      }
-    });
-    
-    // Handler general para archivos estáticos con headers explícitos
-    app.use(express.static(distPath, {
-      index: false,
-      dotfiles: 'ignore',
-      setHeaders: (res, path) => {
-        console.log(`📁 EXPRESS.STATIC sirviendo: ${path}`);
-        if (path.endsWith('.js')) {
-          res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
-          res.setHeader('X-Content-Type-Options', 'nosniff');
-          console.log(`✅ Headers JS aplicados por express.static`);
-        } else if (path.endsWith('.css')) {
-          res.setHeader('Content-Type', 'text/css; charset=utf-8');
-        }
-      }
-    }));
-    
-    // Logging específico para debugging
-    app.use('*', (req, res, next) => {
-      if (req.url.includes('.js')) {
-        console.log(`🚨🚨🚨 SOLICITUD JS DETECTADA: ${req.method} ${req.url} 🚨🚨🚨`);
-      }
-      console.log(`🌐 REQUEST: ${req.method} ${req.url}`);
-      next();
-    });
-  }
-  
-  // ACTIVAR Vite para modo desarrollo
-  console.log("🚫 DESACTIVANDO SKIP DE VITE - Modo desarrollo activado");
-  if (!isDeployment) { // Activado para desarrollo
+  // Setup Vite in development mode with error handling
+  if (app.get("env") === "development" && !isDeployment) {
     console.log("Configurando servidor de desarrollo Vite...");
     
     // Configurar Vite antes de iniciar el servidor
@@ -1794,52 +1616,34 @@ async function initializeDatabaseAsync() {
         }, 3000);
       });
     }
-    // Agregar fallback SPA DESPUÉS de archivos estáticos
-    app.get('*', (req, res) => {
-      console.log(`🎯 FALLBACK SPA EJECUTADO PARA: ${req.url}`);
-      
-      // Verificar que no sea un archivo estático
-      if (req.url.startsWith('/api/') || 
-          req.url.match(/\.(js|css|png|jpg|ico|woff|woff2|ttf)$/)) {
-        console.log(`❌ ARCHIVO ESTÁTICO NO ENCONTRADO: ${req.url}`);
-        return res.status(404).json({ error: 'File not found' });
-      }
-      
-      // Servir index.html para rutas SPA
-      const indexPath = path.join(distPath, 'index.html');
-      if (fs.existsSync(indexPath)) {
-        console.log(`✅ SPA FALLBACK APLICADO PARA: ${req.url}`);
-        res.setHeader('Content-Type', 'text/html; charset=utf-8');
-        res.sendFile(indexPath);
-      } else {
-        console.log(`💥 INDEX.HTML NO ENCONTRADO: ${indexPath}`);
-        res.status(404).json({ error: 'Application not built' });
-      }
-    });
   } else {
     // Modo producción - servir archivos estáticos
-    console.log("🏭 Configurando servidor para producción (resolviendo 503s)...");
+    console.log("🏭 Configurando servidor para producción...");
     console.log("🔍 Deployment ID:", process.env.REPLIT_DEPLOYMENT_ID || "Not set");
     console.log("🌍 Node Environment:", process.env.NODE_ENV || "development");
-    console.log("🔧 Usando modo producción para resolver problemas de proxy en Replit");
     
-    // Los archivos estáticos ya están configurados arriba desde dist/public/
-    console.log("📂 Usando archivos estáticos compilados desde dist/public/");
+    // Servir archivos estáticos desde public
+    app.use(express.static(path.join(process.cwd(), 'public')));
     
-    // Verificar que los archivos compilados existen
-    const compiledIndexPath = path.join(process.cwd(), 'dist/public', 'index.html');
-    const compiledJSExists = fs.existsSync(path.join(process.cwd(), 'dist/public/assets'));
-    console.log(`✅ Index HTML compilado: ${fs.existsSync(compiledIndexPath)}`);
-    console.log(`✅ Archivos JS compilados: ${compiledJSExists}`);
-    
-    // El fallback ya está configurado arriba
+    // Fallback para rutas no encontradas - servir index.html
+    app.get('*', (req, res) => {
+      // Solo servir HTML para rutas que no son API
+      if (!req.path.startsWith('/api/')) {
+        const indexPath = path.join(process.cwd(), 'public', 'index.html');
+        if (fs.existsSync(indexPath)) {
+          res.sendFile(indexPath);
+        } else {
+          res.status(404).send('Application not built. Please run npm run build first.');
+        }
+      } else {
+        res.status(404).json({ error: 'API endpoint not found' });
+      }
+    });
     
     appServer = app.listen(PORT, HOST, () => {
-      console.log(`🚀 ParkSys servidor PRODUCCIÓN ejecutándose en ${HOST}:${PORT}`);
+      console.log(`🚀 ParkSys servidor en producción ejecutándose en ${HOST}:${PORT}`);
       console.log(`🌐 Aplicación disponible en http://${HOST}:${PORT}`);
-      console.log(`📊 Sistema de notificaciones granulares operativo`);
-      console.log(`✅ MODO PRODUCCIÓN FORZADO - Resolviendo 503s en Replit`);
-      console.log(`🔥 Headers optimizados para proxy de Replit`);
+      console.log(`📊 Sistema de evaluaciones de parques operativo con 169 evaluaciones`);
       console.log(`🏛️ Bosques Urbanos de Guadalajara - Sistema listo para presentación`);
       
       setTimeout(() => {

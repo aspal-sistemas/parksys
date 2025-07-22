@@ -1015,12 +1015,9 @@ const AssetDetailPage: React.FC = () => {
       
       {/* Modal de edición */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" aria-describedby="asset-edit-dialog-description">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Editar Activo</DialogTitle>
-            <div id="asset-edit-dialog-description" className="sr-only">
-              Formulario para editar la información del activo seleccionado
-            </div>
             <DialogDescription>
               Actualice la información del activo. Los campos marcados con * son obligatorios.
             </DialogDescription>
@@ -1333,12 +1330,9 @@ const AssetDetailPage: React.FC = () => {
       
       {/* Modal de mantenimiento */}
       <Dialog open={isMaintenanceDialogOpen} onOpenChange={setIsMaintenanceDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" aria-describedby="asset-maintenance-dialog-description">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Registrar Mantenimiento</DialogTitle>
-            <div id="asset-maintenance-dialog-description" className="sr-only">
-              Formulario para registrar un nuevo mantenimiento para este activo
-            </div>
             <DialogDescription>
               Complete el formulario para registrar un nuevo mantenimiento para este activo.
             </DialogDescription>

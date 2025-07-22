@@ -280,13 +280,10 @@ export default function ParkEvaluationsSection({ parkId, parkSlug }: ParkEvaluat
                       Ver todas ({Number(stats.total_evaluations) || 0})
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-4xl max-h-[80vh]" aria-describedby="evaluation-description">
+                  <DialogContent className="max-w-4xl max-h-[80vh]">
                     <DialogHeader>
                       <DialogTitle>Todas las Evaluaciones</DialogTitle>
                     </DialogHeader>
-                    <div id="evaluation-description" className="sr-only">
-                      Lista completa de todas las evaluaciones recibidas para este parque
-                    </div>
                     <ScrollArea className="h-[600px] pr-4">
                       <div className="space-y-4">
                         {allEvaluations.map((evaluation: Evaluation) => (

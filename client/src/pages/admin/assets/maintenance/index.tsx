@@ -458,16 +458,13 @@ const AssetsMaintenancePage: React.FC = () => {
                 Registrar Mantenimiento
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto" aria-describedby="maintenance-create-description">
+            <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Registrar Nuevo Mantenimiento</DialogTitle>
                 <DialogDescription>
                   Complete los datos del mantenimiento realizado
                 </DialogDescription>
               </DialogHeader>
-              <div id="maintenance-create-description" className="sr-only">
-                Formulario completo para registrar nuevo mantenimiento de activos
-              </div>
               
               <form onSubmit={handleCreateMaintenance} className="space-y-4">
                 <div>
@@ -718,16 +715,13 @@ const AssetsMaintenancePage: React.FC = () => {
 
       {/* Modal para ver mantenimiento */}
       <Dialog open={showViewDialog} onOpenChange={setShowViewDialog}>
-        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto" aria-describedby="maintenance-view-description">
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Detalles del Mantenimiento</DialogTitle>
             <DialogDescription>
               Información completa del mantenimiento registrado
             </DialogDescription>
           </DialogHeader>
-          <div id="maintenance-view-description" className="sr-only">
-            Detalles completos del mantenimiento realizado al activo
-          </div>
           
           {selectedMaintenance && (
             <div className="space-y-4">
@@ -811,7 +805,7 @@ const AssetsMaintenancePage: React.FC = () => {
 
       {/* Modal para editar mantenimiento */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto" aria-describedby="maintenance-edit-description">
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Editar Mantenimiento</DialogTitle>
             <DialogDescription>
@@ -988,16 +982,13 @@ const AssetsMaintenancePage: React.FC = () => {
 
       {/* Modal para confirmar eliminación */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto" aria-describedby="maintenance-delete-description">
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Eliminar Mantenimiento</DialogTitle>
             <DialogDescription>
               Esta acción no se puede deshacer. ¿Estás seguro de que deseas eliminar este mantenimiento?
             </DialogDescription>
           </DialogHeader>
-          <div id="maintenance-delete-description" className="sr-only">
-            Confirmación para eliminar registro de mantenimiento permanentemente
-          </div>
           
           {selectedMaintenance && (
             <div className="space-y-4">

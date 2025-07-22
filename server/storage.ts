@@ -317,17 +317,9 @@ export class DatabaseStorage implements IStorage {
   
   async getUsers(): Promise<any[]> {
     try {
-      const { pool } = await import('./db');
-      const result = await pool.query(`
-        SELECT id, username, email, role, full_name as "fullName", 
-               municipality_id as "municipalityId", phone, gender, 
-               birth_date as "birthDate", bio, profile_image_url as "profileImageUrl", 
-               created_at as "createdAt", updated_at as "updatedAt"
-        FROM users
-        ORDER BY full_name
-      `);
-      console.log(`Usuarios obtenidos del storage: ${result.rows.length}`);
-      return result.rows || [];
+      const result = await db.select().from(users).orderBy(users.fullName);
+      console.log(`Usuarios obtenidos del storage: ${result.length}`);
+      return result;
     } catch (error) {
       console.error("Error al obtener todos los usuarios:", error);
       return [];
@@ -375,144 +367,26 @@ export class DatabaseStorage implements IStorage {
 
   async updateUser(id: number, userData: any): Promise<any> {
     try {
-      console.log(`🔄 Actualizando usuario ${id} con datos:`, userData);
-      
-      // Preparar campos para actualizar
-      const fieldsToUpdate = [];
-      const values = [];
-      let paramCounter = 1;
-      
-      if (userData.role) {
-        fieldsToUpdate.push(`role = $${paramCounter++}`);
-        values.push(userData.role);
-      }
-      if (userData.username) {
-        fieldsToUpdate.push(`username = $${paramCounter++}`);
-        values.push(userData.username);
-      }
-      if (userData.email) {
-        fieldsToUpdate.push(`email = $${paramCounter++}`);
-        values.push(userData.email);
-      }
-      // firstName y lastName se combinan en fullName
-      if (userData.fullName) {
-        fieldsToUpdate.push(`full_name = $${paramCounter++}`);
-        values.push(userData.fullName);
-      }
-      if (userData.password) {
-        fieldsToUpdate.push(`password = $${paramCounter++}`);
-        values.push(userData.password);
-      }
-      if (userData.phone) {
-        fieldsToUpdate.push(`phone = $${paramCounter++}`);
-        values.push(userData.phone);
-      }
-      if (userData.gender) {
-        fieldsToUpdate.push(`gender = $${paramCounter++}`);
-        values.push(userData.gender);
-      }
-      if (userData.birthDate) {
-        fieldsToUpdate.push(`birth_date = $${paramCounter++}`);
-        values.push(userData.birthDate);
-      }
-      if (userData.bio) {
-        fieldsToUpdate.push(`bio = $${paramCounter++}`);
-        values.push(userData.bio);
-      }
-      if (userData.municipalityId !== undefined) {
-        fieldsToUpdate.push(`municipality_id = $${paramCounter++}`);
-        values.push(userData.municipalityId);
-      }
-      if (userData.profileImageUrl) {
-        fieldsToUpdate.push(`profile_image_url = $${paramCounter++}`);
-        values.push(userData.profileImageUrl);
-      }
-      
-      // Siempre actualizar updated_at
-      fieldsToUpdate.push(`updated_at = $${paramCounter++}`);
-      values.push(new Date());
-      
-      // Agregar el ID al final
-      values.push(id);
-      
-      if (fieldsToUpdate.length === 1) { // Solo updated_at
-        throw new Error('No fields to update');
-      }
-      
-      const query = `
-        UPDATE users 
-        SET ${fieldsToUpdate.join(', ')} 
-        WHERE id = $${paramCounter}
-        RETURNING id, username, email, role, full_name as "fullName", 
-                 municipality_id as "municipalityId", phone, gender, 
-                 birth_date as "birthDate", bio, profile_image_url as "profileImageUrl", 
-                 created_at as "createdAt", updated_at as "updatedAt"
-      `;
-      
-      console.log(`📝 Query SQL:`, query);
-      console.log(`📝 Valores:`, values);
-      
-      const result = await pool.query(query, values);
-      
-      if (result.rows.length === 0) {
-        throw new Error('Usuario no encontrado');
-      }
-      
-      console.log(`✅ Usuario ${id} actualizado exitosamente`);
-      return result.rows[0];
+      const [updatedUser] = await db.update(users)
+        .set({
+          ...userData,
+          updatedAt: new Date()
+        })
+        .where(eq(users.id, id))
+        .returning();
+      return updatedUser;
     } catch (error) {
-      console.error(`❌ Error al actualizar usuario ${id}:`, error);
+      console.error(`Error al actualizar usuario ${id}:`, error);
       throw error;
     }
   }
 
   async deleteUser(id: number): Promise<boolean> {
     try {
-      console.log(`Iniciando eliminación del usuario ${id} con todas sus dependencias`);
-      
-      // Eliminar todas las referencias del usuario en otras tablas antes de eliminar el usuario
-      await db.execute(sql`
-        BEGIN;
-        
-        -- Eliminar registros relacionados en orden correcto de dependencias
-        -- Primero las evaluaciones de instructores (que referencian instructors)
-        DELETE FROM instructor_evaluations WHERE instructor_id IN (
-          SELECT id FROM instructors WHERE user_id = ${id}
-        );
-        
-        -- Luego las asignaciones de instructores
-        DELETE FROM instructor_assignments WHERE instructor_id IN (
-          SELECT id FROM instructors WHERE user_id = ${id}
-        );
-        
-        -- Ahora los instructores
-        DELETE FROM instructors WHERE user_id = ${id};
-        
-        -- Voluntarios y otros perfiles
-        DELETE FROM volunteers WHERE user_id = ${id};
-        DELETE FROM concessionaire_profiles WHERE user_id = ${id};
-        
-        -- Referencias en otras tablas usando las columnas correctas
-        DELETE FROM incidents WHERE assigned_to_user_id = ${id};
-        DELETE FROM vacation_requests WHERE employee_id = ${id};
-        DELETE FROM employee_balances WHERE employee_id = ${id};
-        
-        -- Finalmente eliminar el usuario
-        DELETE FROM users WHERE id = ${id};
-        
-        COMMIT;
-      `);
-      
-      console.log(`Usuario ${id} y todas sus dependencias eliminados exitosamente`);
+      const result = await db.delete(users).where(eq(users.id, id));
       return true;
     } catch (error) {
       console.error(`Error al eliminar usuario ${id}:`, error);
-      // Intentar rollback en caso de error
-      try {
-        await db.execute(sql`ROLLBACK;`);
-      } catch (rollbackError) {
-        console.error("Error en rollback:", rollbackError);
-      }
       throw error;
     }
   }

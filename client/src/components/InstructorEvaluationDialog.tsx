@@ -53,10 +53,10 @@ export default function InstructorEvaluationDialog({
           </Button>
         </DialogTrigger>
       )}
-      <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto" aria-describedby="evaluation-dialog-description">
+      <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Evaluación de Instructor</DialogTitle>
-          <DialogDescription id="evaluation-dialog-description">
+          <DialogDescription>
             Complete todos los criterios para evaluar el desempeño del instructor.
           </DialogDescription>
         </DialogHeader>

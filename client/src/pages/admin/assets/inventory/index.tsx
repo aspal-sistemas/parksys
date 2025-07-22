@@ -946,16 +946,13 @@ const InventoryPage: React.FC = () => {
               Importar Datos
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl" aria-describedby="asset-inventory-form-description">
+          <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>Importar Inventario de Activos</DialogTitle>
               <DialogDescription>
                 Importa datos masivamente desde un archivo CSV usando el mismo formato de la exportación.
               </DialogDescription>
             </DialogHeader>
-            <div id="asset-inventory-form-description" className="sr-only">
-              Formulario para importar inventario de activos desde archivo CSV
-            </div>
 
             <div className="space-y-6">
               {/* Descarga de plantilla */}
@@ -1346,11 +1343,8 @@ const InventoryPage: React.FC = () => {
 
       {/* Modal de Analytics */}
       <Dialog open={isAnalyticsOpen} onOpenChange={setIsAnalyticsOpen}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto" aria-describedby="asset-details-description">
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
           <div className="flex items-center justify-between">
-            <div id="asset-details-description" className="sr-only">
-              Panel de análisis completo del inventario de activos con gráficos y métricas
-            </div>
             <h2 className="text-2xl font-bold text-[#00a587] flex items-center gap-2">
               <BarChart className="h-6 w-6" />
               Analytics de Inventario de Activos

@@ -285,15 +285,12 @@ export default function FixedAssetsPage() {
                 Nuevo Activo Fijo
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl" aria-describedby="asset-form-description">
+            <DialogContent className="max-w-2xl">
               <DialogHeader>
                 <DialogTitle>
                   {editingAsset ? 'Editar Activo Fijo' : 'Nuevo Activo Fijo'}
                 </DialogTitle>
               </DialogHeader>
-              <div id="asset-form-description" className="sr-only">
-                Formulario para crear o editar activos fijos con información detallada
-              </div>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">

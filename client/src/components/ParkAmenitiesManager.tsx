@@ -380,13 +380,10 @@ export default function ParkAmenitiesManager({ parkId }: ParkAmenitiesManagerPro
 
       {/* Dialog de edición */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-md" aria-describedby="add-amenity-description">
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Editar Amenidad</DialogTitle>
           </DialogHeader>
-          <div id="add-amenity-description" className="sr-only">
-            Formulario para editar la configuración de la amenidad del parque
-          </div>
           {editingAmenity && (
             <div className="space-y-4">
               <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">

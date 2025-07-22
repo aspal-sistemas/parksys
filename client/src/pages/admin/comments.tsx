@@ -434,13 +434,10 @@ const AdminComments = () => {
       
       {/* Delete confirmation dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent className="sm:max-w-md" aria-describedby="comment-delete-description">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Confirmar eliminación</DialogTitle>
           </DialogHeader>
-          <div id="comment-delete-description" className="sr-only">
-            Confirmación para eliminar el comentario seleccionado permanentemente
-          </div>
           
           <div className="py-4">
             <p>

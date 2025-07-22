@@ -1314,7 +1314,7 @@ const AssetCategoriesPage: React.FC = () => {
           form.reset();
         }
       }}>
-        <DialogContent className="sm:max-w-md" aria-describedby="asset-category-form-description">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>
               {isCreateDialogOpen ? 'Nueva Categoría' : 'Editar Categoría'}
@@ -1326,9 +1326,6 @@ const AssetCategoriesPage: React.FC = () => {
               }
             </DialogDescription>
           </DialogHeader>
-          <div id="asset-category-form-description" className="sr-only">
-            Formulario para crear o editar categorías de activos con iconos y colores
-          </div>
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(isCreateDialogOpen ? handleCreate : handleUpdate)} className="space-y-4">

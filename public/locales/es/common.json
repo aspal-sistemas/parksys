@@ -136,16 +136,6 @@
     "close": "Cerrar",
     "submit": "Enviar"
   },
-  "actions": {
-    "search": "Buscar",
-    "filter": "Filtrar",
-    "new": "Nuevo",
-    "add": "Agregar",
-    "edit": "Editar",
-    "delete": "Eliminar",
-    "save": "Guardar",
-    "cancel": "Cancelar"
-  },
   "forms": {
     "name": "Nombre",
     "email": "Correo Electrónico", 

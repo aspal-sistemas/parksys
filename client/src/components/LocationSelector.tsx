@@ -121,7 +121,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
             Ubicación personalizada
           </Button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-md" aria-describedby="location-selector-description">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Agregar ubicación personalizada</DialogTitle>
             <DialogDescription>

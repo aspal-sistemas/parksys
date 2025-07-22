@@ -7,15 +7,13 @@ import { fromZodError } from 'zod-validation-error';
 import { db } from './db';
 import { sql } from 'drizzle-orm';
 import { syncInstructorProfileWithUser } from './syncInstructorProfile';
-import multer from 'multer';
-import fs from 'fs';
-import path from 'path';
 
 // Esquema para validar la creación de un usuario
 const createUserSchema = z.object({
   username: z.string().min(3, "El nombre de usuario debe tener al menos 3 caracteres"),
   email: z.string().email("Email inválido"),
-  fullName: z.string().min(1, "El nombre completo es requerido"),
+  firstName: z.string().min(1, "El nombre es requerido"),
+  lastName: z.string().min(1, "El apellido es requerido"),
   password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
   role: z.enum(['admin', 'director', 'manager', 'supervisor', 'ciudadano', 'voluntario', 'instructor', 'user', 'guardaparques', 'guardia', 'concesionario']),
   municipalityId: z.number().nullable(),
@@ -25,7 +23,8 @@ const createUserSchema = z.object({
 const updateUserSchema = z.object({
   username: z.string().min(3, "El nombre de usuario debe tener al menos 3 caracteres").optional(),
   email: z.string().email("Email inválido").optional(),
-  fullName: z.string().min(1, "El nombre completo es requerido").optional(),
+  firstName: z.string().min(1, "El nombre es requerido").optional(),
+  lastName: z.string().min(1, "El apellido es requerido").optional(),
   password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres").optional(),
   role: z.enum(['admin', 'director', 'manager', 'supervisor', 'ciudadano', 'voluntario', 'instructor', 'user', 'guardaparques', 'guardia', 'concesionario']).optional(),
   municipalityId: z.number().nullable().optional(),
@@ -198,51 +197,34 @@ async function syncUserWithConcessionaireTable(user: any, userData: any) {
   }
 }
 
-function createUserRoutes() {
-  const apiRouter = Router();
-  
-  // Configurar multer para subida de imágenes
-  const upload = multer({
-    storage: multer.diskStorage({
-      destination: (req, file, cb) => {
-        const uploadPath = 'uploads/users';
-        if (!fs.existsSync(uploadPath)) {
-          fs.mkdirSync(uploadPath, { recursive: true });
-        }
-        cb(null, uploadPath);
-      },
-      filename: (req, file, cb) => {
-        const uniqueName = `user-profile-${Date.now()}-${Math.round(Math.random() * 1E9)}${path.extname(file.originalname)}`;
-        cb(null, uniqueName);
-      }
-    }),
-    fileFilter: (req, file, cb) => {
-      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-      cb(null, allowedTypes.includes(file.mimetype));
-    },
-    limits: { fileSize: 5 * 1024 * 1024 } // 5MB
-  });
+export function registerUserRoutes(app: any, apiRouter: Router) {
   // Middleware para verificar si el usuario es administrador
   const isAdmin = (req: Request, res: Response, next: Function) => {
-    // Para Replit, siempre permitir acceso con usuario admin simulado
-    // En una implementación real, aquí se verificaría el token JWT o sesión
-    if (!req.user) {
+    // En desarrollo, omitimos la verificación de autenticación para facilitar las pruebas
+    if (process.env.NODE_ENV === 'development') {
+      // Agregamos un usuario admin simulado para pruebas
       req.user = {
         id: 1,
         username: 'admin',
-        role: 'super_admin',
-        email: 'admin@parquesmx.com',
-        fullName: 'Admin System',
-        municipalityId: 2
+        role: 'admin'
       };
-      console.log('✅ Usuario super_admin asignado para acceso a /api/users');
+      return next();
+    }
+    
+    // En producción, verificamos la autenticación
+    if (!req.user) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+    
+    if (req.user.role !== 'admin' && req.user.role !== 'director') {
+      return res.status(403).json({ message: "You don't have permission to access this resource" });
     }
     
     next();
   };
 
-  // GET /api/users - Obtener todos los usuarios (SIN AUTENTICACIÓN PARA DEBUG)
-  apiRouter.get('/users', async (req: Request, res: Response) => {
+  // GET /api/users - Obtener todos los usuarios
+  apiRouter.get('/users', isAdmin, async (req: Request, res: Response) => {
     try {
       const users = await storage.getUsers();
       
@@ -259,8 +241,8 @@ function createUserRoutes() {
     }
   });
 
-  // GET /api/users/:id - Obtener un usuario por ID (SIN AUTENTICACIÓN PARA DEBUG)
-  apiRouter.get('/users/:id', async (req: Request, res: Response) => {
+  // GET /api/users/:id - Obtener un usuario por ID
+  apiRouter.get('/users/:id', isAdmin, async (req: Request, res: Response) => {
     try {
       const userId = Number(req.params.id);
       const user = await storage.getUser(userId);
@@ -361,7 +343,8 @@ function createUserRoutes() {
         // Crear el usuario con logging detallado
         console.log("Datos que se enviarán a createUser:", {
           ...userData,
-          password: "[REDACTED]"
+          password: "[REDACTED]",
+          fullName: `${userData.firstName} ${userData.lastName}`
         });
         
         try {
@@ -371,7 +354,9 @@ function createUserRoutes() {
             email: userData.email,
             password: hashedPassword,
             role: userData.role,
-            fullName: userData.fullName,
+            firstName: userData.firstName,
+            lastName: userData.lastName,
+            fullName: `${userData.firstName} ${userData.lastName}`,
             municipalityId: userData.municipalityId,
             phone: userData.phone || null,
             gender: userData.gender || null,
@@ -437,8 +422,6 @@ function createUserRoutes() {
     try {
       const userId = Number(req.params.id);
       
-      console.log(`🔄 Actualizando usuario ${userId} con datos:`, req.body);
-      
       // Verificar si el usuario existe
       const existingUser = await storage.getUser(userId);
       if (!existingUser) {
@@ -467,7 +450,14 @@ function createUserRoutes() {
       // Preparar los datos para la actualización
       const userData: any = { ...updateData };
       
-      // El fullName viene directamente del frontend, no necesitamos concatenación
+      // Si se proporcionaron nombre y apellido, actualizar el nombre completo
+      if (updateData.firstName && updateData.lastName) {
+        userData.fullName = `${updateData.firstName} ${updateData.lastName}`;
+      } else if (updateData.firstName) {
+        userData.fullName = `${updateData.firstName} ${existingUser.lastName || ''}`;
+      } else if (updateData.lastName) {
+        userData.fullName = `${existingUser.firstName || ''} ${updateData.lastName}`;
+      }
       
       // Procesar campos adicionales de perfil
       if (updateData.phone !== undefined) {
@@ -488,7 +478,6 @@ function createUserRoutes() {
       
       if (updateData.profileImageUrl !== undefined) {
         userData.profileImageUrl = updateData.profileImageUrl || null;
-        console.log(`📸 IMAGEN INCLUIDA EN ACTUALIZACIÓN: ${userData.profileImageUrl}`);
       }
       
       // Actualizar timestamp
@@ -782,7 +771,8 @@ function createUserRoutes() {
       // Formatear datos para el frontend
       const formattedVolunteer = {
         id: volunteerData.id,
-        fullName: volunteerData.full_name || `${volunteerData.first_name || ''} ${volunteerData.last_name || ''}`.trim(),
+        firstName: volunteerData.first_name,
+        lastName: volunteerData.last_name,
         email: volunteerData.email,
         phone: volunteerData.phone,
         gender: volunteerData.gender || 'no_especificar',
@@ -842,7 +832,8 @@ function createUserRoutes() {
       
       // Actualizar los datos del usuario primero
       const userUpdateData = {
-        fullName: volunteerData.fullName,
+        firstName: volunteerData.firstName,
+        lastName: volunteerData.lastName,
         email: volunteerData.email,
         phone: volunteerData.phone,
         gender: volunteerData.gender,
@@ -853,7 +844,8 @@ function createUserRoutes() {
       // Actualizar tabla users
       await db.execute(
         sql`UPDATE users 
-            SET full_name = ${userUpdateData.fullName},
+            SET first_name = ${userUpdateData.firstName},
+                last_name = ${userUpdateData.lastName},
                 email = ${userUpdateData.email},
                 phone = ${userUpdateData.phone},
                 gender = ${userUpdateData.gender},
@@ -865,7 +857,7 @@ function createUserRoutes() {
       // Actualizar tabla volunteers
       await db.execute(
         sql`UPDATE volunteers 
-            SET full_name = ${volunteerData.fullName},
+            SET full_name = ${`${volunteerData.firstName} ${volunteerData.lastName}`},
                 email = ${volunteerData.email},
                 phone = ${volunteerData.phone},
                 gender = ${volunteerData.gender},
@@ -1021,17 +1013,4 @@ function createUserRoutes() {
       res.status(500).json({ message: 'Error fetching favorite parks activities' });
     }
   });
-  
-  return apiRouter;
 }
-
-// Función principal de registro de rutas para compatibilidad con index.ts
-export function registerUserRoutes(app: any) {
-  const apiRouter = createUserRoutes();
-  app.use('/api', apiRouter);
-  console.log("✅ Rutas principales de usuarios registradas correctamente desde userRoutes.ts");
-}
-
-// Crear y exportar el router (fallback)
-const userApiRouter = createUserRoutes();
-export default userApiRouter;

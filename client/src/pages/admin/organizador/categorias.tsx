@@ -133,15 +133,12 @@ const CategoryForm: React.FC<{
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[525px]" aria-describedby="category-management-description">
+      <DialogContent className="sm:max-w-[525px]">
         <DialogHeader>
           <DialogTitle>
             {category ? "Editar Categoría" : "Nueva Categoría"}
           </DialogTitle>
         </DialogHeader>
-        <div id="category-management-description" className="sr-only">
-          Formulario para crear o editar categorías de actividades
-        </div>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField

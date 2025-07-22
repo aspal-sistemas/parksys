@@ -21,7 +21,8 @@
     "admin": "Administrador",
     "manager": "Gestor",
     "instructor": "Instructor",
-    "supervisor": "Supervisor"
+    "volunteer": "Voluntario",
+    "concessionaire": "Concesionario"
   },
   "gender": {
     "masculino": "Masculino",
@@ -37,8 +38,6 @@
     "resetPassword": "Restablecer Contraseña",
     "uploadPhoto": "Subir Foto"
   },
-  "newUser": "Nuevo Usuario",
-  "deleteUser": "Eliminar Usuario",
   "status": {
     "active": "Activo",
     "inactive": "Inactivo",

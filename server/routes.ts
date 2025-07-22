@@ -11,11 +11,11 @@ import { handleProfileImageUpload } from "./api/profileImageUpload";
 import { saveProfileImage, getProfileImage } from "./profileImageCache";
 import { db, pool } from "./db";
 import { sql, eq } from "drizzle-orm";
-
+import { deleteAllVolunteers, deleteVolunteer } from "./delete-all-volunteers";
 import * as schema from "@shared/schema";
 const { parkAmenities, amenities } = schema;
 import { videoRouter } from "./video_routes";
-
+import { registerVolunteerRoutes } from "./volunteerRoutes";
 // import { registerInstructorRoutes } from "./instructorRoutes"; // Comentado para evitar conflictos - se usa instructor-routes.ts
 import { registerPublicRoutes } from "./publicRoutes";
 import { registerAssetRoutes } from "./asset_routes";
@@ -48,7 +48,7 @@ import {
   generateImportTemplate, 
   processImportFile 
 } from "./api/parksImport";
-// import { registerUserRoutes } from "./userRoutes"; // Movido a index.ts
+import { registerUserRoutes } from "./userRoutes";
 import { updateSkillsRouter } from "./updateSkills";
 import { registerEventRoutes } from "./events-routes";
 import { registerActivityRoutes } from "./activitiesRoutes";
@@ -141,7 +141,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.use(activityRouter);
   
   // Registramos las rutas del módulo de voluntariado
-
+  registerVolunteerRoutes(app, apiRouter, null, isAuthenticated);
   
   // Registramos las rutas del módulo de instructores
   // registerInstructorRoutes(app, apiRouter, publicRouter, isAuthenticated); // Comentado - se usa instructor-routes.ts
@@ -265,8 +265,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Registramos las rutas de gestión técnica y ambiental de árboles
   registerTreeDetailsRoutes(app, apiRouter, isAuthenticated);
   
-  // Registramos las rutas del módulo de usuarios (SIN AUTENTICACIÓN PARA DEBUG)
-  // registerUserRoutes(app, apiRouter); // Movido a index.ts
+  // Registramos las rutas del módulo de usuarios
+  registerUserRoutes(app, apiRouter);
   
   // Registramos las rutas del módulo de concesiones
   registerConcessionRoutes(app, apiRouter, isAuthenticated);
@@ -305,27 +305,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.error("Error al registrar rutas del sistema de cobro híbrido:", error);
   }
   
-  // Endpoint específico para subir imágenes de perfil de usuarios
+  // Endpoint específico para subir imágenes de perfil de voluntarios
   
-  // Configurar multer para subida de imágenes de usuarios
-  const userUploadDir = path.resolve('./public/uploads/users');
-  if (!fs.existsSync(userUploadDir)) {
-    fs.mkdirSync(userUploadDir, { recursive: true });
+  // Configurar multer para subida de imágenes de voluntarios
+  const volunteerUploadDir = path.resolve('./public/uploads/volunteers');
+  if (!fs.existsSync(volunteerUploadDir)) {
+    fs.mkdirSync(volunteerUploadDir, { recursive: true });
   }
   
-  const userStorage = multer.diskStorage({
+  const volunteerStorage = multer.diskStorage({
     destination: (req, file, cb) => {
-      cb(null, userUploadDir);
+      cb(null, volunteerUploadDir);
     },
     filename: (req, file, cb) => {
       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
       const ext = path.extname(file.originalname).toLowerCase();
-      cb(null, 'user-profile-' + uniqueSuffix + ext);
+      cb(null, 'volunteer-' + uniqueSuffix + ext);
     }
   });
   
-  const userUpload = multer({
-    storage: userStorage,
+  const volunteerUpload = multer({
+    storage: volunteerStorage,
     fileFilter: (req, file, cb) => {
       if (file.mimetype.startsWith('image/')) {
         cb(null, true);
@@ -336,13 +336,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     limits: {
       fileSize: 5 * 1024 * 1024 // 5MB máximo
     }
-  }).single('image');
+  }).single('file');
   
-  apiRouter.post('/upload/user-profile', (req: Request, res: Response) => {
-    console.log('📸 Recibida solicitud de subida de imagen de usuario');
-    userUpload(req, res, async (err) => {
+  apiRouter.post('/upload/volunteer-profile', (req: Request, res: Response) => {
+    volunteerUpload(req, res, async (err) => {
       if (err) {
-        console.error('❌ Error en multer:', err);
         if (err instanceof multer.MulterError) {
           if (err.code === 'LIMIT_FILE_SIZE') {
             return res.status(400).json({
@@ -358,25 +356,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       if (!req.file) {
-        console.error('❌ No se recibió archivo');
         return res.status(400).json({
           success: false,
           message: 'No se seleccionó ninguna imagen'
         });
       }
       
-      const imageUrl = `/uploads/users/${req.file.filename}`;
-      console.log(`✅ Imagen subida: ${imageUrl}`);
+      const imageUrl = `/uploads/volunteers/${req.file.filename}`;
       
-      // Si se proporciona userId, actualizar la base de datos
-      const userId = req.body.userId;
-      if (userId) {
+      // Si se proporciona volunteerId, actualizar la base de datos
+      const volunteerId = req.body.volunteerId;
+      if (volunteerId) {
         try {
           await pool.query(
-            'UPDATE users SET profile_image_url = $1, updated_at = NOW() WHERE id = $2',
-            [imageUrl, parseInt(userId)]
+            'UPDATE volunteers SET profile_image_url = $1, updated_at = NOW() WHERE id = $2',
+            [imageUrl, parseInt(volunteerId)]
           );
-          console.log(`✅ Imagen de perfil actualizada en BD para usuario ${userId}: ${imageUrl}`);
+          console.log(`✅ Imagen de perfil actualizada en BD para voluntario ${volunteerId}: ${imageUrl}`);
         } catch (dbError) {
           console.error('Error actualizando imagen en base de datos:', dbError);
           // Continuamos aunque falle la actualización de BD
@@ -477,49 +473,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Registramos las rutas públicas
   registerPublicRoutes(publicRouter);
   
-  // Endpoint simple para volunteers (resolver error 404)
-  apiRouter.get("/volunteers", async (req: Request, res: Response) => {
-    try {
-      const volunteersQuery = await pool.query(`
-        SELECT 
-          id,
-          full_name,
-          email,
-          phone,
-          status,
-          created_at
-        FROM volunteers 
-        WHERE status = 'active'
-        ORDER BY created_at DESC
-        LIMIT 50
-      `);
-      
-      res.json(volunteersQuery.rows || []);
-    } catch (error) {
-      console.error('Error fetching volunteers:', error);
-      res.json([]); // Devolver array vacío en lugar de error
-    }
-  });
-
-  // Endpoint DIRECTO para usuarios - SOLUCIÓN FINAL
-  apiRouter.get("/users", async (req: Request, res: Response) => {
-    try {
-      console.log('✅ [FINAL] GET /api/users - SOLUCIÓN DIRECTA');
-      
-      const users = await storage.getUsers();
-      console.log(`✅ [FINAL] ${users.length} usuarios obtenidos de storage`);
-      
-      const safeUsers = users.map(({ password, ...user }) => user);
-      console.log(`✅ [FINAL] Enviando ${safeUsers.length} usuarios sin contraseñas`);
-      
-      res.json(safeUsers);
-      
-    } catch (error) {
-      console.error('❌ [FINAL] Error:', error);
-      res.status(500).json({ error: 'Error interno' });
-    }
-  });
-
   // Montamos todas las rutas de la API bajo el prefijo /api
   app.use('/api', apiRouter);
   
@@ -543,9 +496,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Montamos todas las rutas públicas bajo el prefijo /public-api
   // Esta línea asegura que todas las rutas definidas en publicRouter sean accesibles bajo /public-api
   app.use('/public-api', publicRouter);
-  
-  // También montamos las rutas públicas bajo /api/public para compatibilidad con el frontend
-  app.use('/api/public', publicRouter);
   
   // Añadir router especial para actualizar habilidades
   app.use('/api', updateSkillsRouter);
@@ -969,7 +919,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       `, [parkId]);
       console.log(`Instructores encontrados: ${instructorsResult.rows.length}`);
 
-      // Paso 6 eliminado - voluntarios removidos del sistema
+      // Obtener voluntarios que prefieren este parque
+      console.log('Paso 6: Consultando voluntarios del parque...');
+      const volunteersResult = await pool.query(`
+        SELECT v.id, v.full_name as "fullName", v.email, v.phone,
+               v.skills, v.previous_experience as "previousExperience",
+               v.profile_image_url as "profileImageUrl", v.interest_areas as "interestAreas"
+        FROM volunteers v
+        WHERE v.preferred_park_id = $1
+        ORDER BY v.full_name
+        LIMIT 10
+      `, [parkId]);
+      console.log(`Voluntarios encontrados: ${volunteersResult.rows.length}`);
 
       // Obtener activos del parque
       console.log('Paso 7: Consultando activos del parque...');
@@ -1050,7 +1011,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         activities: activitiesResult.rows,
         documents: documentsResult.rows,
         instructors: instructorsResult.rows,
-
+        volunteers: volunteersResult.rows,
         assets: assetsResult.rows,
         concessions: concessionsResult.rows,
         images: images,

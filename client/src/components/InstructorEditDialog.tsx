@@ -151,8 +151,8 @@ export default function InstructorEditDialog({
   if (isLoading) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[600px]" aria-describedby="loading-description">
-          <div id="loading-description" className="flex items-center justify-center h-40">
+        <DialogContent className="sm:max-w-[600px]">
+          <div className="flex items-center justify-center h-40">
             <Spinner size="lg" />
           </div>
         </DialogContent>
@@ -162,13 +162,10 @@ export default function InstructorEditDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto" aria-describedby="instructor-edit-description">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Editar Instructor</DialogTitle>
         </DialogHeader>
-        <div id="instructor-edit-description" className="sr-only">
-          Formulario para editar la información del instructor
-        </div>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">

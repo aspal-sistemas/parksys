@@ -529,7 +529,7 @@ const AssetsAssignmentsPage: React.FC = () => {
 
         {/* Diálogo para ver detalles */}
         <Dialog open={showViewDialog} onOpenChange={setShowViewDialog}>
-          <DialogContent className="max-w-2xl" aria-describedby="asset-assignment-description">
+          <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>Detalles de la Asignación</DialogTitle>
               <DialogDescription>

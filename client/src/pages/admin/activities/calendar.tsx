@@ -421,10 +421,7 @@ export default function ActivitiesCalendarPage() {
 
         {/* Diálogo de detalles de actividad */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto" aria-describedby="activity-calendar-description">
-            <div id="activity-calendar-description" className="sr-only">
-              Detalles de la actividad programada con información completa de fecha, instructor y capacidad
-            </div>
+          <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
             {selectedActivity ? (
               <>
                 <DialogHeader>

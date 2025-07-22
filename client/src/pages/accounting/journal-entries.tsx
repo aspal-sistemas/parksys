@@ -449,13 +449,10 @@ export default function JournalEntries() {
                   <span>Nuevo Asiento</span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-4xl" aria-describedby="journal-entry-form-description">
+              <DialogContent className="max-w-4xl">
                 <DialogHeader>
                   <DialogTitle>Nuevo Asiento Contable</DialogTitle>
                 </DialogHeader>
-                <div id="journal-entry-form-description" className="sr-only">
-                  Formulario para crear asientos contables con débitos y créditos
-                </div>
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
@@ -850,13 +847,10 @@ export default function JournalEntries() {
 
         {/* Dialog para ver detalles */}
         <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-          <DialogContent className="max-w-2xl" aria-describedby="journal-entry-delete-description">
+          <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>Detalles del Asiento Contable</DialogTitle>
             </DialogHeader>
-            <div id="journal-entry-delete-description" className="sr-only">
-              Información detallada del asiento contable y sus movimientos
-            </div>
             {selectedEntry && (
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">

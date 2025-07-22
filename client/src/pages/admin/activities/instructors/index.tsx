@@ -562,11 +562,8 @@ export default function InstructorsManagementPage() {
       {/* Dialog de visualización de instructor */}
       {selectedInstructor && (
         <Dialog open={true} onOpenChange={() => setSelectedInstructor(null)}>
-          <DialogContent className="max-w-2xl" aria-describedby="instructor-assignment-description">
+          <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <div id="instructor-assignment-description" className="sr-only">
-                Perfil completo del instructor con información de contacto y especialidades
-              </div>
               <DialogTitle className="flex items-center space-x-3">
                 <Avatar className="h-12 w-12">
                   <AvatarImage src={selectedInstructor.profileImageUrl} />

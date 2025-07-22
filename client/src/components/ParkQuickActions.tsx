@@ -151,13 +151,10 @@ const ParkQuickActions: React.FC<ParkQuickActionsProps> = ({
       
       {/* Activities Dialog */}
       <Dialog open={isActivitiesDialogOpen} onOpenChange={setIsActivitiesDialogOpen}>
-        <DialogContent className="sm:max-w-md" aria-describedby="activities-dialog-description">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Próximas actividades en {parkName}</DialogTitle>
           </DialogHeader>
-          <div id="activities-dialog-description" className="sr-only">
-            Lista de actividades programadas para este parque
-          </div>
           <div className="max-h-[60vh] overflow-y-auto">
             <div className="space-y-4">
               {activities && activities.length > 0 ? (
@@ -187,10 +184,10 @@ const ParkQuickActions: React.FC<ParkQuickActionsProps> = ({
 
       {/* Comments List Dialog */}
       <Dialog open={isCommentsListOpen} onOpenChange={setIsCommentsListOpen}>
-        <DialogContent className="sm:max-w-md" aria-describedby="comments-dialog-description">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Comentarios sobre {parkName}</DialogTitle>
-            <DialogDescription id="comments-dialog-description">
+            <DialogDescription>
               Opiniones y experiencias de visitantes
             </DialogDescription>
           </DialogHeader>
@@ -242,10 +239,10 @@ const ParkQuickActions: React.FC<ParkQuickActionsProps> = ({
       
       {/* New Comment Dialog */}
       <Dialog open={isCommentDialogOpen} onOpenChange={setIsCommentDialogOpen}>
-        <DialogContent className="sm:max-w-md" aria-describedby="new-comment-dialog-description">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Dejar un comentario</DialogTitle>
-            <DialogDescription id="new-comment-dialog-description">
+            <DialogDescription>
               Comparte tu experiencia en {parkName}
             </DialogDescription>
           </DialogHeader>

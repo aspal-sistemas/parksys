@@ -397,10 +397,7 @@ export default function ConcessionDetail() {
       {/* Modal lightbox para mostrar imágenes en grande */}
       {selectedImage && (
         <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
-          <DialogContent className="max-w-4xl w-full h-[80vh] p-0 bg-black/95" aria-describedby="concession-media-description">
-            <div id="concession-media-description" className="sr-only">
-              Visualización ampliada de imagen de la concesión
-            </div>
+          <DialogContent className="max-w-4xl w-full h-[80vh] p-0 bg-black/95">
             <div className="relative w-full h-full flex items-center justify-center">
               <button
                 onClick={() => setSelectedImage(null)}
