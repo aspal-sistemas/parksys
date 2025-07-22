@@ -237,6 +237,35 @@ export function registerParkEvaluationRoutes(app: any, apiRouter: any, isAuthent
     }
   });
 
+  // Endpoint específico para exportar TODAS las evaluaciones
+  apiRouter.get('/park-evaluations/export-all', async (req: Request, res: Response) => {
+    try {
+      console.log('📊 Obteniendo TODAS las evaluaciones para exportación...');
+      
+      const query = `
+        SELECT 
+          pe.*,
+          p.name as park_name,
+          u.full_name as moderator_name
+        FROM park_evaluations pe
+        LEFT JOIN parks p ON pe.park_id = p.id
+        LEFT JOIN users u ON pe.moderated_by = u.id
+        ORDER BY pe.created_at DESC
+      `;
+
+      const result = await pool.query(query);
+      console.log(`📊 Total evaluaciones para exportar: ${result.rows.length}`);
+      
+      res.json({
+        evaluations: result.rows,
+        total: result.rows.length
+      });
+    } catch (error) {
+      console.error('❌ Error obteniendo todas las evaluaciones:', error);
+      res.status(500).json({ error: 'Error al obtener evaluaciones para exportar' });
+    }
+  });
+
   // Obtener evaluaciones por parque (público)
   apiRouter.get('/parks/:parkId/evaluations', async (req: Request, res: Response) => {
     try {

@@ -519,56 +519,64 @@ export default function EvaluationsPage() {
   };
 
   // Export function for CSV with professional header format
-  const exportToCSV = () => {
-    if (evaluations.length === 0) {
-      toast({
-        title: "No hay datos",
-        description: "No hay evaluaciones para exportar",
-        variant: "destructive",
-      });
-      return;
-    }
+  const exportToCSV = async () => {
+    try {
+      // Fetch ALL evaluations for export
+      const response = await fetch('/api/park-evaluations/export-all');
+      if (!response.ok) {
+        throw new Error('Failed to fetch all evaluations');
+      }
+      const { evaluations: allEvaluations } = await response.json();
+      
+      if (allEvaluations.length === 0) {
+        toast({
+          title: "No hay datos",
+          description: "No hay evaluaciones para exportar",
+          variant: "destructive",
+        });
+        return;
+      }
 
-    // Professional CSV header with system branding
-    const csvHeader = [
-      'SISTEMA DE GESTIÓN DE PARQUES URBANOS',
-      'Reporte de Evaluaciones Ciudadanas',
-      `Fecha de generación: ${format(new Date(), 'dd/MM/yyyy HH:mm', { locale: es })}`,
-      `Total de registros: ${evaluations.length}`,
-      '', // Empty line separator
-    ];
+      // Professional CSV header with system branding
+      const csvHeader = [
+        'SISTEMA DE GESTIÓN DE PARQUES URBANOS',
+        'Reporte de Evaluaciones Ciudadanas',
+        `Fecha de generación: ${format(new Date(), 'dd/MM/yyyy HH:mm', { locale: es })}`,
+        `Total de registros: ${allEvaluations.length}`,
+        '', // Empty line separator
+      ];
 
-    // Summary statistics
-    const statusStats = evaluations.reduce((acc, item) => {
-      const status = getStatusLabel(item.status);
-      acc[status] = (acc[status] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+      // Summary statistics
+      const statusStats = allEvaluations.reduce((acc, item) => {
+        const status = getStatusLabel(item.status);
+        acc[status] = (acc[status] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
 
-    const avgRating = evaluations.reduce((sum, item) => sum + item.overall_rating, 0) / evaluations.length;
+      const avgRating = allEvaluations.reduce((sum, item) => sum + item.overall_rating, 0) / allEvaluations.length;
 
-    const summarySection = [
-      'RESUMEN ESTADÍSTICO',
-      '',
-      'Distribución por Estado:',
-      ...Object.entries(statusStats).map(([status, count]) => `${status}: ${count}`),
-      '',
-      `Calificación Promedio General: ${avgRating.toFixed(1)}/5`,
-      `Total de Parques Evaluados: ${new Set(evaluations.map(e => e.park_id)).size}`,
-      '',
-      'DATOS DETALLADOS',
-      ''
-    ];
+      const summarySection = [
+        'RESUMEN ESTADÍSTICO',
+        '',
+        'Distribución por Estado:',
+        ...Object.entries(statusStats).map(([status, count]) => `${status}: ${count}`),
+        '',
+        `Calificación Promedio General: ${avgRating.toFixed(1)}/5`,
+        `Total de Parques Evaluados: ${new Set(allEvaluations.map(e => e.park_id)).size}`,
+        '',
+        'DATOS DETALLADOS',
+        ''
+      ];
 
-    const dataHeaders = [
-      'ID', 'Parque', 'Evaluador', 'Email', 'Ciudad', 'Edad', 
-      'Limpieza', 'Seguridad', 'Mantenimiento', 'Accesibilidad', 
-      'Amenidades', 'Actividades', 'Personal', 'Belleza Natural', 
-      'Calificación General', 'Comentarios', 'Recomendaría', 
-      'Propósito Visita', 'Duración (min)', 'Estado', 'Fecha Creación'
-    ];
+      const dataHeaders = [
+        'ID', 'Parque', 'Evaluador', 'Email', 'Ciudad', 'Edad', 
+        'Limpieza', 'Seguridad', 'Mantenimiento', 'Accesibilidad', 
+        'Amenidades', 'Actividades', 'Personal', 'Belleza Natural', 
+        'Calificación General', 'Comentarios', 'Recomendaría', 
+        'Propósito Visita', 'Duración (min)', 'Estado', 'Fecha Creación'
+      ];
 
-    const csvData = evaluations.map(item => [
+      const csvData = allEvaluations.map(item => [
       item.id,
       item.park_name,
       item.evaluator_name,
@@ -592,62 +600,78 @@ export default function EvaluationsPage() {
       format(new Date(item.created_at), 'dd/MM/yyyy HH:mm', { locale: es })
     ]);
 
-    // Combine all sections
-    const allRows = [
-      ...csvHeader.map(line => [line]), // Single column for header
-      ...summarySection.map(line => [line]), // Single column for summary
-      dataHeaders, // Multi-column for data headers
-      ...csvData // Multi-column for data
-    ];
+      // Combine all sections
+      const allRows = [
+        ...csvHeader.map(line => [line]), // Single column for header
+        ...summarySection.map(line => [line]), // Single column for summary
+        dataHeaders, // Multi-column for data headers
+        ...csvData // Multi-column for data
+      ];
 
-    // Create CSV content with BOM for proper UTF-8 encoding
-    const BOM = '\uFEFF';
-    const csvContent = BOM + allRows
-      .map(row => row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(','))
-      .join('\r\n');
+      // Create CSV content with BOM for proper UTF-8 encoding
+      const BOM = '\uFEFF';
+      const csvContent = BOM + allRows
+        .map(row => row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(','))
+        .join('\r\n');
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    if (link.download !== undefined) {
-      const url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
-      link.setAttribute('download', `evaluaciones_parques_profesional_${format(new Date(), 'dd-MM-yyyy')}.csv`);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      if (link.download !== undefined) {
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `evaluaciones_parques_profesional_${format(new Date(), 'dd-MM-yyyy')}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+
+      toast({
+        title: "CSV Profesional Exportado",
+        description: `Reporte completo generado con ${allEvaluations.length} evaluaciones`,
+      });
+    } catch (error) {
+      console.error('Error exporting CSV:', error);
+      toast({
+        title: "Error al exportar",
+        description: "No se pudo generar el archivo CSV",
+        variant: "destructive",
+      });
     }
-
-    toast({
-      title: "CSV Profesional Exportado",
-      description: "Reporte completo generado con encabezado corporativo y resumen estadístico",
-    });
   };
 
   // Export function for Excel with corporate styling
-  const exportToExcel = () => {
-    if (evaluations.length === 0) {
-      toast({
-        title: "No hay datos",
-        description: "No hay evaluaciones para exportar",
-        variant: "destructive",
-      });
-      return;
-    }
+  const exportToExcel = async () => {
+    try {
+      // Fetch ALL evaluations for export
+      const response = await fetch('/api/park-evaluations/export-all');
+      if (!response.ok) {
+        throw new Error('Failed to fetch all evaluations');
+      }
+      const { evaluations: allEvaluations } = await response.json();
+      
+      if (allEvaluations.length === 0) {
+        toast({
+          title: "No hay datos",
+          description: "No hay evaluaciones para exportar",
+          variant: "destructive",
+        });
+        return;
+      }
 
-    // Create workbook
-    const wb = XLSX.utils.book_new();
-    
-    // Prepare main data
-    const dataHeaders = [
-      'ID', 'Parque', 'Evaluador', 'Email', 'Ciudad', 'Edad', 
-      'Limpieza', 'Seguridad', 'Mantenimiento', 'Accesibilidad', 
-      'Amenidades', 'Actividades', 'Personal', 'Belleza Natural', 
-      'Calificación General', 'Comentarios', 'Recomendaría', 
-      'Propósito Visita', 'Duración (min)', 'Estado', 'Fecha Creación'
-    ];
+      // Create workbook
+      const wb = XLSX.utils.book_new();
+      
+      // Prepare main data
+      const dataHeaders = [
+        'ID', 'Parque', 'Evaluador', 'Email', 'Ciudad', 'Edad', 
+        'Limpieza', 'Seguridad', 'Mantenimiento', 'Accesibilidad', 
+        'Amenidades', 'Actividades', 'Personal', 'Belleza Natural', 
+        'Calificación General', 'Comentarios', 'Recomendaría', 
+        'Propósito Visita', 'Duración (min)', 'Estado', 'Fecha Creación'
+      ];
 
-    const excelData = evaluations.map(item => [
+      const excelData = allEvaluations.map(item => [
       item.id,
       item.park_name,
       item.evaluator_name,
@@ -671,43 +695,43 @@ export default function EvaluationsPage() {
       format(new Date(item.created_at), 'dd/MM/yyyy HH:mm', { locale: es })
     ]);
 
-    // Create main data sheet
-    const mainSheet = XLSX.utils.aoa_to_sheet([
-      ['SISTEMA DE GESTIÓN DE PARQUES URBANOS'],
-      ['Reporte de Evaluaciones Ciudadanas'],
-      [`Fecha de generación: ${format(new Date(), 'dd/MM/yyyy HH:mm', { locale: es })}`],
-      [`Total de registros: ${evaluations.length}`],
+      // Create main data sheet
+      const mainSheet = XLSX.utils.aoa_to_sheet([
+        ['SISTEMA DE GESTIÓN DE PARQUES URBANOS'],
+        ['Reporte de Evaluaciones Ciudadanas'],
+        [`Fecha de generación: ${format(new Date(), 'dd/MM/yyyy HH:mm', { locale: es })}`],
+        [`Total de registros: ${allEvaluations.length}`],
       [], // Empty row
       dataHeaders,
       ...excelData
     ]);
 
-    // Statistics summary
-    const statusStats = evaluations.reduce((acc, item) => {
-      const status = getStatusLabel(item.status);
-      acc[status] = (acc[status] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+      // Statistics summary
+      const statusStats = allEvaluations.reduce((acc, item) => {
+        const status = getStatusLabel(item.status);
+        acc[status] = (acc[status] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
 
-    const avgRating = evaluations.reduce((sum, item) => sum + item.overall_rating, 0) / evaluations.length;
-    const avgCriteria = {
-      cleanliness: evaluations.reduce((sum, item) => sum + item.cleanliness, 0) / evaluations.length,
-      safety: evaluations.reduce((sum, item) => sum + item.safety, 0) / evaluations.length,
-      maintenance: evaluations.reduce((sum, item) => sum + item.maintenance, 0) / evaluations.length,
-      accessibility: evaluations.reduce((sum, item) => sum + item.accessibility, 0) / evaluations.length,
-      amenities: evaluations.reduce((sum, item) => sum + item.amenities, 0) / evaluations.length,
-    };
+      const avgRating = allEvaluations.reduce((sum, item) => sum + item.overall_rating, 0) / allEvaluations.length;
+      const avgCriteria = {
+        cleanliness: allEvaluations.reduce((sum, item) => sum + item.cleanliness, 0) / allEvaluations.length,
+        safety: allEvaluations.reduce((sum, item) => sum + item.safety, 0) / allEvaluations.length,
+        maintenance: allEvaluations.reduce((sum, item) => sum + item.maintenance, 0) / allEvaluations.length,
+        accessibility: allEvaluations.reduce((sum, item) => sum + item.accessibility, 0) / allEvaluations.length,
+        amenities: allEvaluations.reduce((sum, item) => sum + item.amenities, 0) / allEvaluations.length,
+      };
 
-    const summaryData = [
-      ['SISTEMA DE GESTIÓN DE PARQUES URBANOS'],
-      ['RESUMEN EJECUTIVO DE EVALUACIONES'],
-      [`Fecha: ${format(new Date(), 'dd/MM/yyyy', { locale: es })}`],
-      [],
-      ['MÉTRICAS GENERALES'],
-      ['Total de Evaluaciones', evaluations.length],
-      ['Calificación Promedio General', `${avgRating.toFixed(1)}/5`],
-      ['Total de Parques Evaluados', new Set(evaluations.map(e => e.park_id)).size],
-      ['Tasa de Recomendación', `${(evaluations.filter(e => e.would_recommend).length / evaluations.length * 100).toFixed(1)}%`],
+      const summaryData = [
+        ['SISTEMA DE GESTIÓN DE PARQUES URBANOS'],
+        ['RESUMEN EJECUTIVO DE EVALUACIONES'],
+        [`Fecha: ${format(new Date(), 'dd/MM/yyyy', { locale: es })}`],
+        [],
+        ['MÉTRICAS GENERALES'],
+        ['Total de Evaluaciones', allEvaluations.length],
+        ['Calificación Promedio General', `${avgRating.toFixed(1)}/5`],
+        ['Total de Parques Evaluados', new Set(allEvaluations.map(e => e.park_id)).size],
+        ['Tasa de Recomendación', `${(allEvaluations.filter(e => e.would_recommend).length / allEvaluations.length * 100).toFixed(1)}%`],
       [],
       ['DISTRIBUCIÓN POR ESTADO'],
       ...Object.entries(statusStats).map(([status, count]) => [status, count]),
@@ -720,35 +744,47 @@ export default function EvaluationsPage() {
       ['Amenidades', avgCriteria.amenities.toFixed(1)],
     ];
 
-    const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
+      const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
 
-    // Add sheets to workbook
-    XLSX.utils.book_append_sheet(wb, mainSheet, 'Datos Completos');
-    XLSX.utils.book_append_sheet(wb, summarySheet, 'Resumen Ejecutivo');
+      // Add sheets to workbook
+      XLSX.utils.book_append_sheet(wb, mainSheet, 'Datos Completos');
+      XLSX.utils.book_append_sheet(wb, summarySheet, 'Resumen Ejecutivo');
 
-    // Auto-size columns for both sheets
-    const maxWidth = 50;
-    [mainSheet, summarySheet].forEach(sheet => {
-      const cols = [];
-      const range = XLSX.utils.decode_range(sheet['!ref'] || 'A1');
-      for (let col = range.s.c; col <= range.e.c; col++) {
-        let maxLen = 10;
-        for (let row = range.s.r; row <= range.e.r; row++) {
-          const cell = sheet[XLSX.utils.encode_cell({ r: row, c: col })];
-          if (cell && cell.v) {
-            const len = String(cell.v).length;
-            maxLen = Math.max(maxLen, Math.min(len, maxWidth));
+      // Auto-size columns for both sheets
+      const maxWidth = 50;
+      [mainSheet, summarySheet].forEach(sheet => {
+        const cols = [];
+        const range = XLSX.utils.decode_range(sheet['!ref'] || 'A1');
+        for (let col = range.s.c; col <= range.e.c; col++) {
+          let maxLen = 10;
+          for (let row = range.s.r; row <= range.e.r; row++) {
+            const cell = sheet[XLSX.utils.encode_cell({ r: row, c: col })];
+            if (cell && cell.v) {
+              const len = String(cell.v).length;
+              maxLen = Math.max(maxLen, Math.min(len, maxWidth));
+            }
           }
+          cols.push({ width: maxLen });
         }
-        cols.push({ width: maxLen });
-      }
-      sheet['!cols'] = cols;
-    });
+        sheet['!cols'] = cols;
+      });
 
-    // Export file
-    XLSX.writeFile(wb, `evaluaciones_parques_${format(new Date(), 'dd-MM-yyyy')}.xlsx`);
+      // Export file
+      XLSX.writeFile(wb, `evaluaciones_parques_${format(new Date(), 'dd-MM-yyyy')}.xlsx`);
 
-    toast({
+      toast({
+        title: "Excel Profesional Exportado",
+        description: `Reporte completo con ${allEvaluations.length} evaluaciones en 2 hojas`,
+      });
+    } catch (error) {
+      console.error('Error exporting Excel:', error);
+      toast({
+        title: "Error al exportar",
+        description: "No se pudo generar el archivo Excel",
+        variant: "destructive",
+      });
+    }
+  };
       title: "Excel Exportado",
       description: "Reporte profesional generado con datos completos y resumen ejecutivo",
     });
