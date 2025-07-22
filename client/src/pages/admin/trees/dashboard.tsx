@@ -54,23 +54,28 @@ interface SpeciesData {
 
 const TreesDashboard: React.FC = () => {
   // Consultas para obtener datos
-  const { data: trees = [], isLoading: treesLoading, refetch: refetchTrees } = useQuery<TreeData[]>({
+  const { data: treesResponse, isLoading: treesLoading, refetch: refetchTrees } = useQuery({
     queryKey: ['/api/trees'],
     suspense: false,
     retry: 1
   });
 
-  const { data: maintenances = [], isLoading: maintenancesLoading, refetch: refetchMaintenances } = useQuery<MaintenanceData[]>({
+  const { data: maintenancesResponse, isLoading: maintenancesLoading, refetch: refetchMaintenances } = useQuery({
     queryKey: ['/api/trees/maintenances'],
     suspense: false,
     retry: 1
   });
 
-  const { data: species = [], isLoading: speciesLoading, refetch: refetchSpecies } = useQuery<SpeciesData[]>({
+  const { data: speciesResponse, isLoading: speciesLoading, refetch: refetchSpecies } = useQuery({
     queryKey: ['/api/tree-species'],
     suspense: false,
     retry: 1
   });
+
+  // Extraer datos con manejo defensivo para diferentes formatos de respuesta
+  const trees = Array.isArray(treesResponse) ? treesResponse : (treesResponse?.data || []);
+  const maintenances = Array.isArray(maintenancesResponse) ? maintenancesResponse : (maintenancesResponse?.data || []);
+  const species = Array.isArray(speciesResponse) ? speciesResponse : (speciesResponse?.data || []);
 
   const handleRefresh = async () => {
     await Promise.all([refetchTrees(), refetchMaintenances(), refetchSpecies()]);
@@ -89,28 +94,31 @@ const TreesDashboard: React.FC = () => {
     );
   }
 
-  // Cálculos de estadísticas
-  const totalTrees = trees.length;
-  const totalSpecies = species.length;
-  const totalMaintenances = maintenances.length;
+  // Cálculos de estadísticas con validación defensiva
+  const totalTrees = trees?.length || 0;
+  const totalSpecies = species?.length || 0;
+  const totalMaintenances = maintenances?.length || 0;
 
   // Estadísticas de salud de árboles
-  const healthStats = trees.reduce((acc, tree) => {
-    acc[tree.healthStatus] = (acc[tree.healthStatus] || 0) + 1;
+  const healthStats = trees?.reduce((acc, tree) => {
+    const status = tree?.healthStatus || 'Desconocido';
+    acc[status] = (acc[status] || 0) + 1;
     return acc;
-  }, {} as Record<string, number>);
+  }, {} as Record<string, number>) || {};
 
   // Estadísticas de mantenimiento por urgencia
-  const urgencyStats = maintenances.reduce((acc, maintenance) => {
-    acc[maintenance.urgency] = (acc[maintenance.urgency] || 0) + 1;
+  const urgencyStats = maintenances?.reduce((acc, maintenance) => {
+    const urgency = maintenance?.urgency || 'media';
+    acc[urgency] = (acc[urgency] || 0) + 1;
     return acc;
-  }, {} as Record<string, number>);
+  }, {} as Record<string, number>) || {};
 
   // Árboles por parque
-  const treesByPark = trees.reduce((acc, tree) => {
-    acc[tree.parkName] = (acc[tree.parkName] || 0) + 1;
+  const treesByPark = trees?.reduce((acc, tree) => {
+    const parkName = tree?.parkName || 'Sin parque';
+    acc[parkName] = (acc[parkName] || 0) + 1;
     return acc;
-  }, {} as Record<string, number>);
+  }, {} as Record<string, number>) || {};
 
   // Top 3 parques con más árboles
   const topParks = Object.entries(treesByPark)
@@ -118,10 +126,11 @@ const TreesDashboard: React.FC = () => {
     .slice(0, 3);
 
   // Especies más comunes
-  const speciesCount = trees.reduce((acc, tree) => {
-    acc[tree.speciesName] = (acc[tree.speciesName] || 0) + 1;
+  const speciesCount = trees?.reduce((acc, tree) => {
+    const speciesName = tree?.speciesName || 'Especie desconocida';
+    acc[speciesName] = (acc[speciesName] || 0) + 1;
     return acc;
-  }, {} as Record<string, number>);
+  }, {} as Record<string, number>) || {};
 
   const topSpecies = Object.entries(speciesCount)
     .sort(([,a], [,b]) => b - a)
@@ -146,9 +155,9 @@ const TreesDashboard: React.FC = () => {
   const healthyTrees = (healthStats['Excelente'] || 0) + (healthStats['Bueno'] || 0);
   const healthPercentage = totalTrees > 0 ? Math.round((healthyTrees / totalTrees) * 100) : 0;
 
-  // Mantenimientos pendientes
-  const pendingMaintenances = maintenances.filter(m => m.status === 'pending').length;
-  const urgentMaintenances = maintenances.filter(m => m.urgency === 'alta').length;
+  // Mantenimientos pendientes con validación defensiva
+  const pendingMaintenances = maintenances?.filter(m => m?.status === 'pending')?.length || 0;
+  const urgentMaintenances = maintenances?.filter(m => m?.urgency === 'alta')?.length || 0;
 
   return (
     <AdminLayout>
