@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Edit, Trash2, FileUp, Filter, ArrowUpDown, Search } from "lucide-react";
+import { Plus, Edit, Trash2, FileUp, Filter, ArrowUpDown, Search, Activity } from "lucide-react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -447,7 +447,7 @@ const AdminAmenitiesPage = () => {
 
   if (isLoading) {
     return (
-      <AdminLayout title="Gestión de Amenidades">
+      <AdminLayout>
         <div className="flex items-center justify-center h-64">
           <div className="text-lg">Cargando amenidades...</div>
         </div>
@@ -456,11 +456,14 @@ const AdminAmenitiesPage = () => {
   }
 
   return (
-    <AdminLayout title="Gestión de Amenidades">
+    <AdminLayout>
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Amenidades</h2>
-          <p className="text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <Activity className="w-8 h-8 text-gray-900" />
+            <h2 className="text-3xl font-bold text-gray-900">Gestión de Amenidades</h2>
+          </div>
+          <p className="text-muted-foreground mt-2">
             Gestiona las amenidades disponibles para los parques
           </p>
         </div>
