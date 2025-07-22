@@ -120,7 +120,86 @@ export function registerMaintenanceRoutes(app: any, apiRouter: Router, isAuthent
     }
   });
 
-  // Actualizar mantenimiento
+  // Crear nuevo mantenimiento (endpoint POST genérico)
+  apiRouter.post('/assets/maintenances', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const {
+        assetId,
+        maintenanceType,
+        description,
+        date,
+        status,
+        cost,
+        performedBy,
+        notes
+      } = req.body;
+
+      const newMaintenance = await db
+        .insert(assetMaintenances)
+        .values({
+          assetId: parseInt(assetId),
+          maintenanceType,
+          description,
+          date,
+          status: status || 'completed',
+          cost: cost ? parseFloat(cost) : null,
+          performedBy: performedBy || null,
+          notes: notes || null,
+        })
+        .returning();
+
+      console.log('🔧 [DIRECT] Mantenimiento creado:', newMaintenance[0]);
+      res.status(201).json(newMaintenance[0]);
+    } catch (error) {
+      console.error('Error creating maintenance:', error);
+      res.status(500).json({ error: 'Error al crear el mantenimiento' });
+    }
+  });
+
+  // Actualizar mantenimiento (endpoint PUT esperado por frontend)
+  apiRouter.put('/assets/maintenances/:id', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const maintenanceId = parseInt(req.params.id);
+      const {
+        assetId,
+        maintenanceType,
+        description,
+        date,
+        status,
+        cost,
+        performedBy,
+        notes
+      } = req.body;
+
+      const updatedMaintenance = await db
+        .update(assetMaintenances)
+        .set({
+          assetId: assetId ? parseInt(assetId) : undefined,
+          maintenanceType,
+          description,
+          date,
+          status,
+          cost: cost ? parseFloat(cost) : null,
+          performedBy,
+          notes,
+          updatedAt: new Date(),
+        })
+        .where(eq(assetMaintenances.id, maintenanceId))
+        .returning();
+
+      if (updatedMaintenance.length === 0) {
+        return res.status(404).json({ error: 'Mantenimiento no encontrado' });
+      }
+
+      console.log('🔧 [DIRECT] Mantenimiento actualizado:', updatedMaintenance[0]);
+      res.json(updatedMaintenance[0]);
+    } catch (error) {
+      console.error('Error updating maintenance:', error);
+      res.status(500).json({ error: 'Error al actualizar el mantenimiento' });
+    }
+  });
+
+  // Actualizar mantenimiento (endpoint alternativo)
   apiRouter.put('/asset-maintenances/:id', isAuthenticated, async (req: Request, res: Response) => {
     try {
       const maintenanceId = parseInt(req.params.id);
@@ -186,7 +265,29 @@ export function registerMaintenanceRoutes(app: any, apiRouter: Router, isAuthent
     }
   });
 
-  // Eliminar mantenimiento
+  // Eliminar mantenimiento (endpoint DELETE esperado por frontend)
+  apiRouter.delete('/assets/maintenances/:id', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const maintenanceId = parseInt(req.params.id);
+
+      const deletedMaintenance = await db
+        .delete(assetMaintenances)
+        .where(eq(assetMaintenances.id, maintenanceId))
+        .returning();
+
+      if (deletedMaintenance.length === 0) {
+        return res.status(404).json({ error: 'Mantenimiento no encontrado' });
+      }
+
+      console.log('🔧 [DIRECT] Mantenimiento eliminado:', deletedMaintenance[0]);
+      res.json({ message: 'Mantenimiento eliminado correctamente' });
+    } catch (error) {
+      console.error('Error deleting maintenance:', error);
+      res.status(500).json({ error: 'Error al eliminar el mantenimiento' });
+    }
+  });
+
+  // Eliminar mantenimiento (endpoint alternativo)
   apiRouter.delete('/asset-maintenances/:id', isAuthenticated, async (req: Request, res: Response) => {
     try {
       const maintenanceId = parseInt(req.params.id);

@@ -581,6 +581,140 @@ const AssetsMaintenancePage = () => {
           </DialogContent>
         </Dialog>
 
+        {/* Edit Dialog */}
+        <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Editar Mantenimiento</DialogTitle>
+              <DialogDescription>
+                Modifique los datos del mantenimiento
+              </DialogDescription>
+            </DialogHeader>
+            
+            {selectedMaintenance && (
+              <form onSubmit={handleEditMaintenance} className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium">Activo</label>
+                  <Select name="assetId" defaultValue={selectedMaintenance.assetId?.toString()}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar activo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Array.isArray(assets) ? assets.filter(asset => asset && asset.id && asset.name).map((asset: Asset) => (
+                        <SelectItem key={asset.id} value={asset.id.toString()}>
+                          {asset.name}
+                        </SelectItem>
+                      )) : null}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium">Tipo de Mantenimiento</label>
+                  <Select name="maintenanceType" defaultValue={selectedMaintenance.maintenanceType}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar tipo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {MAINTENANCE_TYPES.filter(type => type && type.value && type.label).map((type) => (
+                        <SelectItem key={type.value} value={type.value}>
+                          {type.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium">Descripción</label>
+                  <textarea 
+                    name="description" 
+                    className="w-full min-h-[80px] p-2 border border-gray-300 rounded-md"
+                    defaultValue={selectedMaintenance.description}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium">Fecha</label>
+                  <input 
+                    type="date" 
+                    name="date" 
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    defaultValue={selectedMaintenance.date}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium">Estado</label>
+                  <Select name="status" defaultValue={selectedMaintenance.status}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar estado" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {MAINTENANCE_STATUS.filter(status => status && status.value && status.label).map((status) => (
+                        <SelectItem key={status.value} value={status.value}>
+                          {status.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium">Costo (opcional)</label>
+                  <input 
+                    type="number" 
+                    step="0.01" 
+                    name="cost" 
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    placeholder="0.00"
+                    defaultValue={selectedMaintenance.cost || ''}
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium">Realizado por (opcional)</label>
+                  <input 
+                    type="text" 
+                    name="performedBy" 
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    placeholder="Nombre del responsable"
+                    defaultValue={selectedMaintenance.performedBy || ''}
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium">Notas adicionales (opcional)</label>
+                  <textarea 
+                    name="notes" 
+                    className="w-full min-h-[60px] p-2 border border-gray-300 rounded-md"
+                    placeholder="Observaciones, materiales utilizados, etc."
+                    defaultValue={selectedMaintenance.notes || ''}
+                  />
+                </div>
+
+                <div className="flex justify-end space-x-2 pt-4">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setShowEditDialog(false)}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button 
+                    type="submit"
+                    disabled={updateMaintenanceMutation.isPending}
+                  >
+                    {updateMaintenanceMutation.isPending ? 'Actualizando...' : 'Actualizar'}
+                  </Button>
+                </div>
+              </form>
+            )}
+          </DialogContent>
+        </Dialog>
+
         {/* Delete Dialog */}
         <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
           <DialogContent className="max-w-md">
