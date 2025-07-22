@@ -5,7 +5,7 @@ import * as XLSX from "xlsx";
 import path from "path";
 import fs from "fs";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
+import { storage } from "./simple-storage";
 import { isAuthenticated, hasMunicipalityAccess, hasParkAccess, requirePermission, requireAdmin } from "./middleware/auth";
 import { handleProfileImageUpload } from "./api/profileImageUpload";
 import { saveProfileImage, getProfileImage } from "./profileImageCache";
@@ -4269,12 +4269,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Get park with municipality using the same query pattern as the working parks endpoint
       const parkQuery = await db.select({
-        park: parksTable,
+        park: parks,
         municipality: municipalities
       })
-        .from(parksTable)
-        .leftJoin(municipalities, eq(parksTable.municipalityId, municipalities.id))
-        .where(eq(parksTable.id, parkId))
+        .from(parks)
+        .leftJoin(municipalities, eq(parks.municipalityId, municipalities.id))
+        .where(eq(parks.id, parkId))
         .limit(1);
       
       if (!parkQuery.length) {
@@ -4284,22 +4284,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { park, municipality } = parkQuery[0];
       
       // Get activities for this park
-      const activities = await db.select()
-        .from(activitiesTable)
-        .where(eq(activitiesTable.parkId, parkId));
+      const activitiesData = await db.select()
+        .from(activities)
+        .where(eq(activities.parkId, parkId));
       
       // Get trees data if table exists
-      let trees = [];
+      let treesData = [];
       try {
-        trees = await db.select().from(treesTable).where(eq(treesTable.parkId, parkId));
+        treesData = await db.select().from(trees).where(eq(trees.parkId, parkId));
       } catch (e) {
         // Tree table might not exist yet
       }
       
       // Get volunteers data if table exists
-      let volunteers = [];
+      let volunteersData = [];
       try {
-        volunteers = await db.select().from(volunteersTable).where(eq(volunteersTable.preferredParkId, parkId));
+        volunteersData = await db.select().from(volunteers).where(eq(volunteers.preferredParkId, parkId));
       } catch (e) {
         // Volunteers table might not exist yet
       }
@@ -4330,9 +4330,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Calculate stats
       const stats = {
-        totalActivities: activities.length,
-        activeVolunteers: volunteers.filter((v: any) => v.isActive).length,
-        totalTrees: trees.length,
+        totalActivities: activitiesData.length,
+        activeVolunteers: volunteersData.filter((v: any) => v.isActive).length,
+        totalTrees: treesData.length,
         averageEvaluation: evaluations.length > 0 ? evaluations.reduce((acc: number, evaluation: any) => acc + evaluation.score, 0) / evaluations.length : 0,
         pendingIncidents: incidents.filter((inc: any) => inc.status === 'pending' || inc.status === 'open').length
       };
@@ -4341,9 +4341,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...park,
         municipality: municipality,
         amenities: amenities,
-        activities: activities,
-        trees: trees,
-        volunteers: volunteers,
+        activities: activitiesData,
+        trees: treesData,
+        volunteers: volunteersData,
         incidents: incidents,
         documents: documents,
         images: images,
@@ -4371,8 +4371,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Get park activities
-      const activities = await storage.getParkActivities(parkId);
+      // Get park activities - using direct DB query for now
+      const activitiesData = await db.select().from(activities).where(eq(activities.parkId, parkId));
 
       // Format park data for public API consumption
       const formattedPark = {
