@@ -31,6 +31,7 @@
   },
   "actions": {
     "addUser": "Add User",
+    "newUser": "New User",
     "editUser": "Edit User",
     "deleteUser": "Delete User",
     "viewProfile": "View Profile",
@@ -38,6 +39,8 @@
     "resetPassword": "Reset Password",
     "uploadPhoto": "Upload Photo"
   },
+  "newUser": "New User",
+  "deleteUser": "Delete User",
   "status": {
     "active": "Active",
     "inactive": "Inactive",

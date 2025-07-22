@@ -32,13 +32,15 @@
   "actions": {
     "addUser": "Agregar Usuario",
     "newUser": "Nuevo Usuario",
-    "editUser": "Editar Usuario",
+    "editUser": "Editar Usuario", 
     "deleteUser": "Eliminar Usuario",
     "viewProfile": "Ver Perfil",
     "changePassword": "Cambiar Contraseña",
     "resetPassword": "Restablecer Contraseña",
     "uploadPhoto": "Subir Foto"
   },
+  "newUser": "Nuevo Usuario",
+  "deleteUser": "Eliminar Usuario",
   "status": {
     "active": "Activo",
     "inactive": "Inactivo",
