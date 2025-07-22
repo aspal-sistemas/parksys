@@ -105,11 +105,14 @@ export default function VisitorCountPage() {
   });
 
   // Query para obtener parques
-  const { data: parks } = useQuery<Park[]>({
+  const { data: parksResponse } = useQuery<{data: Park[]; pagination?: any} | Park[]>({
     queryKey: ['/api/parks'],
     retry: 1,
     suspense: false
   });
+
+  // Manejar formato de respuesta inconsistente
+  const parks = Array.isArray(parksResponse) ? parksResponse : parksResponse?.data || [];
 
   // Query principal para conteo de visitantes
   const { data: visitorCounts, isLoading } = useQuery<{
