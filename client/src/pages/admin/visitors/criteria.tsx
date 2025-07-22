@@ -448,8 +448,11 @@ export default function EvaluationCriteriaPage() {
       <div className="p-8 max-w-6xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Criterios de Evaluación</h1>
-          <p className="text-gray-600">Configura los criterios que aparecerán en los formularios de evaluación</p>
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+            <Settings className="w-8 h-8" />
+            Criterios de Evaluación
+          </h1>
+          <p className="text-gray-600 mt-2">Configura los criterios que aparecerán en los formularios de evaluación</p>
         </div>
         
         <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
