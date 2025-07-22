@@ -338,7 +338,7 @@ function FeedbackManagement() {
     return priorityLabels[priority as keyof typeof priorityLabels] || priority;
   };
 
-  // Export function for CSV with proper encoding
+  // Export function for CSV with professional header format
   const exportToCSV = () => {
     if (feedback.length === 0) {
       toast({
@@ -349,9 +349,44 @@ function FeedbackManagement() {
       return;
     }
 
-    const headers = [
+    // Professional CSV header with system branding
+    const csvHeader = [
+      'SISTEMA DE GESTIÓN DE PARQUES URBANOS',
+      'Reporte de Retroalimentación Ciudadana',
+      `Fecha de generación: ${format(new Date(), 'dd/MM/yyyy HH:mm', { locale: es })}`,
+      `Total de registros: ${feedback.length}`,
+      '', // Empty line separator
+    ];
+
+    // Summary statistics
+    const statusStats = feedback.reduce((acc, item) => {
+      const status = getStatusLabel(item.status);
+      acc[status] = (acc[status] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const typeStats = feedback.reduce((acc, item) => {
+      const type = getFormTypeLabel(item.formType);
+      acc[type] = (acc[type] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const summarySection = [
+      'RESUMEN ESTADÍSTICO',
+      '',
+      'Distribución por Estado:',
+      ...Object.entries(statusStats).map(([status, count]) => `${status}: ${count}`),
+      '',
+      'Distribución por Tipo de Formulario:',
+      ...Object.entries(typeStats).map(([type, count]) => `${type}: ${count}`),
+      '',
+      'DATOS DETALLADOS',
+      ''
+    ];
+
+    const dataHeaders = [
       'ID', 'Parque', 'Tipo de Formulario', 'Nombre Completo', 'Email', 'Teléfono',
-      'Asunto', 'Estado', 'Prioridad', 'Fecha de Creación'
+      'Asunto', 'Mensaje', 'Estado', 'Prioridad', 'Categoría', 'Fecha de Creación'
     ];
 
     const csvData = feedback.map(item => [
@@ -362,14 +397,24 @@ function FeedbackManagement() {
       item.email,
       item.phone || 'N/A',
       item.subject || 'N/A',
+      item.message.length > 100 ? item.message.substring(0, 100) + '...' : item.message,
       getStatusLabel(item.status),
       getPriorityLabel(item.priority) || 'N/A',
+      item.category || 'N/A',
       format(new Date(item.createdAt), 'dd/MM/yyyy HH:mm', { locale: es })
     ]);
 
+    // Combine all sections
+    const allRows = [
+      ...csvHeader.map(line => [line]), // Single column for header
+      ...summarySection.map(line => [line]), // Single column for summary
+      dataHeaders, // Multi-column for data headers
+      ...csvData // Multi-column for data
+    ];
+
     // Create CSV content with BOM for proper UTF-8 encoding
     const BOM = '\uFEFF';
-    const csvContent = BOM + [headers, ...csvData]
+    const csvContent = BOM + allRows
       .map(row => row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(','))
       .join('\r\n');
 
@@ -378,7 +423,7 @@ function FeedbackManagement() {
     if (link.download !== undefined) {
       const url = URL.createObjectURL(blob);
       link.setAttribute('href', url);
-      link.setAttribute('download', `retroalimentacion_parques_${format(new Date(), 'dd-MM-yyyy')}.csv`);
+      link.setAttribute('download', `retroalimentacion_parques_profesional_${format(new Date(), 'dd-MM-yyyy')}.csv`);
       link.style.visibility = 'hidden';
       document.body.appendChild(link);
       link.click();
@@ -386,8 +431,8 @@ function FeedbackManagement() {
     }
 
     toast({
-      title: "CSV Exportado",
-      description: "Los datos han sido exportados exitosamente en formato CSV",
+      title: "CSV Profesional Exportado",
+      description: "Reporte completo generado con encabezado corporativo y resumen estadístico",
     });
   };
 
