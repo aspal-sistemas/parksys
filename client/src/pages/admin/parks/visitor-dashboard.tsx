@@ -85,6 +85,8 @@ export default function VisitorDashboard() {
     parkSummaries: ParkSummary[];
   }>({
     queryKey: ['/api/visitor-counts/dashboard', selectedPark, dateRange],
+    suspense: false,
+    retry: 1,
     queryFn: async () => {
       const params = new URLSearchParams();
       if (selectedPark !== 'all') params.append('parkId', selectedPark);
@@ -102,10 +104,14 @@ export default function VisitorDashboard() {
     }
   });
 
-  // Obtener lista de parques
-  const { data: parks } = useQuery<Array<{id: number, name: string}>>({
+  // Obtener lista de parques  
+  const { data: parksResponse } = useQuery({
     queryKey: ['/api/parks'],
+    suspense: false,
+    retry: 1
   });
+  
+  const parks = Array.isArray(parksResponse) ? parksResponse : parksResponse?.data || [];
 
   // Datos procesados desde el dashboard
   const visitorData = dashboardData?.records || [];
