@@ -3,6 +3,7 @@
  */
 import { Router, Request, Response } from "express";
 import { db } from "./db";
+import { pool } from "./db";
 import { 
   treeMaintenances, 
   trees, 
@@ -73,7 +74,7 @@ export function registerTreeMaintenanceRoutes(app: any, apiRouter: Router, isAut
         ${whereClause}
       `;
       
-      const countResult = await db.execute(sql.raw(countQuery, whereParams));
+      const countResult = await pool.query(countQuery, whereParams);
       const totalCount = parseInt(String(countResult.rows[0]?.count || 0));
       
       if (totalCount === 0) {
@@ -122,10 +123,10 @@ export function registerTreeMaintenanceRoutes(app: any, apiRouter: Router, isAut
           tree_species ts ON t.species_id = ts.id
         ${whereClause}
         ORDER BY tm.maintenance_date DESC, tm.created_at DESC
-        LIMIT ? OFFSET ?
+        LIMIT $${whereParams.length + 1} OFFSET $${whereParams.length + 2}
       `;
       
-      const result = await db.execute(sql.raw(mainQuery, [...whereParams, limit, offset]));
+      const result = await pool.query(mainQuery, [...whereParams, limit, offset]);
       
       const totalPages = Math.ceil(totalCount / limit);
       

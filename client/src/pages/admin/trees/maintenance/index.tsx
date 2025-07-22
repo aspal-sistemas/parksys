@@ -64,7 +64,8 @@ import {
   Calendar,
   AlertTriangle,
   CheckCircle,
-  Loader2
+  Loader2,
+  Filter
 } from 'lucide-react';
 
 interface TreeMaintenance {
