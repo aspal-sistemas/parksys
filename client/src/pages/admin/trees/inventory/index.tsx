@@ -461,7 +461,13 @@ function TreeInventoryPage() {
 
   const handleSearch = (event: React.FormEvent) => {
     event.preventDefault();
-    setPage(1); // Resetear a la primera página al buscar
+    setPage(1); // Resetear a la primera página
+  };
+
+  // Reset page when filters change
+  React.useEffect(() => {
+    setPage(1);
+  }, [searchTerm, parkFilter, healthFilter, speciesFilter]);a página al buscar
   };
 
   // Resetear página cuando cambian los filtros

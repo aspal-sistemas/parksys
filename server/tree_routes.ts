@@ -1676,4 +1676,310 @@ export function registerTreeRoutes(app: any, apiRouter: Router, isAuthenticated:
       res.status(500).json({ error: "Error al remover asignación" });
     }
   });
+
+  // ===== ENDPOINTS CSV IMPORT/EXPORT =====
+  
+  // Exportar árboles a CSV con filtros
+  apiRouter.get("/trees/export-csv", async (req: Request, res: Response) => {
+    try {
+      // Construir consulta base con filtros
+      let whereConditions = [];
+      let queryParams = [];
+      let paramIndex = 1;
+
+      // Filtro de búsqueda
+      if (req.query.search && req.query.search !== '') {
+        whereConditions.push(`(t.code ILIKE $${paramIndex} OR ts.common_name ILIKE $${paramIndex + 1})`);
+        queryParams.push(`%${req.query.search}%`, `%${req.query.search}%`);
+        paramIndex += 2;
+      }
+
+      // Filtro de parque
+      if (req.query.parkId && req.query.parkId !== 'all') {
+        whereConditions.push(`t.park_id = $${paramIndex}`);
+        queryParams.push(req.query.parkId);
+        paramIndex++;
+      }
+
+      // Filtro de estado de salud
+      if (req.query.healthStatus && req.query.healthStatus !== 'all') {
+        whereConditions.push(`t.health_status = $${paramIndex}`);
+        queryParams.push(req.query.healthStatus);
+        paramIndex++;
+      }
+
+      // Filtro de especie
+      if (req.query.speciesId && req.query.speciesId !== 'all') {
+        whereConditions.push(`t.species_id = $${paramIndex}`);
+        queryParams.push(req.query.speciesId);
+        paramIndex++;
+      }
+
+      const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+
+      // Construir query completa
+      const query = `
+        SELECT 
+          t.code,
+          ts.common_name as especie,
+          ts.scientific_name as nombre_cientifico,
+          p.name as parque,
+          t.health_status as estado_salud,
+          t.height as altura,
+          t.trunk_diameter as diametro,
+          t.canopy_coverage as cobertura_copa,
+          t.development_stage as etapa_desarrollo,
+          t.estimated_age as edad_estimada,
+          t.planting_date as fecha_plantacion,
+          t.latitude as latitud,
+          t.longitude as longitud,
+          t.location_description as descripcion_ubicacion,
+          t.last_maintenance_date as ultima_inspeccion,
+          t.notes as notas,
+          t.created_at as fecha_registro
+        FROM trees t
+        LEFT JOIN tree_species ts ON t.species_id = ts.id
+        LEFT JOIN parks p ON t.park_id = p.id
+        ${whereClause}
+        ORDER BY t.id DESC
+      `;
+
+      const result = await db.execute(sql.raw(query, queryParams));
+
+      // Crear contenido CSV
+      const headers = [
+        'Código',
+        'Especie',
+        'Nombre Científico',
+        'Parque',
+        'Estado de Salud',
+        'Altura (m)',
+        'Diámetro (cm)',
+        'Cobertura Copa (m)',
+        'Etapa Desarrollo',
+        'Edad Estimada',
+        'Fecha Plantación',
+        'Latitud',
+        'Longitud',
+        'Descripción Ubicación',
+        'Última Inspección',
+        'Notas',
+        'Fecha Registro'
+      ];
+
+      let csvContent = headers.join(',') + '\n';
+
+      result.rows.forEach((row: any) => {
+        const rowData = [
+          row.code || '',
+          row.especie || '',
+          row.nombre_cientifico || '',
+          row.parque || '',
+          row.estado_salud || '',
+          row.altura || '',
+          row.diametro || '',
+          row.cobertura_copa || '',
+          row.etapa_desarrollo || '',
+          row.edad_estimada || '',
+          row.fecha_plantacion ? new Date(row.fecha_plantacion).toLocaleDateString('es-ES') : '',
+          row.latitud || '',
+          row.longitud || '',
+          row.descripcion_ubicacion || '',
+          row.ultima_inspeccion ? new Date(row.ultima_inspeccion).toLocaleDateString('es-ES') : '',
+          row.notas || '',
+          row.fecha_registro ? new Date(row.fecha_registro).toLocaleDateString('es-ES') : ''
+        ];
+
+        // Escapar campos que contienen comas o comillas
+        const escapedData = rowData.map(field => {
+          if (typeof field === 'string' && (field.includes(',') || field.includes('"'))) {
+            return `"${field.replace(/"/g, '""')}"`;
+          }
+          return field;
+        });
+
+        csvContent += escapedData.join(',') + '\n';
+      });
+
+      // Agregar BOM para UTF-8
+      const csvWithBOM = '\uFEFF' + csvContent;
+
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', 'attachment; filename="inventario_arboles.csv"');
+      res.send(csvWithBOM);
+
+    } catch (error) {
+      console.error("Error al exportar CSV:", error);
+      res.status(500).json({ message: "Error al exportar CSV" });
+    }
+  });
+
+  // Descargar plantilla CSV para importación
+  apiRouter.get("/trees/template-csv", async (req: Request, res: Response) => {
+    try {
+      // Plantilla con ejemplos reales para México
+      const templateData = [
+        {
+          codigo: "AHU-001",
+          especie_id: "1",
+          parque_id: "5",
+          latitud: "20.6597",
+          longitud: "-103.3496",
+          fecha_plantacion: "2024-03-15",
+          etapa_desarrollo: "Adulto",
+          edad_estimada: "15",
+          altura: "8.5",
+          diametro: "45.2",
+          cobertura_copa: "6.8",
+          estado_salud: "Bueno",
+          descripcion_ubicacion: "Entrada principal del parque",
+          notas: "Árbol emblemático, requiere monitoreo especial"
+        },
+        {
+          codigo: "JAC-002",
+          especie_id: "2",
+          parque_id: "5",
+          latitud: "20.6598",
+          longitud: "-103.3497",
+          fecha_plantacion: "2023-11-20",
+          etapa_desarrollo: "Joven",
+          edad_estimada: "3",
+          altura: "4.2",
+          diametro: "18.5",
+          cobertura_copa: "3.1",
+          estado_salud: "Excelente",
+          descripcion_ubicacion: "Área recreativa central",
+          notas: "Floración abundante en primavera"
+        }
+      ];
+
+      const headers = [
+        'codigo',
+        'especie_id',
+        'parque_id',
+        'latitud',
+        'longitud',
+        'fecha_plantacion',
+        'etapa_desarrollo',
+        'edad_estimada',
+        'altura',
+        'diametro',
+        'cobertura_copa',
+        'estado_salud',
+        'descripcion_ubicacion',
+        'notas'
+      ];
+
+      let csvContent = headers.join(',') + '\n';
+
+      templateData.forEach(row => {
+        const rowData = headers.map(header => row[header as keyof typeof row] || '');
+        csvContent += rowData.join(',') + '\n';
+      });
+
+      // Agregar BOM para UTF-8
+      const csvWithBOM = '\uFEFF' + csvContent;
+
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', 'attachment; filename="plantilla_arboles.csv"');
+      res.send(csvWithBOM);
+
+    } catch (error) {
+      console.error("Error al generar plantilla CSV:", error);
+      res.status(500).json({ message: "Error al generar plantilla CSV" });
+    }
+  });
+
+  // Importar árboles desde CSV
+  apiRouter.post("/trees/import-csv", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const { trees: importTrees } = req.body;
+
+      if (!importTrees || !Array.isArray(importTrees)) {
+        return res.status(400).json({ message: "Datos de árboles inválidos" });
+      }
+
+      let successCount = 0;
+      let errorCount = 0;
+      const errors: string[] = [];
+
+      for (const treeData of importTrees) {
+        try {
+          // Validar campos requeridos
+          if (!treeData.codigo) {
+            errors.push(`Árbol sin código válido`);
+            errorCount++;
+            continue;
+          }
+
+          // Verificar si ya existe un árbol con el mismo código
+          const existingTree = await db.execute(sql`
+            SELECT id FROM trees WHERE code = ${treeData.codigo}
+          `);
+
+          if (existingTree.rows.length > 0) {
+            errors.push(`El árbol con código ${treeData.codigo} ya existe`);
+            errorCount++;
+            continue;
+          }
+
+          // Insertar árbol
+          await db.execute(sql`
+            INSERT INTO trees (
+              code,
+              species_id,
+              park_id,
+              latitude,
+              longitude,
+              planting_date,
+              development_stage,
+              estimated_age,
+              height,
+              trunk_diameter,
+              canopy_coverage,
+              health_status,
+              location_description,
+              notes,
+              created_at,
+              updated_at
+            ) VALUES (
+              ${treeData.codigo},
+              ${treeData.especie_id ? parseInt(treeData.especie_id) : null},
+              ${treeData.parque_id ? parseInt(treeData.parque_id) : null},
+              ${treeData.latitud ? parseFloat(treeData.latitud) : null},
+              ${treeData.longitud ? parseFloat(treeData.longitud) : null},
+              ${treeData.fecha_plantacion || null},
+              ${treeData.etapa_desarrollo || null},
+              ${treeData.edad_estimada ? parseInt(treeData.edad_estimada) : null},
+              ${treeData.altura ? parseFloat(treeData.altura) : null},
+              ${treeData.diametro ? parseFloat(treeData.diametro) : null},
+              ${treeData.cobertura_copa ? parseFloat(treeData.cobertura_copa) : null},
+              ${treeData.estado_salud || 'Regular'},
+              ${treeData.descripcion_ubicacion || null},
+              ${treeData.notas || null},
+              NOW(),
+              NOW()
+            )
+          `);
+
+          successCount++;
+        } catch (error) {
+          console.error(`Error importando árbol ${treeData.codigo}:`, error);
+          errors.push(`Error importando árbol ${treeData.codigo}: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+          errorCount++;
+        }
+      }
+
+      res.json({
+        message: `Importación completada. ${successCount} árboles importados exitosamente, ${errorCount} errores.`,
+        successCount,
+        errorCount,
+        errors: errors.slice(0, 10) // Limitar errores mostrados
+      });
+
+    } catch (error) {
+      console.error("Error en importación CSV:", error);
+      res.status(500).json({ message: "Error al importar CSV" });
+    }
+  });
 }
