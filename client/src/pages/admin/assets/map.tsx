@@ -158,22 +158,28 @@ const AssetMapPage: React.FC = () => {
   const { data: apiAssets, isLoading: assetsLoading } = useQuery<Asset[]>({
     queryKey: ['/api/assets'],
     staleTime: 60000,
+    suspense: false,
+    retry: 1
   });
   
   // Consultar datos de parques
-  const { data: apiParks, isLoading: parksLoading } = useQuery<Park[]>({
+  const { data: apiParks, isLoading: parksLoading } = useQuery({
     queryKey: ['/api/parks'],
     staleTime: 60000,
+    suspense: false,
+    retry: 1
   });
   
   // Consultar datos de categorías
   const { data: apiCategories, isLoading: categoriesLoading } = useQuery<AssetCategory[]>({
     queryKey: ['/api/asset-categories'],
     staleTime: 60000,
+    suspense: false,
+    retry: 1
   });
 
   const assets = apiAssets || [];
-  const parks = apiParks || [];
+  const parks = Array.isArray(apiParks?.data) ? apiParks.data : (Array.isArray(apiParks) ? apiParks : []);
   const categories = apiCategories || [];
 
   // Filtrar activos según criterios seleccionados
