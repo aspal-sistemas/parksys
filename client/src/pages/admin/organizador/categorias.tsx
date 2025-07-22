@@ -35,7 +35,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, Palette, Calendar, ArrowLeft } from 'lucide-react';
+import { Plus, Edit, Trash2, Palette, Calendar, BarChart3 } from 'lucide-react';
 import AdminLayout from '@/components/AdminLayout';
 import { apiRequest } from '@/lib/queryClient';
 import { useLocation } from 'wouter';
@@ -321,19 +321,12 @@ const CategoriasActividades: React.FC = () => {
     <AdminLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="outline"
-              onClick={() => setLocation('/admin/organizador')}
-              className="flex items-center gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Volver al Organizador
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Categorías de Actividades</h1>
-              <p className="text-gray-500">Gestiona las categorías para organizar las actividades</p>
-            </div>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+              <BarChart3 className="w-8 h-8" />
+              Dashboard
+            </h1>
+            <p className="text-gray-500">Gestiona las categorías para organizar las actividades</p>
           </div>
           <Button onClick={handleCreate} className="flex items-center gap-2">
             <Plus className="h-4 w-4" />
