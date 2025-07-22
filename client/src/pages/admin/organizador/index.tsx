@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Plus, Tag, Users, MapPin, Clock, Edit, Eye } from 'lucide-react';
+import { Calendar, Plus, Tag, Users, MapPin, Clock, Edit, Eye, BarChart3 } from 'lucide-react';
 import AdminLayout from '@/components/AdminLayout';
 
 // Página principal del módulo de Organizador
@@ -115,7 +115,10 @@ const OrganizadorPage: React.FC = () => {
     <AdminLayout>
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Organizador</h1>
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+            <BarChart3 className="w-8 h-8" />
+            Dashboard
+          </h1>
           <p className="text-gray-500">Gestión de actividades y eventos en parques</p>
         </div>
         <div className="flex gap-2">
