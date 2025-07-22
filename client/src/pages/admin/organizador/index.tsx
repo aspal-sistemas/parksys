@@ -17,29 +17,37 @@ import AdminLayout from '@/components/AdminLayout';
 // Página principal del módulo de Organizador
 const OrganizadorPage: React.FC = () => {
   // Obtener actividades
-  const { data: activities = [], isLoading: isLoadingActivities } = useQuery({
-    queryKey: ['/api/activities']
+  const { data: activitiesResponse, isLoading: isLoadingActivities } = useQuery({
+    queryKey: ['/api/activities'],
+    suspense: false,
+    retry: 1,
   });
+  const activities = activitiesResponse?.data || [];
 
   // Obtener parques
-  const { data: parks = [], isLoading: isLoadingParks } = useQuery({
-    queryKey: ['/api/parks']
+  const { data: parksResponse, isLoading: isLoadingParks } = useQuery({
+    queryKey: ['/api/parks'],
+    suspense: false,
+    retry: 1,
   });
+  const parks = parksResponse?.data || [];
 
   // Obtener categorías de actividades
   const { data: categories = [], isLoading: isLoadingCategories } = useQuery({
-    queryKey: ['/api/activity-categories']
+    queryKey: ['/api/activity-categories'],
+    suspense: false,
+    retry: 1,
   });
 
   // Crear mapeo de categorías por ID
-  const categoriesMap = categories.reduce((acc: any, category: any) => {
+  const categoriesMap = Array.isArray(categories) ? categories.reduce((acc: any, category: any) => {
     acc[category.id] = category;
     return acc;
-  }, {});
+  }, {}) : {};
 
   // Calcular estadísticas
-  const totalActivities = activities.length;
-  const activeActivities = activities.filter((a: any) => new Date(a.startDate) >= new Date()).length;
+  const totalActivities = Array.isArray(activities) ? activities.length : 0;
+  const activeActivities = Array.isArray(activities) ? activities.filter((a: any) => new Date(a.startDate) >= new Date()).length : 0;
   
   // Crear mapeo inverso de categorías por string del category
   const categoryStringMap: any = {
@@ -53,7 +61,7 @@ const OrganizadorPage: React.FC = () => {
   };
 
   // Contar actividades por categoría usando tanto category_id como category string
-  const categoryCounts = activities.reduce((acc: any, activity: any) => {
+  const categoryCounts = Array.isArray(activities) ? activities.reduce((acc: any, activity: any) => {
     let categoryName = null;
     
     // Primero intentar con category_id numérico
@@ -71,21 +79,21 @@ const OrganizadorPage: React.FC = () => {
     }
     
     return acc;
-  }, {});
+  }, {}) : {};
 
 
 
   // Contar actividades por parque
-  const parkCounts = activities.reduce((acc, activity) => {
+  const parkCounts = Array.isArray(activities) ? activities.reduce((acc, activity) => {
     acc[activity.parkId] = (acc[activity.parkId] || 0) + 1;
     return acc;
-  }, {});
+  }, {}) : {};
 
   // Crear mapa de nombres de parques
-  const parkNamesMap = parks.reduce((acc, park) => {
+  const parkNamesMap = Array.isArray(parks) ? parks.reduce((acc, park) => {
     acc[park.id] = park.name;
     return acc;
-  }, {});
+  }, {}) : {};
 
   // Obtener parques con más actividades
   const topParks = Object.entries(parkCounts)
@@ -98,10 +106,10 @@ const OrganizadorPage: React.FC = () => {
     .slice(0, 5);
 
   // Actividades próximas (próximas 5)
-  const upcomingActivities = activities
+  const upcomingActivities = Array.isArray(activities) ? activities
     .filter(a => new Date(a.startDate) >= new Date())
     .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
-    .slice(0, 5);
+    .slice(0, 5) : [];
 
   const maxParkCount = Math.max(...Object.values(parkCounts), 1);
   return (

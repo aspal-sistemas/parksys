@@ -1235,12 +1235,14 @@ const AdminUsers = () => {
 
   // Fetch users
   const {
-    data: users = [],
+    data: usersResponse,
     isLoading,
     isError,
     refetch
   } = useQuery({
     queryKey: ['/api/users'],
+    suspense: false,
+    retry: 1,
     queryFn: async () => {
       try {
         const response = await fetch('/api/users');
@@ -1250,7 +1252,7 @@ const AdminUsers = () => {
         }
         
         const data = await response.json();
-        console.log('Usuarios obtenidos de la API:', data.length);
+        console.log('Usuarios obtenidos de la API:', data);
         return data;
       } catch (error) {
         console.error('Error fetching users:', error);
@@ -1258,6 +1260,8 @@ const AdminUsers = () => {
       }
     }
   });
+  
+  const users = usersResponse?.data || [];
 
   // Create or update user mutation
   const saveUserMutation = useMutation({

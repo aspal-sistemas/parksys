@@ -82,11 +82,14 @@ export default function InstructorsListPage() {
   const { toast } = useToast();
 
   // Obtener datos de instructores
-  const { data: instructors, isLoading, isError, refetch } = useQuery({
+  const { data: instructorsResponse, isLoading, isError, refetch } = useQuery({
     queryKey: ['/api/instructors'],
     retry: 1,
+    suspense: false,
     enabled: true, // Hacemos la consulta automáticamente
   });
+  
+  const instructors = instructorsResponse?.data || [];
 
   // Mutación para eliminar todos los instructores
   const deleteAllInstructorsMutation = useMutation({
@@ -117,7 +120,7 @@ export default function InstructorsListPage() {
 
   // Filtrar instructores según criterios de búsqueda
   const filteredInstructors = React.useMemo(() => {
-    if (!instructors) return [];
+    if (!Array.isArray(instructors)) return [];
     
     return instructors.filter((instructor: Instructor) => {
       // Filtro por término de búsqueda (nombre o email)

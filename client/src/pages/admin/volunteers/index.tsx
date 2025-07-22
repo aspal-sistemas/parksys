@@ -55,15 +55,19 @@ export default function VolunteersPage() {
   const itemsPerPage = 10;
 
   // Obtener voluntarios
-  const { data: volunteersData, isLoading } = useQuery({
+  const { data: volunteersResponse, isLoading } = useQuery({
     queryKey: ['/api/volunteers'],
+    suspense: false,
+    retry: 1,
   });
 
-  const volunteers = Array.isArray(volunteersData) ? volunteersData : [];
+  const volunteers = volunteersResponse?.data || [];
 
   // Obtener parques para referencia
-  const { data: parksResponse } = useQuery<{data: any[], pagination: any}>({
+  const { data: parksResponse } = useQuery({
     queryKey: ['/api/parks'],
+    suspense: false,
+    retry: 1,
   });
   
   const parks = parksResponse?.data || [];

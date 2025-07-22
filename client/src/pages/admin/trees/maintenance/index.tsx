@@ -92,16 +92,22 @@ export default function TreeMaintenancePage() {
   const queryClient = useQueryClient();
 
   // Cargar datos de árboles para el selector
-  const { data: trees, isLoading: loadingTrees } = useQuery({
+  const { data: treesResponse, isLoading: loadingTrees } = useQuery({
     queryKey: ['/api/trees'],
-    select: (data) => data.data,
+    suspense: false,
+    retry: 1,
   });
+  
+  const trees = treesResponse?.data || [];
 
   // Cargar especies para filtros
-  const { data: species } = useQuery({
+  const { data: speciesResponse } = useQuery({
     queryKey: ['/api/tree-species'],
-    select: (data) => data.data,
+    suspense: false,
+    retry: 1,
   });
+  
+  const species = speciesResponse?.data || [];
 
   // Estado para parques
   const [parks, setParks] = React.useState([]);

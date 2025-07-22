@@ -126,7 +126,7 @@ function TreeInventoryPage() {
   });
 
   // Consultar los parques para el filtro
-  const { data: parks, isLoading: isLoadingParks } = useQuery({
+  const { data: parksResponse, isLoading: isLoadingParks } = useQuery({
     queryKey: ['/api/parks'],
     queryFn: async () => {
       const response = await fetch('/api/parks');
@@ -135,7 +135,11 @@ function TreeInventoryPage() {
       }
       return response.json();
     },
+    suspense: false,
+    retry: 1,
   });
+  
+  const parks = parksResponse?.data || [];
 
   // Consultar las especies para el filtro
   const { data: species, isLoading: isLoadingSpecies } = useQuery({
@@ -147,6 +151,8 @@ function TreeInventoryPage() {
       }
       return response.json();
     },
+    suspense: false,
+    retry: 1,
   });
 
   // Consultar el inventario de árboles con paginación de 10 registros por página
@@ -183,6 +189,8 @@ function TreeInventoryPage() {
       
       return response.json();
     },
+    suspense: false,
+    retry: 1,
   });
 
   // Usamos useEffect para evitar re-renders infinitos al mostrar el toast

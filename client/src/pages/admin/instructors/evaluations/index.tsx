@@ -156,20 +156,23 @@ export default function InstructorEvaluationsPage() {
   
   // Obtener todas las evaluaciones
   const {
-    data: apiEvaluations = [],
+    data: evaluationsResponse,
     isLoading,
     isError,
     refetch
   } = useQuery({
     queryKey: ['/api/instructors-evaluations'],
-    retry: false,
+    suspense: false,
+    retry: 1,
     meta: {
       errorMessage: "Error al cargar evaluaciones. Mostrando datos de ejemplo."
     }
   });
   
+  const apiEvaluations = evaluationsResponse?.data || [];
+  
   // Usar datos de ejemplo si la API falla
-  const evaluations = apiEvaluations.length > 0 ? apiEvaluations : exampleEvaluations;
+  const evaluations = Array.isArray(apiEvaluations) && apiEvaluations.length > 0 ? apiEvaluations : exampleEvaluations;
 
   // Formatear fecha
   const formatDate = (dateString: string) => {

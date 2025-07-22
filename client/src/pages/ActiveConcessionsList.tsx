@@ -49,8 +49,10 @@ function ActiveConcessionsList() {
   const queryClient = useQueryClient();
 
   // Obtener concesiones activas
-  const { data: concessionsData, isLoading, refetch } = useQuery({
+  const { data: concessionsResponse, isLoading, refetch } = useQuery({
     queryKey: ['/api/active-concessions'],
+    suspense: false,
+    retry: 1,
     queryFn: async () => {
       const response = await fetch('/api/active-concessions');
       return response.json();
@@ -59,14 +61,20 @@ function ActiveConcessionsList() {
     staleTime: 30000 // Cache por 30 segundos para permitir actualizaciones más frecuentes
   });
 
+  const concessionsData = concessionsResponse?.data || [];
+
   // Obtener parques para filtro
-  const { data: parksData } = useQuery({
+  const { data: parksResponse } = useQuery({
     queryKey: ['/api/parks'],
+    suspense: false,
+    retry: 1,
     queryFn: async () => {
       const response = await fetch('/api/parks');
       return response.json();
     }
   });
+  
+  const parksData = parksResponse?.data || [];
 
   // Mutación para eliminar concesión
   const deleteMutation = useMutation({

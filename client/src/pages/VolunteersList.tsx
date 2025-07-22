@@ -52,8 +52,10 @@ export default function VolunteersList() {
   const itemsPerPage = 12;
 
   // Consulta para obtener todos los voluntarios con información del parque
-  const { data: volunteers = [], isLoading, error } = useQuery<Volunteer[]>({
+  const { data: volunteersResponse, isLoading, error } = useQuery({
     queryKey: ['/api/volunteers/public'],
+    suspense: false,
+    retry: 1,
     queryFn: async () => {
       const response = await fetch('/api/volunteers/public');
       if (!response.ok) throw new Error('Error cargando voluntarios');
@@ -61,9 +63,13 @@ export default function VolunteersList() {
     }
   });
 
+  const volunteers = volunteersResponse?.data || [];
+
   // Consulta para obtener lista de parques para el filtro
   const { data: parksResponse } = useQuery({
     queryKey: ['/api/parks'],
+    suspense: false,
+    retry: 1,
     queryFn: async () => {
       const response = await fetch('/api/parks');
       if (!response.ok) throw new Error('Error cargando parques');
