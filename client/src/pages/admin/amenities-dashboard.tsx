@@ -125,7 +125,10 @@ export default function AmenitiesDashboard() {
         {/* Header con botón de actualizar */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Resumen Operativo de Amenidades</h1>
+            <div className="flex items-center gap-2">
+              <Activity className="w-8 h-8 text-gray-900" />
+              <h1 className="text-3xl font-bold text-gray-900">Dashboard de Amenidades</h1>
+            </div>
             <p className="text-gray-600">Análisis y estadísticas de amenidades en parques</p>
           </div>
           <Button onClick={handleRefresh} variant="outline">
