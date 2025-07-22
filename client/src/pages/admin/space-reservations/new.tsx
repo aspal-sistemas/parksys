@@ -13,7 +13,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { CalendarClock, MapPin, Users, DollarSign, Clock, AlertCircle, CheckCircle, ArrowLeft } from 'lucide-react';
+import { CalendarClock, MapPin, Users, DollarSign, Clock, AlertCircle, CheckCircle, Plus } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { useToast } from '@/hooks/use-toast';
 import AdminLayout from '@/components/AdminLayout';
@@ -204,10 +204,6 @@ export default function NewReservationPage() {
     createReservationMutation.mutate(data);
   };
 
-  const handleGoBack = () => {
-    setLocation('/admin/space-reservations');
-  };
-
   // Check if selected time range is valid
   const isTimeRangeValid = () => {
     if (!selectedSpace || !watchedStartTime || !watchedEndTime) return true;
@@ -229,19 +225,12 @@ export default function NewReservationPage() {
     <AdminLayout>
       <div className="p-6 space-y-6">
         {/* Header */}
-        <div className="flex items-center gap-4">
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={handleGoBack}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Volver
-          </Button>
-          <div>
+        <div>
+          <div className="flex items-center gap-2">
+            <Plus className="w-8 h-8 text-gray-900" />
             <h1 className="text-3xl font-bold text-gray-900">Nueva Reserva</h1>
-            <p className="text-gray-600">Crear una nueva reserva de espacio</p>
           </div>
+          <p className="text-gray-600">Crear una nueva reserva de espacio</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
