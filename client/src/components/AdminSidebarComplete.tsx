@@ -496,6 +496,13 @@ const AdminSidebarComplete: React.FC = () => {
               onToggle={toggleSubmenu}
             >
               <NavItem 
+                href="/admin/trees/dashboard" 
+                icon={<BarChart className="h-4 w-4" />}
+                active={location === '/admin/trees/dashboard'}
+              >
+                Dashboard
+              </NavItem>
+              <NavItem 
                 href="/admin/trees/inventory" 
                 icon={<Archive className="h-4 w-4" />}
                 active={location.startsWith('/admin/trees/inventory')}

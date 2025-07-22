@@ -795,7 +795,7 @@ function Router() {
         </Route>
         <Route path="/admin/trees/dashboard">
           <Suspense fallback={<div className="p-8 text-center">Cargando dashboard de arbolado...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/trees/dashboard/index')))}
+            {React.createElement(React.lazy(() => import('@/pages/admin/trees/dashboard')))}
           </Suspense>
         </Route>
         
