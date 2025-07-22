@@ -264,7 +264,10 @@ export default function ActivitiesCalendarPage() {
       <div className="container mx-auto p-6">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Calendario de Actividades</h1>
+            <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+              <CalendarIcon className="w-8 h-8" />
+              Calendario de Actividades
+            </h1>
             <p className="text-muted-foreground">
               Consulta las actividades programadas en el calendario mensual.
             </p>
