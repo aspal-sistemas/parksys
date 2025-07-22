@@ -76,16 +76,8 @@ interface TreeMaintenance {
   maintenanceType: string;
   maintenanceDate: string;
   performedBy: string;
+  description: string;
   notes: string;
-  urgency: string;
-  estimatedCost: number;
-  workHours: number;
-  materialsUsed: string;
-  weatherConditions: string;
-  beforeCondition: string;
-  afterCondition: string;
-  followUpRequired: boolean;
-  recommendations: string;
   nextMaintenanceDate: string;
   createdAt: string;
 }
@@ -106,19 +98,11 @@ export default function TreeMaintenancePage() {
   const [selectedTreeId, setSelectedTreeId] = useState<number | null>(null);
   const [maintenanceData, setMaintenanceData] = useState({
     maintenanceType: '',
+    description: '',
     notes: '',
     performedBy: '',
-    urgency: 'normal',
-    estimatedCost: '',
     nextMaintenanceDate: '',
     maintenanceDate: new Date().toISOString().split('T')[0],
-    materialsUsed: '',
-    workHours: '',
-    weatherConditions: '',
-    beforeCondition: '',
-    afterCondition: '',
-    followUpRequired: false,
-    recommendations: '',
   });
 
   const { toast } = useToast();
@@ -228,19 +212,11 @@ export default function TreeMaintenancePage() {
   const resetForm = () => {
     setMaintenanceData({
       maintenanceType: '',
+      description: '',
       notes: '',
       performedBy: '',
-      urgency: 'normal',
-      estimatedCost: '',
       nextMaintenanceDate: '',
       maintenanceDate: new Date().toISOString().split('T')[0],
-      materialsUsed: '',
-      workHours: '',
-      weatherConditions: '',
-      beforeCondition: '',
-      afterCondition: '',
-      followUpRequired: false,
-      recommendations: '',
     });
     setSelectedTreeId(null);
   };

@@ -89,7 +89,7 @@ export function registerTreeMaintenanceRoutes(app: any, apiRouter: Router, isAut
         });
       }
       
-      // Consulta principal con datos detallados
+      // Consulta principal con datos disponibles en la tabla real
       const mainQuery = `
         SELECT 
           tm.id,
@@ -97,22 +97,14 @@ export function registerTreeMaintenanceRoutes(app: any, apiRouter: Router, isAut
           tm.maintenance_type as "maintenanceType",
           tm.maintenance_date as "maintenanceDate",
           tm.performed_by as "performedBy",
+          tm.description,
           tm.notes,
-          tm.urgency,
-          tm.estimated_cost as "estimatedCost",
-          tm.work_hours as "workHours",
-          tm.materials_used as "materialsUsed",
-          tm.weather_conditions as "weatherConditions",
-          tm.before_condition as "beforeCondition",
-          tm.after_condition as "afterCondition",
-          tm.follow_up_required as "followUpRequired",
-          tm.recommendations,
           tm.next_maintenance_date as "nextMaintenanceDate",
           tm.created_at as "createdAt",
-          t.code as "treeCode",
-          p.name as "parkName",
-          ts.common_name as "speciesName",
-          ts.scientific_name as "scientificName"
+          COALESCE(t.code, 'N/A') as "treeCode",
+          COALESCE(p.name, 'N/A') as "parkName",
+          COALESCE(ts.common_name, 'N/A') as "speciesName",
+          COALESCE(ts.scientific_name, 'N/A') as "scientificName"
         FROM 
           tree_maintenances tm
         LEFT JOIN 
@@ -155,23 +147,15 @@ export function registerTreeMaintenanceRoutes(app: any, apiRouter: Router, isAut
       const result = await db.execute(sql`
         SELECT 
           tm.id,
-          t.code as tree_code,
-          ts.common_name as species_name,
-          ts.scientific_name,
-          p.name as park_name,
+          COALESCE(t.code, 'N/A') as tree_code,
+          COALESCE(ts.common_name, 'N/A') as species_name,
+          COALESCE(ts.scientific_name, 'N/A') as scientific_name,
+          COALESCE(p.name, 'N/A') as park_name,
           tm.maintenance_type,
           tm.maintenance_date,
           tm.performed_by,
+          tm.description,
           tm.notes,
-          tm.urgency,
-          tm.estimated_cost,
-          tm.work_hours,
-          tm.materials_used,
-          tm.weather_conditions,
-          tm.before_condition,
-          tm.after_condition,
-          tm.follow_up_required,
-          tm.recommendations,
           tm.next_maintenance_date,
           tm.created_at
         FROM 
@@ -194,16 +178,8 @@ export function registerTreeMaintenanceRoutes(app: any, apiRouter: Router, isAut
         'Tipo Mantenimiento',
         'Fecha Mantenimiento',
         'Realizado Por',
+        'Descripción',
         'Notas',
-        'Urgencia',
-        'Costo Estimado',
-        'Horas Trabajo',
-        'Materiales Usados',
-        'Condiciones Clima',
-        'Condición Antes',
-        'Condición Después',
-        'Seguimiento Requerido',
-        'Recomendaciones',
         'Próximo Mantenimiento',
         'Fecha Creación'
       ];
@@ -220,16 +196,8 @@ export function registerTreeMaintenanceRoutes(app: any, apiRouter: Router, isAut
           `"${row.maintenance_type || ''}"`,
           row.maintenance_date || '',
           `"${row.performed_by || ''}"`,
+          `"${(row.description || '').replace(/"/g, '""')}"`,
           `"${(row.notes || '').replace(/"/g, '""')}"`,
-          `"${row.urgency || ''}"`,
-          row.estimated_cost || 0,
-          row.work_hours || 0,
-          `"${(row.materials_used || '').replace(/"/g, '""')}"`,
-          `"${row.weather_conditions || ''}"`,
-          `"${(row.before_condition || '').replace(/"/g, '""')}"`,
-          `"${(row.after_condition || '').replace(/"/g, '""')}"`,
-          row.follow_up_required ? 'Sí' : 'No',
-          `"${(row.recommendations || '').replace(/"/g, '""')}"`,
           row.next_maintenance_date || '',
           row.created_at || ''
         ];
