@@ -17,6 +17,7 @@ import { toast } from '@/hooks/use-toast';
 import { queryClient, apiRequest } from '@/lib/queryClient';
 import { Checkbox } from '@/components/ui/checkbox';
 import LocationSelector from '@/components/LocationSelector';
+import { Plus } from 'lucide-react';
 
 // Las categorías se cargan dinámicamente desde la API
 
@@ -301,7 +302,10 @@ const CrearActividadPage = () => {
     <AdminLayout>
       <div className="mb-6">
         <div className="flex justify-between items-center mb-4">
-          <h1 className="text-2xl font-bold text-gray-900">Crear Nueva Actividad</h1>
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+            <Plus className="w-8 h-8" />
+            Crear Nueva Actividad
+          </h1>
           <Button variant="outline" onClick={() => setLocation('/admin/organizador/catalogo/ver')}>
             Actividades Disponibles
           </Button>
