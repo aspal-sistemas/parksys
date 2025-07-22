@@ -20,6 +20,7 @@ import {
   Info,
   Star,
   User,
+  Users,
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
@@ -702,7 +703,6 @@ const AdminUsers = () => {
     refetch
   } = useQuery({
     queryKey: ['/api/users'],
-    suspense: false,
     retry: 1,
     queryFn: async () => {
       try {
@@ -1069,11 +1069,23 @@ const AdminUsers = () => {
   const { t: tUsers } = useTranslation('users');
 
   return (
-    <AdminLayout
-      title={tUsers('title')}
-    >
-      {/* Search and actions bar */}
-      <div className="mb-6 space-y-4">
+    <AdminLayout>
+      <div className="space-y-6">
+        {/* Custom Header */}
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+              <Users className="w-8 h-8" />
+              {tUsers('title')}
+            </h1>
+            <p className="text-gray-600 mt-2">
+              {tUsers('subtitle')}
+            </p>
+          </div>
+        </div>
+        
+        {/* Search and actions bar */}
+        <div className="mb-6 space-y-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="relative w-full sm:w-96">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
@@ -1403,6 +1415,7 @@ const AdminUsers = () => {
         onCancel={() => setShowDeleteConfirm(false)}
         isLoading={deleteUserMutation.isPending}
       />
+      </div>
     </AdminLayout>
   );
 };
