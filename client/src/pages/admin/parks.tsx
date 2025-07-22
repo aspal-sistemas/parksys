@@ -560,29 +560,13 @@ const AdminParksContent = () => {
           <p className="text-gray-600 mt-2 mb-8">Gestión General del Sistema</p>
         </div>
         
-        {/* Header with actions */}
-        <div className="flex justify-end items-center">
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={handleRefresh}>
-              Actualizar
-            </Button>
-            <Button variant="outline" onClick={() => window.location.href = "/admin/parks-import"}>
-              <FileUp className="h-4 w-4 mr-2" />
-              Importar Parques
-            </Button>
-            <Button onClick={() => window.location.href = "/admin/parks/new"}>
-              <Plus className="h-4 w-4 mr-2" />
-              {tParks('newPark')}
-            </Button>
-          </div>
-        </div>
-
-        {/* View mode toggle */}
+        {/* View mode toggle and actions */}
         <div className="flex justify-between items-center">
           <div className="text-sm text-gray-600">
             {filteredParks.length} parques encontrados
           </div>
           <div className="flex items-center space-x-2">
+            {/* View toggle buttons first */}
             <Button
               variant={viewMode === 'grid' ? 'default' : 'outline'}
               size="sm"
@@ -600,6 +584,22 @@ const AdminParksContent = () => {
             >
               <List className="h-4 w-4 mr-2" />
               Lista
+            </Button>
+            
+            {/* Separator */}
+            <div className="h-6 w-px bg-gray-300 mx-2"></div>
+            
+            {/* Action buttons */}
+            <Button variant="outline" size="sm" onClick={handleRefresh}>
+              Actualizar
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => window.location.href = "/admin/parks-import"}>
+              <FileUp className="h-4 w-4 mr-2" />
+              Importar Parques
+            </Button>
+            <Button size="sm" onClick={() => window.location.href = "/admin/parks/new"}>
+              <Plus className="h-4 w-4 mr-2" />
+              {tParks('newPark')}
             </Button>
           </div>
         </div>
