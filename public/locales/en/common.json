@@ -14,7 +14,9 @@
     "events": "Events",
     "reports": "Reports",
     "settings": "Settings",
-    "notifications": "Notifications"
+    "notifications": "Notifications",
+    "operativeSummary": "Dashboard",
+    "management": "Management"
   },
   "dashboard": {
     "title": "Executive Dashboard",
