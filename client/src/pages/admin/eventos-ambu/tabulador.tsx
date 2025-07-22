@@ -39,14 +39,17 @@ export default function TabuladorCostosAmbu() {
     <AdminLayout>
       <div className="container mx-auto py-6">
         {/* Header */}
-        <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Tabulador de Costos AMBU 2025
-        </h1>
-        <p className="text-gray-600">
-          Tarifas oficiales para eventos de bajo y alto impacto según normativas F-DIC-22 y F-DIC-23
-        </p>
-      </div>
+        <div className="flex items-center gap-2 mb-6">
+          <DollarSign className="w-8 h-8" />
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              Tabulador de Costos
+            </h1>
+            <p className="text-gray-600">
+              Tarifas oficiales para eventos de bajo y alto impacto según normativas F-DIC-22 y F-DIC-23
+            </p>
+          </div>
+        </div>
 
       {/* Información General */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
