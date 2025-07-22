@@ -61,8 +61,6 @@ function ActiveConcessionsList() {
     staleTime: 30000 // Cache por 30 segundos para permitir actualizaciones más frecuentes
   });
 
-  const concessionsData = concessionsResponse?.data || [];
-
   // Obtener parques para filtro
   const { data: parksResponse } = useQuery({
     queryKey: ['/api/parks'],
@@ -73,8 +71,6 @@ function ActiveConcessionsList() {
       return response.json();
     }
   });
-  
-  const parksData = parksResponse?.data || [];
 
   // Mutación para eliminar concesión
   const deleteMutation = useMutation({
@@ -84,11 +80,11 @@ function ActiveConcessionsList() {
     }
   });
 
-  const concessions: ActiveConcession[] = concessionsData?.data || [];
+  const concessions: ActiveConcession[] = Array.isArray(concessionsResponse?.data) ? concessionsResponse.data : (Array.isArray(concessionsResponse) ? concessionsResponse : []);
   
   // Image URLs have been fixed in database
 
-  const parks = parksData?.data || [];
+  const parks = Array.isArray(parksResponse?.data) ? parksResponse.data : (Array.isArray(parksResponse) ? parksResponse : []);
 
   // Filtrar concesiones
   const filteredConcessions = concessions.filter(concession => {
