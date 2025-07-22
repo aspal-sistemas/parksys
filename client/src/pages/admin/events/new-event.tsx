@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
-import { ArrowLeft, Calendar, MapPin, Users, Clock, FileText, Save } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Users, Clock, FileText, Save, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -134,15 +134,8 @@ export default function NewEventPage() {
     <AdminLayout>
       <div className="container mx-auto py-6 max-w-4xl">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-6">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setLocation('/admin/activities')}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Volver
-          </Button>
+        <div className="flex items-center gap-2 mb-6">
+          <Plus className="w-8 h-8" />
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Nuevo Evento</h1>
             <p className="text-gray-600">Crear un nuevo evento o actividad para los parques</p>
