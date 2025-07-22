@@ -428,6 +428,11 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/eventos-ambu/calendar')))}
           </Suspense>
         </Route>
+        <Route path="/admin/eventos-ambu/calendario">
+          <Suspense fallback={<div className="p-8 text-center">Cargando calendario de eventos AMBU...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/eventos-ambu/calendar')))}
+          </Suspense>
+        </Route>
         <Route path="/admin/eventos-ambu/tabulador">
           <Suspense fallback={<div className="p-8 text-center">Cargando tabulador de costos AMBU...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/admin/eventos-ambu/tabulador')))}
