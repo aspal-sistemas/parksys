@@ -421,7 +421,9 @@ const EditAssetPage = () => {
   // Efecto para centrar el mapa cuando cambia el parque seleccionado
   useEffect(() => {
     if (selectedParkId && parks) {
-      const selectedPark = parks.find((park: any) => park.id === selectedParkId);
+      // Validación defensiva: verificar que parks sea un array
+      const parksArray = Array.isArray(parks) ? parks : (parks?.data || []);
+      const selectedPark = parksArray.find((park: any) => park.id === selectedParkId);
       if (selectedPark && selectedPark.latitude && selectedPark.longitude) {
         const parkLat = parseFloat(selectedPark.latitude);
         const parkLng = parseFloat(selectedPark.longitude);
@@ -575,7 +577,7 @@ const EditAssetPage = () => {
                                 <SelectValue placeholder="Seleccione un parque" />
                               </SelectTrigger>
                               <SelectContent>
-                                {parks?.map((park: any) => (
+                                {(Array.isArray(parks) ? parks : (parks?.data || [])).map((park: any) => (
                                   <SelectItem key={park.id} value={park.id.toString()}>
                                     {park.name}
                                   </SelectItem>
