@@ -17,7 +17,7 @@ interface EventoAmbu {
   horaFin: string;
   numeroAsistentes: number;
   status: string;
-  costoTotal?: number;
+  costoTotal?: string | number;
 }
 
 const statusColors = {
@@ -57,7 +57,7 @@ export default function CalendarioEventosAmbu() {
       const response = await fetch(`/api/eventos-ambu?${params}`);
       if (!response.ok) throw new Error("Error al cargar eventos");
       const data = await response.json();
-      return data.eventos || [];
+      return data.eventos || data || [];
     }
   });
 
