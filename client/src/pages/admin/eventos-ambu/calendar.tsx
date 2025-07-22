@@ -17,7 +17,7 @@ interface EventoAmbu {
   horaFin: string;
   numeroAsistentes: number;
   status: string;
-  costoTotal: number;
+  costoTotal?: number;
 }
 
 const statusColors = {
@@ -274,14 +274,14 @@ export default function CalendarioEventosAmbu() {
                           <Users className="h-3 w-3" />
                           {evento.numeroAsistentes} asistentes
                         </div>
-                        {evento.costoTotal > 0 && (
+                        {evento.costoTotal && Number(evento.costoTotal) > 0 && (
                           <div className="flex items-center gap-1 text-xs text-gray-600">
                             <DollarSign className="h-3 w-3" />
-                            ${evento.costoTotal.toFixed(2)}
+                            ${Number(evento.costoTotal).toFixed(2)}
                           </div>
                         )}
                       </div>
-                      <Badge className={statusColors[evento.status as keyof typeof statusColors]} variant="outline" size="sm">
+                      <Badge className={statusColors[evento.status as keyof typeof statusColors]} variant="outline">
                         {evento.status.replace("_", " ").toUpperCase()}
                       </Badge>
                     </div>
