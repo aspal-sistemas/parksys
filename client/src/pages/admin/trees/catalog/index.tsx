@@ -652,7 +652,7 @@ function TreeSpeciesCatalog() {
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl font-bold text-black flex items-center">
-              <TreePine className="mr-2 h-8 w-8" />
+              <Leaf className="mr-2 h-8 w-8" />
               Catálogo de Especies Arbóreas
             </h1>
             <p className="text-gray-600 mt-1">
