@@ -1007,8 +1007,11 @@ export default function VisitorCountPage() {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Conteo de Visitantes</h1>
-            <p className="text-gray-600">Gestión diaria de visitantes por parque</p>
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+              <Users className="w-8 h-8" />
+              Conteo de Visitantes
+            </h1>
+            <p className="text-gray-600 mt-2">Gestión diaria de visitantes por parque</p>
           </div>
           <div className="flex items-center space-x-3">
             <Button 
