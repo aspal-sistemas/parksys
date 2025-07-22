@@ -22,7 +22,8 @@ import {
   TrendingUp,
   DollarSign,
   Activity,
-  X
+  X,
+  Package
 } from 'lucide-react';
 
 import AdminLayout from '@/components/AdminLayout';
@@ -854,10 +855,11 @@ const InventoryPage: React.FC = () => {
       
       {/* Header con métricas rápidas */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Inventario de Activos
-        </h1>
-        <p className="text-gray-600 mb-4">
+        <div className="flex items-center gap-2">
+          <Package className="w-8 h-8 text-gray-900" />
+          <h1 className="text-3xl font-bold text-gray-900">Inventario de Activos</h1>
+        </div>
+        <p className="text-gray-600 mt-2 mb-4">
           Gestión completa del inventario de activos de los parques
         </p>
         
