@@ -10,11 +10,14 @@ export default function EventosAmbuIndex() {
     <AdminLayout>
       <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900">Eventos</h1>
-          <p className="text-gray-600 mt-2">
-            Sistema de solicitudes para eventos en espacios públicos según formularios oficiales
-          </p>
+        <div className="flex items-center gap-2">
+          <Calendar className="w-8 h-8" />
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-gray-900">Eventos</h1>
+            <p className="text-gray-600 mt-2">
+              Sistema de solicitudes para eventos en espacios públicos según formularios oficiales
+            </p>
+          </div>
         </div>
       </div>
 
