@@ -28,6 +28,33 @@
     "cashFlow": "Flujo de Efectivo",
     "contracts": "Contratos"
   },
+  "actions": {
+    "refresh": "Actualizar",
+    "import": "Importar",
+    "export": "Exportar",
+    "add": "Agregar",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "reset": "Restablecer"
+  },
+  "forms": {
+    "municipality": "Municipio",
+    "allMunicipalities": "Todos los Municipios",
+    "parkType": "Tipo de Parque",
+    "allTypes": "Todos los Tipos",
+    "amenity": "Amenidad",
+    "allAmenities": "Todas las Amenidades"
+  },
+  "messages": {
+    "loading": "Cargando...",
+    "noData": "No hay datos disponibles",
+    "error": "Error al cargar datos",
+    "success": "Operación exitosa"
+  },
   "dashboard": {
     "title": "Panel Ejecutivo",
     "subtitle": "Panel de control integral para el sistema ParkSys",

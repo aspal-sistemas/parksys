@@ -688,6 +688,10 @@ export default function EvaluationsPage() {
       const data = await response.json();
       const allEvaluations = data.evaluations;
       
+      console.log('🔥 EXPORT EXCEL - Received evaluations:', allEvaluations.length);
+      console.log('🔥 EXPORT EXCEL - First evaluation park:', allEvaluations[0]?.park_name);
+      console.log('🔥 EXPORT EXCEL - Unique parks:', [...new Set(allEvaluations.map(e => e.park_name))]);
+      
       if (allEvaluations.length === 0) {
         toast({
           title: "No hay datos",

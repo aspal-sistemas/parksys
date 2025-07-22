@@ -57,5 +57,20 @@
     "addAmenity": "Agregar Amenidad",
     "uploadImage": "Subir Imagen",
     "setMainImage": "Establecer Imagen Principal"
+  },
+  "newPark": "Nuevo Parque",
+  "filters": {
+    "municipality": "Municipio",
+    "parkType": "Tipo de Parque",
+    "amenity": "Amenidad",
+    "all": "Todos"
+  },
+  "table": {
+    "name": "Nombre",
+    "type": "Tipo",
+    "municipality": "Municipio",
+    "area": "Superficie",
+    "status": "Estado",
+    "actions": "Acciones"
   }
 }
