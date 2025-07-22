@@ -931,6 +931,12 @@ function Router() {
           </Suspense>
         </Route>
 
+        <Route path="/admin/concessions/reports">
+          <Suspense fallback={<div className="p-8 text-center">Cargando reportes de concesiones...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/concessions/reports/index')))}
+          </Suspense>
+        </Route>
+
         {/* Rutas para el módulo financiero reestructurado */}
         <Route path="/admin/finance/dashboard">
           <Suspense fallback={<div className="p-8 text-center">Cargando dashboard financiero...</div>}>
