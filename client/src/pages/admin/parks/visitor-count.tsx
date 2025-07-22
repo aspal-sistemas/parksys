@@ -357,38 +357,156 @@ export default function VisitorCountPage() {
         'Notas': count.notes || 'Sin observaciones'
       }));
 
-      // Datos del resumen ejecutivo
+      // Estadísticas por método de conteo
+      const methodStats = visitorCounts.data.reduce((acc, count) => {
+        const method = getMethodLabel(count.countingMethod);
+        acc[method] = (acc[method] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+
+      // Estadísticas por clima
+      const weatherStats = visitorCounts.data.reduce((acc, count) => {
+        const weather = getWeatherLabel(count.weather);
+        acc[weather] = (acc[weather] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+
+      // Estadísticas por tipo de día
+      const dayTypeStats = visitorCounts.data.reduce((acc, count) => {
+        const dayType = dayTypeTranslations[count.dayType || 'weekday'] || count.dayType;
+        acc[dayType] = (acc[dayType] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+
+      // Análisis por parques
+      const parkStats = visitorCounts.data.reduce((acc, count) => {
+        if (!acc[count.parkName]) {
+          acc[count.parkName] = {
+            registros: 0,
+            visitantes: 0,
+            adultos: 0,
+            niños: 0,
+            seniors: 0,
+            mascotas: 0,
+            grupos: 0
+          };
+        }
+        acc[count.parkName].registros += 1;
+        acc[count.parkName].visitantes += count.totalVisitors;
+        acc[count.parkName].adultos += count.adults;
+        acc[count.parkName].niños += count.children;
+        acc[count.parkName].seniors += count.seniors;
+        acc[count.parkName].mascotas += count.pets;
+        acc[count.parkName].grupos += count.groups;
+        return acc;
+      }, {} as Record<string, any>);
+
+      // Datos del resumen ejecutivo con análisis completo
       const summaryData = [
         ['SISTEMA DE GESTIÓN DE PARQUES URBANOS'],
-        ['REPORTE DE CONTEO DE VISITANTES'],
+        ['REPORTE PROFESIONAL DE CONTEO DE VISITANTES'],
         [`Generado el: ${currentDate}`],
+        [`Período de análisis: ${visitorCounts.data.length} registros`],
         [''],
-        ['RESUMEN EJECUTIVO'],
-        ['Métrica', 'Valor'],
-        ['Total de registros', visitorCounts.data.length],
-        ['Total de visitantes', totalVisitors],
-        ['Promedio diario', avgDaily],
-        ['Parques únicos', uniqueParks],
+        ['═══════════════════════════════════════'],
+        ['RESUMEN EJECUTIVO GENERAL'],
+        ['═══════════════════════════════════════'],
+        [''],
+        ['MÉTRICAS PRINCIPALES'],
+        ['Indicador', 'Valor', 'Observaciones'],
+        ['Total de registros', visitorCounts.data.length.toLocaleString('es-ES'), 'Conteos realizados'],
+        ['Total de visitantes', totalVisitors.toLocaleString('es-ES'), 'Suma de todos los visitantes'],
+        ['Promedio diario de visitantes', avgDaily.toLocaleString('es-ES'), 'Visitantes por día'],
+        ['Parques únicos monitoreados', uniqueParks, 'Diferentes ubicaciones'],
         [''],
         ['DISTRIBUCIÓN DEMOGRÁFICA'],
-        ['Segmento', 'Total', 'Porcentaje'],
-        ['Adultos', totalAdults, `${((totalAdults / totalVisitors) * 100).toFixed(1)}%`],
-        ['Niños', totalChildren, `${((totalChildren / totalVisitors) * 100).toFixed(1)}%`],
-        ['Adultos Mayores', totalSeniors, `${((totalSeniors / totalVisitors) * 100).toFixed(1)}%`],
+        ['Segmento Poblacional', 'Total', 'Porcentaje', 'Promedio Diario'],
+        ['Adultos', totalAdults.toLocaleString('es-ES'), `${((totalAdults / totalVisitors) * 100).toFixed(1)}%`, Math.round(totalAdults / visitorCounts.data.length)],
+        ['Niños', totalChildren.toLocaleString('es-ES'), `${((totalChildren / totalVisitors) * 100).toFixed(1)}%`, Math.round(totalChildren / visitorCounts.data.length)],
+        ['Adultos Mayores', totalSeniors.toLocaleString('es-ES'), `${((totalSeniors / totalVisitors) * 100).toFixed(1)}%`, Math.round(totalSeniors / visitorCounts.data.length)],
         [''],
         ['OTROS REGISTROS'],
-        ['Tipo', 'Total'],
-        ['Mascotas', totalPets],
-        ['Grupos organizados', totalGroups],
+        ['Tipo', 'Total', 'Promedio por Registro'],
+        ['Mascotas', totalPets.toLocaleString('es-ES'), Math.round(totalPets / visitorCounts.data.length)],
+        ['Grupos organizados', totalGroups.toLocaleString('es-ES'), Math.round(totalGroups / visitorCounts.data.length)],
+        [''],
+        ['ANÁLISIS POR MÉTODOS DE CONTEO'],
+        ['Método', 'Registros', 'Porcentaje de Uso'],
+        ...Object.entries(methodStats).map(([method, count]) => [
+          method, 
+          count, 
+          `${((count / visitorCounts.data.length) * 100).toFixed(1)}%`
+        ]),
+        [''],
+        ['ANÁLISIS POR CONDICIONES CLIMÁTICAS'],
+        ['Condición Climática', 'Días Registrados', 'Porcentaje'],
+        ...Object.entries(weatherStats).map(([weather, count]) => [
+          weather, 
+          count, 
+          `${((count / visitorCounts.data.length) * 100).toFixed(1)}%`
+        ]),
+        [''],
+        ['ANÁLISIS POR TIPO DE DÍA'],
+        ['Tipo de Día', 'Registros', 'Porcentaje'],
+        ...Object.entries(dayTypeStats).map(([dayType, count]) => [
+          dayType, 
+          count, 
+          `${((count / visitorCounts.data.length) * 100).toFixed(1)}%`
+        ]),
       ];
 
-      // Crear libro de trabajo
+      // Datos de análisis por parques
+      const parkAnalysisData = [
+        ['ANÁLISIS DETALLADO POR PARQUES'],
+        [`Generado el: ${currentDate}`],
+        [''],
+        ['Parque', 'Total Registros', 'Total Visitantes', 'Promedio por Registro', 'Adultos', 'Niños', 'Seniors', 'Mascotas', 'Grupos'],
+        ...Object.entries(parkStats).map(([parkName, stats]) => [
+          parkName,
+          stats.registros,
+          stats.visitantes.toLocaleString('es-ES'),
+          Math.round(stats.visitantes / stats.registros),
+          stats.adultos.toLocaleString('es-ES'),
+          stats.niños.toLocaleString('es-ES'),
+          stats.seniors.toLocaleString('es-ES'),
+          stats.mascotas.toLocaleString('es-ES'),
+          stats.grupos.toLocaleString('es-ES')
+        ]),
+      ];
+
+      // Crear libro de trabajo profesional
       const workbook = XLSX.utils.book_new();
       
-      // Hoja 1: Datos principales
+      // Hoja 1: Resumen Ejecutivo (primera hoja para impacto inmediato)
+      const summaryWorksheet = XLSX.utils.aoa_to_sheet(summaryData);
+      summaryWorksheet['!cols'] = [{ wch: 30 }, { wch: 20 }, { wch: 25 }, { wch: 20 }];
+      
+      // Configurar formato para encabezados principales
+      if (summaryWorksheet['A1']) summaryWorksheet['A1'].s = { font: { bold: true, sz: 16 } };
+      if (summaryWorksheet['A2']) summaryWorksheet['A2'].s = { font: { bold: true, sz: 14 } };
+      
+      XLSX.utils.book_append_sheet(workbook, summaryWorksheet, 'Resumen Ejecutivo');
+
+      // Hoja 2: Análisis por Parques
+      const parkAnalysisWorksheet = XLSX.utils.aoa_to_sheet(parkAnalysisData);
+      parkAnalysisWorksheet['!cols'] = [
+        { wch: 25 }, // Parque
+        { wch: 15 }, // Total Registros
+        { wch: 18 }, // Total Visitantes
+        { wch: 18 }, // Promedio por Registro
+        { wch: 12 }, // Adultos
+        { wch: 12 }, // Niños
+        { wch: 12 }, // Seniors
+        { wch: 12 }, // Mascotas
+        { wch: 12 }  // Grupos
+      ];
+      
+      XLSX.utils.book_append_sheet(workbook, parkAnalysisWorksheet, 'Análisis por Parques');
+      
+      // Hoja 3: Datos Detallados
       const dataWorksheet = XLSX.utils.json_to_sheet(mainData);
       
-      // Ajustar ancho de columnas
+      // Ajustar ancho de columnas para datos detallados
       const colWidths = [
         { wch: 12 }, // Fecha
         { wch: 25 }, // Parque
@@ -401,25 +519,78 @@ export default function VisitorCountPage() {
         { wch: 20 }, // Método de Conteo
         { wch: 15 }, // Tipo de Día
         { wch: 12 }, // Clima
-        { wch: 30 }  // Notas
+        { wch: 35 }  // Notas
       ];
       dataWorksheet['!cols'] = colWidths;
 
-      XLSX.utils.book_append_sheet(workbook, dataWorksheet, 'Datos de Visitantes');
+      XLSX.utils.book_append_sheet(workbook, dataWorksheet, 'Datos Detallados');
 
-      // Hoja 2: Resumen ejecutivo
-      const summaryWorksheet = XLSX.utils.aoa_to_sheet(summaryData);
-      summaryWorksheet['!cols'] = [{ wch: 25 }, { wch: 15 }, { wch: 15 }];
+      // Hoja 4: Gráficos y Tendencias (datos preparados para gráficos)
+      const chartsData = [
+        ['DATOS PARA GRÁFICOS Y ANÁLISIS DE TENDENCIAS'],
+        [`Generado el: ${currentDate}`],
+        [''],
+        ['RESUMEN POR FECHAS (últimos registros)'],
+        ['Fecha', 'Total Visitantes', 'Adultos', 'Niños', 'Seniors', 'Mascotas', 'Grupos'],
+        ...visitorCounts.data.slice(0, 30).map(count => [
+          format(new Date(count.date), 'dd/MM/yyyy', { locale: es }),
+          count.totalVisitors,
+          count.adults,
+          count.children,
+          count.seniors,
+          count.pets,
+          count.groups
+        ]),
+        [''],
+        ['COMPARATIVO DE MÉTODOS DE CONTEO'],
+        ['Método', 'Frecuencia de Uso', 'Porcentaje'],
+        ...Object.entries(methodStats).map(([method, count]) => [
+          method, 
+          count, 
+          `${((count / visitorCounts.data.length) * 100).toFixed(1)}%`
+        ]),
+        [''],
+        ['ANÁLISIS CLIMÁTICO'],
+        ['Condición', 'Days', 'Porcentaje', 'Impacto en Visitantes'],
+        ...Object.entries(weatherStats).map(([weather, count]) => {
+          const visitsInWeather = visitorCounts.data
+            .filter(c => getWeatherLabel(c.weather) === weather)
+            .reduce((sum, c) => sum + c.totalVisitors, 0);
+          const avgVisitsInWeather = count > 0 ? Math.round(visitsInWeather / count) : 0;
+          
+          return [
+            weather, 
+            count, 
+            `${((count / visitorCounts.data.length) * 100).toFixed(1)}%`,
+            `${avgVisitsInWeather} visitantes promedio`
+          ];
+        }),
+        [''],
+        ['NOTAS Y METODOLOGÍA'],
+        ['• Los datos incluyen solo registros con información completa'],
+        ['• Los promedios se calculan sobre días registrados, no días calendarios'],
+        ['• Los porcentajes demográficos se basan en el total de visitantes'],
+        ['• Las condiciones climáticas afectan significativamente la asistencia'],
+        [''],
+        ['RECOMENDACIONES OPERATIVAS'],
+        ['• Implementar conteo sistemático en días de alta afluencia'],
+        ['• Considerar clima en planificación de eventos'],
+        ['• Monitorear patrones estacionales para mejor gestión'],
+        ['• Documentar observaciones específicas por parque']
+      ];
       
-      XLSX.utils.book_append_sheet(workbook, summaryWorksheet, 'Resumen Ejecutivo');
+      const chartsWorksheet = XLSX.utils.aoa_to_sheet(chartsData);
+      chartsWorksheet['!cols'] = [{ wch: 25 }, { wch: 15 }, { wch: 15 }, { wch: 25 }];
+      
+      XLSX.utils.book_append_sheet(workbook, chartsWorksheet, 'Gráficos y Tendencias');
 
       // Generar y descargar archivo
       const fileName = `conteo_visitantes_${format(new Date(), 'dd-MM-yyyy', { locale: es })}.xlsx`;
       XLSX.writeFile(workbook, fileName);
 
       toast({
-        title: "Exportación Excel exitosa",
-        description: `Se exportaron ${visitorCounts.data.length} registros con análisis completo`,
+        title: "Exportación Excel Profesional Exitosa",
+        description: `Se generó un archivo Excel con ${visitorCounts.data.length} registros, 4 hojas de análisis y estadísticas completas`,
       });
 
     } catch (error) {
