@@ -73,10 +73,11 @@ const ParksDashboard = () => {
       <AdminLayout>
         <div className="space-y-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2 mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
               <Activity className="w-8 h-8" />
               Dashboard
             </h1>
+            <p className="text-gray-600 mt-2 mb-8">Resumen general del Sistema</p>
           </div>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {[...Array(8)].map((_, i) => (
@@ -101,10 +102,11 @@ const ParksDashboard = () => {
     return (
       <AdminLayout>
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2 mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
             <Activity className="w-8 h-8" />
             Dashboard
           </h1>
+          <p className="text-gray-600 mt-2 mb-8">Resumen general del Sistema</p>
         </div>
         <div className="text-center py-8">
           <AlertTriangle className="h-8 w-8 text-red-500 mx-auto mb-4" />
@@ -118,10 +120,11 @@ const ParksDashboard = () => {
     return (
       <AdminLayout>
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2 mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
             <Activity className="w-8 h-8" />
             Dashboard
           </h1>
+          <p className="text-gray-600 mt-2 mb-8">Resumen general del Sistema</p>
         </div>
         <div className="text-center py-8">
           <p className="text-gray-600">No hay datos disponibles</p>
@@ -138,10 +141,11 @@ const ParksDashboard = () => {
       <div className="space-y-8">
         {/* Main Header */}
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2 mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
             <Activity className="w-8 h-8" />
             Dashboard
           </h1>
+          <p className="text-gray-600 mt-2 mb-8">Resumen general del Sistema</p>
         </div>
         
         {/* Sección 1: Información General */}
