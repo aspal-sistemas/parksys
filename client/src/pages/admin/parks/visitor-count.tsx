@@ -105,11 +105,10 @@ export default function VisitorCountPage() {
   // Queries  
   const { data: parksResponse } = useQuery({
     queryKey: ['/api/parks'],
-    suspense: false,
     retry: 1
   });
   
-  const parks = Array.isArray(parksResponse) ? parksResponse : parksResponse?.data || [];
+  const parks = Array.isArray(parksResponse) ? parksResponse : (parksResponse?.data && Array.isArray(parksResponse.data) ? parksResponse.data : []);
 
   const { data: visitorCounts, isLoading } = useQuery<{
     data: VisitorCount[];
@@ -195,7 +194,7 @@ export default function VisitorCountPage() {
     const headers = Object.keys(csvData[0]);
     const csvContent = [
       headers.join(','),
-      ...csvData.map(row => headers.map(header => `"${row[header]}"`).join(','))
+      ...csvData.map(row => headers.map(header => `"${(row as any)[header]}"`).join(','))
     ].join('\n');
 
     // Agregar BOM para UTF-8 para garantizar que los acentos se muestren correctamente
@@ -277,7 +276,7 @@ export default function VisitorCountPage() {
     const headers = Object.keys(finalData[0]);
     const csvContent = [
       headers.join(','),
-      ...finalData.map(row => headers.map(header => `"${row[header]}"`).join(','))
+      ...finalData.map(row => headers.map(header => `"${(row as any)[header]}"`).join(','))
     ].join('\n');
 
     // Agregar BOM para UTF-8 para garantizar que los acentos se muestren correctamente
@@ -420,7 +419,7 @@ export default function VisitorCountPage() {
         totalPets,
         avgDaily,
         totalRecords: filteredData.length,
-        uniqueParks: [...new Set(filteredData.map(c => c.parkName))].length
+        uniqueParks: Array.from(new Set(filteredData.map(c => c.parkName))).length
       },
       charts: {
         demographic: demographicData,
@@ -455,8 +454,8 @@ export default function VisitorCountPage() {
             pets: data.pets,
             groups: data.groups,
             countingMethod: data.countingMethod,
-            dayType: countingMode === 'daily' ? data.dayType : undefined,
-            weather: countingMode === 'daily' ? data.weather : undefined,
+            dayType: data.dayType,
+            weather: data.weather,
             notes: data.notes,
             registeredBy: 1 // Usuario admin por defecto
           };
@@ -469,7 +468,7 @@ export default function VisitorCountPage() {
           records.map(record => 
             apiRequest('/api/visitor-counts', {
               method: 'POST',
-              body: record
+              data: record
             })
           )
         );
@@ -495,13 +494,13 @@ export default function VisitorCountPage() {
         
         return apiRequest('/api/visitor-counts', {
           method: 'POST',
-          body: requestData
+          data: requestData
         });
       }
     },
     onSuccess: () => {
       const recordsCount = countingMode === 'range' ? 
-        Math.ceil((new Date(formData.endDate!) - new Date(formData.startDate!)) / (1000 * 60 * 60 * 24)) + 1 : 1;
+        Math.ceil((new Date(formData.endDate!).getTime() - new Date(formData.startDate!).getTime()) / (1000 * 60 * 60 * 24)) + 1 : 1;
       
       toast({
         title: "Registro exitoso",
@@ -599,7 +598,8 @@ export default function VisitorCountPage() {
     }
   };
 
-  const getWeatherLabel = (weather: string) => {
+  const getWeatherLabel = (weather: string | undefined) => {
+    if (!weather) return 'No especificado';
     return weatherLabels[weather as keyof typeof weatherLabels] || weather;
   };
 
@@ -891,7 +891,7 @@ export default function VisitorCountPage() {
                           <div className="flex flex-wrap gap-2 mb-3">
                             <Badge variant="outline" className="flex items-center gap-1">
                               <Clock className="h-3 w-3" />
-                              {getDayTypeLabel(count.dayType)}
+                              {getDayTypeLabel(count.dayType || 'weekday')}
                             </Badge>
                             <Badge variant="outline">
                               {getMethodLabel(count.countingMethod)}
