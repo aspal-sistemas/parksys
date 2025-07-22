@@ -60,6 +60,7 @@ import {
   Edit,
   Trash2,
   Calendar,
+  Scissors,
   AlertTriangle,
   CheckCircle,
   Loader2,
