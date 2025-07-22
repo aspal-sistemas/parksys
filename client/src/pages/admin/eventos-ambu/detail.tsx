@@ -79,7 +79,9 @@ export default function DetalleEventoAmbu() {
       const response = await fetch(`/api/eventos-ambu/${eventoId}`);
       if (!response.ok) throw new Error("Error al cargar evento");
       return response.json();
-    }
+    },
+    suspense: false,
+    retry: 1
   });
 
   const formatearCategoria = (categoria: string) => {
@@ -125,7 +127,7 @@ export default function DetalleEventoAmbu() {
     );
   }
 
-  if (error || !evento) {
+  if (error || !evento || !evento.evento) {
     return (
       <AdminLayout>
         <div className="text-center py-8">

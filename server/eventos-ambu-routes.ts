@@ -99,6 +99,52 @@ export function registerEventosAmbuRoutes(app: any, apiRouter: Router, isAuthent
     }
   });
   
+  // === CALENDARIO ===
+  
+  // Obtener eventos para calendario (debe ir ANTES de la ruta /:id)
+  apiRouter.get("/eventos-ambu/calendario", async (req: Request, res: Response) => {
+    try {
+      const { mes, anio } = req.query;
+      
+      let whereConditions: any[] = [];
+      
+      // Si se especifica mes y año, filtrar por ese periodo
+      if (mes && anio) {
+        const fechaInicio = `${anio}-${String(mes).padStart(2, '0')}-01`;
+        const ultimoDia = new Date(parseInt(anio as string), parseInt(mes as string), 0).getDate();
+        const fechaFin = `${anio}-${String(mes).padStart(2, '0')}-${ultimoDia}`;
+        
+        whereConditions.push(gte(eventosAmbu.fechaEvento, fechaInicio));
+        whereConditions.push(lte(eventosAmbu.fechaEvento, fechaFin));
+      }
+      
+      let query = db.select({
+        id: eventosAmbu.id,
+        titulo: eventosAmbu.titulo,
+        descripcion: eventosAmbu.descripcion,
+        fechaEvento: eventosAmbu.fechaEvento,
+        horaInicio: eventosAmbu.horaInicio,
+        horaFin: eventosAmbu.horaFin,
+        categoria: eventosAmbu.categoria,
+        impactoTipo: eventosAmbu.impactoTipo,
+        status: eventosAmbu.status,
+        parqueId: eventosAmbu.parqueId,
+        numeroAsistentes: eventosAmbu.numeroAsistentes
+      }).from(eventosAmbu);
+      
+      if (whereConditions.length > 0) {
+        query = query.where(and(...whereConditions));
+      }
+      
+      const eventos = await query.orderBy(eventosAmbu.fechaEvento);
+      
+      res.json(eventos);
+    } catch (error) {
+      console.error("Error al obtener calendario de eventos:", error);
+      res.status(500).json({ error: "Error interno del servidor" });
+    }
+  });
+
   // Obtener evento específico con toda la información relacionada
   apiRouter.get("/eventos-ambu/:id", async (req: Request, res: Response) => {
     try {
@@ -344,6 +390,8 @@ export function registerEventosAmbuRoutes(app: any, apiRouter: Router, isAuthent
     }
   });
   
+
+
   // === ESTADÍSTICAS Y REPORTES ===
   
   // Dashboard de eventos
