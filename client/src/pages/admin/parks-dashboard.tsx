@@ -70,8 +70,14 @@ const ParksDashboard = () => {
 
   if (isLoading) {
     return (
-      <AdminLayout title="Dashboard de Parques">
+      <AdminLayout>
         <div className="space-y-6">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2 mb-8">
+              <Activity className="w-8 h-8" />
+              Dashboard
+            </h1>
+          </div>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {[...Array(8)].map((_, i) => (
               <Card key={i}>
@@ -93,7 +99,13 @@ const ParksDashboard = () => {
 
   if (error) {
     return (
-      <AdminLayout title="Dashboard">
+      <AdminLayout>
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2 mb-8">
+            <Activity className="w-8 h-8" />
+            Dashboard
+          </h1>
+        </div>
         <div className="text-center py-8">
           <AlertTriangle className="h-8 w-8 text-red-500 mx-auto mb-4" />
           <p className="text-gray-600">Error al cargar los datos del dashboard</p>
@@ -104,7 +116,13 @@ const ParksDashboard = () => {
 
   if (!data) {
     return (
-      <AdminLayout title="Dashboard">
+      <AdminLayout>
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2 mb-8">
+            <Activity className="w-8 h-8" />
+            Dashboard
+          </h1>
+        </div>
         <div className="text-center py-8">
           <p className="text-gray-600">No hay datos disponibles</p>
         </div>
@@ -116,8 +134,16 @@ const ParksDashboard = () => {
   const mexicoCenter: [number, number] = [19.4326, -99.1332]; // Ciudad de México
 
   return (
-    <AdminLayout title="Dashboard">
+    <AdminLayout>
       <div className="space-y-8">
+        {/* Main Header */}
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2 mb-8">
+            <Activity className="w-8 h-8" />
+            Dashboard
+          </h1>
+        </div>
+        
         {/* Sección 1: Información General */}
         <div className="space-y-4">
           <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
