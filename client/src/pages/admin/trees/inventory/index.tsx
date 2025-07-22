@@ -467,12 +467,6 @@ function TreeInventoryPage() {
   // Reset page when filters change
   React.useEffect(() => {
     setPage(1);
-  }, [searchTerm, parkFilter, healthFilter, speciesFilter]);a página al buscar
-  };
-
-  // Resetear página cuando cambian los filtros
-  React.useEffect(() => {
-    setPage(1);
   }, [searchTerm, parkFilter, healthFilter, speciesFilter]);
 
   const getHealthStatusBadge = (status: string) => {
