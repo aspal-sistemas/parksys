@@ -113,6 +113,11 @@ function FeedbackManagement() {
     tags: [] as string[]
   });
 
+  // Reset to page 1 when filters change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, parkFilter, formTypeFilter, statusFilter]);
+
   // Fetch feedback data with pagination
   const { data: feedbackData, isLoading } = useQuery({
     queryKey: ['/api/feedback', { 
@@ -307,11 +312,6 @@ function FeedbackManagement() {
   const pagination = feedbackData?.pagination || null;
   const totalItems = pagination?.total || 0;
   const totalPages = pagination?.totalPages || 0;
-
-  // Reset to page 1 when filters change
-  React.useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, parkFilter, formTypeFilter, statusFilter]);
 
   // Export function
   const exportToCSV = () => {

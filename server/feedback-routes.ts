@@ -152,7 +152,7 @@ router.post("/", async (req: Request, res: Response) => {
 router.get("/", async (req: Request, res: Response) => {
   try {
     const { 
-      parkId, 
+      park, 
       formType, 
       status, 
       page = '1', 
@@ -165,9 +165,9 @@ router.get("/", async (req: Request, res: Response) => {
     let paramIndex = 1;
 
     // Filtro por parque
-    if (parkId && parkId !== 'all') {
+    if (park && park !== 'all') {
       whereConditions.push(`pf.park_id = $${paramIndex}`);
-      queryParams.push(parseInt(parkId as string));
+      queryParams.push(parseInt(park as string));
       paramIndex++;
     }
 
@@ -230,6 +230,8 @@ router.get("/", async (req: Request, res: Response) => {
       ORDER BY pf.created_at DESC
       LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
     `;
+
+
 
     // Agregar parámetros de paginación
     queryParams.push(limitNum, offset);
