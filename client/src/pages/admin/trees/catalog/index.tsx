@@ -651,7 +651,7 @@ function TreeSpeciesCatalog() {
       <div className="container mx-auto px-4 py-6">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-green-800 flex items-center">
+            <h1 className="text-3xl font-bold text-black flex items-center">
               <TreePine className="mr-2 h-8 w-8" />
               Catálogo de Especies Arbóreas
             </h1>
@@ -668,18 +668,6 @@ function TreeSpeciesCatalog() {
               <Download className="mr-2 h-4 w-4" /> Exportar CSV
             </Button>
             
-            <Button
-              onClick={() => {
-                if (window.confirm('¿Estás seguro de que deseas eliminar TODAS las especies del catálogo?\n\nEsta acción no se puede deshacer. Se recomienda exportar un respaldo antes de continuar.')) {
-                  handleDeleteAll();
-                }
-              }}
-              variant="outline"
-              className="border-red-600 text-red-600 hover:bg-red-50"
-            >
-              <Trash2 className="mr-2 h-4 w-4" /> Borrar Todas
-            </Button>
-            
             <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
               <DialogTrigger asChild>
                 <Button
@@ -690,14 +678,6 @@ function TreeSpeciesCatalog() {
                   <Upload className="mr-2 h-4 w-4" /> Importar CSV
                 </Button>
               </DialogTrigger>
-            
-            <Button
-              variant="outline"
-              className="border-purple-600 text-purple-600 hover:bg-purple-50"
-              onClick={() => iconFileInputRef.current?.click()}
-            >
-              <Upload className="mr-2 h-4 w-4" /> Subir Iconos
-            </Button>
               <DialogContent className="max-w-2xl">
                 <DialogHeader>
                   <DialogTitle>Importar Especies desde CSV</DialogTitle>
