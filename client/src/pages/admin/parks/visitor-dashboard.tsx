@@ -211,7 +211,7 @@ export default function VisitorDashboard() {
       <AdminLayout>
         <div className="p-6 space-y-6">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gray-900">Panel de Visitantes</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {[...Array(4)].map((_, i) => (
@@ -234,7 +234,7 @@ export default function VisitorDashboard() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Panel de Visitantes</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
             <p className="text-gray-600">Análisis y estadísticas del conteo de visitantes</p>
           </div>
 
