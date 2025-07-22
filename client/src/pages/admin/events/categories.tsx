@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Edit2, Trash2, Tag, Palette } from 'lucide-react';
+import { Plus, Edit2, Trash2, Tag, Palette, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -236,9 +236,12 @@ export default function EventCategoriesPage() {
       <div className="container mx-auto py-6">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Categorías de Eventos</h1>
-            <p className="text-gray-600">Gestiona las categorías para clasificar eventos</p>
+          <div className="flex items-center gap-2">
+            <BarChart3 className="w-8 h-8" />
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Categorías de Eventos</h1>
+              <p className="text-gray-600">Gestiona las categorías para clasificar eventos</p>
+            </div>
           </div>
           
           <Dialog open={showNewForm} onOpenChange={setShowNewForm}>
