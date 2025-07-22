@@ -861,7 +861,10 @@ export default function EvaluationsPage() {
         <div className="container mx-auto px-6 py-8 max-w-7xl">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Evaluaciones de Parques</h1>
+              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+                <Star className="w-8 h-8" />
+                Evaluaciones de Parques
+              </h1>
               <p className="text-gray-600 mt-2">Gestiona las evaluaciones ciudadanas de los parques</p>
             </div>
           </div>
