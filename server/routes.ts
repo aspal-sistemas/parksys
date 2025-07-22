@@ -1632,10 +1632,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Dashboard endpoint específico para amenidades
   apiRouter.get("/amenities/dashboard", async (_req: Request, res: Response) => {
     try {
-      const [amenities, parks] = await Promise.all([
-        storage.getAmenities(),
-        storage.getExtendedParks()
-      ]);
+      // Obtener amenidades directamente con SQL ya que storage.getAmenities() falla
+      const amenitiesResult = await pool.query(`
+        SELECT 
+          a.id,
+          a.name,
+          a.icon,
+          a.category,
+          a.icon_type as "iconType",
+          a.custom_icon_url as "customIconUrl"
+        FROM amenities a
+        ORDER BY a.name
+      `);
+      
+      const amenities = amenitiesResult.rows;
+      
+      // Obtener parques con SQL directo para evitar problemas con storage
+      const parksResult = await pool.query(`
+        SELECT 
+          p.id, p.name, p.municipality_id as "municipalityId"
+        FROM parks p
+        ORDER BY p.name
+      `);
+      const parks = parksResult.rows;
 
       // Calcular estadísticas para el dashboard
       const parksWithAmenities = parks.filter((park: any) => park.amenities && park.amenities.length > 0);

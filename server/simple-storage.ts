@@ -1,4 +1,4 @@
-import { db } from './db';
+import { db, pool } from './db';
 import { eq } from "drizzle-orm";
 import * as schema from "@shared/schema";
 
@@ -81,7 +81,19 @@ export class SimpleStorage {
   
   async getAmenities(): Promise<any[]> {
     try {
-      return await db.select().from(amenities);
+      // Usar consulta SQL directa para evitar problemas con columnas inexistentes
+      const result = await pool.query(`
+        SELECT 
+          id,
+          name,
+          icon,
+          category,
+          icon_type as "iconType",
+          custom_icon_url as "customIconUrl"
+        FROM amenities
+        ORDER BY name
+      `);
+      return result.rows;
     } catch (error) {
       console.error("Error fetching amenities:", error);
       return [];

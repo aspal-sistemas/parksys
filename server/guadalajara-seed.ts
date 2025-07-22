@@ -1,5 +1,6 @@
 import { storage } from './storage';
 import { InsertPark, InsertParkImage, InsertActivity, InsertDocument, DEFAULT_AMENITIES } from '@shared/schema';
+import { pool } from './db';
 
 /**
  * Carga los datos para la ciudad de Guadalajara, Jalisco
@@ -19,8 +20,10 @@ export async function seedGuadalajaraData() {
     console.log(`Municipio creado: ${guadalajara.name}, ID: ${guadalajara.id}`);
     
     // 2. Crear amenidades predeterminadas si no existen
-    const existingAmenities = await storage.getAmenities();
-    if (existingAmenities.length === 0) {
+    const existingAmenitiesResult = await pool.query('SELECT COUNT(*) as count FROM amenities');
+    const existingCount = parseInt(existingAmenitiesResult.rows[0].count);
+    
+    if (existingCount === 0) {
       for (const amenity of DEFAULT_AMENITIES) {
         await storage.createAmenity(amenity);
       }
@@ -28,7 +31,12 @@ export async function seedGuadalajaraData() {
     }
     
     // Obtener todas las amenidades para asignarlas a los parques
-    const amenities = await storage.getAmenities();
+    const amenitiesResult = await pool.query(`
+      SELECT id, name, icon, category, icon_type as "iconType", custom_icon_url as "customIconUrl"
+      FROM amenities 
+      ORDER BY name
+    `);
+    const amenities = amenitiesResult.rows;
     
     // 3. Crear 15 parques de Guadalajara con datos completos
     const guadalajaraParks = [
