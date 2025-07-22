@@ -116,7 +116,7 @@
       "manage": "Gestionar"
     }
   },
-  "common": {
+  "actions": {
     "save": "Guardar",
     "cancel": "Cancelar", 
     "edit": "Editar",

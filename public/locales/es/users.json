@@ -31,6 +31,7 @@
   },
   "actions": {
     "addUser": "Agregar Usuario",
+    "newUser": "Nuevo Usuario",
     "editUser": "Editar Usuario",
     "deleteUser": "Eliminar Usuario",
     "viewProfile": "Ver Perfil",
