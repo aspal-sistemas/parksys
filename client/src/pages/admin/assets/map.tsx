@@ -399,7 +399,8 @@ const AssetMapPage: React.FC = () => {
                     if (!asset.latitude || !asset.longitude) return null;
                     
                     const category = categories.find(c => c.id === asset.categoryId);
-                    const park = parks.find(p => p.id === asset.parkId);
+                    const parksArray = Array.isArray(parks) ? parks : (parks?.data || []);
+                    const park = parksArray.find(p => p.id === asset.parkId);
                     const statusInfo = ASSET_STATUSES.find(s => s.value === asset.status);
                     const conditionInfo = ASSET_CONDITIONS.find(c => c.value === asset.condition);
                     

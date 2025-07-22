@@ -416,8 +416,8 @@ export default function EditAssetEnhanced() {
                     <SelectValue placeholder="Seleccionar parque" />
                   </SelectTrigger>
                   <SelectContent>
-                    {parks.length > 0 ? (
-                      parks.map((park: any) => (
+                    {parks && (Array.isArray(parks) ? parks : parks.data || []).length > 0 ? (
+                      (Array.isArray(parks) ? parks : parks.data || []).map((park: any) => (
                         <SelectItem key={park.id} value={String(park.id)}>
                           {park.name}
                         </SelectItem>

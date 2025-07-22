@@ -511,7 +511,9 @@ const AssetDetailPage: React.FC = () => {
   // Obtener el parque actual
   const currentPark = React.useMemo(() => {
     if (!asset || !parks) return null;
-    return parks.find((p: any) => p.id === asset.parkId);
+    // Validación defensiva: verificar que parks sea un array
+    const parksArray = Array.isArray(parks) ? parks : (parks?.data || []);
+    return parksArray.find((p: any) => p.id === asset.parkId);
   }, [asset, parks]);
   
   return (

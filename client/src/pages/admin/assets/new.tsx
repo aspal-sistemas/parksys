@@ -212,8 +212,9 @@ const CreateAssetPage: React.FC = () => {
       form.setValue('locationDescription', '');
       
       // Find selected park and update map position
-      if (parks && Array.isArray(parks)) {
-        const selectedPark = parks.find((park: any) => park.id === selectedParkId);
+      if (parks) {
+        const parksArray = Array.isArray(parks) ? parks : (parks?.data || []);
+        const selectedPark = parksArray.find((park: any) => park.id === selectedParkId);
         if (selectedPark && selectedPark.latitude && selectedPark.longitude) {
           const parkPosition: [number, number] = [
             parseFloat(selectedPark.latitude),
