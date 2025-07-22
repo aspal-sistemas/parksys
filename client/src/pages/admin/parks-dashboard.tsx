@@ -77,7 +77,7 @@ const ParksDashboard = () => {
               <Activity className="w-8 h-8" />
               Dashboard
             </h1>
-            <p className="text-gray-600 mt-2 mb-8">Resumen general del Sistema</p>
+            <p className="text-gray-600 mt-2 mb-8">Resumen General del Sistema</p>
           </div>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {[...Array(8)].map((_, i) => (
@@ -106,7 +106,7 @@ const ParksDashboard = () => {
             <Activity className="w-8 h-8" />
             Dashboard
           </h1>
-          <p className="text-gray-600 mt-2 mb-8">Resumen general del Sistema</p>
+          <p className="text-gray-600 mt-2 mb-8">Resumen General del Sistema</p>
         </div>
         <div className="text-center py-8">
           <AlertTriangle className="h-8 w-8 text-red-500 mx-auto mb-4" />
@@ -124,7 +124,7 @@ const ParksDashboard = () => {
             <Activity className="w-8 h-8" />
             Dashboard
           </h1>
-          <p className="text-gray-600 mt-2 mb-8">Resumen general del Sistema</p>
+          <p className="text-gray-600 mt-2 mb-8">Resumen General del Sistema</p>
         </div>
         <div className="text-center py-8">
           <p className="text-gray-600">No hay datos disponibles</p>
@@ -145,7 +145,7 @@ const ParksDashboard = () => {
             <Activity className="w-8 h-8" />
             Dashboard
           </h1>
-          <p className="text-gray-600 mt-2 mb-8">Resumen general del Sistema</p>
+          <p className="text-gray-600 mt-2 mb-8">Resumen General del Sistema</p>
         </div>
         
         {/* Sección 1: Información General */}
