@@ -262,7 +262,7 @@ export default function ActivitiesCalendarPage() {
   return (
     <AdminLayout>
       <div className="container mx-auto p-6">
-        <div className="flex justify-between items-center mb-6">
+        <div className="mb-6">
           <div>
             <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
               <CalendarIcon className="w-8 h-8" />
@@ -272,37 +272,39 @@ export default function ActivitiesCalendarPage() {
               Consulta las actividades programadas en el calendario mensual.
             </p>
           </div>
-          <div className="flex items-center space-x-2">
-            <Button variant="outline" size="sm" onClick={prevMonth}>
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <div className="text-lg font-medium min-w-[200px] text-center">
-              {format(currentDate, 'MMMM yyyy', { locale: es })}
+          <div className="flex justify-between items-center mt-4">
+            <div className="flex items-center space-x-2">
+              <Button variant="outline" size="sm" onClick={prevMonth}>
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <div className="text-lg font-medium min-w-[200px] text-center">
+                {format(currentDate, 'MMMM yyyy', { locale: es })}
+              </div>
+              <Button variant="outline" size="sm" onClick={nextMonth}>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="sm" onClick={goToToday}>
+                Hoy
+              </Button>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <CalendarIcon className="h-4 w-4 mr-2" />
+                    Elegir mes
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="end">
+                  <Calendar
+                    mode="single"
+                    selected={currentDate}
+                    onSelect={(date) => date && setCurrentDate(date)}
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
-            <Button variant="outline" size="sm" onClick={nextMonth}>
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" size="sm" onClick={goToToday}>
-              Hoy
-            </Button>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <CalendarIcon className="h-4 w-4 mr-2" />
-                  Elegir mes
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="end">
-                <Calendar
-                  mode="single"
-                  selected={currentDate}
-                  onSelect={(date) => date && setCurrentDate(date)}
-                />
-              </PopoverContent>
-            </Popover>
             <Button 
               onClick={() => setLocation('/admin/organizador/catalogo/crear')}
-              className="ml-2 bg-blue-600 hover:bg-blue-700 text-white">
+              className="bg-blue-600 hover:bg-blue-700 text-white">
               Nueva Actividad
             </Button>
           </div>
