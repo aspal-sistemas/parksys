@@ -355,7 +355,7 @@ export default function TreeMaintenancePage() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-              <Calendar className="w-8 h-8" />
+              <Scissors className="w-8 h-8" />
               Mantenimiento de Árboles
             </h1>
             <p className="text-muted-foreground mt-2">
