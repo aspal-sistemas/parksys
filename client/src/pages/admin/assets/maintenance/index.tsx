@@ -556,10 +556,10 @@ const AssetsMaintenancePage = () => {
                   </div>
                 </div>
 
-                {selectedMaintenance.cost && (
+                {selectedMaintenance.cost && !isNaN(parseFloat(selectedMaintenance.cost)) && (
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">Costo</label>
-                    <p className="text-sm">${selectedMaintenance.cost.toFixed(2)}</p>
+                    <p className="text-sm">${parseFloat(selectedMaintenance.cost).toFixed(2)}</p>
                   </div>
                 )}
 
