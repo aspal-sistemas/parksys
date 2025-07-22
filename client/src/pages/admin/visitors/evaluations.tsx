@@ -785,10 +785,6 @@ export default function EvaluationsPage() {
       });
     }
   };
-      title: "Excel Exportado",
-      description: "Reporte profesional generado con datos completos y resumen ejecutivo",
-    });
-  };
 
 
   
