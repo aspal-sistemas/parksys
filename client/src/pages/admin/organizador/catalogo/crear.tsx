@@ -139,20 +139,32 @@ const CrearActividadPage = () => {
   const [location, setLocation] = useLocation();
 
   // Consulta para obtener la lista de parques
-  const { data: parques = [] } = useQuery<{ id: number, name: string }[]>({
+  const { data: parquesResponse } = useQuery({
     queryKey: ['/api/parks'],
+    suspense: false,
+    retry: 1,
   });
+  
+  const parques = parquesResponse?.data || [];
   
   // Consulta para obtener las categorías de actividades
-  const { data: categorias = [] } = useQuery<{ id: number, name: string, color: string }[]>({
+  const { data: categoriasResponse } = useQuery({
     queryKey: ['/api/activity-categories'],
+    suspense: false,
+    retry: 1,
   });
   
+  const categorias = categoriasResponse?.data || [];
+  
   // Consulta para obtener la lista de usuarios con rol de instructor
-  const { data: instructores = [] } = useQuery<any[]>({
+  const { data: usersResponse } = useQuery({
     queryKey: ['/api/users'],
-    select: (data) => data.filter(user => user.role === 'instructor')
+    suspense: false,
+    retry: 1,
   });
+  
+  const allUsers = usersResponse?.data || [];
+  const instructores = allUsers.filter(user => user.role === 'instructor');
 
   // Configuración del formulario
   const form = useForm<FormValues>({
