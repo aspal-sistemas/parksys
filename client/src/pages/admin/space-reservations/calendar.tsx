@@ -165,7 +165,10 @@ export default function SpaceReservationsCalendarPage() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Calendario de Reservas</h1>
+          <div className="flex items-center gap-2">
+            <Calendar className="w-8 h-8 text-gray-900" />
+            <h1 className="text-3xl font-bold text-gray-900">Calendario de Reservas</h1>
+          </div>
           <p className="text-gray-600">Visualiza las reservas de espacios en formato calendario</p>
         </div>
         <Button 
