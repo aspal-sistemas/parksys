@@ -4231,7 +4231,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Add the parks list endpoint to the main API router for frontend compatibility
+  apiRouter.get("/public/parks/list", async (_req: Request, res: Response) => {
+    try {
+      // Get basic park data for dropdowns/forms
+      const parks = await storage.getParks({ includeDeleted: false });
+      const parkList = parks.map(park => ({
+        id: park.id,
+        name: park.name
+      }));
+      
+      res.json(parkList);
+    } catch (error) {
+      console.error("Error fetching parks list:", error);
+      res.status(500).json({ 
+        status: "error", 
+        message: "Error fetching parks list" 
+      });
+    }
+  });
+
   // Continuamos usando el mismo publicRouter definido antes
+  
+  // Get simple parks list for forms and dropdowns
+  publicRouter.get("/parks/list", async (_req: Request, res: Response) => {
+    try {
+      // Get basic park data for dropdowns/forms
+      const parks = await storage.getParks({ includeDeleted: false });
+      const parkList = parks.map(park => ({
+        id: park.id,
+        name: park.name
+      }));
+      
+      res.json(parkList);
+    } catch (error) {
+      console.error("Error fetching parks list:", error);
+      res.status(500).json({ 
+        status: "error", 
+        message: "Error fetching parks list" 
+      });
+    }
+  });
   
   // Get basic park data - limited information for public consumption
   publicRouter.get("/parks", async (_req: Request, res: Response) => {
