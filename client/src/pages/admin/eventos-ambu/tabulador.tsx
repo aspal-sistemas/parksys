@@ -46,7 +46,7 @@ export default function TabuladorCostosAmbu() {
               Tabulador de Costos
             </h1>
             <p className="text-gray-600">
-              Tarifas oficiales para eventos de bajo y alto impacto según normativas F-DIC-22 y F-DIC-23
+              Tarifas Oficiales
             </p>
           </div>
         </div>
