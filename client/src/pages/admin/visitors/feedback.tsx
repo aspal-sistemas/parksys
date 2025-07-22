@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import * as XLSX from 'xlsx';
 import AdminLayout from '@/components/AdminLayout';
 import {
   Card,
@@ -52,7 +53,8 @@ import {
   Grid,
   List,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  FileSpreadsheet
 } from 'lucide-react';
 
 interface ParkFeedback {
@@ -313,7 +315,30 @@ function FeedbackManagement() {
   const totalItems = pagination?.total || 0;
   const totalPages = pagination?.totalPages || 0;
 
-  // Export function
+  // Helper functions for Spanish translations
+  const getStatusLabel = (status: string) => {
+    const statusLabels = {
+      'pending': 'Pendiente',
+      'reviewed': 'Revisado',
+      'in_progress': 'En Progreso',
+      'resolved': 'Resuelto',
+      'closed': 'Cerrado'
+    };
+    return statusLabels[status as keyof typeof statusLabels] || status;
+  };
+
+  const getPriorityLabel = (priority?: string) => {
+    if (!priority) return '';
+    const priorityLabels = {
+      'low': 'Baja',
+      'medium': 'Media', 
+      'high': 'Alta',
+      'urgent': 'Urgente'
+    };
+    return priorityLabels[priority as keyof typeof priorityLabels] || priority;
+  };
+
+  // Export function for CSV with proper encoding
   const exportToCSV = () => {
     if (feedback.length === 0) {
       toast({
@@ -325,8 +350,8 @@ function FeedbackManagement() {
     }
 
     const headers = [
-      'ID', 'Parque', 'Tipo Formulario', 'Nombre', 'Email', 'Teléfono',
-      'Asunto', 'Estado', 'Prioridad', 'Fecha Creación'
+      'ID', 'Parque', 'Tipo de Formulario', 'Nombre Completo', 'Email', 'Teléfono',
+      'Asunto', 'Estado', 'Prioridad', 'Fecha de Creación'
     ];
 
     const csvData = feedback.map(item => [
@@ -335,23 +360,25 @@ function FeedbackManagement() {
       getFormTypeLabel(item.formType),
       item.fullName,
       item.email,
-      item.phone || '',
-      item.subject || '',
-      item.status,
-      item.priority || '',
+      item.phone || 'N/A',
+      item.subject || 'N/A',
+      getStatusLabel(item.status),
+      getPriorityLabel(item.priority) || 'N/A',
       format(new Date(item.createdAt), 'dd/MM/yyyy HH:mm', { locale: es })
     ]);
 
-    const csvContent = [headers, ...csvData]
-      .map(row => row.map(field => `"${field}"`).join(','))
-      .join('\n');
+    // Create CSV content with BOM for proper UTF-8 encoding
+    const BOM = '\uFEFF';
+    const csvContent = BOM + [headers, ...csvData]
+      .map(row => row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(','))
+      .join('\r\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     if (link.download !== undefined) {
       const url = URL.createObjectURL(blob);
       link.setAttribute('href', url);
-      link.setAttribute('download', `retroalimentacion_${format(new Date(), 'dd-MM-yyyy')}.csv`);
+      link.setAttribute('download', `retroalimentacion_parques_${format(new Date(), 'dd-MM-yyyy')}.csv`);
       link.style.visibility = 'hidden';
       document.body.appendChild(link);
       link.click();
@@ -359,8 +386,161 @@ function FeedbackManagement() {
     }
 
     toast({
-      title: "Exportado",
-      description: "Los datos han sido exportados exitosamente",
+      title: "CSV Exportado",
+      description: "Los datos han sido exportados exitosamente en formato CSV",
+    });
+  };
+
+  // Export function for Excel with professional formatting
+  const exportToExcel = () => {
+    if (feedback.length === 0) {
+      toast({
+        title: "No hay datos",
+        description: "No hay retroalimentación para exportar",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Create workbook
+    const wb = XLSX.utils.book_new();
+    
+    // Prepare data with proper headers
+    const headers = [
+      'ID', 'Parque', 'Tipo de Formulario', 'Nombre Completo', 'Email', 'Teléfono',
+      'Asunto', 'Mensaje', 'Estado', 'Prioridad', 'Categoría', 'Fecha de Creación'
+    ];
+
+    const data = feedback.map(item => [
+      item.id,
+      item.parkName,
+      getFormTypeLabel(item.formType),
+      item.fullName,
+      item.email,
+      item.phone || 'N/A',
+      item.subject || 'N/A',
+      item.message.length > 100 ? item.message.substring(0, 100) + '...' : item.message,
+      getStatusLabel(item.status),
+      getPriorityLabel(item.priority) || 'N/A',
+      item.category || 'N/A',
+      format(new Date(item.createdAt), 'dd/MM/yyyy HH:mm', { locale: es })
+    ]);
+
+    // Create worksheet
+    const ws = XLSX.utils.aoa_to_sheet([
+      // Title row
+      ['SISTEMA DE GESTIÓN DE PARQUES URBANOS'],
+      ['Reporte de Retroalimentación Ciudadana'],
+      [`Fecha de generación: ${format(new Date(), 'dd/MM/yyyy HH:mm', { locale: es })}`],
+      [''],
+      // Headers
+      headers,
+      // Data
+      ...data
+    ]);
+
+    // Set column widths
+    const wscols = [
+      { wch: 6 },  // ID
+      { wch: 25 }, // Parque
+      { wch: 20 }, // Tipo
+      { wch: 25 }, // Nombre
+      { wch: 30 }, // Email
+      { wch: 15 }, // Teléfono
+      { wch: 30 }, // Asunto
+      { wch: 50 }, // Mensaje
+      { wch: 15 }, // Estado
+      { wch: 12 }, // Prioridad
+      { wch: 15 }, // Categoría
+      { wch: 18 }  // Fecha
+    ];
+    ws['!cols'] = wscols;
+
+    // Merge title cells
+    ws['!merges'] = [
+      { s: { r: 0, c: 0 }, e: { r: 0, c: 11 } }, // Title
+      { s: { r: 1, c: 0 }, e: { r: 1, c: 11 } }, // Subtitle
+      { s: { r: 2, c: 0 }, e: { r: 2, c: 11 } }  // Date
+    ];
+
+    // Style the header cells (starting at row 4, 0-indexed)
+    const headerStyle = {
+      font: { bold: true, color: { rgb: "FFFFFF" } },
+      fill: { fgColor: { rgb: "00a587" } }, // Corporate green color
+      alignment: { horizontal: "center" }
+    };
+
+    const titleStyle = {
+      font: { bold: true, size: 16, color: { rgb: "00a587" } },
+      alignment: { horizontal: "center" }
+    };
+
+    const subtitleStyle = {
+      font: { bold: true, size: 14, color: { rgb: "067f5f" } },
+      alignment: { horizontal: "center" }
+    };
+
+    // Apply styles to title rows
+    ws['A1'] = { ...ws['A1'], s: titleStyle };
+    ws['A2'] = { ...ws['A2'], s: subtitleStyle };
+    ws['A3'] = { ...ws['A3'], s: { alignment: { horizontal: "center" } } };
+
+    // Apply header styles (row 5, 0-indexed as row 4)
+    for (let col = 0; col < headers.length; col++) {
+      const cellRef = XLSX.utils.encode_cell({ r: 4, c: col });
+      if (ws[cellRef]) {
+        ws[cellRef].s = headerStyle;
+      }
+    }
+
+    // Add the worksheet to workbook
+    XLSX.utils.book_append_sheet(wb, ws, 'Retroalimentación');
+
+    // Add summary sheet
+    const summaryData = [
+      ['RESUMEN EJECUTIVO'],
+      [''],
+      ['Estadísticas Generales'],
+      ['Total de registros:', feedback.length],
+      ['Fecha del reporte:', format(new Date(), 'dd/MM/yyyy', { locale: es })],
+      [''],
+      ['Distribución por Estado'],
+      ...Object.entries(
+        feedback.reduce((acc, item) => {
+          const status = getStatusLabel(item.status);
+          acc[status] = (acc[status] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>)
+      ).map(([status, count]) => [status, count]),
+      [''],
+      ['Distribución por Tipo de Formulario'],
+      ...Object.entries(
+        feedback.reduce((acc, item) => {
+          const type = getFormTypeLabel(item.formType);
+          acc[type] = (acc[type] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>)
+      ).map(([type, count]) => [type, count])
+    ];
+
+    const summaryWs = XLSX.utils.aoa_to_sheet(summaryData);
+    summaryWs['!cols'] = [{ wch: 30 }, { wch: 15 }];
+    
+    // Style summary sheet
+    summaryWs['A1'] = { ...summaryWs['A1'], s: titleStyle };
+    summaryWs['A3'] = { ...summaryWs['A3'], s: { font: { bold: true } } };
+    summaryWs['A7'] = { ...summaryWs['A7'], s: { font: { bold: true } } };
+    summaryWs['A11'] = { ...summaryWs['A11'], s: { font: { bold: true } } };
+
+    XLSX.utils.book_append_sheet(wb, summaryWs, 'Resumen');
+
+    // Write file
+    const fileName = `retroalimentacion_parques_${format(new Date(), 'dd-MM-yyyy')}.xlsx`;
+    XLSX.writeFile(wb, fileName);
+
+    toast({
+      title: "Excel Exportado",
+      description: "Reporte profesional generado con formato Excel y diseño corporativo",
     });
   };
 
@@ -462,16 +642,27 @@ function FeedbackManagement() {
             </Button>
           </div>
           
-          {/* Export button */}
-          <Button
-            variant="outline"
-            onClick={exportToCSV}
-            disabled={feedback.length === 0}
-            className="flex items-center space-x-2"
-          >
-            <Download className="h-4 w-4" />
-            <span>Exportar CSV</span>
-          </Button>
+          {/* Export buttons */}
+          <div className="flex space-x-2">
+            <Button
+              variant="outline"
+              onClick={exportToCSV}
+              disabled={feedback.length === 0}
+              className="flex items-center space-x-2"
+            >
+              <Download className="h-4 w-4" />
+              <span>CSV</span>
+            </Button>
+            <Button
+              variant="outline"
+              onClick={exportToExcel}
+              disabled={feedback.length === 0}
+              className="flex items-center space-x-2 bg-green-50 hover:bg-green-100 border-green-200 text-green-700"
+            >
+              <FileSpreadsheet className="h-4 w-4" />
+              <span>Excel</span>
+            </Button>
+          </div>
         </div>
       </div>
 
