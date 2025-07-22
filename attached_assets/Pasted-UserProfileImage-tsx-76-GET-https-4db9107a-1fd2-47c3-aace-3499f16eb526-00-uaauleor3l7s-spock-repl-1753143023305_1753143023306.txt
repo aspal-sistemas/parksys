@@ -1,0 +1,120 @@
+UserProfileImage.tsx:76  GET https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/api/users/1/profile-image?t=1753142999688 404 (Not Found)
+window.fetch @ Network.js:219
+fetchProfileImage @ UserProfileImage.tsx:76
+(anonymous) @ UserProfileImage.tsx:120
+commitHookEffectListMount @ chunk-SKRUXVEK.js?v=781d6e4c:16915
+commitPassiveMountOnFiber @ chunk-SKRUXVEK.js?v=781d6e4c:18156
+commitPassiveMountEffects_complete @ chunk-SKRUXVEK.js?v=781d6e4c:18129
+commitPassiveMountEffects_begin @ chunk-SKRUXVEK.js?v=781d6e4c:18119
+commitPassiveMountEffects @ chunk-SKRUXVEK.js?v=781d6e4c:18109
+flushPassiveEffectsImpl @ chunk-SKRUXVEK.js?v=781d6e4c:19490
+flushPassiveEffects @ chunk-SKRUXVEK.js?v=781d6e4c:19447
+performSyncWorkOnRoot @ chunk-SKRUXVEK.js?v=781d6e4c:18868
+flushSyncCallbacks @ chunk-SKRUXVEK.js?v=781d6e4c:9119
+commitRootImpl @ chunk-SKRUXVEK.js?v=781d6e4c:19432
+commitRoot @ chunk-SKRUXVEK.js?v=781d6e4c:19277
+finishConcurrentRender @ chunk-SKRUXVEK.js?v=781d6e4c:18805
+performConcurrentWorkOnRoot @ chunk-SKRUXVEK.js?v=781d6e4c:18718
+workLoop @ chunk-SKRUXVEK.js?v=781d6e4c:197
+flushWork @ chunk-SKRUXVEK.js?v=781d6e4c:176
+performWorkUntilDeadline @ chunk-SKRUXVEK.js?v=781d6e4c:384Understand this error
+UserProfileImage.tsx:76  GET https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/api/users/30/profile-image?t=1753142999692 404 (Not Found)
+window.fetch @ Network.js:219
+fetchProfileImage @ UserProfileImage.tsx:76
+(anonymous) @ UserProfileImage.tsx:120
+commitHookEffectListMount @ chunk-SKRUXVEK.js?v=781d6e4c:16915
+commitPassiveMountOnFiber @ chunk-SKRUXVEK.js?v=781d6e4c:18156
+commitPassiveMountEffects_complete @ chunk-SKRUXVEK.js?v=781d6e4c:18129
+commitPassiveMountEffects_begin @ chunk-SKRUXVEK.js?v=781d6e4c:18119
+commitPassiveMountEffects @ chunk-SKRUXVEK.js?v=781d6e4c:18109
+flushPassiveEffectsImpl @ chunk-SKRUXVEK.js?v=781d6e4c:19490
+flushPassiveEffects @ chunk-SKRUXVEK.js?v=781d6e4c:19447
+performSyncWorkOnRoot @ chunk-SKRUXVEK.js?v=781d6e4c:18868
+flushSyncCallbacks @ chunk-SKRUXVEK.js?v=781d6e4c:9119
+commitRootImpl @ chunk-SKRUXVEK.js?v=781d6e4c:19432
+commitRoot @ chunk-SKRUXVEK.js?v=781d6e4c:19277
+finishConcurrentRender @ chunk-SKRUXVEK.js?v=781d6e4c:18805
+performConcurrentWorkOnRoot @ chunk-SKRUXVEK.js?v=781d6e4c:18718
+workLoop @ chunk-SKRUXVEK.js?v=781d6e4c:197
+flushWork @ chunk-SKRUXVEK.js?v=781d6e4c:176
+performWorkUntilDeadline @ chunk-SKRUXVEK.js?v=781d6e4c:384Understand this error
+UserProfileImage.tsx:76  GET https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/api/users/36/profile-image?t=1753142999696 404 (Not Found)
+window.fetch @ Network.js:219
+fetchProfileImage @ UserProfileImage.tsx:76
+(anonymous) @ UserProfileImage.tsx:120
+commitHookEffectListMount @ chunk-SKRUXVEK.js?v=781d6e4c:16915
+commitPassiveMountOnFiber @ chunk-SKRUXVEK.js?v=781d6e4c:18156
+commitPassiveMountEffects_complete @ chunk-SKRUXVEK.js?v=781d6e4c:18129
+commitPassiveMountEffects_begin @ chunk-SKRUXVEK.js?v=781d6e4c:18119
+commitPassiveMountEffects @ chunk-SKRUXVEK.js?v=781d6e4c:18109
+flushPassiveEffectsImpl @ chunk-SKRUXVEK.js?v=781d6e4c:19490
+flushPassiveEffects @ chunk-SKRUXVEK.js?v=781d6e4c:19447
+performSyncWorkOnRoot @ chunk-SKRUXVEK.js?v=781d6e4c:18868
+flushSyncCallbacks @ chunk-SKRUXVEK.js?v=781d6e4c:9119
+commitRootImpl @ chunk-SKRUXVEK.js?v=781d6e4c:19432
+commitRoot @ chunk-SKRUXVEK.js?v=781d6e4c:19277
+finishConcurrentRender @ chunk-SKRUXVEK.js?v=781d6e4c:18805
+performConcurrentWorkOnRoot @ chunk-SKRUXVEK.js?v=781d6e4c:18718
+workLoop @ chunk-SKRUXVEK.js?v=781d6e4c:197
+flushWork @ chunk-SKRUXVEK.js?v=781d6e4c:176
+performWorkUntilDeadline @ chunk-SKRUXVEK.js?v=781d6e4c:384Understand this error
+UserProfileImage.tsx:76  GET https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/api/users/29/profile-image?t=1753142999691 404 (Not Found)
+window.fetch @ Network.js:219
+fetchProfileImage @ UserProfileImage.tsx:76
+(anonymous) @ UserProfileImage.tsx:120
+commitHookEffectListMount @ chunk-SKRUXVEK.js?v=781d6e4c:16915
+commitPassiveMountOnFiber @ chunk-SKRUXVEK.js?v=781d6e4c:18156
+commitPassiveMountEffects_complete @ chunk-SKRUXVEK.js?v=781d6e4c:18129
+commitPassiveMountEffects_begin @ chunk-SKRUXVEK.js?v=781d6e4c:18119
+commitPassiveMountEffects @ chunk-SKRUXVEK.js?v=781d6e4c:18109
+flushPassiveEffectsImpl @ chunk-SKRUXVEK.js?v=781d6e4c:19490
+flushPassiveEffects @ chunk-SKRUXVEK.js?v=781d6e4c:19447
+performSyncWorkOnRoot @ chunk-SKRUXVEK.js?v=781d6e4c:18868
+flushSyncCallbacks @ chunk-SKRUXVEK.js?v=781d6e4c:9119
+commitRootImpl @ chunk-SKRUXVEK.js?v=781d6e4c:19432
+commitRoot @ chunk-SKRUXVEK.js?v=781d6e4c:19277
+finishConcurrentRender @ chunk-SKRUXVEK.js?v=781d6e4c:18805
+performConcurrentWorkOnRoot @ chunk-SKRUXVEK.js?v=781d6e4c:18718
+workLoop @ chunk-SKRUXVEK.js?v=781d6e4c:197
+flushWork @ chunk-SKRUXVEK.js?v=781d6e4c:176
+performWorkUntilDeadline @ chunk-SKRUXVEK.js?v=781d6e4c:384Understand this error
+UserProfileImage.tsx:76  GET https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/api/users/37/profile-image?t=1753142999696 404 (Not Found)
+window.fetch @ Network.js:219
+fetchProfileImage @ UserProfileImage.tsx:76
+(anonymous) @ UserProfileImage.tsx:120
+commitHookEffectListMount @ chunk-SKRUXVEK.js?v=781d6e4c:16915
+commitPassiveMountOnFiber @ chunk-SKRUXVEK.js?v=781d6e4c:18156
+commitPassiveMountEffects_complete @ chunk-SKRUXVEK.js?v=781d6e4c:18129
+commitPassiveMountEffects_begin @ chunk-SKRUXVEK.js?v=781d6e4c:18119
+commitPassiveMountEffects @ chunk-SKRUXVEK.js?v=781d6e4c:18109
+flushPassiveEffectsImpl @ chunk-SKRUXVEK.js?v=781d6e4c:19490
+flushPassiveEffects @ chunk-SKRUXVEK.js?v=781d6e4c:19447
+performSyncWorkOnRoot @ chunk-SKRUXVEK.js?v=781d6e4c:18868
+flushSyncCallbacks @ chunk-SKRUXVEK.js?v=781d6e4c:9119
+commitRootImpl @ chunk-SKRUXVEK.js?v=781d6e4c:19432
+commitRoot @ chunk-SKRUXVEK.js?v=781d6e4c:19277
+finishConcurrentRender @ chunk-SKRUXVEK.js?v=781d6e4c:18805
+performConcurrentWorkOnRoot @ chunk-SKRUXVEK.js?v=781d6e4c:18718
+workLoop @ chunk-SKRUXVEK.js?v=781d6e4c:197
+flushWork @ chunk-SKRUXVEK.js?v=781d6e4c:176
+performWorkUntilDeadline @ chunk-SKRUXVEK.js?v=781d6e4c:384Understand this error
+UserProfileImage.tsx:76  GET https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/api/users/46/profile-image?t=1753142999697 404 (Not Found)
+window.fetch @ Network.js:219
+fetchProfileImage @ UserProfileImage.tsx:76
+(anonymous) @ UserProfileImage.tsx:120
+commitHookEffectListMount @ chunk-SKRUXVEK.js?v=781d6e4c:16915
+commitPassiveMountOnFiber @ chunk-SKRUXVEK.js?v=781d6e4c:18156
+commitPassiveMountEffects_complete @ chunk-SKRUXVEK.js?v=781d6e4c:18129
+commitPassiveMountEffects_begin @ chunk-SKRUXVEK.js?v=781d6e4c:18119
+commitPassiveMountEffects @ chunk-SKRUXVEK.js?v=781d6e4c:18109
+flushPassiveEffectsImpl @ chunk-SKRUXVEK.js?v=781d6e4c:19490
+flushPassiveEffects @ chunk-SKRUXVEK.js?v=781d6e4c:19447
+performSyncWorkOnRoot @ chunk-SKRUXVEK.js?v=781d6e4c:18868
+flushSyncCallbacks @ chunk-SKRUXVEK.js?v=781d6e4c:9119
+commitRootImpl @ chunk-SKRUXVEK.js?v=781d6e4c:19432
+commitRoot @ chunk-SKRUXVEK.js?v=781d6e4c:19277
+finishConcurrentRender @ chunk-SKRUXVEK.js?v=781d6e4c:18805
+performConcurrentWorkOnRoot @ chunk-SKRUXVEK.js?v=781d6e4c:18718
+workLoop @ chunk-SKRUXVEK.js?v=781d6e4c:197
+flushWork @ chunk-SKRUXVEK.js?v=781d6e4c:176
+performWorkUntilDeadline @ chunk-SKRUXVEK.js?v=781d6e4c:384Understand this error
