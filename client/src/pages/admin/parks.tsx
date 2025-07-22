@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, startTransition, Suspense } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { useTranslation } from 'react-i18next';
@@ -41,7 +41,31 @@ interface ParkDependencies {
   total: number;
 }
 
-const AdminParks = () => {
+// Loading component for Suspense fallback
+const AdminParksLoading = () => (
+  <AdminLayout>
+    <div className="p-6 max-w-7xl mx-auto">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <div className="h-8 w-48 bg-gray-200 rounded animate-pulse mb-2"></div>
+          <div className="h-4 w-96 bg-gray-200 rounded animate-pulse"></div>
+        </div>
+        <div className="flex gap-2">
+          <div className="h-10 w-24 bg-gray-200 rounded animate-pulse"></div>
+          <div className="h-10 w-24 bg-gray-200 rounded animate-pulse"></div>
+          <div className="h-10 w-32 bg-gray-200 rounded animate-pulse"></div>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {[1, 2, 3, 4, 5, 6].map(i => (
+          <div key={i} className="h-64 bg-gray-200 rounded animate-pulse"></div>
+        ))}
+      </div>
+    </div>
+  </AdminLayout>
+);
+
+const AdminParksContent = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [location] = useLocation();
@@ -68,7 +92,7 @@ const AdminParks = () => {
     }
   }, []);
 
-  // Fetch all parks with automatic refresh
+  // Fetch all parks with simplified configuration
   const { 
     data: parksResponse, 
     isLoading: isLoadingParks,
@@ -76,8 +100,11 @@ const AdminParks = () => {
     refetch: refetchParks
   } = useQuery<{data: Park[], pagination: any}>({
     queryKey: ['/api/parks'],
-    refetchOnWindowFocus: true,
-    refetchInterval: 30000, // Refresh every 30 seconds
+    refetchOnWindowFocus: false,
+    refetchInterval: false,
+    staleTime: 30000,
+    retry: 1,
+    suspense: false, // Explicitly disable suspense
   });
 
   const parks = parksResponse?.data || [];
@@ -87,6 +114,8 @@ const AdminParks = () => {
     data: municipalities = [] 
   } = useQuery({
     queryKey: ['/api/municipalities'],
+    suspense: false,
+    retry: 1,
   });
 
   // Fetch amenities for filter
@@ -94,6 +123,8 @@ const AdminParks = () => {
     data: amenities = [] 
   } = useQuery({
     queryKey: ['/api/amenities'],
+    suspense: false,
+    retry: 1,
   });
 
   // Fetch parks with amenities for filtering using optimized endpoint
@@ -101,6 +132,8 @@ const AdminParks = () => {
     data: parkAmenities = [] 
   } = useQuery({
     queryKey: ['/api/parks-with-amenities'],
+    suspense: false,
+    retry: 1,
   });
 
   // Function to fetch park dependencies
@@ -671,6 +704,15 @@ const AdminParks = () => {
         </AlertDialogContent>
       </AlertDialog>
     </AdminLayout>
+  );
+};
+
+// Main component with Suspense wrapper
+const AdminParks = () => {
+  return (
+    <Suspense fallback={<AdminParksLoading />}>
+      <AdminParksContent />
+    </Suspense>
   );
 };
 

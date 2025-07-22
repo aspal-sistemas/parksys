@@ -1,0 +1,38 @@
+Console.js:61 The above error occurred in the <AdminParks> component:
+
+    at AdminParks (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/src/pages/admin/parks.tsx:34:21)
+    at Route (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=781d6e4c:338:16)
+    at Switch (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=781d6e4c:394:17)
+    at div
+    at Router (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/src/App.tsx?v=QST2wjxX9-ewLE__vNo_k:52:22)
+    at Provider (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…unner/workspace/node_modules/.vite/deps/chunk-GBY3YEWR.js?v=781d6e4c:38:15)
+    at TooltipProvider (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…rkspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=781d6e4c:64:5)
+    at ProfileCompletionProvider (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/src/components/ProfileCompletionContext.tsx:169:45)
+    at QueryClientProvider (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…rkspace/node_modules/.vite/deps/@tanstack_react-query.js?v=781d6e4c:2881:3)
+    at App
+    at V (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…e/runner/workspace/node_modules/.vite/deps/next-themes.js?v=781d6e4c:44:25)
+    at J (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…e/runner/workspace/node_modules/.vite/deps/next-themes.js?v=781d6e4c:42:18)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+
+chunk-SKRUXVEK.js?v=781d6e4c:14213 Uncaught Error: A component suspended while responding to synchronous input. This will cause the UI to be replaced with a loading indicator. To fix, updates that suspend should be wrapped with startTransition.
+    at throwException (chunk-SKRUXVEK.js?v=781d6e4c:14213:43)
+    at handleError (chunk-SKRUXVEK.js?v=781d6e4c:19034:15)
+    at renderRootSync (chunk-SKRUXVEK.js?v=781d6e4c:19119:15)
+    at recoverFromConcurrentError (chunk-SKRUXVEK.js?v=781d6e4c:18736:28)
+    at performSyncWorkOnRoot (chunk-SKRUXVEK.js?v=781d6e4c:18879:28)
+    at flushSyncCallbacks (chunk-SKRUXVEK.js?v=781d6e4c:9119:30)
+    at chunk-SKRUXVEK.js?v=781d6e4c:18627:21
+Console.js:61 i18next::backendConnector: loaded namespace parks for language es 
+{title: 'Gestión de Parques', subtitle: 'Sistema integral de administración de parques municipales', fields: {…}, types: {…}, status: {…}, …}
+﻿
+
+Preconnected origins in 'Network dependency tree' insight
+The 'Network dependency tree' insight now shows you a list of used or unused preconnected origins and preconnect candidates, if any.
+
+Server response and redirection times in 'Document request latency' insight
+The 'Document request latency' insight now shows you server response time and, if any, redirection time.
+
+Geolocation accuracy parameter in Sensors
+The Sensors panel now lets you set accuracy in geolocation emulation, so you can test the handling of different levels of GPS accuracy.
