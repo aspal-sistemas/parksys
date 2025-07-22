@@ -13,7 +13,8 @@
     "incidents": "Incidents",
     "events": "Events",
     "reports": "Reports",
-    "settings": "Settings"
+    "settings": "Settings",
+    "notifications": "Notifications"
   },
   "dashboard": {
     "title": "Executive Dashboard",
