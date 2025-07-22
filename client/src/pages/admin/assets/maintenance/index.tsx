@@ -217,8 +217,8 @@ const AssetsMaintenancePage = () => {
     const matchesSearch = !searchTerm || 
       maintenance.assetName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       maintenance.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = !typeFilter || maintenance.maintenanceType === typeFilter;
-    const matchesStatus = !statusFilter || maintenance.status === statusFilter;
+    const matchesType = !typeFilter || typeFilter === 'all' || maintenance.maintenanceType === typeFilter;
+    const matchesStatus = !statusFilter || statusFilter === 'all' || maintenance.status === statusFilter;
     return matchesSearch && matchesType && matchesStatus;
   });
 
@@ -275,8 +275,8 @@ const AssetsMaintenancePage = () => {
                     <SelectValue placeholder="Tipo de mantenimiento" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Todos los tipos</SelectItem>
-                    {MAINTENANCE_TYPES.map((type) => (
+                    <SelectItem value="all">Todos los tipos</SelectItem>
+                    {MAINTENANCE_TYPES.filter(type => type && type.value).map((type) => (
                       <SelectItem key={type.value} value={type.value}>
                         {type.label}
                       </SelectItem>
@@ -290,8 +290,8 @@ const AssetsMaintenancePage = () => {
                     <SelectValue placeholder="Estado" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Todos los estados</SelectItem>
-                    {MAINTENANCE_STATUS.map((status) => (
+                    <SelectItem value="all">Todos los estados</SelectItem>
+                    {MAINTENANCE_STATUS.filter(status => status && status.value).map((status) => (
                       <SelectItem key={status.value} value={status.value}>
                         {status.label}
                       </SelectItem>
@@ -407,11 +407,15 @@ const AssetsMaintenancePage = () => {
                     <SelectValue placeholder="Seleccionar activo" />
                   </SelectTrigger>
                   <SelectContent>
-                    {assets.map((asset: Asset) => (
+                    {Array.isArray(assets) ? assets.filter(asset => asset && asset.id && asset.name).map((asset: Asset) => (
                       <SelectItem key={asset.id} value={asset.id.toString()}>
-                        {asset.name} - {asset.parkName}
+                        {asset.name} - {asset.parkName || 'Sin parque'}
                       </SelectItem>
-                    ))}
+                    )) : (
+                      <SelectItem value="no-data" disabled>
+                        No hay activos disponibles
+                      </SelectItem>
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -423,7 +427,7 @@ const AssetsMaintenancePage = () => {
                     <SelectValue placeholder="Seleccionar tipo" />
                   </SelectTrigger>
                   <SelectContent>
-                    {MAINTENANCE_TYPES.map((type) => (
+                    {MAINTENANCE_TYPES.filter(type => type && type.value && type.value.trim() !== '').map((type) => (
                       <SelectItem key={type.value} value={type.value}>
                         {type.label}
                       </SelectItem>
@@ -457,7 +461,7 @@ const AssetsMaintenancePage = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {MAINTENANCE_STATUS.map((status) => (
+                    {MAINTENANCE_STATUS.filter(status => status && status.value && status.value.trim() !== '').map((status) => (
                       <SelectItem key={status.value} value={status.value}>
                         {status.label}
                       </SelectItem>
