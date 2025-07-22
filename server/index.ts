@@ -976,6 +976,43 @@ console.log('✅ [TEST] Llegando a la sección de rutas de mantenimiento...');
 // === REGISTRO DIRECTO DE RUTAS DE MANTENIMIENTO ===
 console.log('🔧 [DIRECT] Registrando rutas de mantenimiento directamente...');
 
+// Endpoint para obtener todos los mantenimientos (requerido por frontend)
+app.get('/api/assets/maintenances', async (req: Request, res: Response) => {
+  console.log('🔧 [DIRECT] GET /api/assets/maintenances - Obteniendo todos los mantenimientos');
+  try {
+    const { pool } = await import("./db");
+    
+    const query = `
+      SELECT 
+        am.id,
+        am.asset_id as "assetId",
+        a.name as "assetName",
+        am.maintenance_type as "maintenanceType",
+        am.description,
+        am.date,
+        am.status,
+        am.cost,
+        am.performed_by as "performedBy",
+        am.findings,
+        am.actions,
+        am.next_maintenance_date as "nextMaintenanceDate",
+        am.notes,
+        am.created_at as "createdAt",
+        am.updated_at as "updatedAt"
+      FROM asset_maintenances am
+      LEFT JOIN assets a ON am.asset_id = a.id
+      ORDER BY am.date DESC
+    `;
+    
+    const result = await pool.query(query);
+    console.log(`📋 [DIRECT] Devolviendo ${result.rows.length} mantenimientos totales`);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('❌ [DIRECT] Error en GET todos los mantenimientos:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
 // Rutas de mantenimiento integradas directamente
 app.get('/api/assets/:id/maintenances', async (req: Request, res: Response) => {
   console.log('🔧 [DIRECT] GET /api/assets/:id/maintenances - Solicitud recibida para activo:', req.params.id);

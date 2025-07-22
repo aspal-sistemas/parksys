@@ -7,7 +7,38 @@ import { eq, desc, and, like, or } from 'drizzle-orm';
  * Registra las rutas para el módulo de mantenimientos de activos
  */
 export function registerMaintenanceRoutes(app: any, apiRouter: Router, isAuthenticated: any) {
-  // Obtener todos los mantenimientos con información del activo
+  // Endpoint esperado por el frontend - /assets/maintenances
+  apiRouter.get('/assets/maintenances', async (req: Request, res: Response) => {
+    try {
+      const { search, status } = req.query;
+
+      let query = db
+        .select({
+          id: assetMaintenances.id,
+          assetId: assetMaintenances.assetId,
+          assetName: assets.name,
+          maintenanceType: assetMaintenances.maintenanceType,
+          description: assetMaintenances.description,
+          date: assetMaintenances.date,
+          status: assetMaintenances.status,
+          cost: assetMaintenances.cost,
+          performedBy: assetMaintenances.performedBy,
+          createdAt: assetMaintenances.createdAt,
+        })
+        .from(assetMaintenances)
+        .leftJoin(assets, eq(assetMaintenances.assetId, assets.id))
+        .orderBy(desc(assetMaintenances.createdAt));
+
+      const maintenances = await query;
+
+      res.json(maintenances);
+    } catch (error) {
+      console.error('Error fetching assets maintenances:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  });
+
+  // Obtener todos los mantenimientos con información del activo (endpoint alternativo)
   apiRouter.get('/asset-maintenances', async (req: Request, res: Response) => {
     try {
       const { search, status } = req.query;

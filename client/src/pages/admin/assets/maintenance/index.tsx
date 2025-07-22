@@ -353,7 +353,7 @@ const AssetsMaintenancePage = () => {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          {maintenance.cost ? `$${maintenance.cost.toFixed(2)}` : '-'}
+                          {maintenance.cost && !isNaN(parseFloat(maintenance.cost)) ? `$${parseFloat(maintenance.cost).toFixed(2)}` : '-'}
                         </TableCell>
                         <TableCell>
                           <div className="flex space-x-2">
