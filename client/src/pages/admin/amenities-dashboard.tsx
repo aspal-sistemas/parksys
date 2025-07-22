@@ -64,7 +64,7 @@ export default function AmenitiesDashboard() {
 
   if (isLoading) {
     return (
-      <AdminLayout title="Resumen Operativo de Amenidades">
+      <AdminLayout>
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
@@ -77,7 +77,7 @@ export default function AmenitiesDashboard() {
 
   if (error) {
     return (
-      <AdminLayout title="Resumen Operativo de Amenidades">
+      <AdminLayout>
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
@@ -120,7 +120,7 @@ export default function AmenitiesDashboard() {
   const insights = generateInsights();
 
   return (
-    <AdminLayout title="Resumen Operativo de Amenidades">
+    <AdminLayout>
       <div className="space-y-6">
         {/* Header con botón de actualizar */}
         <div className="flex justify-between items-center">
