@@ -124,9 +124,12 @@ const AssetsMaintenancePage = () => {
     onSuccess: () => {
       toast({ title: "Éxito", description: "Mantenimiento registrado correctamente" });
       setShowCreateDialog(false);
+      // Forzar recarga inmediata de datos
       queryClient.invalidateQueries({ queryKey: ['/api/assets/maintenances'] });
+      refetch();
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error('Error creating maintenance:', error);
       toast({ title: "Error", description: "Error al registrar el mantenimiento", variant: "destructive" });
     }
   });

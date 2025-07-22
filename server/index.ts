@@ -1296,7 +1296,17 @@ async function initializeDatabaseAsync() {
     console.error("Error al inicializar tablas de vacaciones:", error);
   }
 
-  // ENDPOINT DIRECTO ELIMINADO - Usando exclusivamente maintenance_routes_fixed.ts
+  // Registrar rutas de mantenimiento de activos
+  try {
+    const { registerMaintenanceRoutes } = await import("./maintenance_routes");
+    const apiRouter = express.Router();
+    const isAuthenticated = (req: Request, res: Response, next: NextFunction) => next();
+    registerMaintenanceRoutes(app, apiRouter, isAuthenticated);
+    app.use('/api', apiRouter);
+    console.log("✅ Rutas de mantenimiento de activos registradas correctamente");
+  } catch (error) {
+    console.error("Error al registrar rutas de mantenimiento:", error);
+  }
 
   // Registrar API de integraciones financieras múltiples
   try {
