@@ -402,11 +402,18 @@ export default function EvaluationsPage() {
     queryKey: ['/api/park-evaluations', selectedStatus, selectedPark, searchTerm, currentPage],
     queryFn: async () => {
       const params = new URLSearchParams({
-        status: selectedStatus,
-        parkId: selectedPark,
         page: currentPage.toString(),
         limit: pageSize.toString()
       });
+      
+      // Solo agregar filtros si no son 'all'
+      if (selectedStatus && selectedStatus !== 'all') {
+        params.append('status', selectedStatus);
+      }
+      
+      if (selectedPark && selectedPark !== 'all') {
+        params.append('parkId', selectedPark);
+      }
       
       if (searchTerm && searchTerm.trim() !== '') {
         params.append('search', searchTerm.trim());
@@ -419,6 +426,8 @@ export default function EvaluationsPage() {
       const data = await response.json();
       return data;
     },
+    suspense: false,
+    retry: 1
   });
 
   // Obtener resumen de parques usando fetch directo
@@ -445,6 +454,8 @@ export default function EvaluationsPage() {
       const data = await response.json();
       return data;
     },
+    suspense: false,
+    retry: 1
   });
 
   // Mutación para moderar evaluación
@@ -477,7 +488,8 @@ export default function EvaluationsPage() {
 
   const evaluations = evaluationsData?.evaluations || [];
   const parkSummary = summaryData?.parks || [];
-  const parks = parksData?.parks || parksData || [];
+  // Manejar diferentes formatos de respuesta de parques
+  const parks = parksData?.data || parksData?.parks || parksData || [];
   
   // Usar datos de paginación del servidor
   const totalEvaluations = evaluationsData?.pagination?.total || 0;
