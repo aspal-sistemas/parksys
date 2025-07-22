@@ -1000,6 +1000,12 @@ function Router() {
 
 
         {/* Rutas del módulo de Recursos Humanos */}
+        <Route path="/admin/hr/dashboard">
+          <Suspense fallback={<div className="p-8 text-center">Cargando dashboard de recursos humanos...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/hr/dashboard')))}
+          </Suspense>
+        </Route>
+        
         <Route path="/admin/hr/employees">
           <Suspense fallback={<div className="p-8 text-center">Cargando gestión de personal...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/admin/hr/employees')))}
