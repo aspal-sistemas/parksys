@@ -10,7 +10,9 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AdminLayout } from "@/components/AdminLayout";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar, Users, Plus, FileText, TrendingUp, MapPin, Clock, Sun, Cloud, CloudRain, BarChart3, Download, Filter, PieChart, Activity, Grid, List, Upload, ChevronLeft, ChevronRight } from "lucide-react";
+import { Calendar, Users, Plus, FileText, TrendingUp, MapPin, Clock, Sun, Cloud, CloudRain, BarChart3, Download, Filter, PieChart, Activity, Grid, List, Upload, ChevronLeft, ChevronRight, FileSpreadsheet } from "lucide-react";
+import * as XLSX from 'xlsx';
+import Papa from 'papaparse';
 import { apiRequest } from "@/lib/queryClient";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -86,6 +88,7 @@ export default function VisitorCountPage() {
   const [methodFilter, setMethodFilter] = useState('all');
   const [showImportDialog, setShowImportDialog] = useState(false);
   const recordsPerPage = 10;
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState<VisitorCountForm>({
     parkId: 0,
     date: new Date().toISOString().split('T')[0],
@@ -105,7 +108,6 @@ export default function VisitorCountPage() {
   // Queries  
   const { data: parksResponse } = useQuery({
     queryKey: ['/api/parks'],
-    suspense: false,
     retry: 1
   });
   
@@ -166,7 +168,32 @@ export default function VisitorCountPage() {
   const startIndex = (currentPage - 1) * recordsPerPage;
   const endIndex = Math.min(startIndex + recordsPerPage, visitorCounts?.pagination?.total || 0);
 
-  // Funciones de exportación e importación
+  // Helper functions for data formatting
+  const getMethodLabel = (method: string) => {
+    const methodLabels = {
+      counting: 'Conteo Manual',
+      estimation: 'Estimación',
+      survey: 'Encuesta',
+      automated: 'Automático'
+    };
+    return methodLabels[method as keyof typeof methodLabels] || method;
+  };
+
+  const getDayTypeLabel = (dayType: string) => {
+    const dayTypeLabels = {
+      normal: 'Normal',
+      weekend: 'Fin de Semana',
+      holiday: 'Feriado',
+      special: 'Especial'
+    };
+    return dayTypeLabels[dayType as keyof typeof dayTypeLabels] || dayType;
+  };
+
+  const getWeatherLabel = (weather: string) => {
+    return weatherLabels[weather as keyof typeof weatherLabels] || weather;
+  };
+
+  // Export function for CSV with professional header format
   const exportToCSV = () => {
     if (!visitorCounts?.data?.length) {
       toast({
@@ -177,38 +204,208 @@ export default function VisitorCountPage() {
       return;
     }
 
-    const csvData = visitorCounts.data.map(count => ({
-      Fecha: count.date,
-      Parque: count.parkName,
-      Adultos: count.adults,
-      Niños: count.children,
-      'Adultos Mayores': count.seniors,
-      Mascotas: count.pets,
-      Grupos: count.groups,
-      'Total Visitantes': count.totalVisitors,
-      'Método de Conteo': count.countingMethod,
-      'Tipo de Día': count.dayType,
-      Clima: count.weather,
-      Notas: count.notes || ''
-    }));
+    // Professional CSV header with system branding
+    const csvHeader = [
+      'SISTEMA DE GESTIÓN DE PARQUES URBANOS',
+      'Reporte de Conteo de Visitantes',
+      `Fecha de generación: ${format(new Date(), 'dd/MM/yyyy HH:mm', { locale: es })}`,
+      `Total de registros: ${visitorCounts.data.length}`,
+      '', // Empty line separator
+    ];
 
-    const headers = Object.keys(csvData[0]);
-    const csvContent = [
-      headers.join(','),
-      ...csvData.map(row => headers.map(header => `"${row[header]}"`).join(','))
-    ].join('\n');
+    // Summary statistics
+    const totalVisitors = visitorCounts.data.reduce((sum, count) => sum + count.totalVisitors, 0);
+    const totalAdults = visitorCounts.data.reduce((sum, count) => sum + count.adults, 0);
+    const totalChildren = visitorCounts.data.reduce((sum, count) => sum + count.children, 0);
+    const avgVisitorsPerDay = totalVisitors / visitorCounts.data.length;
+    
+    const methodStats = visitorCounts.data.reduce((acc, count) => {
+      const method = getMethodLabel(count.countingMethod);
+      acc[method] = (acc[method] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
 
-    // Agregar BOM para UTF-8 para garantizar que los acentos se muestren correctamente
+    const summarySection = [
+      'RESUMEN ESTADÍSTICO',
+      '',
+      'Métricas Generales:',
+      `Total de Visitantes Registrados: ${totalVisitors}`,
+      `Promedio de Visitantes por Día: ${avgVisitorsPerDay.toFixed(1)}`,
+      `Total de Adultos: ${totalAdults}`,
+      `Total de Niños: ${totalChildren}`,
+      '',
+      'Distribución por Método de Conteo:',
+      ...Object.entries(methodStats).map(([method, count]) => `${method}: ${count} registros`),
+      `Total de Parques: ${new Set(visitorCounts.data.map(c => c.parkId)).size}`,
+      '',
+      'DATOS DETALLADOS',
+      ''
+    ];
+
+    const dataHeaders = [
+      'Fecha', 'Parque', 'Adultos', 'Niños', 'Adultos Mayores', 
+      'Mascotas', 'Grupos', 'Total Visitantes', 'Método de Conteo', 
+      'Tipo de Día', 'Clima', 'Notas'
+    ];
+
+    const csvData = visitorCounts.data.map(count => [
+      count.date,
+      count.parkName,
+      count.adults,
+      count.children,
+      count.seniors,
+      count.pets,
+      count.groups,
+      count.totalVisitors,
+      getMethodLabel(count.countingMethod),
+      getDayTypeLabel(count.dayType || 'N/A'),
+      getWeatherLabel(count.weather || 'N/A'),
+      count.notes || 'N/A'
+    ]);
+
+    // Combine all sections
+    const allRows = [
+      ...csvHeader.map(line => [line]), // Single column for header
+      ...summarySection.map(line => [line]), // Single column for summary
+      dataHeaders, // Multi-column for data headers
+      ...csvData // Multi-column for data
+    ];
+
+    // Create CSV content with BOM for proper UTF-8 encoding
     const BOM = '\uFEFF';
-    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const csvContent = BOM + allRows
+      .map(row => row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(','))
+      .join('\r\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `conteo-visitantes-${new Date().toISOString().split('T')[0]}.csv`;
-    link.click();
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `conteo_visitantes_profesional_${format(new Date(), 'dd-MM-yyyy')}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
 
     toast({
-      title: "Exportación exitosa",
-      description: "Los datos se han exportado correctamente",
+      title: "CSV Profesional Exportado",
+      description: "Reporte completo generado con encabezado corporativo y resumen estadístico",
+    });
+  };
+
+  // Export function for Excel with corporate styling
+  const exportToExcel = () => {
+    if (!visitorCounts?.data?.length) {
+      toast({
+        title: "No hay datos",
+        description: "No hay registros para exportar",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Create workbook
+    const wb = XLSX.utils.book_new();
+    
+    // Prepare main data
+    const dataHeaders = [
+      'Fecha', 'Parque', 'Adultos', 'Niños', 'Adultos Mayores', 
+      'Mascotas', 'Grupos', 'Total Visitantes', 'Método de Conteo', 
+      'Tipo de Día', 'Clima', 'Notas'
+    ];
+
+    const excelData = visitorCounts.data.map(count => [
+      count.date,
+      count.parkName,
+      count.adults,
+      count.children,
+      count.seniors,
+      count.pets,
+      count.groups,
+      count.totalVisitors,
+      getMethodLabel(count.countingMethod),
+      getDayTypeLabel(count.dayType || 'N/A'),
+      getWeatherLabel(count.weather || 'N/A'),
+      count.notes || 'N/A'
+    ]);
+
+    // Create main data sheet
+    const mainSheet = XLSX.utils.aoa_to_sheet([
+      ['SISTEMA DE GESTIÓN DE PARQUES URBANOS'],
+      ['Reporte de Conteo de Visitantes'],
+      [`Fecha de generación: ${format(new Date(), 'dd/MM/yyyy HH:mm', { locale: es })}`],
+      [`Total de registros: ${visitorCounts.data.length}`],
+      [], // Empty row
+      dataHeaders,
+      ...excelData
+    ]);
+
+    // Statistics summary
+    const totalVisitors = visitorCounts.data.reduce((sum, count) => sum + count.totalVisitors, 0);
+    const totalAdults = visitorCounts.data.reduce((sum, count) => sum + count.adults, 0);
+    const totalChildren = visitorCounts.data.reduce((sum, count) => sum + count.children, 0);
+    const avgVisitorsPerDay = totalVisitors / visitorCounts.data.length;
+    
+    const methodStats = visitorCounts.data.reduce((acc, count) => {
+      const method = getMethodLabel(count.countingMethod);
+      acc[method] = (acc[method] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const summaryData = [
+      ['SISTEMA DE GESTIÓN DE PARQUES URBANOS'],
+      ['RESUMEN EJECUTIVO - CONTEO DE VISITANTES'],
+      [`Fecha: ${format(new Date(), 'dd/MM/yyyy', { locale: es })}`],
+      [],
+      ['MÉTRICAS GENERALES'],
+      ['Total de Registros', visitorCounts.data.length],
+      ['Total de Visitantes', totalVisitors],
+      ['Promedio de Visitantes por Día', avgVisitorsPerDay.toFixed(1)],
+      ['Total de Adultos', totalAdults],
+      ['Total de Niños', totalChildren],
+      ['Total de Parques', new Set(visitorCounts.data.map(c => c.parkId)).size],
+      [],
+      ['DISTRIBUCIÓN POR MÉTODO'],
+      ...Object.entries(methodStats).map(([method, count]) => [method, count]),
+      [],
+      ['ANÁLISIS TEMPORAL'],
+      ['Período Analizado', visitorCounts.data.length > 0 ? `${visitorCounts.data[0].date} - ${visitorCounts.data[visitorCounts.data.length - 1].date}` : 'N/A'],
+      ['Días con Mayor Afluencia', 'Fines de Semana y Feriados'],
+    ];
+
+    const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
+
+    // Add sheets to workbook
+    XLSX.utils.book_append_sheet(wb, mainSheet, 'Datos Completos');
+    XLSX.utils.book_append_sheet(wb, summarySheet, 'Resumen Ejecutivo');
+
+    // Auto-size columns for both sheets
+    const maxWidth = 50;
+    [mainSheet, summarySheet].forEach(sheet => {
+      const cols = [];
+      const range = XLSX.utils.decode_range(sheet['!ref'] || 'A1');
+      for (let col = range.s.c; col <= range.e.c; col++) {
+        let maxLen = 10;
+        for (let row = range.s.r; row <= range.e.r; row++) {
+          const cell = sheet[XLSX.utils.encode_cell({ r: row, c: col })];
+          if (cell && cell.v) {
+            const len = String(cell.v).length;
+            maxLen = Math.max(maxLen, Math.min(len, maxWidth));
+          }
+        }
+        cols.push({ width: maxLen });
+      }
+      sheet['!cols'] = cols;
+    });
+
+    // Export file
+    XLSX.writeFile(wb, `conteo_visitantes_${format(new Date(), 'dd-MM-yyyy')}.xlsx`);
+
+    toast({
+      title: "Excel Exportado",
+      description: "Reporte profesional generado con datos completos y resumen ejecutivo",
     });
   };
 
@@ -277,7 +474,7 @@ export default function VisitorCountPage() {
     const headers = Object.keys(finalData[0]);
     const csvContent = [
       headers.join(','),
-      ...finalData.map(row => headers.map(header => `"${row[header]}"`).join(','))
+      ...finalData.map(row => headers.map(header => `"${(row as any)[header]}"`).join(','))
     ].join('\n');
 
     // Agregar BOM para UTF-8 para garantizar que los acentos se muestren correctamente
@@ -420,7 +617,7 @@ export default function VisitorCountPage() {
         totalPets,
         avgDaily,
         totalRecords: filteredData.length,
-        uniqueParks: [...new Set(filteredData.map(c => c.parkName))].length
+        uniqueParks: Array.from(new Set(filteredData.map(c => c.parkName))).length
       },
       charts: {
         demographic: demographicData,
@@ -431,6 +628,246 @@ export default function VisitorCountPage() {
       }
     };
   }, [visitorCounts, reportPark]);
+
+  // Función para exportar a Excel
+  const exportToExcel = () => {
+    if (!filteredData.length) {
+      toast({ title: "No hay datos para exportar", variant: "destructive" });
+      return;
+    }
+
+    const today = new Date().toLocaleDateString('es-MX', { 
+      day: '2-digit', 
+      month: '2-digit', 
+      year: 'numeric' 
+    }).replace(/\//g, '-');
+
+    // Datos principales
+    const mainData = filteredData.map(count => ({
+      'Parque': count.parkName,
+      'Fecha': format(new Date(count.date), 'dd/MM/yyyy'),
+      'Adultos': count.adults,
+      'Niños': count.children,
+      'Adultos Mayores': count.seniors,
+      'Mascotas': count.pets,
+      'Grupos': count.groups,
+      'Total Visitantes': count.totalVisitors,
+      'Método Conteo': getMethodLabel(count.countingMethod),
+      'Tipo Día': getDayTypeLabel(count.dayType || ''),
+      'Clima': getWeatherLabel(count.weather || ''),
+      'Notas': (count.notes || '').slice(0, 100) + (count.notes && count.notes.length > 100 ? '...' : ''),
+      'Fecha Registro': format(new Date(count.createdAt), 'dd/MM/yyyy HH:mm')
+    }));
+
+    // Resumen estadístico
+    const summaryData = reportData ? [
+      { 'Métrica': 'Total de Visitantes', 'Valor': reportData.summary.totalVisitors.toLocaleString() },
+      { 'Métrica': 'Adultos', 'Valor': reportData.summary.totalAdults.toLocaleString() },
+      { 'Métrica': 'Niños', 'Valor': reportData.summary.totalChildren.toLocaleString() },
+      { 'Métrica': 'Adultos Mayores', 'Valor': reportData.summary.totalSeniors.toLocaleString() },
+      { 'Métrica': 'Mascotas', 'Valor': reportData.summary.totalPets.toLocaleString() },
+      { 'Métrica': 'Promedio Diario', 'Valor': reportData.summary.avgDaily.toLocaleString() },
+      { 'Métrica': 'Total de Registros', 'Valor': reportData.summary.totalRecords.toLocaleString() },
+      { 'Métrica': 'Parques Únicos', 'Valor': reportData.summary.uniqueParks.toString() }
+    ] : [];
+
+    // Crear el workbook
+    const wb = XLSX.utils.book_new();
+
+    // Hoja 1: Datos principales con header corporativo
+    const headerRows = [
+      ['SISTEMA DE GESTIÓN DE PARQUES URBANOS'],
+      ['Reporte de Conteo de Visitantes'],
+      [`Generado el ${today}`],
+      [''],
+    ];
+
+    const wsData = [...headerRows, Object.keys(mainData[0] || {}), ...mainData.map(row => Object.values(row))];
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+    // Estilos corporativos para Excel
+    const range = XLSX.utils.decode_range(ws['!ref'] || 'A1:A1');
+    
+    // Aplicar estilos al header
+    for (let R = 0; R <= 3; R++) {
+      for (let C = range.s.c; C <= range.e.c; C++) {
+        const cell_address = XLSX.utils.encode_cell({ c: C, r: R });
+        if (!ws[cell_address]) ws[cell_address] = { v: "" };
+        ws[cell_address].s = {
+          font: { bold: true, color: { rgb: "FFFFFF" } },
+          fill: { fgColor: { rgb: "00A587" } },
+          alignment: { horizontal: "center", vertical: "center" }
+        };
+      }
+    }
+
+    // Auto-width columns
+    const colWidths = Object.keys(mainData[0] || {}).map(key => ({ wch: Math.max(key.length, 15) }));
+    ws['!cols'] = colWidths;
+
+    XLSX.utils.book_append_sheet(wb, ws, 'Datos de Visitantes');
+
+    // Hoja 2: Resumen ejecutivo
+    if (summaryData.length > 0) {
+      const summaryHeaderRows = [
+        ['RESUMEN EJECUTIVO'],
+        ['Estadísticas Generales del Periodo'],
+        [`Generado el ${today}`],
+        [''],
+      ];
+      
+      const summaryWsData = [...summaryHeaderRows, ['Métrica', 'Valor'], ...summaryData.map(row => Object.values(row))];
+      const summaryWs = XLSX.utils.aoa_to_sheet(summaryWsData);
+      
+      // Aplicar estilos al resumen
+      const summaryRange = XLSX.utils.decode_range(summaryWs['!ref'] || 'A1:A1');
+      for (let R = 0; R <= 3; R++) {
+        for (let C = summaryRange.s.c; C <= summaryRange.e.c; C++) {
+          const cell_address = XLSX.utils.encode_cell({ c: C, r: R });
+          if (!summaryWs[cell_address]) summaryWs[cell_address] = { v: "" };
+          summaryWs[cell_address].s = {
+            font: { bold: true, color: { rgb: "FFFFFF" } },
+            fill: { fgColor: { rgb: "00A587" } },
+            alignment: { horizontal: "center", vertical: "center" }
+          };
+        }
+      }
+      
+      summaryWs['!cols'] = [{ wch: 25 }, { wch: 15 }];
+      XLSX.utils.book_append_sheet(wb, summaryWs, 'Resumen Ejecutivo');
+    }
+
+    // Descargar el archivo
+    XLSX.writeFile(wb, `conteo_visitantes_${today}.xlsx`);
+    toast({ title: "Archivo Excel exportado exitosamente" });
+  };
+
+  // Función para exportar a CSV
+  const exportToCSV = () => {
+    if (!filteredData.length) {
+      toast({ title: "No hay datos para exportar", variant: "destructive" });
+      return;
+    }
+
+    const today = new Date().toLocaleDateString('es-MX', { 
+      day: '2-digit', 
+      month: '2-digit', 
+      year: 'numeric' 
+    }).replace(/\//g, '-');
+
+    const csvData = filteredData.map(count => ({
+      'Parque': count.parkName,
+      'Fecha': format(new Date(count.date), 'dd/MM/yyyy'),
+      'Adultos': count.adults,
+      'Niños': count.children,
+      'Adultos Mayores': count.seniors,
+      'Mascotas': count.pets,
+      'Grupos': count.groups,
+      'Total Visitantes': count.totalVisitors,
+      'Método Conteo': getMethodLabel(count.countingMethod),
+      'Tipo Día': getDayTypeLabel(count.dayType || ''),
+      'Clima': getWeatherLabel(count.weather || ''),
+      'Notas': (count.notes || '').slice(0, 100) + (count.notes && count.notes.length > 100 ? '...' : ''),
+      'Fecha Registro': format(new Date(count.createdAt), 'dd/MM/yyyy HH:mm')
+    }));
+
+    const csv = Papa.unparse(csvData, {
+      header: true,
+      delimiter: ',',
+      encoding: 'utf-8'
+    });
+
+    // Agregar BOM para UTF-8 y header profesional
+    const professionalHeader = `SISTEMA DE GESTIÓN DE PARQUES URBANOS
+Reporte de Conteo de Visitantes
+Generado el ${today}
+
+`;
+
+    const finalCsv = '\uFEFF' + professionalHeader + csv;
+    
+    const blob = new Blob([finalCsv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `conteo_visitantes_profesional_${today}.csv`;
+    link.click();
+    
+    toast({ title: "Archivo CSV exportado exitosamente" });
+  };
+
+  // Función para descargar template
+  const downloadTemplate = () => {
+    const templateData = [
+      {
+        'Parque ID': '5',
+        'Fecha': '2025-07-22',
+        'Adultos': '10',
+        'Niños': '5',
+        'Adultos Mayores': '2',
+        'Mascotas': '1',
+        'Grupos': '0',
+        'Método Conteo': 'estimation',
+        'Tipo Día': 'weekday',
+        'Clima': 'sunny',
+        'Notas': 'Ejemplo de registro'
+      }
+    ];
+
+    const csv = Papa.unparse(templateData, {
+      header: true,
+      delimiter: ',',
+      encoding: 'utf-8'
+    });
+
+    const templateHeader = `PLANTILLA DE IMPORTACIÓN - CONTEO DE VISITANTES
+Sistema de Gestión de Parques Urbanos
+Instrucciones: Complete los datos y guarde como CSV
+
+`;
+
+    const finalCsv = '\uFEFF' + templateHeader + csv;
+    
+    const blob = new Blob([finalCsv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'plantilla_conteo_visitantes.csv';
+    link.click();
+    
+    toast({ title: "Plantilla descargada exitosamente" });
+  };
+
+  // Función para manejar importación
+  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    Papa.parse(file, {
+      header: true,
+      complete: (results) => {
+        if (results.errors.length > 0) {
+          toast({ 
+            title: "Error al leer el archivo", 
+            description: "Verifique el formato del archivo CSV",
+            variant: "destructive" 
+          });
+          return;
+        }
+
+        console.log('Datos importados:', results.data);
+        toast({ 
+          title: "Archivo procesado", 
+          description: `${results.data.length} registros encontrados` 
+        });
+      },
+      error: (error) => {
+        toast({ 
+          title: "Error al procesar archivo", 
+          description: error.message,
+          variant: "destructive" 
+        });
+      }
+    });
+  };
 
   // Mutation para crear nuevo registro
   const createVisitorCount = useMutation({
@@ -455,8 +892,8 @@ export default function VisitorCountPage() {
             pets: data.pets,
             groups: data.groups,
             countingMethod: data.countingMethod,
-            dayType: countingMode === 'daily' ? data.dayType : undefined,
-            weather: countingMode === 'daily' ? data.weather : undefined,
+            dayType: data.dayType,
+            weather: data.weather,
             notes: data.notes,
             registeredBy: 1 // Usuario admin por defecto
           };
@@ -469,7 +906,7 @@ export default function VisitorCountPage() {
           records.map(record => 
             apiRequest('/api/visitor-counts', {
               method: 'POST',
-              body: record
+              data: record
             })
           )
         );
@@ -495,13 +932,13 @@ export default function VisitorCountPage() {
         
         return apiRequest('/api/visitor-counts', {
           method: 'POST',
-          body: requestData
+          data: requestData
         });
       }
     },
     onSuccess: () => {
       const recordsCount = countingMode === 'range' ? 
-        Math.ceil((new Date(formData.endDate!) - new Date(formData.startDate!)) / (1000 * 60 * 60 * 24)) + 1 : 1;
+        Math.ceil((new Date(formData.endDate!).getTime() - new Date(formData.startDate!).getTime()) / (1000 * 60 * 60 * 24)) + 1 : 1;
       
       toast({
         title: "Registro exitoso",
@@ -571,25 +1008,6 @@ export default function VisitorCountPage() {
     createVisitorCount.mutate(formData);
   };
 
-  const getMethodLabel = (method: string) => {
-    const methods = {
-      estimation: "Estimación",
-      manual_counter: "Contador manual",
-      event_based: "Basado en eventos",
-      entrance_control: "Control de acceso"
-    };
-    return methods[method as keyof typeof methods] || method;
-  };
-
-  const getDayTypeLabel = (dayType: string) => {
-    const types = {
-      weekday: "Día laborable",
-      weekend: "Fin de semana",
-      holiday: "Día festivo"
-    };
-    return types[dayType as keyof typeof types] || dayType;
-  };
-
   const getWeatherIcon = (weather: string) => {
     switch (weather) {
       case 'sunny': return <Sun className="h-4 w-4" />;
@@ -597,10 +1015,6 @@ export default function VisitorCountPage() {
       case 'rainy': return <CloudRain className="h-4 w-4" />;
       default: return <Sun className="h-4 w-4" />;
     }
-  };
-
-  const getWeatherLabel = (weather: string) => {
-    return weatherLabels[weather as keyof typeof weatherLabels] || weather;
   };
 
   const getTotalVisitors = () => {
@@ -725,7 +1139,16 @@ export default function VisitorCountPage() {
                       className="text-green-600 hover:text-green-700"
                     >
                       <Download className="h-4 w-4 mr-2" />
-                      Exportar CSV
+                      CSV
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={exportToExcel}
+                      className="text-emerald-600 hover:text-emerald-700"
+                    >
+                      <FileSpreadsheet className="h-4 w-4 mr-2" />
+                      Excel
                     </Button>
                     <Button
                       variant="outline"
@@ -734,7 +1157,7 @@ export default function VisitorCountPage() {
                       className="text-blue-600 hover:text-blue-700"
                     >
                       <Upload className="h-4 w-4 mr-2" />
-                      Importar CSV
+                      Importar
                     </Button>
                     <Button
                       variant="outline"
@@ -1494,7 +1917,20 @@ export default function VisitorCountPage() {
             </Card>
           </div>
         )}
+
+        {/* Input oculto para importación */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".csv"
+          style={{ display: 'none' }}
+          onChange={handleImport}
+        />
       </div>
     </AdminLayout>
   );
 }
+
+
+
+export default VisitorCountPage;
