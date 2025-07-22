@@ -250,17 +250,25 @@ const IncidentsPage = () => {
   const { data: incidents = [], isLoading, error } = useQuery({
     queryKey: ['/api/incidents'],
     refetchOnWindowFocus: false,
+    suspense: false,
+    retry: 1
   });
 
-  const { data: parks = [] } = useQuery({
+  const { data: apiParks } = useQuery({
     queryKey: ['/api/parks'],
     refetchOnWindowFocus: false,
+    suspense: false,
+    retry: 1
   });
 
   const { data: categories = [] } = useQuery({
     queryKey: ['/api/incident-categories'],
     refetchOnWindowFocus: false,
+    suspense: false,
+    retry: 1
   });
+
+  const parks = Array.isArray(apiParks?.data) ? apiParks.data : (Array.isArray(apiParks) ? apiParks : []);
 
   // Funciones auxiliares
   const getStatusColor = (status) => {
