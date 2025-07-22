@@ -266,7 +266,10 @@ export default function InstructorsListPage() {
       <div className="container mx-auto p-6">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Instructores</h1>
+            <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+              <GraduationCap className="w-8 h-8" />
+              Instructores
+            </h1>
             <p className="text-muted-foreground">
               Gestiona la lista de instructores registrados en la plataforma.
             </p>
