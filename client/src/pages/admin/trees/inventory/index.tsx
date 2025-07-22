@@ -53,10 +53,21 @@ import {
   Sprout,
   Trash2,
   Loader2,
-  TreePine
+  TreePine,
+  Download,
+  Upload,
+  FileSpreadsheet
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 
 // Tipos para los árboles del inventario
 interface TreeInventory {
@@ -89,6 +100,9 @@ function TreeInventoryPage() {
   const [parkFilter, setParkFilter] = useState('all');
   const [healthFilter, setHealthFilter] = useState('all');
   const [speciesFilter, setSpeciesFilter] = useState('all');
+  const [csvPreview, setCsvPreview] = useState<any[]>([]);
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   // Mutación para generar inventario automático
   const generateInventoryMutation = useMutation({
@@ -238,6 +252,205 @@ function TreeInventoryPage() {
     }
   };
 
+  // Función para exportar CSV
+  const handleExportCsv = async () => {
+    try {
+      // Construir URL con filtros actuales
+      let url = '/api/trees/export-csv?';
+      const params = new URLSearchParams();
+      
+      if (searchTerm) params.append('search', searchTerm);
+      if (parkFilter !== 'all') params.append('parkId', parkFilter);
+      if (healthFilter !== 'all') params.append('healthStatus', healthFilter);
+      if (speciesFilter !== 'all') params.append('speciesId', speciesFilter);
+      
+      url += params.toString();
+      
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('directToken')}`,
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error('Error al exportar CSV');
+      }
+      
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      
+      const today = new Date().toLocaleDateString('es-ES').replace(/\//g, '-');
+      link.download = `inventario_arboles_${today}.csv`;
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(downloadUrl);
+      
+      toast({
+        title: "Exportación exitosa",
+        description: "El archivo CSV ha sido descargado correctamente",
+      });
+    } catch (error) {
+      toast({
+        title: "Error al exportar",
+        description: "No se pudo exportar el archivo CSV",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Función para descargar plantilla CSV
+  const handleDownloadTemplate = () => {
+    const headers = [
+      'codigo',
+      'especie_id',
+      'parque_id',
+      'latitud',
+      'longitud',
+      'fecha_plantacion',
+      'etapa_desarrollo',
+      'edad_estimada',
+      'altura',
+      'diametro',
+      'cobertura_copa',
+      'estado_salud',
+      'descripcion_ubicacion',
+      'notas'
+    ];
+    
+    const examples = [
+      [
+        'AHU-BOS-001',
+        '1',
+        '5',
+        '20.6597',
+        '-103.3496',
+        '2020-03-15',
+        'adulto',
+        '5',
+        '8.5',
+        '45',
+        '6.2',
+        'Bueno',
+        'Entrada principal del parque',
+        'Árbol emblemático en buen estado'
+      ],
+      [
+        'JAC-PAR-002',
+        '2',
+        '7',
+        '20.6612',
+        '-103.3510',
+        '2019-11-20',
+        'juvenil',
+        '3',
+        '5.2',
+        '25',
+        '3.8',
+        'Regular',
+        'Área de juegos infantiles',
+        'Requiere poda de mantenimiento'
+      ]
+    ];
+    
+    const csvContent = [
+      headers.join(','),
+      ...examples.map(row => row.join(','))
+    ].join('\n');
+    
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'plantilla_inventario_arboles.csv';
+    link.click();
+    URL.revokeObjectURL(link.href);
+  };
+
+  // Función para procesar archivo CSV
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target?.result as string;
+      const lines = text.split('\n').filter(line => line.trim());
+      
+      if (lines.length < 2) {
+        toast({
+          title: "Error en el archivo",
+          description: "El archivo CSV debe tener al menos una fila de datos",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+      const requiredHeaders = ['codigo', 'especie_id', 'parque_id', 'estado_salud'];
+      
+      const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
+      if (missingHeaders.length > 0) {
+        toast({
+          title: "Error en formato CSV",
+          description: `Faltan columnas requeridas: ${missingHeaders.join(', ')}`,
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      const data = lines.slice(1, 6).map(line => {
+        const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
+        const row: any = {};
+        headers.forEach((header, index) => {
+          row[header] = values[index] || '';
+        });
+        return row;
+      });
+      
+      setCsvPreview(data);
+      setIsImportDialogOpen(true);
+    };
+    
+    reader.readAsText(file);
+  };
+
+  // Mutación para importar CSV
+  const importCsvMutation = useMutation({
+    mutationFn: async (csvData: any[]) => {
+      return apiRequest('/api/trees/import-csv', {
+        method: 'POST',
+        data: { trees: csvData },
+      });
+    },
+    onSuccess: (response) => {
+      toast({
+        title: "Importación exitosa",
+        description: response.message || "Los árboles han sido importados correctamente",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/trees'] });
+      setIsImportDialogOpen(false);
+      setCsvPreview([]);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error al importar",
+        description: error.message || "No se pudieron importar los árboles",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Confirmar importación
+  const handleConfirmImport = () => {
+    importCsvMutation.mutate(csvPreview);
+  };
+
   const handleViewDetails = (id: number) => {
     setLocation(`/admin/trees/inventory/${id}`);
   };
@@ -315,7 +528,7 @@ function TreeInventoryPage() {
       <div className="container mx-auto px-4 py-6">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-green-800 flex items-center">
+            <h1 className="text-3xl font-bold text-black flex items-center">
               <TreeDeciduous className="mr-2 h-8 w-8" />
               Inventario de Árboles
             </h1>
@@ -324,15 +537,117 @@ function TreeInventoryPage() {
             </p>
           </div>
           <div className="flex gap-2">
-            <Button 
-              onClick={handleClearInventory}
+            <Button
+              onClick={handleExportCsv}
               variant="outline"
-              className="border-red-600 text-red-600 hover:bg-red-50"
-              disabled={clearInventoryMutation.isPending}
+              className="border-green-600 text-green-600 hover:bg-green-50"
             >
-              <Trash2 className="mr-2 h-4 w-4" /> 
-              {clearInventoryMutation.isPending ? 'Limpiando...' : 'Limpiar Inventario'}
+              <Download className="mr-2 h-4 w-4" /> Exportar CSV
             </Button>
+            
+            <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="border-blue-600 text-blue-600 hover:bg-blue-50"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Upload className="mr-2 h-4 w-4" /> Importar CSV
+                </Button>
+              </DialogTrigger>
+              
+              <DialogContent className="max-w-4xl">
+                <DialogHeader>
+                  <DialogTitle>Importar Árboles desde CSV</DialogTitle>
+                  <DialogDescription>
+                    {csvPreview.length > 0 
+                      ? "Vista previa de los primeros 5 registros. Confirma para importar todos los datos."
+                      : "Selecciona un archivo CSV para importar árboles o descarga la plantilla para ver el formato requerido."
+                    }
+                  </DialogDescription>
+                </DialogHeader>
+                
+                {csvPreview.length === 0 && (
+                  <div className="flex flex-col space-y-4 p-4 border-2 border-dashed border-gray-300 rounded-lg">
+                    <div className="text-center">
+                      <p className="text-sm text-gray-600 mb-4">
+                        ¿Primera vez importando árboles? Descarga la plantilla con ejemplos para ver el formato correcto.
+                      </p>
+                      <Button
+                        onClick={handleDownloadTemplate}
+                        variant="outline"
+                        className="border-green-600 text-green-600 hover:bg-green-50"
+                      >
+                        <Download className="mr-2 h-4 w-4" /> Descargar Plantilla CSV
+                      </Button>
+                    </div>
+                    <div className="text-center text-sm text-gray-500">
+                      La plantilla incluye todas las columnas disponibles y dos ejemplos (Ahuehuete y Jacaranda)
+                    </div>
+                  </div>
+                )}
+                
+                {csvPreview.length > 0 && (
+                  <div className="space-y-4">
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Código</TableHead>
+                            <TableHead>Especie ID</TableHead>
+                            <TableHead>Parque ID</TableHead>
+                            <TableHead>Estado Salud</TableHead>
+                            <TableHead>Altura</TableHead>
+                            <TableHead>Ubicación</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {csvPreview.map((row, index) => (
+                            <TableRow key={index}>
+                              <TableCell>{row.codigo || 'N/A'}</TableCell>
+                              <TableCell>{row.especie_id || 'N/A'}</TableCell>
+                              <TableCell>{row.parque_id || 'N/A'}</TableCell>
+                              <TableCell>{row.estado_salud || 'N/A'}</TableCell>
+                              <TableCell>{row.altura || 'N/A'}</TableCell>
+                              <TableCell>{row.descripcion_ubicacion || 'N/A'}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                    <div className="flex justify-end space-x-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setIsImportDialogOpen(false);
+                          setCsvPreview([]);
+                          if (fileInputRef.current) {
+                            fileInputRef.current.value = '';
+                          }
+                        }}
+                      >
+                        Cancelar
+                      </Button>
+                      <Button
+                        onClick={handleConfirmImport}
+                        disabled={importCsvMutation.isPending}
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        {importCsvMutation.isPending ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Importando...
+                          </>
+                        ) : (
+                          'Confirmar Importación'
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </DialogContent>
+            </Dialog>
+            
             <Button 
               onClick={handleAddTree}
               className="bg-green-600 hover:bg-green-700 flex items-center"
@@ -340,6 +655,15 @@ function TreeInventoryPage() {
               <Plus className="mr-2 h-4 w-4" /> Agregar Árbol
             </Button>
           </div>
+          
+          {/* Input oculto para selección de archivos */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".csv"
+            onChange={handleFileUpload}
+            style={{ display: 'none' }}
+          />
         </div>
         
         <Card className="mb-6">
