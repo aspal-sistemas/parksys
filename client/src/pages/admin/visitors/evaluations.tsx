@@ -521,21 +521,33 @@ export default function EvaluationsPage() {
   // Export function for CSV with professional header format
   const exportToCSV = async () => {
     try {
+      // Debug: Log current filter values
+      console.log('🔥 EXPORT CSV - Current filters:', {
+        searchTerm,
+        selectedStatus,
+        selectedPark
+      });
+      
       // Fetch filtered evaluations for export
       const queryParams = new URLSearchParams({
         page: '1',
         limit: '10000', // Large number to get all filtered results
-        search: searchTerm,
-        status: selectedStatus,
-        park: selectedPark
+        search: searchTerm || '',
+        status: selectedStatus || '',
+        park: selectedPark || ''
       });
       
+      console.log('🔥 EXPORT CSV - Query URL:', `/api/park-evaluations?${queryParams}`);
       const response = await fetch(`/api/park-evaluations?${queryParams}`);
       if (!response.ok) {
         throw new Error('Failed to fetch filtered evaluations');
       }
       const data = await response.json();
       const allEvaluations = data.evaluations;
+      
+      console.log('🔥 EXPORT CSV - Received evaluations:', allEvaluations.length);
+      console.log('🔥 EXPORT CSV - First evaluation park:', allEvaluations[0]?.park_name);
+      console.log('🔥 EXPORT CSV - Unique parks:', [...new Set(allEvaluations.map(e => e.park_name))]);
       
       if (allEvaluations.length === 0) {
         toast({
@@ -652,15 +664,23 @@ export default function EvaluationsPage() {
   // Export function for Excel with corporate styling
   const exportToExcel = async () => {
     try {
+      // Debug: Log current filter values
+      console.log('🔥 EXPORT EXCEL - Current filters:', {
+        searchTerm,
+        selectedStatus,
+        selectedPark
+      });
+      
       // Fetch filtered evaluations for export
       const queryParams = new URLSearchParams({
         page: '1',
         limit: '10000', // Large number to get all filtered results
-        search: searchTerm,
-        status: selectedStatus,
-        park: selectedPark
+        search: searchTerm || '',
+        status: selectedStatus || '',
+        park: selectedPark || ''
       });
       
+      console.log('🔥 EXPORT EXCEL - Query URL:', `/api/park-evaluations?${queryParams}`);
       const response = await fetch(`/api/park-evaluations?${queryParams}`);
       if (!response.ok) {
         throw new Error('Failed to fetch filtered evaluations');
