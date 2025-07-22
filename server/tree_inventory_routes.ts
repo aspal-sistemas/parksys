@@ -97,12 +97,23 @@ export function registerTreeInventoryRoutes(app: any, apiRouter: Router, isAuthe
       const treesResult = await pool.query(query);
       const treesList = treesResult.rows;
       
+      // Agregar logging para debugging
+      console.log('🔍 Trees query results (endpoint /trees):', {
+        totalCount,
+        currentPage: page,
+        limit,
+        resultsLength: treesList.length,
+        totalPages: Math.ceil(totalCount / limit)
+      });
+      
       res.json({
         data: treesList,
-        page,
-        perPage: limit,
-        total: totalCount,
-        totalPages: Math.ceil(totalCount / limit)
+        pagination: {
+          page,
+          limit,
+          total: totalCount,
+          totalPages: Math.ceil(totalCount / limit)
+        }
       });
     } catch (error) {
       console.error('Error al obtener árboles:', error);

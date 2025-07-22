@@ -517,6 +517,21 @@ function TreeInventoryPage() {
   // Determinar si hay datos para mostrar
   const hasData = treeInventory && treeInventory.data && treeInventory.data.length > 0;
   const totalPages = treeInventory?.pagination?.totalPages || 1;
+  const totalRecords = treeInventory?.pagination?.total || 0;
+  
+  // Debugging: mostrar información en consola
+  React.useEffect(() => {
+    if (treeInventory) {
+      console.log('Tree inventory response:', {
+        hasData,
+        dataLength: treeInventory.data?.length,
+        totalPages,
+        totalRecords,
+        currentPage: page,
+        pagination: treeInventory.pagination
+      });
+    }
+  }, [treeInventory, hasData, totalPages, totalRecords, page]);
 
   return (
     <AdminLayout>
