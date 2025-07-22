@@ -566,7 +566,7 @@ const AdminSidebarComplete: React.FC = () => {
                 icon={<Calendar className="h-4 w-4" />}
                 active={location.startsWith('/admin/activities/calendar')}
               >
-                Calendario
+                Cal. Actividades
               </NavItem>
               <NavItem 
                 href="/admin/instructors" 
@@ -611,7 +611,7 @@ const AdminSidebarComplete: React.FC = () => {
                 icon={<Calendar className="h-4 w-4" />}
                 active={location.startsWith('/admin/eventos-ambu/calendar')}
               >
-                Calendario
+                Cal. AMBU
               </NavItem>
               <NavItem 
                 href="/admin/eventos-ambu/tabulador" 
@@ -656,7 +656,7 @@ const AdminSidebarComplete: React.FC = () => {
                 icon={<CalendarDays className="h-4 w-4" />}
                 active={location.startsWith('/admin/space-reservations/calendar')}
               >
-                Calendario
+                Cal. Reservas
               </NavItem>
             </CollapsibleSubmenu>
 
@@ -742,7 +742,7 @@ const AdminSidebarComplete: React.FC = () => {
                 icon={<Calendar className="h-4 w-4" />}
                 active={location.startsWith('/admin/assets/maintenance/calendar')}
               >
-                Calendario
+                Cal. Mantenimiento
               </NavItem>
               <NavItem 
                 href="/admin/assets/assignments" 

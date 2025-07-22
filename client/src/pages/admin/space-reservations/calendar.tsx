@@ -77,7 +77,7 @@ export default function SpaceReservationsCalendarPage() {
     }
   });
 
-  const { data: parks = [] } = useQuery({
+  const { data: parksResponse } = useQuery({
     queryKey: ['/api/parks'],
     queryFn: async () => {
       const response = await fetch('/api/parks');
@@ -87,6 +87,8 @@ export default function SpaceReservationsCalendarPage() {
       return response.json();
     }
   });
+
+  const parks = parksResponse?.data || parksResponse || [];
 
   const filteredReservations = reservations.filter(reservation => {
     if (parkFilter === 'all') return true;
