@@ -70,7 +70,7 @@ export default function ReservableSpacesPage() {
     }
   });
 
-  const { data: parks = [] } = useQuery({
+  const { data: parksResponse } = useQuery({
     queryKey: ['/api/parks'],
     queryFn: async () => {
       const response = await fetch('/api/parks');
@@ -80,6 +80,9 @@ export default function ReservableSpacesPage() {
       return response.json();
     }
   });
+
+  // Handle different response formats
+  const parks = Array.isArray(parksResponse) ? parksResponse : (parksResponse?.data || []);
 
   const filteredSpaces = spaces.filter(space => {
     const matchesSearch = 
