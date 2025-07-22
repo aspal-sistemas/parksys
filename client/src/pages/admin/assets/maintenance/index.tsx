@@ -437,21 +437,19 @@ const AssetsMaintenancePage: React.FC = () => {
     <AdminLayout>
       <div className="p-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-4">
-            <Button variant="outline" onClick={() => setLocation('/admin/assets')}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Volver a Activos
-            </Button>
-            <div>
-              <h1 className="text-3xl font-bold">Gestión de Mantenimientos</h1>
-              <p className="text-muted-foreground">
-                Registra y gestiona el mantenimiento de activos
-              </p>
-            </div>
+        <div className="mb-6">
+          <div className="flex items-center gap-2">
+            <Wrench className="w-8 h-8 text-gray-900" />
+            <h1 className="text-3xl font-bold text-gray-900">Gestión de Mantenimientos</h1>
           </div>
+          <div className="flex items-center justify-between mt-2">
+            <p className="text-gray-600">
+              Registra y gestiona el mantenimiento de activos
+            </p>
+          </div>
+        </div>
 
-          <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
             <DialogTrigger asChild>
               <Button>
                 <Plus className="mr-2 h-4 w-4" />
@@ -1019,6 +1017,7 @@ const AssetsMaintenancePage: React.FC = () => {
           )}
         </DialogContent>
       </Dialog>
+      </div>
     </AdminLayout>
   );
 };
