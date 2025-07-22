@@ -17,12 +17,11 @@ import AdminLayout from '@/components/AdminLayout';
 // Página principal del módulo de Organizador
 const OrganizadorPage: React.FC = () => {
   // Obtener actividades
-  const { data: activitiesResponse, isLoading: isLoadingActivities } = useQuery({
+  const { data: activities = [], isLoading: isLoadingActivities } = useQuery({
     queryKey: ['/api/activities'],
     suspense: false,
     retry: 1,
   });
-  const activities = activitiesResponse?.data || [];
 
   // Obtener parques
   const { data: parksResponse, isLoading: isLoadingParks } = useQuery({
