@@ -220,7 +220,7 @@ export default function EventCategoriesPage() {
 
   if (isLoading) {
     return (
-      <AdminLayout title="Categorías de Eventos">
+      <AdminLayout>
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
@@ -232,7 +232,7 @@ export default function EventCategoriesPage() {
   }
 
   return (
-    <AdminLayout title="Categorías de Eventos">
+    <AdminLayout>
       <div className="container mx-auto py-6">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
