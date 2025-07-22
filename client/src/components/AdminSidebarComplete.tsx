@@ -611,7 +611,7 @@ const AdminSidebarComplete: React.FC = () => {
                 icon={<Calendar className="h-4 w-4" />}
                 active={location.startsWith('/admin/eventos-ambu/calendar')}
               >
-                Cal. AMBU
+                Calendario
               </NavItem>
               <NavItem 
                 href="/admin/eventos-ambu/tabulador" 
