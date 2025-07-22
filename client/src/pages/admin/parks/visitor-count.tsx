@@ -61,6 +61,14 @@ export default function VisitorCountPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Mapeo de traducción para el clima
+  const weatherLabels = {
+    sunny: 'Soleado',
+    cloudy: 'Nublado', 
+    rainy: 'Lluvioso',
+    other: 'Otro'
+  };
   
   const [selectedPark, setSelectedPark] = useState<string>("");
   const [showForm, setShowForm] = useState(false);
@@ -94,10 +102,14 @@ export default function VisitorCountPage() {
     notes: ""
   });
 
-  // Queries
-  const { data: parks } = useQuery<Park[]>({
+  // Queries  
+  const { data: parksResponse } = useQuery({
     queryKey: ['/api/parks'],
+    suspense: false,
+    retry: 1
   });
+  
+  const parks = Array.isArray(parksResponse) ? parksResponse : parksResponse?.data || [];
 
   const { data: visitorCounts, isLoading } = useQuery<{
     data: VisitorCount[];
@@ -372,7 +384,8 @@ export default function VisitorCountPage() {
 
     // Datos por clima
     const weatherData = filteredData.reduce((acc, count) => {
-      const weather = count.weather || 'No especificado';
+      const weatherKey = count.weather || 'other';
+      const weather = weatherLabels[weatherKey as keyof typeof weatherLabels] || 'No especificado';
       const existing = acc.find(item => item.weather === weather);
       if (existing) {
         existing.count += 1;
@@ -584,6 +597,10 @@ export default function VisitorCountPage() {
       case 'rainy': return <CloudRain className="h-4 w-4" />;
       default: return <Sun className="h-4 w-4" />;
     }
+  };
+
+  const getWeatherLabel = (weather: string) => {
+    return weatherLabels[weather as keyof typeof weatherLabels] || weather;
   };
 
   const getTotalVisitors = () => {
@@ -821,7 +838,7 @@ export default function VisitorCountPage() {
                             {count.weather && (
                               <Badge variant="outline" className="text-xs flex items-center gap-1">
                                 {getWeatherIcon(count.weather)}
-                                {count.weather}
+                                {getWeatherLabel(count.weather)}
                               </Badge>
                             )}
                           </div>
@@ -882,7 +899,7 @@ export default function VisitorCountPage() {
                             {count.weather && (
                               <Badge variant="outline" className="flex items-center gap-1">
                                 {getWeatherIcon(count.weather)}
-                                {count.weather}
+                                {getWeatherLabel(count.weather)}
                               </Badge>
                             )}
                           </div>
