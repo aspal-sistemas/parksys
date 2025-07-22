@@ -604,78 +604,13 @@ const UserDetail: React.FC<{
             </div>
           </div>
           
-          {/* Sección de campos específicos para instructores */}
+          {/* Sección específica para instructores */}
           {userData.role === 'instructor' && (
             <div className="space-y-4 mt-6 pt-6 border-t border-gray-200">
-              <h3 className="font-medium text-lg">Información Profesional de Instructor</h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label htmlFor="specialties" className="text-sm font-medium">Especialidades</label>
-                  <Textarea
-                    id="specialties"
-                    value={Array.isArray(userData.specialties) ? userData.specialties.join(', ') : ''}
-                    onChange={(e) => handleChange('specialties', e.target.value.split(', '))}
-                    placeholder="Yoga, Fitness, Artes marciales, Deportes infantiles, etc."
-                    rows={2}
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">Ingresa las especialidades separadas por comas</p>
-                </div>
-                
-                <div className="space-y-2">
-                  <label htmlFor="curriculumFile" className="text-sm font-medium">Curriculum Vitae</label>
-                  <div className="border border-gray-300 rounded-md p-4 bg-gray-50">
-                    {userData.curriculumFile ? (
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <FileSymlink className="h-5 w-5 text-blue-500" />
-                          <span className="text-sm text-gray-700 truncate max-w-[150px]">
-                            {userData.curriculumFile.name}
-                          </span>
-                        </div>
-                        <button
-                          type="button"
-                          className="text-red-500 hover:text-red-700"
-                          onClick={() => handleChange('curriculumFile', null)}
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="text-center">
-                        <label
-                          htmlFor="curriculumUpload"
-                          className="cursor-pointer inline-flex items-center gap-2 py-2 px-4 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50"
-                        >
-                          <FileSymlink className="h-4 w-4" />
-                          Subir CV
-                          <input
-                            id="curriculumUpload"
-                            type="file"
-                            accept=".pdf,.doc,.docx"
-                            className="hidden"
-                            onChange={handleCurriculumUpload}
-                          />
-                        </label>
-                        <p className="text-xs text-gray-500 mt-2">
-                          Formatos: PDF, DOC, DOCX. Máx: 5MB
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <label htmlFor="experience" className="text-sm font-medium">Experiencia y Certificaciones</label>
-                <Textarea
-                  id="experience"
-                  value={userData.experience}
-                  onChange={(e) => handleChange('experience', e.target.value)}
-                  placeholder="Describe tu experiencia profesional, certificaciones, logros y áreas de especialización."
-                  rows={4}
-                />
-              </div>
+              <h3 className="font-medium text-lg">Información de Instructor</h3>
+              <p className="text-sm text-gray-600">
+                Complete la información básica para crear el perfil de instructor.
+              </p>
             </div>
           )}
           
