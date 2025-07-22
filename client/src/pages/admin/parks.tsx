@@ -44,6 +44,13 @@ interface ParkDependencies {
 // Loading component for Suspense fallback
 const AdminParksLoading = () => (
   <AdminLayout>
+    <div>
+      <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+        <MapPin className="w-8 h-8" />
+        Parques
+      </h1>
+      <p className="text-gray-600 mt-2 mb-8">Gestión General del Sistema</p>
+    </div>
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <div>
@@ -501,7 +508,14 @@ const AdminParksContent = () => {
 
   if (isLoadingParks) {
     return (
-      <AdminLayout title={tParks('title')}>
+      <AdminLayout>
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+            <MapPin className="w-8 h-8" />
+            Parques
+          </h1>
+          <p className="text-gray-600 mt-2 mb-8">Gestión General del Sistema</p>
+        </div>
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
@@ -514,7 +528,14 @@ const AdminParksContent = () => {
 
   if (isErrorParks) {
     return (
-      <AdminLayout title={tParks('title')}>
+      <AdminLayout>
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+            <MapPin className="w-8 h-8" />
+            Parques
+          </h1>
+          <p className="text-gray-600 mt-2 mb-8">Gestión General del Sistema</p>
+        </div>
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <p className="text-red-600">{t('messages.error')}</p>
@@ -528,8 +549,17 @@ const AdminParksContent = () => {
   }
 
   return (
-    <AdminLayout title={tParks('title')}>
+    <AdminLayout>
       <div className="space-y-6">
+        {/* Main Header */}
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+            <MapPin className="w-8 h-8" />
+            Parques
+          </h1>
+          <p className="text-gray-600 mt-2 mb-8">Gestión General del Sistema</p>
+        </div>
+        
         {/* Header with actions */}
         <div className="flex justify-between items-center">
           <h2 className="text-2xl font-semibold text-gray-800">{t('navigation.parks')}</h2>
