@@ -561,8 +561,7 @@ const AdminParksContent = () => {
         </div>
         
         {/* Header with actions */}
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-semibold text-gray-800">{t('navigation.parks')}</h2>
+        <div className="flex justify-end items-center">
           <div className="flex gap-2">
             <Button variant="outline" onClick={handleRefresh}>
               {t('actions.refresh')}
