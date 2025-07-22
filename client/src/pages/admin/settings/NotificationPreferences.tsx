@@ -192,13 +192,15 @@ export default function NotificationPreferences() {
     <AdminLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center gap-4">
-          <div className="p-3 bg-blue-100 rounded-full">
-            <Bell className="h-6 w-6 text-blue-600" />
-          </div>
+        <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Preferencias de Notificaciones</h1>
-            <p className="text-gray-500">Configura qué tipos de notificaciones recibe cada usuario del sistema</p>
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+              <Bell className="w-8 h-8" />
+              Preferencias de Notificaciones
+            </h1>
+            <p className="text-gray-600 mt-2">
+              Configura qué tipos de notificaciones recibe cada usuario del sistema
+            </p>
           </div>
         </div>
 
