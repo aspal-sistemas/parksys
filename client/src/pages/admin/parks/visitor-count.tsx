@@ -165,7 +165,7 @@ export default function VisitorCountPage() {
   const startIndex = (currentPage - 1) * recordsPerPage;
   const endIndex = Math.min(startIndex + recordsPerPage, visitorCounts?.pagination?.total || 0);
 
-  // Funciones de exportación e importación
+  // Funciones de exportación profesional
   const exportToCSV = () => {
     if (!visitorCounts?.data?.length) {
       toast({
@@ -176,43 +176,270 @@ export default function VisitorCountPage() {
       return;
     }
 
+    const currentDate = new Date().toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+
+    // Calcular estadísticas de resumen
+    const totalVisitors = visitorCounts.data.reduce((sum, count) => sum + count.totalVisitors, 0);
+    const totalAdults = visitorCounts.data.reduce((sum, count) => sum + count.adults, 0);
+    const totalChildren = visitorCounts.data.reduce((sum, count) => sum + count.children, 0);
+    const totalSeniors = visitorCounts.data.reduce((sum, count) => sum + count.seniors, 0);
+    const totalPets = visitorCounts.data.reduce((sum, count) => sum + count.pets, 0);
+    const totalGroups = visitorCounts.data.reduce((sum, count) => sum + count.groups, 0);
+    const avgDaily = visitorCounts.data.length > 0 ? Math.round(totalVisitors / visitorCounts.data.length) : 0;
+    
+    // Estadísticas por método de conteo
+    const methodStats = visitorCounts.data.reduce((acc, count) => {
+      const method = getMethodLabel(count.countingMethod);
+      acc[method] = (acc[method] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    // Estadísticas por clima
+    const weatherStats = visitorCounts.data.reduce((acc, count) => {
+      const weather = getWeatherLabel(count.weather);
+      acc[weather] = (acc[weather] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    // Traducir métodos de conteo a español
+    const methodLabels: Record<string, string> = {
+      'counting': 'Conteo manual',
+      'estimation': 'Estimación',
+      'manual_counter': 'Contador manual',
+      'event_based': 'Basado en eventos',
+      'entrance_control': 'Control de acceso'
+    };
+
+    // Traducir tipos de clima
+    const weatherTranslations: Record<string, string> = {
+      'sunny': 'Soleado',
+      'cloudy': 'Nublado', 
+      'rainy': 'Lluvioso',
+      'other': 'Otro'
+    };
+
+    // Traducir tipos de día
+    const dayTypeTranslations: Record<string, string> = {
+      'weekday': 'Día laborable',
+      'weekend': 'Fin de semana',
+      'holiday': 'Día festivo'
+    };
+
     const csvData = visitorCounts.data.map(count => ({
-      Fecha: count.date,
-      Parque: count.parkName,
-      Adultos: count.adults,
-      Niños: count.children,
+      'Fecha': format(new Date(count.date), 'dd/MM/yyyy', { locale: es }),
+      'Parque': count.parkName,
+      'Adultos': count.adults,
+      'Niños': count.children,
       'Adultos Mayores': count.seniors,
-      Mascotas: count.pets,
-      Grupos: count.groups,
+      'Mascotas': count.pets,
+      'Grupos': count.groups,
       'Total Visitantes': count.totalVisitors,
-      'Método de Conteo': count.countingMethod,
-      'Tipo de Día': count.dayType,
-      Clima: count.weather,
-      Notas: count.notes || ''
+      'Método de Conteo': methodLabels[count.countingMethod] || count.countingMethod,
+      'Tipo de Día': dayTypeTranslations[count.dayType || 'weekday'] || count.dayType,
+      'Clima': weatherTranslations[count.weather || 'sunny'] || count.weather,
+      'Notas': count.notes || 'Sin observaciones'
     }));
+
+    // Encabezado profesional
+    const headerLines = [
+      'SISTEMA DE GESTIÓN DE PARQUES URBANOS',
+      'REPORTE DE CONTEO DE VISITANTES',
+      `Generado el: ${currentDate}`,
+      `Total de registros: ${visitorCounts.data.length}`,
+      '',
+      'RESUMEN EJECUTIVO',
+      `Total de visitantes registrados: ${totalVisitors.toLocaleString('es-ES')}`,
+      `Promedio diario de visitantes: ${avgDaily.toLocaleString('es-ES')}`,
+      `Adultos: ${totalAdults.toLocaleString('es-ES')} | Niños: ${totalChildren.toLocaleString('es-ES')} | Adultos Mayores: ${totalSeniors.toLocaleString('es-ES')}`,
+      `Mascotas: ${totalPets.toLocaleString('es-ES')} | Grupos organizados: ${totalGroups.toLocaleString('es-ES')}`,
+      '',
+      'MÉTODOS DE CONTEO UTILIZADOS',
+      ...Object.entries(methodStats).map(([method, count]) => `${method}: ${count} registros`),
+      '',
+      'CONDICIONES CLIMÁTICAS',
+      ...Object.entries(weatherStats).map(([weather, count]) => `${weather}: ${count} días`),
+      '',
+      'DETALLE DE REGISTROS',
+      ''
+    ];
 
     const headers = Object.keys(csvData[0]);
     const csvContent = [
+      ...headerLines,
       headers.join(','),
       ...csvData.map(row => headers.map(header => `"${(row as any)[header]}"`).join(','))
     ].join('\n');
 
-    // Agregar BOM para UTF-8 para garantizar que los acentos se muestren correctamente
+    // Agregar BOM para UTF-8
     const BOM = '\uFEFF';
     const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `conteo-visitantes-${new Date().toISOString().split('T')[0]}.csv`;
+    link.download = `conteo_visitantes_profesional_${format(new Date(), 'dd-MM-yyyy', { locale: es })}.csv`;
     link.click();
 
     toast({
-      title: "Exportación exitosa",
-      description: "Los datos se han exportado correctamente",
+      title: "Exportación CSV exitosa",
+      description: `Se exportaron ${visitorCounts.data.length} registros con resumen ejecutivo`,
     });
   };
 
+  // Función de exportación a Excel profesional
+  const exportToExcel = async () => {
+    if (!visitorCounts?.data?.length) {
+      toast({
+        title: "No hay datos",
+        description: "No hay registros para exportar",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Importar librerías dinámicamente
+      const XLSX = await import('xlsx');
+      
+      const currentDate = new Date().toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+
+      // Calcular estadísticas
+      const totalVisitors = visitorCounts.data.reduce((sum, count) => sum + count.totalVisitors, 0);
+      const totalAdults = visitorCounts.data.reduce((sum, count) => sum + count.adults, 0);
+      const totalChildren = visitorCounts.data.reduce((sum, count) => sum + count.children, 0);
+      const totalSeniors = visitorCounts.data.reduce((sum, count) => sum + count.seniors, 0);
+      const totalPets = visitorCounts.data.reduce((sum, count) => sum + count.pets, 0);
+      const totalGroups = visitorCounts.data.reduce((sum, count) => sum + count.groups, 0);
+      const avgDaily = visitorCounts.data.length > 0 ? Math.round(totalVisitors / visitorCounts.data.length) : 0;
+      const uniqueParks = Array.from(new Set(visitorCounts.data.map(c => c.parkName))).length;
+
+      // Traducir métodos y tipos
+      const methodLabels: Record<string, string> = {
+        'counting': 'Conteo manual',
+        'estimation': 'Estimación',
+        'manual_counter': 'Contador manual',
+        'event_based': 'Basado en eventos',
+        'entrance_control': 'Control de acceso'
+      };
+
+      const weatherTranslations: Record<string, string> = {
+        'sunny': 'Soleado',
+        'cloudy': 'Nublado', 
+        'rainy': 'Lluvioso',
+        'other': 'Otro'
+      };
+
+      const dayTypeTranslations: Record<string, string> = {
+        'weekday': 'Día laborable',
+        'weekend': 'Fin de semana',
+        'holiday': 'Día festivo'
+      };
+
+      // Datos principales
+      const mainData = visitorCounts.data.map(count => ({
+        'Fecha': format(new Date(count.date), 'dd/MM/yyyy', { locale: es }),
+        'Parque': count.parkName,
+        'Adultos': count.adults,
+        'Niños': count.children,
+        'Adultos Mayores': count.seniors,
+        'Mascotas': count.pets,
+        'Grupos': count.groups,
+        'Total Visitantes': count.totalVisitors,
+        'Método de Conteo': methodLabels[count.countingMethod] || count.countingMethod,
+        'Tipo de Día': dayTypeTranslations[count.dayType || 'weekday'] || count.dayType,
+        'Clima': weatherTranslations[count.weather || 'sunny'] || count.weather,
+        'Notas': count.notes || 'Sin observaciones'
+      }));
+
+      // Datos del resumen ejecutivo
+      const summaryData = [
+        ['SISTEMA DE GESTIÓN DE PARQUES URBANOS'],
+        ['REPORTE DE CONTEO DE VISITANTES'],
+        [`Generado el: ${currentDate}`],
+        [''],
+        ['RESUMEN EJECUTIVO'],
+        ['Métrica', 'Valor'],
+        ['Total de registros', visitorCounts.data.length],
+        ['Total de visitantes', totalVisitors],
+        ['Promedio diario', avgDaily],
+        ['Parques únicos', uniqueParks],
+        [''],
+        ['DISTRIBUCIÓN DEMOGRÁFICA'],
+        ['Segmento', 'Total', 'Porcentaje'],
+        ['Adultos', totalAdults, `${((totalAdults / totalVisitors) * 100).toFixed(1)}%`],
+        ['Niños', totalChildren, `${((totalChildren / totalVisitors) * 100).toFixed(1)}%`],
+        ['Adultos Mayores', totalSeniors, `${((totalSeniors / totalVisitors) * 100).toFixed(1)}%`],
+        [''],
+        ['OTROS REGISTROS'],
+        ['Tipo', 'Total'],
+        ['Mascotas', totalPets],
+        ['Grupos organizados', totalGroups],
+      ];
+
+      // Crear libro de trabajo
+      const workbook = XLSX.utils.book_new();
+      
+      // Hoja 1: Datos principales
+      const dataWorksheet = XLSX.utils.json_to_sheet(mainData);
+      
+      // Ajustar ancho de columnas
+      const colWidths = [
+        { wch: 12 }, // Fecha
+        { wch: 25 }, // Parque
+        { wch: 10 }, // Adultos
+        { wch: 10 }, // Niños
+        { wch: 15 }, // Adultos Mayores
+        { wch: 10 }, // Mascotas
+        { wch: 10 }, // Grupos
+        { wch: 15 }, // Total Visitantes
+        { wch: 20 }, // Método de Conteo
+        { wch: 15 }, // Tipo de Día
+        { wch: 12 }, // Clima
+        { wch: 30 }  // Notas
+      ];
+      dataWorksheet['!cols'] = colWidths;
+
+      XLSX.utils.book_append_sheet(workbook, dataWorksheet, 'Datos de Visitantes');
+
+      // Hoja 2: Resumen ejecutivo
+      const summaryWorksheet = XLSX.utils.aoa_to_sheet(summaryData);
+      summaryWorksheet['!cols'] = [{ wch: 25 }, { wch: 15 }, { wch: 15 }];
+      
+      XLSX.utils.book_append_sheet(workbook, summaryWorksheet, 'Resumen Ejecutivo');
+
+      // Generar y descargar archivo
+      const fileName = `conteo_visitantes_${format(new Date(), 'dd-MM-yyyy', { locale: es })}.xlsx`;
+      XLSX.writeFile(workbook, fileName);
+
+      toast({
+        title: "Exportación Excel exitosa",
+        description: `Se exportaron ${visitorCounts.data.length} registros con análisis completo`,
+      });
+
+    } catch (error) {
+      console.error('Error exportando a Excel:', error);
+      toast({
+        title: "Error en exportación",
+        description: "No se pudo generar el archivo Excel",
+        variant: "destructive",
+      });
+    }
+  };
+
   const downloadTemplate = () => {
-    // Crear plantilla CSV con columnas requeridas y datos de ejemplo
+    const currentDate = new Date().toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+
+    // Crear plantilla profesional con instrucciones detalladas
     const templateData = [
       {
         'Fecha': '2025-01-15',
@@ -222,9 +449,9 @@ export default function VisitorCountPage() {
         'Adultos Mayores': '30',
         'Mascotas': '20',
         'Grupos': '5',
-        'Método de Conteo': 'counting',
-        'Tipo de Día': 'normal',
-        'Clima': 'sunny',
+        'Método de Conteo': 'Conteo manual',
+        'Tipo de Día': 'Día laborable',
+        'Clima': 'Soleado',
         'Notas': 'Día regular, buen clima'
       },
       {
@@ -235,61 +462,54 @@ export default function VisitorCountPage() {
         'Adultos Mayores': '40',
         'Mascotas': '25',
         'Grupos': '8',
-        'Método de Conteo': 'estimation',
-        'Tipo de Día': 'weekend',
-        'Clima': 'cloudy',
+        'Método de Conteo': 'Estimación',
+        'Tipo de Día': 'Fin de semana',
+        'Clima': 'Nublado',
         'Notas': 'Fin de semana, mucha actividad'
       }
     ];
 
-    // Agregar filas de instrucciones en la plantilla
-    const instructionRows = [
-      {
-        'Fecha': '--- INSTRUCCIONES ---',
-        'Parque': 'Formato: YYYY-MM-DD',
-        'Adultos': 'Nombre del parque',
-        'Niños': 'Número entero',
-        'Adultos Mayores': 'Número entero',
-        'Mascotas': 'Número entero',
-        'Grupos': 'Número entero',
-        'Método de Conteo': 'counting/estimation/survey',
-        'Tipo de Día': 'normal/weekend/holiday',
-        'Clima': 'sunny/cloudy/rainy',
-        'Notas': 'Opcional - Observaciones'
-      },
-      {
-        'Fecha': '--- ELIMINAR ESTA FILA ---',
-        'Parque': 'Eliminar filas de instrucciones',
-        'Adultos': 'antes de importar',
-        'Niños': '',
-        'Adultos Mayores': '',
-        'Mascotas': '',
-        'Grupos': '',
-        'Método de Conteo': '',
-        'Tipo de Día': '',
-        'Clima': '',
-        'Notas': ''
-      }
+    // Encabezado profesional con instrucciones
+    const headerLines = [
+      'SISTEMA DE GESTIÓN DE PARQUES URBANOS',
+      'PLANTILLA PARA IMPORTACIÓN DE CONTEO DE VISITANTES',
+      `Generado el: ${currentDate}`,
+      '',
+      'INSTRUCCIONES DE USO:',
+      '1. Complete los campos requeridos en cada fila',
+      '2. Use formato de fecha: AAAA-MM-DD (ejemplo: 2025-01-15)',
+      '3. Use números enteros para conteos de visitantes',
+      '4. Los valores de Método de Conteo aceptados son:',
+      '   - Conteo manual, Estimación, Contador manual, Basado en eventos, Control de acceso',
+      '5. Los valores de Tipo de Día aceptados son:',
+      '   - Día laborable, Fin de semana, Día festivo',
+      '6. Los valores de Clima aceptados son:',
+      '   - Soleado, Nublado, Lluvioso, Otro',
+      '7. El campo Notas es opcional',
+      '8. Guarde el archivo como CSV antes de importar',
+      '',
+      'DATOS DE EJEMPLO (puede eliminar estas filas):',
+      ''
     ];
 
-    const finalData = [...instructionRows, ...templateData];
-    const headers = Object.keys(finalData[0]);
+    const headers = Object.keys(templateData[0]);
     const csvContent = [
+      ...headerLines,
       headers.join(','),
-      ...finalData.map(row => headers.map(header => `"${(row as any)[header]}"`).join(','))
+      ...templateData.map(row => headers.map(header => `"${(row as any)[header]}"`).join(','))
     ].join('\n');
 
-    // Agregar BOM para UTF-8 para garantizar que los acentos se muestren correctamente
+    // Agregar BOM para UTF-8
     const BOM = '\uFEFF';
     const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `plantilla-conteo-visitantes-${new Date().toISOString().split('T')[0]}.csv`;
+    link.download = `plantilla_conteo_visitantes_${format(new Date(), 'dd-MM-yyyy', { locale: es })}.csv`;
     link.click();
 
     toast({
       title: "Plantilla descargada",
-      description: "La plantilla CSV se ha descargado correctamente. Completa los datos y vuelve a importar.",
+      description: "Plantilla profesional con instrucciones detalladas lista para usar",
     });
   };
 
@@ -726,6 +946,15 @@ export default function VisitorCountPage() {
                     >
                       <Download className="h-4 w-4 mr-2" />
                       Exportar CSV
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={exportToExcel}
+                      className="text-blue-600 hover:text-blue-700"
+                    >
+                      <FileText className="h-4 w-4 mr-2" />
+                      Exportar Excel
                     </Button>
                     <Button
                       variant="outline"
@@ -1212,10 +1441,22 @@ export default function VisitorCountPage() {
 
                   {/* Botón de exportar */}
                   <div className="flex justify-end">
-                    <Button className="bg-[#067f5f] hover:bg-[#00a587]">
-                      <Download className="h-4 w-4 mr-2" />
-                      Exportar Reporte
-                    </Button>
+                    <div className="flex space-x-2">
+                      <Button 
+                        onClick={exportToCSV}
+                        className="bg-[#067f5f] hover:bg-[#00a587]"
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Exportar CSV
+                      </Button>
+                      <Button 
+                        onClick={exportToExcel}
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        <FileText className="h-4 w-4 mr-2" />
+                        Exportar Excel
+                      </Button>
+                    </div>
                   </div>
                 </>
               )}
