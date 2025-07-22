@@ -20,13 +20,21 @@ const SettingsPage = () => {
 
   return (
     <AdminLayout>
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Configuración del Sistema</h1>
-          <p className="text-muted-foreground">
-            Administra la configuración de seguridad, respaldos y parámetros del sistema
-          </p>
+      <div className="space-y-6">
+        {/* Custom Header */}
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+              <Settings className="w-8 h-8" />
+              Configuración del Sistema
+            </h1>
+            <p className="text-gray-600 mt-2">
+              Administra la configuración de seguridad, respaldos y parámetros del sistema
+            </p>
+          </div>
         </div>
+        
+        <div className="container mx-auto px-4 py-8">
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-2">
@@ -217,6 +225,7 @@ const SettingsPage = () => {
             </Card>
           </TabsContent>
         </Tabs>
+        </div>
       </div>
     </AdminLayout>
   );
