@@ -521,12 +521,21 @@ export default function EvaluationsPage() {
   // Export function for CSV with professional header format
   const exportToCSV = async () => {
     try {
-      // Fetch ALL evaluations for export
-      const response = await fetch('/api/park-evaluations/export-all');
+      // Fetch filtered evaluations for export
+      const queryParams = new URLSearchParams({
+        page: '1',
+        limit: '10000', // Large number to get all filtered results
+        search: searchTerm,
+        status: selectedStatus,
+        park: selectedPark
+      });
+      
+      const response = await fetch(`/api/park-evaluations?${queryParams}`);
       if (!response.ok) {
-        throw new Error('Failed to fetch all evaluations');
+        throw new Error('Failed to fetch filtered evaluations');
       }
-      const { evaluations: allEvaluations } = await response.json();
+      const data = await response.json();
+      const allEvaluations = data.evaluations;
       
       if (allEvaluations.length === 0) {
         toast({
@@ -627,8 +636,8 @@ export default function EvaluationsPage() {
       }
 
       toast({
-        title: "CSV Profesional Exportado",
-        description: `Reporte completo generado con ${allEvaluations.length} evaluaciones`,
+        title: "CSV Exportado",
+        description: `Reporte con ${allEvaluations.length} evaluaciones filtradas generado`,
       });
     } catch (error) {
       console.error('Error exporting CSV:', error);
@@ -643,12 +652,21 @@ export default function EvaluationsPage() {
   // Export function for Excel with corporate styling
   const exportToExcel = async () => {
     try {
-      // Fetch ALL evaluations for export
-      const response = await fetch('/api/park-evaluations/export-all');
+      // Fetch filtered evaluations for export
+      const queryParams = new URLSearchParams({
+        page: '1',
+        limit: '10000', // Large number to get all filtered results
+        search: searchTerm,
+        status: selectedStatus,
+        park: selectedPark
+      });
+      
+      const response = await fetch(`/api/park-evaluations?${queryParams}`);
       if (!response.ok) {
-        throw new Error('Failed to fetch all evaluations');
+        throw new Error('Failed to fetch filtered evaluations');
       }
-      const { evaluations: allEvaluations } = await response.json();
+      const data = await response.json();
+      const allEvaluations = data.evaluations;
       
       if (allEvaluations.length === 0) {
         toast({
@@ -773,8 +791,8 @@ export default function EvaluationsPage() {
       XLSX.writeFile(wb, `evaluaciones_parques_${format(new Date(), 'dd-MM-yyyy')}.xlsx`);
 
       toast({
-        title: "Excel Profesional Exportado",
-        description: `Reporte completo con ${allEvaluations.length} evaluaciones en 2 hojas`,
+        title: "Excel Exportado",
+        description: `Reporte con ${allEvaluations.length} evaluaciones filtradas en 2 hojas`,
       });
     } catch (error) {
       console.error('Error exporting Excel:', error);
