@@ -1261,7 +1261,9 @@ const AdminUsers = () => {
     }
   });
   
-  const users = usersResponse?.data || [];
+  // Manejar formato de respuesta - API devuelve array directamente
+  const users = Array.isArray(usersResponse) ? usersResponse : [];
+  console.log('Total usuarios procesados:', users.length);
 
   // Create or update user mutation
   const saveUserMutation = useMutation({
@@ -1529,10 +1531,12 @@ const AdminUsers = () => {
 
   // Paginación
   const totalUsers = filteredAndSortedUsers.length;
+  console.log('Usuarios después del filtro:', totalUsers);
   const totalPages = Math.ceil(totalUsers / recordsPerPage);
   const startIndex = (currentPage - 1) * recordsPerPage;
   const endIndex = startIndex + recordsPerPage;
   const currentUsers = filteredAndSortedUsers.slice(startIndex, endIndex);
+  console.log('Usuarios en página actual:', currentUsers.length);
 
   // Funciones de paginación
   const handlePageChange = (page: number) => {
