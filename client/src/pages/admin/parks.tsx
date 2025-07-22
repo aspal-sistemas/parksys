@@ -564,11 +564,11 @@ const AdminParksContent = () => {
         <div className="flex justify-end items-center">
           <div className="flex gap-2">
             <Button variant="outline" onClick={handleRefresh}>
-              {t('actions.refresh')}
+              Actualizar
             </Button>
             <Button variant="outline" onClick={() => window.location.href = "/admin/parks-import"}>
               <FileUp className="h-4 w-4 mr-2" />
-              {t('actions.import')} {t('navigation.parks')}
+              Importar Parques
             </Button>
             <Button onClick={() => window.location.href = "/admin/parks/new"}>
               <Plus className="h-4 w-4 mr-2" />
