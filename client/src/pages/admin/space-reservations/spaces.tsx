@@ -145,7 +145,10 @@ export default function ReservableSpacesPage() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Espacios Disponibles</h1>
+          <div className="flex items-center gap-2">
+            <MapPin className="w-8 h-8 text-gray-900" />
+            <h1 className="text-3xl font-bold text-gray-900">Espacios Disponibles</h1>
+          </div>
           <p className="text-gray-600">Gestiona los espacios reservables en los parques</p>
         </div>
         <Button 
