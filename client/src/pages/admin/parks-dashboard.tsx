@@ -93,10 +93,10 @@ const ParksDashboard = () => {
 
   if (error) {
     return (
-      <AdminLayout title="Resumen Operativo de Parques">
+      <AdminLayout title="Dashboard">
         <div className="text-center py-8">
           <AlertTriangle className="h-8 w-8 text-red-500 mx-auto mb-4" />
-          <p className="text-gray-600">Error al cargar los datos del resumen operativo</p>
+          <p className="text-gray-600">Error al cargar los datos del dashboard</p>
         </div>
       </AdminLayout>
     );
@@ -104,7 +104,7 @@ const ParksDashboard = () => {
 
   if (!data) {
     return (
-      <AdminLayout title="Resumen Operativo de Parques">
+      <AdminLayout title="Dashboard">
         <div className="text-center py-8">
           <p className="text-gray-600">No hay datos disponibles</p>
         </div>
@@ -116,7 +116,7 @@ const ParksDashboard = () => {
   const mexicoCenter: [number, number] = [19.4326, -99.1332]; // Ciudad de México
 
   return (
-    <AdminLayout title="Resumen operativo">
+    <AdminLayout title="Dashboard">
       <div className="space-y-8">
         {/* Sección 1: Información General */}
         <div className="space-y-4">
