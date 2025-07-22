@@ -49,10 +49,10 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
 
   // Obtener el espacio publicitario y sus asignaciones activas
   const { data: placementsResponse, isLoading, refetch } = useQuery({
-    queryKey: [`/api/advertising/placements`, spaceId, pageType], // Query key estable
+    queryKey: [`/api/advertising-management/placements`, spaceId, pageType], // Query key estable
     queryFn: async () => {
       const timestamp = Date.now();
-      const response = await fetch(`/api/advertising/placements?spaceId=${spaceId}&pageType=${pageType}&_t=${timestamp}`);
+      const response = await fetch(`/api/advertising-management/placements?spaceId=${spaceId}&pageType=${pageType}&_t=${timestamp}`);
       if (!response.ok) throw new Error('Error al cargar asignaciones');
       return response.json();
     },
@@ -104,7 +104,7 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
 
   const trackImpression = async (placementId: number) => {
     try {
-      await fetch('/api/advertising/track-impression', {
+      await fetch('/api/advertising-management/track-impression', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ placementId })
@@ -116,7 +116,7 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
 
   const trackClick = async (placementId: number) => {
     try {
-      await fetch('/api/advertising/track-click', {
+      await fetch('/api/advertising-management/track-click', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ placementId })
