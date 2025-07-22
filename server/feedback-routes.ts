@@ -360,10 +360,27 @@ router.get("/stats", async (req: Request, res: Response) => {
       pool.query(parkStatsQuery)
     ]);
 
+    // Convert string values to integers
+    const generalStats = statsResult.rows[0];
+    const processedStats = {
+      total: parseInt(generalStats.total) || 0,
+      pending: parseInt(generalStats.pending) || 0,
+      reviewed: parseInt(generalStats.reviewed) || 0,
+      in_progress: parseInt(generalStats.in_progress) || 0,
+      resolved: parseInt(generalStats.resolved) || 0,
+      closed: parseInt(generalStats.closed) || 0
+    };
+
     res.json({
-      general: statsResult.rows[0],
-      byType: typeStatsResult.rows,
-      byPark: parkStatsResult.rows
+      general: processedStats,
+      byType: typeStatsResult.rows.map(row => ({
+        form_type: row.form_type,
+        count: parseInt(row.count) || 0
+      })),
+      byPark: parkStatsResult.rows.map(row => ({
+        park_name: row.park_name,
+        feedback_count: parseInt(row.feedback_count) || 0
+      }))
     });
   } catch (error) {
     console.error("❌ Error al obtener estadísticas:", error);

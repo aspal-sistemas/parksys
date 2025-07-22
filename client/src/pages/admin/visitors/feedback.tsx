@@ -383,7 +383,7 @@ function FeedbackManagement() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Total</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.general?.total || 0}</p>
                 </div>
                 <MessageSquare className="h-8 w-8 text-blue-600" />
               </div>
@@ -395,7 +395,7 @@ function FeedbackManagement() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Pendientes</p>
-                  <p className="text-2xl font-bold text-orange-600">{stats.pending}</p>
+                  <p className="text-2xl font-bold text-orange-600">{stats.general?.pending || 0}</p>
                 </div>
                 <Clock className="h-8 w-8 text-orange-600" />
               </div>
@@ -407,7 +407,7 @@ function FeedbackManagement() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">En Progreso</p>
-                  <p className="text-2xl font-bold text-blue-600">{stats.in_progress}</p>
+                  <p className="text-2xl font-bold text-blue-600">{stats.general?.in_progress || 0}</p>
                 </div>
                 <Edit className="h-8 w-8 text-blue-600" />
               </div>
@@ -419,7 +419,7 @@ function FeedbackManagement() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Resueltos</p>
-                  <p className="text-2xl font-bold text-green-600">{stats.resolved}</p>
+                  <p className="text-2xl font-bold text-green-600">{stats.general?.resolved || 0}</p>
                 </div>
                 <CheckCircle className="h-8 w-8 text-green-600" />
               </div>
