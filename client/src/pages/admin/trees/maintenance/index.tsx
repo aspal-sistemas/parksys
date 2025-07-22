@@ -7,7 +7,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -21,7 +20,6 @@ import {
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -33,9 +31,16 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogFooter,
 } from '@/components/ui/dialog';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -45,9 +50,45 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Separator } from '@/components/ui/separator';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Leaf, Wrench, Search, PlusCircle, TreePine, MapPin, Calendar, Info, Filter, Clock, DollarSign, CloudRain, AlertTriangle, CheckCircle, FileText, Settings } from 'lucide-react';
+import { 
+  Search, 
+  PlusCircle, 
+  Download,
+  Upload,
+  FileSpreadsheet,
+  Grid3X3,
+  List,
+  Eye,
+  Edit,
+  Trash2,
+  Calendar,
+  AlertTriangle,
+  CheckCircle,
+  Loader2
+} from 'lucide-react';
+
+interface TreeMaintenance {
+  id: number;
+  treeId: number;
+  treeCode: string;
+  speciesName: string;
+  parkName: string;
+  maintenanceType: string;
+  maintenanceDate: string;
+  performedBy: string;
+  notes: string;
+  urgency: string;
+  estimatedCost: number;
+  workHours: number;
+  materialsUsed: string;
+  weatherConditions: string;
+  beforeCondition: string;
+  afterCondition: string;
+  followUpRequired: boolean;
+  recommendations: string;
+  nextMaintenanceDate: string;
+  createdAt: string;
+}
 
 interface TreeOption {
   id: number;

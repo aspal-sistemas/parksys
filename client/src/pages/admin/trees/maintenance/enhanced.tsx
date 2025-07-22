@@ -31,9 +31,16 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogFooter,
 } from '@/components/ui/dialog';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -42,144 +49,123 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { 
-  Leaf, 
-  Wrench, 
   Search, 
   PlusCircle, 
-  TreePine, 
-  MapPin, 
+  Download,
+  Upload,
+  FileSpreadsheet,
+  Grid3X3,
+  List,
+  Eye,
+  Edit,
+  Trash2,
   Calendar,
-  Filter,
-  RefreshCw
+  AlertTriangle,
+  CheckCircle,
+  Loader2,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
-interface TreeOption {
+interface TreeMaintenance {
   id: number;
-  code: string;
+  treeId: number;
+  treeCode: string;
   speciesName: string;
   parkName: string;
-  healthStatus: string;
-  plantingDate: string;
+  maintenanceType: string;
+  maintenanceDate: string;
+  performedBy: string;
+  notes: string;
+  urgency: string;
+  estimatedCost: number;
+  workHours: number;
+  materialsUsed: string;
+  weatherConditions: string;
+  beforeCondition: string;
+  afterCondition: string;
+  followUpRequired: boolean;
+  recommendations: string;
+  nextMaintenanceDate: string;
+  createdAt: string;
 }
 
-export default function EnhancedTreeMaintenancePage() {
+export default function TreeMaintenancePage() {
+  // Estados para filtros y búsqueda
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedParkId, setSelectedParkId] = useState<string>('all');
-  const [selectedSpeciesId, setSelectedSpeciesId] = useState<string>('all');
-  const [selectedHealthStatus, setSelectedHealthStatus] = useState<string>('all');
-  const [maintenanceFilter, setMaintenanceFilter] = useState('all');
+  const [filterType, setFilterType] = useState('all');
+  const [filterPark, setFilterPark] = useState('all');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
+  
+  // Estados para paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const recordsPerPage = 10;
+
+  // Estados para modal de nuevo mantenimiento
   const [open, setOpen] = useState(false);
   const [selectedTreeId, setSelectedTreeId] = useState<number | null>(null);
-  const [selectedTree, setSelectedTree] = useState<TreeOption | null>(null);
   const [maintenanceData, setMaintenanceData] = useState({
     maintenanceType: '',
     notes: '',
     performedBy: '',
+    urgency: 'normal',
+    estimatedCost: '',
+    nextMaintenanceDate: '',
+    maintenanceDate: new Date().toISOString().split('T')[0],
+    materialsUsed: '',
+    workHours: '',
+    weatherConditions: '',
+    beforeCondition: '',
+    afterCondition: '',
+    followUpRequired: false,
+    recommendations: '',
   });
-  
+
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Cargar datos con paginación del servidor
+  const { data: maintenancesResponse, isLoading: loadingMaintenances } = useQuery<any>({
+    queryKey: ['/api/trees/maintenances', { 
+      page: currentPage, 
+      limit: recordsPerPage,
+      search: searchTerm,
+      type: filterType,
+      park: filterPark
+    }],
+    retry: 1,
+  });
+
+  const maintenances = maintenancesResponse?.data || [];
+  const pagination = maintenancesResponse?.pagination || {
+    total: 0,
+    totalPages: 0,
+    page: currentPage,
+    limit: recordsPerPage
+  };
+
   // Cargar parques para filtros
-  const { data: parks } = useQuery({
+  const { data: parksResponse } = useQuery<any>({
     queryKey: ['/api/parks'],
-    select: (data) => data.data,
+    retry: 1,
   });
+  const parks = parksResponse?.data || [];
 
-  // Cargar especies para filtros
-  const { data: species } = useQuery({
-    queryKey: ['/api/tree-species'],
-    select: (data) => data.data,
+  // Cargar árboles para formulario
+  const { data: treesResponse } = useQuery<any>({
+    queryKey: ['/api/trees'],
+    retry: 1,
   });
+  const trees = treesResponse?.data || [];
 
-  // Cargar inventario completo de árboles (sin filtros en query)
-  const { data: allTrees, isLoading: loadingTrees } = useQuery({
-    queryKey: ['/api/trees/inventory-all'],
-    queryFn: async () => {
-      const response = await fetch('/api/trees/inventory?limit=1000');
-      if (!response.ok) throw new Error('Error al cargar árboles');
-      const data = await response.json();
-      return data.data || [];
-    },
-  });
-
-  // Filtrar árboles localmente para mejor performance
-  const filteredTrees = useMemo(() => {
-    if (!allTrees) return [];
-    
-    let filtered = [...allTrees];
-    
-    // Filtro por término de búsqueda
-    if (searchTerm.trim()) {
-      const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(tree => 
-        tree.code?.toLowerCase().includes(term) ||
-        tree.speciesName?.toLowerCase().includes(term) ||
-        tree.parkName?.toLowerCase().includes(term)
-      );
-    }
-    
-    // Filtro por parque
-    if (selectedParkId !== 'all') {
-      filtered = filtered.filter(tree => tree.parkId === parseInt(selectedParkId));
-    }
-    
-    // Filtro por especie
-    if (selectedSpeciesId !== 'all') {
-      filtered = filtered.filter(tree => tree.speciesId === parseInt(selectedSpeciesId));
-    }
-    
-    // Filtro por estado de salud
-    if (selectedHealthStatus !== 'all') {
-      filtered = filtered.filter(tree => tree.healthStatus === selectedHealthStatus);
-    }
-    
-    return filtered.slice(0, 50); // Limitar a 50 resultados para mejor UX
-  }, [allTrees, searchTerm, selectedParkId, selectedSpeciesId, selectedHealthStatus]);
-
-  // Cargar mantenimientos con filtros
-  const { data: maintenances, isLoading: loadingMaintenances } = useQuery({
-    queryKey: ['/api/trees/maintenances'],
-    select: (data: any) => data?.data || [],
-  });
-
-  // Filtrar mantenimientos
-  const filteredMaintenances = useMemo(() => {
-    if (!maintenances) return [];
-    
-    let filtered = [...maintenances];
-    
-    if (maintenanceFilter !== 'all') {
-      filtered = filtered.filter(m => m.maintenanceType === maintenanceFilter);
-    }
-    
-    return filtered;
-  }, [maintenances, maintenanceFilter]);
-
-  // Estadísticas básicas calculadas localmente
-  const stats = useMemo(() => {
-    if (!maintenances || !allTrees) return { total: 0, coverage: 0, recent: 0 };
-    
-    const total = maintenances.length;
-    const uniqueTreesWithMaintenance = new Set(maintenances.map(m => m.treeId)).size;
-    const coverage = allTrees.length > 0 ? Math.round((uniqueTreesWithMaintenance / allTrees.length) * 100) : 0;
-    
-    // Mantenimientos recientes (últimos 30 días)
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    const recent = maintenances.filter(m => 
-      new Date(m.maintenanceDate) >= thirtyDaysAgo
-    ).length;
-    
-    return { total, coverage, recent };
-  }, [maintenances, allTrees]);
-
-  // Mutación para agregar mantenimiento
+  // Mutación para agregar nuevo mantenimiento
   const addMaintenanceMutation = useMutation({
     mutationFn: async (data: any) => {
       const response = await fetch(`/api/trees/${selectedTreeId}/maintenances`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(data),
       });
       
@@ -192,153 +178,272 @@ export default function EnhancedTreeMaintenancePage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/trees/maintenances'] });
+      
       toast({
         title: "Mantenimiento registrado",
-        description: "El registro se ha guardado correctamente"
+        description: "El registro de mantenimiento se ha guardado correctamente"
       });
-      handleCloseDialog();
+      
+      setOpen(false);
+      resetForm();
     },
     onError: (error: Error) => {
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "Ha ocurrido un error al registrar el mantenimiento",
         variant: "destructive",
       });
-    }
+    },
   });
 
-  const handleSelectTree = (tree: TreeOption) => {
-    setSelectedTreeId(tree.id);
-    setSelectedTree(tree);
-    // No cerrar el modal si ya está abierto, solo actualizar la selección
-  };
+  // Mutación para eliminar mantenimiento
+  const deleteMaintenanceMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await fetch(`/api/trees/maintenances/${id}`, {
+        method: 'DELETE',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Error al eliminar mantenimiento');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/trees/maintenances'] });
+      toast({
+        title: "Mantenimiento eliminado",
+        description: "El registro ha sido eliminado correctamente"
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Ha ocurrido un error al eliminar el mantenimiento",
+        variant: "destructive",
+      });
+    },
+  });
 
-  const handleCloseDialog = () => {
-    setOpen(false);
-    setSelectedTreeId(null);
-    setSelectedTree(null);
+  const resetForm = () => {
     setMaintenanceData({
       maintenanceType: '',
       notes: '',
       performedBy: '',
+      urgency: 'normal',
+      estimatedCost: '',
+      nextMaintenanceDate: '',
+      maintenanceDate: new Date().toISOString().split('T')[0],
+      materialsUsed: '',
+      workHours: '',
+      weatherConditions: '',
+      beforeCondition: '',
+      afterCondition: '',
+      followUpRequired: false,
+      recommendations: '',
     });
+    setSelectedTreeId(null);
   };
 
-  const handleAddMaintenance = () => {
-    if (!selectedTreeId || !maintenanceData.maintenanceType || !maintenanceData.performedBy) {
+  const handleSubmit = () => {
+    if (!selectedTreeId || !maintenanceData.maintenanceType) {
       toast({
-        title: "Campos requeridos",
-        description: "Completa todos los campos obligatorios",
+        title: "Error",
+        description: "Debes seleccionar un árbol y un tipo de mantenimiento",
         variant: "destructive",
       });
       return;
     }
 
-    addMaintenanceMutation.mutate({
+    const newMaintenance = {
       ...maintenanceData,
-      maintenanceDate: new Date().toISOString().split('T')[0],
-    });
+      treeId: selectedTreeId,
+      maintenanceDate: maintenanceData.maintenanceDate || new Date().toISOString().split('T')[0],
+    };
+
+    addMaintenanceMutation.mutate(newMaintenance);
   };
 
-  const resetFilters = () => {
-    setSearchTerm('');
-    setSelectedParkId('all');
-    setSelectedSpeciesId('all');
-    setSelectedHealthStatus('all');
+  // Función para exportar a CSV
+  const exportToCSV = async () => {
+    try {
+      const response = await fetch('/api/trees/maintenances/export-csv', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error('Error al exportar datos');
+      }
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = `mantenimientos_arboles_${format(new Date(), 'dd-MM-yyyy')}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      
+      toast({
+        title: "Exportación exitosa",
+        description: `Se han exportado ${pagination.total} registros de mantenimiento`
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudieron exportar los datos",
+        variant: "destructive",
+      });
+    }
   };
+
+  // Función para manejar importación de CSV
+  const handleImportCSV = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    fetch('/api/trees/maintenances/import-csv', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      },
+      body: formData,
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          queryClient.invalidateQueries({ queryKey: ['/api/trees/maintenances'] });
+          toast({
+            title: "Importación exitosa",
+            description: `Se importaron ${data.imported || 0} registros de mantenimiento`
+          });
+        } else {
+          throw new Error(data.message || 'Error en la importación');
+        }
+      })
+      .catch(error => {
+        toast({
+          title: "Error en importación",
+          description: error.message || "No se pudieron importar los datos",
+          variant: "destructive",
+        });
+      });
+
+    // Limpiar el input
+    event.target.value = '';
+  };
+
+  // Función para obtener badge de urgencia
+  const getUrgencyBadge = (urgency: string) => {
+    const colors = {
+      low: 'bg-green-100 text-green-800',
+      normal: 'bg-blue-100 text-blue-800',
+      high: 'bg-orange-100 text-orange-800',
+      urgent: 'bg-red-100 text-red-800'
+    };
+    
+    return (
+      <Badge className={colors[urgency as keyof typeof colors] || colors.normal}>
+        {urgency === 'low' ? 'Baja' :
+         urgency === 'normal' ? 'Normal' :
+         urgency === 'high' ? 'Alta' : 'Urgente'}
+      </Badge>
+    );
+  };
+
+  // Filtrar datos cuando cambian los filtros, resetear página
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterType, filterPark]);
+
+  // Calcular páginas para paginación
+  const pageNumbers = [];
+  const startPage = Math.max(1, currentPage - 2);
+  const endPage = Math.min(pagination.totalPages, currentPage + 2);
+  
+  for (let i = startPage; i <= endPage; i++) {
+    pageNumbers.push(i);
+  }
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
+      <div className="container mx-auto py-6 space-y-6">
         {/* Header */}
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Mantenimiento de Árboles</h1>
-            <p className="text-muted-foreground mt-2">
-              Sistema escalable para gestión de mantenimiento con inventarios grandes
+            <p className="text-muted-foreground">
+              Gestiona y registra las actividades de mantenimiento realizadas en árboles
             </p>
           </div>
-          <Button 
-            onClick={() => setOpen(true)}
-            className="bg-green-600 hover:bg-green-700 text-white"
-          >
-            <PlusCircle className="h-4 w-4 mr-2" />
-            Nuevo Mantenimiento
-          </Button>
+          
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={() => setOpen(true)}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Nuevo Mantenimiento
+            </Button>
+          </div>
         </div>
 
-        {/* Estadísticas */}
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Mantenimientos Totales</CardTitle>
-              <Wrench className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-600">{stats.total}</div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Cobertura de Árboles</CardTitle>
-              <TreePine className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">{stats.coverage}%</div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Recientes (30 días)</CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-orange-600">{stats.recent}</div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Filtros Avanzados */}
+        {/* Filtros y controles */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Filter className="h-5 w-5" />
-              Filtros de Búsqueda de Árboles
-            </CardTitle>
-            <CardDescription>
-              Filtra y busca árboles específicos antes de registrar mantenimiento
-            </CardDescription>
+            <CardTitle className="text-lg">Filtros y Controles</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-              {/* Búsqueda por texto */}
-              <div className="lg:col-span-2">
-                <Label htmlFor="search">Buscar árbol</Label>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
+              {/* Búsqueda */}
+              <div className="space-y-2">
+                <Label htmlFor="search">Buscar</Label>
                 <div className="relative">
-                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="search"
-                    placeholder="Código, especie o ubicación..."
-                    className="pl-8"
+                    placeholder="Buscar por árbol, parque..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-8"
                   />
                 </div>
               </div>
 
-              {/* Filtro por parque */}
-              <div>
-                <Label>Parque</Label>
-                <Select value={selectedParkId} onValueChange={setSelectedParkId}>
+              {/* Filtro por tipo */}
+              <div className="space-y-2">
+                <Label>Tipo de Mantenimiento</Label>
+                <Select value={filterType} onValueChange={setFilterType}>
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue placeholder="Todos los tipos" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los tipos</SelectItem>
+                    <SelectItem value="Poda">Poda</SelectItem>
+                    <SelectItem value="Riego">Riego</SelectItem>
+                    <SelectItem value="Fertilización">Fertilización</SelectItem>
+                    <SelectItem value="Fumigación">Fumigación</SelectItem>
+                    <SelectItem value="Revisión">Revisión</SelectItem>
+                    <SelectItem value="Correctivo">Correctivo</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Filtro por parque */}
+              <div className="space-y-2">
+                <Label>Parque</Label>
+                <Select value={filterPark} onValueChange={setFilterPark}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Todos los parques" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todos los parques</SelectItem>
-                    {parks?.map((park) => (
-                      <SelectItem key={park.id} value={park.id.toString()}>
+                    {parks.map((park: any) => (
+                      <SelectItem key={park.id} value={park.name}>
                         {park.name}
                       </SelectItem>
                     ))}
@@ -346,348 +451,376 @@ export default function EnhancedTreeMaintenancePage() {
                 </Select>
               </div>
 
-              {/* Filtro por especie */}
-              <div>
-                <Label>Especie</Label>
-                <Select value={selectedSpeciesId} onValueChange={setSelectedSpeciesId}>
+              {/* Toggle vista */}
+              <div className="space-y-2">
+                <Label>Vista</Label>
+                <div className="flex gap-1">
+                  <Button
+                    variant={viewMode === 'list' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setViewMode('list')}
+                    className="flex-1"
+                  >
+                    <List className="h-4 w-4 mr-1" />
+                    Lista
+                  </Button>
+                  <Button
+                    variant={viewMode === 'grid' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setViewMode('grid')}
+                    className="flex-1"
+                  >
+                    <Grid3X3 className="h-4 w-4 mr-1" />
+                    Fichas
+                  </Button>
+                </div>
+              </div>
+
+              {/* Acciones */}
+              <div className="space-y-2">
+                <Label>Acciones</Label>
+                <div className="flex gap-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={exportToCSV}
+                    className="flex-1"
+                  >
+                    <Download className="h-4 w-4 mr-1" />
+                    CSV
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => document.getElementById('csv-import')?.click()}
+                    className="flex-1"
+                  >
+                    <Upload className="h-4 w-4 mr-1" />
+                    Importar
+                  </Button>
+                  <input
+                    id="csv-import"
+                    type="file"
+                    accept=".csv"
+                    onChange={handleImportCSV}
+                    style={{ display: 'none' }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Estadísticas rápidas */}
+            <div className="flex items-center justify-between pt-4 border-t">
+              <div className="text-sm text-muted-foreground">
+                Mostrando {((currentPage - 1) * recordsPerPage) + 1} a {Math.min(currentPage * recordsPerPage, pagination.total)} de {pagination.total} registros
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Vista de lista */}
+        {viewMode === 'list' && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Registros de Mantenimiento</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loadingMaintenances ? (
+                <div className="space-y-2">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Skeleton key={i} className="h-12 w-full" />
+                  ))}
+                </div>
+              ) : maintenances.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">No se encontraron registros de mantenimiento</p>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Árbol</TableHead>
+                      <TableHead>Parque</TableHead>
+                      <TableHead>Tipo</TableHead>
+                      <TableHead>Fecha</TableHead>
+                      <TableHead>Realizado por</TableHead>
+                      <TableHead>Urgencia</TableHead>
+                      <TableHead>Acciones</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {maintenances.map((maintenance: any) => (
+                      <TableRow key={maintenance.id}>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">{maintenance.treeCode || `Árbol #${maintenance.treeId}`}</div>
+                            <div className="text-sm text-muted-foreground">{maintenance.speciesName}</div>
+                          </div>
+                        </TableCell>
+                        <TableCell>{maintenance.parkName}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{maintenance.maintenanceType}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          {format(new Date(maintenance.maintenanceDate), 'dd/MM/yyyy', { locale: es })}
+                        </TableCell>
+                        <TableCell>{maintenance.performedBy}</TableCell>
+                        <TableCell>
+                          {getUrgencyBadge(maintenance.urgency)}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => deleteMaintenanceMutation.mutate(maintenance.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Vista de fichas */}
+        {viewMode === 'grid' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {loadingMaintenances ? (
+              Array.from({ length: 6 }).map((_, i) => (
+                <Card key={i}>
+                  <CardContent className="p-4">
+                    <Skeleton className="h-4 w-3/4 mb-2" />
+                    <Skeleton className="h-3 w-1/2 mb-4" />
+                    <Skeleton className="h-3 w-full mb-2" />
+                    <Skeleton className="h-3 w-2/3" />
+                  </CardContent>
+                </Card>
+              ))
+            ) : maintenances.length === 0 ? (
+              <div className="col-span-full text-center py-8">
+                <p className="text-muted-foreground">No se encontraron registros de mantenimiento</p>
+              </div>
+            ) : (
+              maintenances.map((maintenance: any) => (
+                <Card key={maintenance.id} className="hover:shadow-md transition-shadow">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <CardTitle className="text-lg">
+                          {maintenance.treeCode || `Árbol #${maintenance.treeId}`}
+                        </CardTitle>
+                        <CardDescription>{maintenance.speciesName}</CardDescription>
+                      </div>
+                      {getUrgencyBadge(maintenance.urgency)}
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline">{maintenance.maintenanceType}</Badge>
+                        <span className="text-sm text-muted-foreground">{maintenance.parkName}</span>
+                      </div>
+                      
+                      <div className="flex items-center gap-2 text-sm">
+                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                        {format(new Date(maintenance.maintenanceDate), 'dd/MM/yyyy', { locale: es })}
+                      </div>
+                      
+                      {maintenance.performedBy && (
+                        <div className="text-sm">
+                          <span className="text-muted-foreground">Realizado por:</span> {maintenance.performedBy}
+                        </div>
+                      )}
+                      
+                      {maintenance.notes && (
+                        <div className="text-sm">
+                          <span className="text-muted-foreground">Notas:</span> 
+                          <p className="mt-1 text-xs">{maintenance.notes.substring(0, 100)}...</p>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="flex gap-2 pt-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => deleteMaintenanceMutation.mutate(maintenance.id)}
+                        className="flex-1"
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Eliminar
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
+        )}
+
+        {/* Paginación */}
+        {pagination.totalPages > 1 && (
+          <div className="flex items-center justify-center space-x-2">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious 
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                  />
+                </PaginationItem>
+                
+                {pageNumbers.map((pageNum) => (
+                  <PaginationItem key={pageNum}>
+                    <PaginationLink
+                      onClick={() => setCurrentPage(pageNum)}
+                      isActive={currentPage === pageNum}
+                      className="cursor-pointer"
+                    >
+                      {pageNum}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+                
+                <PaginationItem>
+                  <PaginationNext 
+                    onClick={() => setCurrentPage(Math.min(pagination.totalPages, currentPage + 1))}
+                    className={currentPage === pagination.totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
+
+        {/* Modal para nuevo mantenimiento */}
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Registrar Nuevo Mantenimiento</DialogTitle>
+              <DialogDescription>
+                Completa la información del mantenimiento realizado al árbol
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              {/* Selección de árbol */}
+              <div className="space-y-2">
+                <Label>Árbol</Label>
+                <Select
+                  value={selectedTreeId?.toString() || ''}
+                  onValueChange={(value) => setSelectedTreeId(parseInt(value))}
+                >
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue placeholder="Selecciona un árbol" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todas las especies</SelectItem>
-                    {species?.map((sp) => (
-                      <SelectItem key={sp.id} value={sp.id.toString()}>
-                        {sp.commonName}
+                    {trees.map((tree: any) => (
+                      <SelectItem key={tree.id} value={tree.id.toString()}>
+                        {tree.code || `Árbol #${tree.id}`} - {tree.speciesName} ({tree.parkName})
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
 
-              {/* Filtro por estado de salud */}
-              <div>
-                <Label>Estado de Salud</Label>
-                <Select value={selectedHealthStatus} onValueChange={setSelectedHealthStatus}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos los estados</SelectItem>
-                    <SelectItem value="Excelente">Excelente</SelectItem>
-                    <SelectItem value="Bueno">Bueno</SelectItem>
-                    <SelectItem value="Regular">Regular</SelectItem>
-                    <SelectItem value="Malo">Malo</SelectItem>
-                    <SelectItem value="Crítico">Crítico</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            
-            <div className="flex gap-2 mt-4">
-              <Button variant="outline" size="sm" onClick={resetFilters}>
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Limpiar Filtros
-              </Button>
-              <div className="text-sm text-muted-foreground flex items-center">
-                Mostrando {filteredTrees.length} árbol(es) {filteredTrees.length === 50 ? '(limitado a 50)' : ''}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Resultados de Árboles */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Árboles Encontrados</CardTitle>
-            <CardDescription>
-              Selecciona un árbol para registrar mantenimiento
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {loadingTrees ? (
-              <div className="space-y-2">
-                {[...Array(5)].map((_, i) => (
-                  <Skeleton key={i} className="h-16 w-full" />
-                ))}
-              </div>
-            ) : filteredTrees.length === 0 ? (
-              <div className="text-center py-8">
-                <TreePine className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                <h3 className="text-lg font-medium">No se encontraron árboles</h3>
-                <p className="text-muted-foreground">
-                  Ajusta los filtros para encontrar árboles específicos
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-2 max-h-96 overflow-y-auto">
-                {filteredTrees.map((tree) => (
-                  <div
-                    key={tree.id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent cursor-pointer transition-colors"
-                    onClick={() => handleSelectTree(tree)}
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-2">
-                        <TreePine className="h-5 w-5 text-green-600" />
-                        <div>
-                          <div className="font-medium">{tree.code}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {tree.speciesName}
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm">{tree.parkName}</span>
-                      </div>
-                      
-                      <Badge variant={
-                        tree.healthStatus === 'Excelente' ? 'default' :
-                        tree.healthStatus === 'Bueno' ? 'secondary' :
-                        tree.healthStatus === 'Regular' ? 'outline' : 'destructive'
-                      }>
-                        {tree.healthStatus}
-                      </Badge>
-                    </div>
-                    
-                    <Button size="sm">
-                      <PlusCircle className="h-4 w-4 mr-2" />
-                      Registrar Mantenimiento
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Historial de Mantenimientos */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>Historial de Mantenimientos</CardTitle>
-              <CardDescription>
-                {filteredMaintenances.length} registro(s) de mantenimiento
-              </CardDescription>
-            </div>
-            <Select value={maintenanceFilter} onValueChange={setMaintenanceFilter}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los tipos</SelectItem>
-                <SelectItem value="Poda">Poda</SelectItem>
-                <SelectItem value="Riego">Riego</SelectItem>
-                <SelectItem value="Fertilización">Fertilización</SelectItem>
-                <SelectItem value="Control de plagas">Control de plagas</SelectItem>
-                <SelectItem value="Tratamiento de enfermedades">Tratamiento de enfermedades</SelectItem>
-                <SelectItem value="Inspección">Inspección</SelectItem>
-              </SelectContent>
-            </Select>
-          </CardHeader>
-          <CardContent>
-            {loadingMaintenances ? (
-              <div className="space-y-2">
-                {[...Array(5)].map((_, i) => (
-                  <Skeleton key={i} className="h-12 w-full" />
-                ))}
-              </div>
-            ) : filteredMaintenances.length === 0 ? (
-              <div className="text-center py-8">
-                <Wrench className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                <h3 className="text-lg font-medium">No hay registros</h3>
-                <p className="text-muted-foreground">
-                  No se encontraron mantenimientos con los filtros aplicados
-                </p>
-              </div>
-            ) : (
-              <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Código Árbol</TableHead>
-                      <TableHead>Parque</TableHead>
-                      <TableHead>Especie</TableHead>
-                      <TableHead>Tipo</TableHead>
-                      <TableHead>Fecha</TableHead>
-                      <TableHead>Responsable</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredMaintenances.map((maintenance) => (
-                      <TableRow key={maintenance.id}>
-                        <TableCell className="font-medium">{maintenance.treeCode}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1">
-                            <MapPin className="h-3 w-3 text-muted-foreground" />
-                            {maintenance.parkName}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1">
-                            <Leaf className="h-3 w-3 text-green-600" />
-                            {maintenance.speciesName}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className="bg-green-50 text-green-700">
-                            {maintenance.maintenanceType}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {format(new Date(maintenance.maintenanceDate), 'dd/MM/yyyy', { locale: es })}
-                        </TableCell>
-                        <TableCell>{maintenance.performedBy}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Dialog para registrar mantenimiento */}
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-[700px]">
-          <DialogHeader>
-            <DialogTitle>Registrar Mantenimiento</DialogTitle>
-            <DialogDescription>
-              {selectedTree ? (
-                <div className="mt-2 p-3 bg-accent rounded-lg">
-                  <div className="font-medium">{selectedTree.code}</div>
-                  <div className="text-sm text-muted-foreground">
-                    {selectedTree.speciesName} - {selectedTree.parkName}
-                  </div>
-                </div>
-              ) : (
-                "Selecciona un árbol para registrar mantenimiento"
-              )}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="grid gap-4 py-4">
-            {!selectedTree && (
-              <div className="space-y-4">
-                <div className="grid gap-2">
-                  <Label>Buscar Árbol</Label>
-                  <div className="relative">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Código, especie o parque..."
-                      className="pl-8"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                  </div>
-                </div>
-                
-                {filteredTrees.length > 0 && (
-                  <div className="border rounded-lg max-h-48 overflow-y-auto">
-                    <div className="text-xs text-muted-foreground p-2 border-b">
-                      {filteredTrees.length} árbol(es) encontrado(s)
-                    </div>
-                    {filteredTrees.slice(0, 10).map((tree) => (
-                      <div
-                        key={tree.id}
-                        className="p-2 hover:bg-accent cursor-pointer border-b last:border-b-0"
-                        onClick={() => handleSelectTree(tree)}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <div className="font-medium text-sm">{tree.code}</div>
-                            <div className="text-xs text-muted-foreground">
-                              {tree.speciesName} • {tree.parkName}
-                            </div>
-                          </div>
-                          <Badge variant="outline" className="text-xs">
-                            {tree.healthStatus}
-                          </Badge>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-            
-            {selectedTree && (
-              <>
-                <div className="flex justify-between items-center">
-                  <Label className="text-base font-medium">Árbol Seleccionado</Label>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => {
-                      setSelectedTree(null);
-                      setSelectedTreeId(null);
-                    }}
-                  >
-                    Cambiar Árbol
-                  </Button>
-                </div>
-                
-                <div className="grid gap-2">
-                  <Label htmlFor="maintenanceType">Tipo de Mantenimiento *</Label>
-                  <Select 
-                    onValueChange={(value) => setMaintenanceData({...maintenanceData, maintenanceType: value})}
+              <div className="grid grid-cols-2 gap-4">
+                {/* Tipo de mantenimiento */}
+                <div className="space-y-2">
+                  <Label>Tipo de Mantenimiento *</Label>
+                  <Select
+                    value={maintenanceData.maintenanceType}
+                    onValueChange={(value) => setMaintenanceData(prev => ({ ...prev, maintenanceType: value }))}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Selecciona un tipo" />
+                      <SelectValue placeholder="Selecciona el tipo" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="Poda">Poda</SelectItem>
                       <SelectItem value="Riego">Riego</SelectItem>
                       <SelectItem value="Fertilización">Fertilización</SelectItem>
-                      <SelectItem value="Control de plagas">Control de plagas</SelectItem>
-                      <SelectItem value="Tratamiento de enfermedades">Tratamiento de enfermedades</SelectItem>
-                      <SelectItem value="Inspección">Inspección</SelectItem>
-                      <SelectItem value="Otro">Otro</SelectItem>
+                      <SelectItem value="Fumigación">Fumigación</SelectItem>
+                      <SelectItem value="Revisión">Revisión</SelectItem>
+                      <SelectItem value="Correctivo">Correctivo</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                
-                <div className="grid gap-2">
-                  <Label htmlFor="performedBy">Realizado por *</Label>
-                  <Input 
-                    id="performedBy" 
-                    placeholder="Nombre del responsable"
+
+                {/* Urgencia */}
+                <div className="space-y-2">
+                  <Label>Urgencia</Label>
+                  <Select
+                    value={maintenanceData.urgency}
+                    onValueChange={(value) => setMaintenanceData(prev => ({ ...prev, urgency: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="low">Baja</SelectItem>
+                      <SelectItem value="normal">Normal</SelectItem>
+                      <SelectItem value="high">Alta</SelectItem>
+                      <SelectItem value="urgent">Urgente</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                {/* Fecha */}
+                <div className="space-y-2">
+                  <Label>Fecha de Mantenimiento</Label>
+                  <Input
+                    type="date"
+                    value={maintenanceData.maintenanceDate}
+                    onChange={(e) => setMaintenanceData(prev => ({ ...prev, maintenanceDate: e.target.value }))}
+                  />
+                </div>
+
+                {/* Realizado por */}
+                <div className="space-y-2">
+                  <Label>Realizado por</Label>
+                  <Input
                     value={maintenanceData.performedBy}
-                    onChange={(e) => setMaintenanceData({...maintenanceData, performedBy: e.target.value})}
+                    onChange={(e) => setMaintenanceData(prev => ({ ...prev, performedBy: e.target.value }))}
+                    placeholder="Nombre del responsable"
                   />
                 </div>
-                
-                <div className="grid gap-2">
-                  <Label htmlFor="notes">Notas del Mantenimiento</Label>
-                  <Textarea 
-                    id="notes" 
-                    placeholder="Detalles del mantenimiento realizado..."
-                    rows={3}
-                    value={maintenanceData.notes}
-                    onChange={(e) => setMaintenanceData({...maintenanceData, notes: e.target.value})}
-                  />
-                </div>
-              </>
-            )}
-          </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={handleCloseDialog}>
-              Cancelar
-            </Button>
-            {selectedTree && (
+              </div>
+
+              {/* Notas */}
+              <div className="space-y-2">
+                <Label>Notas</Label>
+                <Textarea
+                  value={maintenanceData.notes}
+                  onChange={(e) => setMaintenanceData(prev => ({ ...prev, notes: e.target.value }))}
+                  placeholder="Describe el mantenimiento realizado..."
+                  rows={3}
+                />
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setOpen(false)}>
+                Cancelar
+              </Button>
               <Button 
-                onClick={handleAddMaintenance}
+                onClick={handleSubmit}
                 disabled={addMaintenanceMutation.isPending}
               >
-                {addMaintenanceMutation.isPending ? 'Guardando...' : 'Guardar Mantenimiento'}
+                {addMaintenanceMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Registrar Mantenimiento
               </Button>
-            )}
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
     </AdminLayout>
   );
 }

@@ -22,20 +22,282 @@ import { sql } from 'drizzle-orm';
  * @param isAuthenticated Middleware de autenticación
  */
 export function registerTreeMaintenanceRoutes(app: any, apiRouter: Router, isAuthenticated: any) {
-  // Obtener todos los mantenimientos de árboles (con información detallada de cada árbol)
+  // Obtener todos los mantenimientos de árboles con paginación
   apiRouter.get("/trees/maintenances", async (req: Request, res: Response) => {
     try {
-      // Verificamos si hay datos de mantenimiento
-      const checkQuery = await db.execute(sql`
-        SELECT COUNT(*) as count FROM tree_maintenances
-      `);
+      // Parámetros de paginación
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const offset = (page - 1) * limit;
       
-      const totalCount = checkQuery.rows && checkQuery.rows[0] ? parseInt(String(checkQuery.rows[0].count)) : 0;
+      // Parámetros de filtros
+      const search = req.query.search as string || '';
+      const type = req.query.type as string || 'all';
+      const park = req.query.park as string || 'all';
+      const treeId = req.query.treeId ? parseInt(req.query.treeId as string) : null;
+
+      // Construir condiciones WHERE
+      let whereConditions = [];
+      let whereParams = [];
       
-      if (totalCount === 0) {
-        return res.status(200).json({ data: [] });
+      if (treeId && !isNaN(treeId)) {
+        whereConditions.push('tm.tree_id = ?');
+        whereParams.push(treeId);
       }
       
+      if (search) {
+        whereConditions.push('(t.code ILIKE ? OR ts.common_name ILIKE ? OR p.name ILIKE ? OR tm.performed_by ILIKE ?)');
+        const searchParam = `%${search}%`;
+        whereParams.push(searchParam, searchParam, searchParam, searchParam);
+      }
+      
+      if (type !== 'all') {
+        whereConditions.push('tm.maintenance_type = ?');
+        whereParams.push(type);
+      }
+      
+      if (park !== 'all') {
+        whereConditions.push('p.name = ?');
+        whereParams.push(park);
+      }
+      
+      const whereClause = whereConditions.length > 0 ? 'WHERE ' + whereConditions.join(' AND ') : '';
+      
+      // Contar total de registros
+      const countQuery = `
+        SELECT COUNT(*) as count
+        FROM tree_maintenances tm
+        LEFT JOIN trees t ON tm.tree_id = t.id
+        LEFT JOIN parks p ON t.park_id = p.id
+        LEFT JOIN tree_species ts ON t.species_id = ts.id
+        ${whereClause}
+      `;
+      
+      const countResult = await db.execute(sql.raw(countQuery, whereParams));
+      const totalCount = parseInt(String(countResult.rows[0]?.count || 0));
+      
+      if (totalCount === 0) {
+        return res.status(200).json({ 
+          data: [], 
+          pagination: {
+            total: 0,
+            totalPages: 0,
+            page: page,
+            limit: limit
+          }
+        });
+      }
+      
+      // Consulta principal con datos detallados
+      const mainQuery = `
+        SELECT 
+          tm.id,
+          tm.tree_id as "treeId",
+          tm.maintenance_type as "maintenanceType",
+          tm.maintenance_date as "maintenanceDate",
+          tm.performed_by as "performedBy",
+          tm.notes,
+          tm.urgency,
+          tm.estimated_cost as "estimatedCost",
+          tm.work_hours as "workHours",
+          tm.materials_used as "materialsUsed",
+          tm.weather_conditions as "weatherConditions",
+          tm.before_condition as "beforeCondition",
+          tm.after_condition as "afterCondition",
+          tm.follow_up_required as "followUpRequired",
+          tm.recommendations,
+          tm.next_maintenance_date as "nextMaintenanceDate",
+          tm.created_at as "createdAt",
+          t.code as "treeCode",
+          p.name as "parkName",
+          ts.common_name as "speciesName",
+          ts.scientific_name as "scientificName"
+        FROM 
+          tree_maintenances tm
+        LEFT JOIN 
+          trees t ON tm.tree_id = t.id
+        LEFT JOIN 
+          parks p ON t.park_id = p.id
+        LEFT JOIN 
+          tree_species ts ON t.species_id = ts.id
+        ${whereClause}
+        ORDER BY tm.maintenance_date DESC, tm.created_at DESC
+        LIMIT ? OFFSET ?
+      `;
+      
+      const result = await db.execute(sql.raw(mainQuery, [...whereParams, limit, offset]));
+      
+      const totalPages = Math.ceil(totalCount / limit);
+      
+      return res.status(200).json({
+        data: result.rows,
+        pagination: {
+          total: totalCount,
+          totalPages: totalPages,
+          page: page,
+          limit: limit
+        }
+      });
+      
+    } catch (error) {
+      console.error('Error fetching tree maintenances:', error);
+      return res.status(500).json({ 
+        error: "Error interno del servidor",
+        details: error.message 
+      });
+    }
+  });
+
+  // Endpoint para exportar todos los mantenimientos a CSV
+  apiRouter.get("/trees/maintenances/export-csv", async (req: Request, res: Response) => {
+    try {
+      const result = await db.execute(sql`
+        SELECT 
+          tm.id,
+          t.code as tree_code,
+          ts.common_name as species_name,
+          ts.scientific_name,
+          p.name as park_name,
+          tm.maintenance_type,
+          tm.maintenance_date,
+          tm.performed_by,
+          tm.notes,
+          tm.urgency,
+          tm.estimated_cost,
+          tm.work_hours,
+          tm.materials_used,
+          tm.weather_conditions,
+          tm.before_condition,
+          tm.after_condition,
+          tm.follow_up_required,
+          tm.recommendations,
+          tm.next_maintenance_date,
+          tm.created_at
+        FROM 
+          tree_maintenances tm
+        LEFT JOIN 
+          trees t ON tm.tree_id = t.id
+        LEFT JOIN 
+          parks p ON t.park_id = p.id
+        LEFT JOIN 
+          tree_species ts ON t.species_id = ts.id
+        ORDER BY tm.maintenance_date DESC, tm.created_at DESC
+      `);
+      
+      const headers = [
+        'ID',
+        'Código Árbol',
+        'Especie',
+        'Nombre Científico',
+        'Parque',
+        'Tipo Mantenimiento',
+        'Fecha Mantenimiento',
+        'Realizado Por',
+        'Notas',
+        'Urgencia',
+        'Costo Estimado',
+        'Horas Trabajo',
+        'Materiales Usados',
+        'Condiciones Clima',
+        'Condición Antes',
+        'Condición Después',
+        'Seguimiento Requerido',
+        'Recomendaciones',
+        'Próximo Mantenimiento',
+        'Fecha Creación'
+      ];
+      
+      let csvContent = '\uFEFF' + headers.join(',') + '\n';
+      
+      result.rows.forEach(row => {
+        const values = [
+          row.id,
+          `"${row.tree_code || ''}"`,
+          `"${row.species_name || ''}"`,
+          `"${row.scientific_name || ''}"`,
+          `"${row.park_name || ''}"`,
+          `"${row.maintenance_type || ''}"`,
+          row.maintenance_date || '',
+          `"${row.performed_by || ''}"`,
+          `"${(row.notes || '').replace(/"/g, '""')}"`,
+          `"${row.urgency || ''}"`,
+          row.estimated_cost || 0,
+          row.work_hours || 0,
+          `"${(row.materials_used || '').replace(/"/g, '""')}"`,
+          `"${row.weather_conditions || ''}"`,
+          `"${(row.before_condition || '').replace(/"/g, '""')}"`,
+          `"${(row.after_condition || '').replace(/"/g, '""')}"`,
+          row.follow_up_required ? 'Sí' : 'No',
+          `"${(row.recommendations || '').replace(/"/g, '""')}"`,
+          row.next_maintenance_date || '',
+          row.created_at || ''
+        ];
+        csvContent += values.join(',') + '\n';
+      });
+      
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', 'attachment; filename="mantenimientos_arboles.csv"');
+      res.send(csvContent);
+      
+    } catch (error) {
+      console.error('Error exporting maintenances to CSV:', error);
+      return res.status(500).json({ 
+        error: "Error al exportar mantenimientos",
+        details: error.message 
+      });
+    }
+  });
+
+  // Endpoint para importar mantenimientos desde CSV
+  apiRouter.post("/trees/maintenances/import-csv", async (req: Request, res: Response) => {
+    try {
+      // Este endpoint necesitaría implementación de multer para manejar archivos
+      // Por ahora devolvemos un placeholder
+      return res.status(200).json({
+        success: true,
+        message: "Funcionalidad de importación en desarrollo",
+        imported: 0
+      });
+    } catch (error) {
+      console.error('Error importing maintenances from CSV:', error);
+      return res.status(500).json({ 
+        error: "Error al importar mantenimientos",
+        details: error.message 
+      });
+    }
+  });
+
+  // Endpoint para eliminar mantenimiento
+  apiRouter.delete("/trees/maintenances/:id", async (req: Request, res: Response) => {
+    try {
+      const maintenanceId = parseInt(req.params.id);
+      
+      if (!maintenanceId || isNaN(maintenanceId)) {
+        return res.status(400).json({ error: "ID de mantenimiento inválido" });
+      }
+      
+      const result = await db.execute(sql`
+        DELETE FROM tree_maintenances 
+        WHERE id = ${maintenanceId}
+      `);
+      
+      return res.status(200).json({ 
+        message: "Mantenimiento eliminado correctamente",
+        id: maintenanceId 
+      });
+      
+    } catch (error) {
+      console.error('Error deleting maintenance:', error);
+      return res.status(500).json({ 
+        error: "Error al eliminar mantenimiento",
+        details: error.message 
+      });
+    }
+  });
+
+  // Mantener el endpoint original para compatibilidad
+  apiRouter.get("/trees/maintenances/legacy", async (req: Request, res: Response) => {
+    try {
       // Verificar si hay un parámetro de ID de árbol específico
       const treeId = req.query.treeId ? parseInt(req.query.treeId as string) : null;
       
