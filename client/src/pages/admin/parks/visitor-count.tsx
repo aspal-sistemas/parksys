@@ -88,7 +88,6 @@ export default function VisitorCountPage() {
   const [methodFilter, setMethodFilter] = useState('all');
   const [showImportDialog, setShowImportDialog] = useState(false);
   const recordsPerPage = 10;
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState<VisitorCountForm>({
     parkId: 0,
     date: new Date().toISOString().split('T')[0],
