@@ -427,18 +427,18 @@ const AdminSidebarComplete: React.FC = () => {
               onToggle={toggleSubmenu}
             >
               <NavItem 
-                href="/admin/visitors/count" 
-                icon={<Users className="h-4 w-4" />}
-                active={location === '/admin/visitors/count'}
-              >
-                Conteo
-              </NavItem>
-              <NavItem 
                 href="/admin/visitors/dashboard" 
                 icon={<Activity className="h-4 w-4" />}
                 active={location === '/admin/visitors/dashboard'}
               >
                 Dashboard
+              </NavItem>
+              <NavItem 
+                href="/admin/visitors/count" 
+                icon={<Users className="h-4 w-4" />}
+                active={location === '/admin/visitors/count'}
+              >
+                Conteo
               </NavItem>
               <NavItem 
                 href="/admin/visitors/evaluations" 
