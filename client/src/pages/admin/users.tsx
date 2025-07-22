@@ -65,8 +65,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { useProfileCompletion } from '@/components/ProfileCompletionContext';
-import ProfileCompletionIndicator from '@/components/ProfileCompletionIndicator';
+
 
 type User = {
   id: number;
@@ -411,20 +410,7 @@ const UserDetail: React.FC<{
           
           {/* Información básica de la cuenta */}
           <div className="space-y-4 pt-6 border-t border-gray-200">
-            <div className="flex justify-between items-center">
-              <h3 className="font-medium text-lg">Información de Cuenta</h3>
-              
-              {/* Indicador de Completitud de Perfil */}
-              {userData.role && (
-                <div className="max-w-md">
-                  <ProfileCompletionIndicator 
-                    userData={userData} 
-                    role={userData.role} 
-                    showDetails={true}
-                  />
-                </div>
-              )}
-            </div>
+            <h3 className="font-medium text-lg">Información de Cuenta</h3>
             
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
