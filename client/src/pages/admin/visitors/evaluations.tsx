@@ -11,7 +11,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Star, Eye, CheckCircle, XCircle, Clock, Filter, Users, BarChart3, MessageSquare, MessageCircle, TrendingUp, Calendar, Award, Grid, List, Download, Upload, ChevronLeft, ChevronRight, MapPin, Shield, Wrench, Leaf, Sparkles, Accessibility } from 'lucide-react';
+import { Star, Eye, CheckCircle, XCircle, Clock, Filter, Users, BarChart3, MessageSquare, MessageCircle, TrendingUp, Calendar, Award, Grid, List, Download, Upload, ChevronLeft, ChevronRight, MapPin, Shield, Wrench, Leaf, Sparkles, Accessibility, FileSpreadsheet } from 'lucide-react';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import * as XLSX from 'xlsx';
 import AdminLayout from '@/components/AdminLayout';
 
 interface ParkEvaluation {
@@ -481,121 +484,265 @@ export default function EvaluationsPage() {
   const totalPages = evaluationsData?.pagination?.pages || 1;
   const currentServerPage = evaluationsData?.pagination?.page || 1;
 
-  // Función para exportar estadísticas completas
-  const exportStatistics = async () => {
-    try {
-      // Obtener estadísticas completas
-      const response = await fetch('/api/park-evaluations/statistics-export');
-      if (!response.ok) {
-        throw new Error('Error al obtener estadísticas');
-      }
-      
-      const data = await response.json();
-      
-      // Crear CSV con estadísticas completas
-      const csvContent = generateStatisticsCSV(data);
-      
-      // Descargar archivo
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
+  // Helper functions for status and rating labels
+  const getStatusLabel = (status: string) => {
+    const statusLabels = {
+      pending: 'Pendiente',
+      approved: 'Aprobada', 
+      rejected: 'Rechazada'
+    };
+    return statusLabels[status as keyof typeof statusLabels] || status;
+  };
+
+  const getVisitPurposeLabel = (purpose: string) => {
+    const purposeLabels = {
+      recreation: 'Recreación',
+      exercise: 'Ejercicio',
+      family: 'Familiar',
+      nature: 'Contacto con Naturaleza',
+      social: 'Social',
+      other: 'Otro'
+    };
+    return purposeLabels[purpose as keyof typeof purposeLabels] || purpose;
+  };
+
+  // Export function for CSV with professional header format
+  const exportToCSV = () => {
+    if (evaluations.length === 0) {
+      toast({
+        title: "No hay datos",
+        description: "No hay evaluaciones para exportar",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Professional CSV header with system branding
+    const csvHeader = [
+      'SISTEMA DE GESTIÓN DE PARQUES URBANOS',
+      'Reporte de Evaluaciones Ciudadanas',
+      `Fecha de generación: ${format(new Date(), 'dd/MM/yyyy HH:mm', { locale: es })}`,
+      `Total de registros: ${evaluations.length}`,
+      '', // Empty line separator
+    ];
+
+    // Summary statistics
+    const statusStats = evaluations.reduce((acc, item) => {
+      const status = getStatusLabel(item.status);
+      acc[status] = (acc[status] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const avgRating = evaluations.reduce((sum, item) => sum + item.overall_rating, 0) / evaluations.length;
+
+    const summarySection = [
+      'RESUMEN ESTADÍSTICO',
+      '',
+      'Distribución por Estado:',
+      ...Object.entries(statusStats).map(([status, count]) => `${status}: ${count}`),
+      '',
+      `Calificación Promedio General: ${avgRating.toFixed(1)}/5`,
+      `Total de Parques Evaluados: ${new Set(evaluations.map(e => e.park_id)).size}`,
+      '',
+      'DATOS DETALLADOS',
+      ''
+    ];
+
+    const dataHeaders = [
+      'ID', 'Parque', 'Evaluador', 'Email', 'Ciudad', 'Edad', 
+      'Limpieza', 'Seguridad', 'Mantenimiento', 'Accesibilidad', 
+      'Amenidades', 'Actividades', 'Personal', 'Belleza Natural', 
+      'Calificación General', 'Comentarios', 'Recomendaría', 
+      'Propósito Visita', 'Duración (min)', 'Estado', 'Fecha Creación'
+    ];
+
+    const csvData = evaluations.map(item => [
+      item.id,
+      item.park_name,
+      item.evaluator_name,
+      item.evaluator_email,
+      item.evaluator_city || 'N/A',
+      item.evaluator_age || 'N/A',
+      item.cleanliness,
+      item.safety,
+      item.maintenance,
+      item.accessibility,
+      item.amenities,
+      item.activities,
+      item.staff,
+      item.natural_beauty,
+      item.overall_rating,
+      item.comments.length > 100 ? item.comments.substring(0, 100) + '...' : item.comments,
+      item.would_recommend ? 'Sí' : 'No',
+      getVisitPurposeLabel(item.visit_purpose),
+      item.visit_duration || 'N/A',
+      getStatusLabel(item.status),
+      format(new Date(item.created_at), 'dd/MM/yyyy HH:mm', { locale: es })
+    ]);
+
+    // Combine all sections
+    const allRows = [
+      ...csvHeader.map(line => [line]), // Single column for header
+      ...summarySection.map(line => [line]), // Single column for summary
+      dataHeaders, // Multi-column for data headers
+      ...csvData // Multi-column for data
+    ];
+
+    // Create CSV content with BOM for proper UTF-8 encoding
+    const BOM = '\uFEFF';
+    const csvContent = BOM + allRows
+      .map(row => row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(','))
+      .join('\r\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    if (link.download !== undefined) {
       const url = URL.createObjectURL(blob);
       link.setAttribute('href', url);
-      link.setAttribute('download', `estadisticas-evaluaciones-${new Date().toISOString().split('T')[0]}.csv`);
+      link.setAttribute('download', `evaluaciones_parques_profesional_${format(new Date(), 'dd-MM-yyyy')}.csv`);
       link.style.visibility = 'hidden';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
-      toast({
-        title: "Exportación exitosa",
-        description: "Las estadísticas se han exportado correctamente.",
-      });
-    } catch (error) {
-      console.error('Error al exportar estadísticas:', error);
-      toast({
-        title: "Error",
-        description: "Error al exportar las estadísticas. Intenta nuevamente.",
-        variant: "destructive",
-      });
     }
+
+    toast({
+      title: "CSV Profesional Exportado",
+      description: "Reporte completo generado con encabezado corporativo y resumen estadístico",
+    });
   };
 
-  // Función para generar CSV con estadísticas completas
-  const generateStatisticsCSV = (data: any) => {
-    const headers = [
-      'Parque',
-      'Total Evaluaciones',
-      'Evaluaciones Aprobadas',
-      'Evaluaciones Pendientes',
-      'Evaluaciones Rechazadas',
-      'Promedio General',
-      'Promedio Limpieza',
-      'Promedio Seguridad',
-      'Promedio Mantenimiento',
-      'Promedio Accesibilidad',
-      'Promedio Amenidades',
-      'Promedio Actividades',
-      'Promedio Personal',
-      'Promedio Belleza Natural',
-      'Tasa de Recomendación (%)',
-      'Visitantes Frecuentes',
-      'Edad Promedio Evaluadores',
-      'Última Evaluación'
-    ];
+  // Export function for Excel with corporate styling
+  const exportToExcel = () => {
+    if (evaluations.length === 0) {
+      toast({
+        title: "No hay datos",
+        description: "No hay evaluaciones para exportar",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Create workbook
+    const wb = XLSX.utils.book_new();
     
-    const rows = data.parkStats.map((park: any) => [
-      `"${park.park_name}"`,
-      park.total_evaluations || 0,
-      park.approved_evaluations || 0,
-      park.pending_evaluations || 0,
-      park.rejected_evaluations || 0,
-      park.average_overall_rating ? Number(park.average_overall_rating).toFixed(2) : '0.00',
-      park.average_cleanliness ? Number(park.average_cleanliness).toFixed(2) : '0.00',
-      park.average_safety ? Number(park.average_safety).toFixed(2) : '0.00',
-      park.average_maintenance ? Number(park.average_maintenance).toFixed(2) : '0.00',
-      park.average_accessibility ? Number(park.average_accessibility).toFixed(2) : '0.00',
-      park.average_amenities ? Number(park.average_amenities).toFixed(2) : '0.00',
-      park.average_activities ? Number(park.average_activities).toFixed(2) : '0.00',
-      park.average_staff ? Number(park.average_staff).toFixed(2) : '0.00',
-      park.average_natural_beauty ? Number(park.average_natural_beauty).toFixed(2) : '0.00',
-      park.recommendation_rate ? Number(park.recommendation_rate).toFixed(1) : '0.0',
-      park.frequent_visitors || 0,
-      park.average_age ? Number(park.average_age).toFixed(1) : '0.0',
-      park.last_evaluation ? new Date(park.last_evaluation).toLocaleDateString() : 'N/A'
+    // Prepare main data
+    const dataHeaders = [
+      'ID', 'Parque', 'Evaluador', 'Email', 'Ciudad', 'Edad', 
+      'Limpieza', 'Seguridad', 'Mantenimiento', 'Accesibilidad', 
+      'Amenidades', 'Actividades', 'Personal', 'Belleza Natural', 
+      'Calificación General', 'Comentarios', 'Recomendaría', 
+      'Propósito Visita', 'Duración (min)', 'Estado', 'Fecha Creación'
+    ];
+
+    const excelData = evaluations.map(item => [
+      item.id,
+      item.park_name,
+      item.evaluator_name,
+      item.evaluator_email,
+      item.evaluator_city || 'N/A',
+      item.evaluator_age || 'N/A',
+      item.cleanliness,
+      item.safety,
+      item.maintenance,
+      item.accessibility,
+      item.amenities,
+      item.activities,
+      item.staff,
+      item.natural_beauty,
+      item.overall_rating,
+      item.comments.length > 100 ? item.comments.substring(0, 100) + '...' : item.comments,
+      item.would_recommend ? 'Sí' : 'No',
+      getVisitPurposeLabel(item.visit_purpose),
+      item.visit_duration || 'N/A',
+      getStatusLabel(item.status),
+      format(new Date(item.created_at), 'dd/MM/yyyy HH:mm', { locale: es })
     ]);
-    
-    // Agregar resumen general
-    const generalStats = [
-      '',
-      '=== RESUMEN GENERAL ===',
-      '',
-      '',
-      '',
-      '',
-      '',
-      '',
-      '',
-      '',
-      '',
-      '',
-      '',
-      '',
-      '',
-      '',
-      '',
-      ''
+
+    // Create main data sheet
+    const mainSheet = XLSX.utils.aoa_to_sheet([
+      ['SISTEMA DE GESTIÓN DE PARQUES URBANOS'],
+      ['Reporte de Evaluaciones Ciudadanas'],
+      [`Fecha de generación: ${format(new Date(), 'dd/MM/yyyy HH:mm', { locale: es })}`],
+      [`Total de registros: ${evaluations.length}`],
+      [], // Empty row
+      dataHeaders,
+      ...excelData
+    ]);
+
+    // Statistics summary
+    const statusStats = evaluations.reduce((acc, item) => {
+      const status = getStatusLabel(item.status);
+      acc[status] = (acc[status] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const avgRating = evaluations.reduce((sum, item) => sum + item.overall_rating, 0) / evaluations.length;
+    const avgCriteria = {
+      cleanliness: evaluations.reduce((sum, item) => sum + item.cleanliness, 0) / evaluations.length,
+      safety: evaluations.reduce((sum, item) => sum + item.safety, 0) / evaluations.length,
+      maintenance: evaluations.reduce((sum, item) => sum + item.maintenance, 0) / evaluations.length,
+      accessibility: evaluations.reduce((sum, item) => sum + item.accessibility, 0) / evaluations.length,
+      amenities: evaluations.reduce((sum, item) => sum + item.amenities, 0) / evaluations.length,
+    };
+
+    const summaryData = [
+      ['SISTEMA DE GESTIÓN DE PARQUES URBANOS'],
+      ['RESUMEN EJECUTIVO DE EVALUACIONES'],
+      [`Fecha: ${format(new Date(), 'dd/MM/yyyy', { locale: es })}`],
+      [],
+      ['MÉTRICAS GENERALES'],
+      ['Total de Evaluaciones', evaluations.length],
+      ['Calificación Promedio General', `${avgRating.toFixed(1)}/5`],
+      ['Total de Parques Evaluados', new Set(evaluations.map(e => e.park_id)).size],
+      ['Tasa de Recomendación', `${(evaluations.filter(e => e.would_recommend).length / evaluations.length * 100).toFixed(1)}%`],
+      [],
+      ['DISTRIBUCIÓN POR ESTADO'],
+      ...Object.entries(statusStats).map(([status, count]) => [status, count]),
+      [],
+      ['PROMEDIOS POR CRITERIO'],
+      ['Limpieza', avgCriteria.cleanliness.toFixed(1)],
+      ['Seguridad', avgCriteria.safety.toFixed(1)],
+      ['Mantenimiento', avgCriteria.maintenance.toFixed(1)],
+      ['Accesibilidad', avgCriteria.accessibility.toFixed(1)],
+      ['Amenidades', avgCriteria.amenities.toFixed(1)],
     ];
-    
-    const summaryRows = [
-      ['Total Sistema', data.generalStats.total_evaluations || 0, data.generalStats.approved_evaluations || 0, data.generalStats.pending_evaluations || 0, data.generalStats.rejected_evaluations || 0, data.generalStats.system_average ? Number(data.generalStats.system_average).toFixed(2) : '0.00'],
-      ['Promedio Edad', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', data.generalStats.average_age ? Number(data.generalStats.average_age).toFixed(1) : '0.0'],
-      ['Parques Evaluados', data.generalStats.parks_with_evaluations || 0, '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
-      ['Tasa Aprobación (%)', '', '', '', '', '', '', '', '', '', '', '', '', '', data.generalStats.approval_rate ? Number(data.generalStats.approval_rate).toFixed(1) : '0.0']
-    ];
-    
-    const csvRows = [headers, ...rows, generalStats, ...summaryRows];
-    return csvRows.map(row => row.join(',')).join('\n');
+
+    const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
+
+    // Add sheets to workbook
+    XLSX.utils.book_append_sheet(wb, mainSheet, 'Datos Completos');
+    XLSX.utils.book_append_sheet(wb, summarySheet, 'Resumen Ejecutivo');
+
+    // Auto-size columns for both sheets
+    const maxWidth = 50;
+    [mainSheet, summarySheet].forEach(sheet => {
+      const cols = [];
+      const range = XLSX.utils.decode_range(sheet['!ref'] || 'A1');
+      for (let col = range.s.c; col <= range.e.c; col++) {
+        let maxLen = 10;
+        for (let row = range.s.r; row <= range.e.r; row++) {
+          const cell = sheet[XLSX.utils.encode_cell({ r: row, c: col })];
+          if (cell && cell.v) {
+            const len = String(cell.v).length;
+            maxLen = Math.max(maxLen, Math.min(len, maxWidth));
+          }
+        }
+        cols.push({ width: maxLen });
+      }
+      sheet['!cols'] = cols;
+    });
+
+    // Export file
+    XLSX.writeFile(wb, `evaluaciones_parques_${format(new Date(), 'dd-MM-yyyy')}.xlsx`);
+
+    toast({
+      title: "Excel Exportado",
+      description: "Reporte profesional generado con datos completos y resumen ejecutivo",
+    });
   };
+
+
   
   // Reset pagination when filters change
   useEffect(() => {
@@ -654,31 +801,53 @@ export default function EvaluationsPage() {
               <div className="bg-white p-6 rounded-lg shadow-sm">
                 <div className="flex flex-col space-y-4">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant={evaluationsViewMode === 'grid' ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => setEvaluationsViewMode('grid')}
-                      >
-                        <Grid className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant={evaluationsViewMode === 'list' ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => setEvaluationsViewMode('list')}
-                      >
-                        <List className="h-4 w-4" />
-                      </Button>
+                    <div className="text-sm text-gray-500">
+                      {totalEvaluations} registros total
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={exportStatistics}
-                      >
-                        <Download className="h-4 w-4 mr-2" />
-                        Exportar
-                      </Button>
+                    <div className="flex items-center gap-4">
+                      {/* View mode toggles */}
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant={evaluationsViewMode === 'grid' ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setEvaluationsViewMode('grid')}
+                          className={evaluationsViewMode === 'grid' ? 'bg-green-600 hover:bg-green-700' : ''}
+                        >
+                          <Grid className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant={evaluationsViewMode === 'list' ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setEvaluationsViewMode('list')}
+                          className={evaluationsViewMode === 'list' ? 'bg-green-600 hover:bg-green-700' : ''}
+                        >
+                          <List className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      
+                      {/* Export buttons */}
+                      <div className="flex space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={exportToCSV}
+                          disabled={evaluations.length === 0}
+                          className="flex items-center space-x-2"
+                        >
+                          <Download className="h-4 w-4" />
+                          <span>CSV</span>
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={exportToExcel}
+                          disabled={evaluations.length === 0}
+                          className="flex items-center space-x-2 bg-green-50 hover:bg-green-100 border-green-200 text-green-700"
+                        >
+                          <FileSpreadsheet className="h-4 w-4" />
+                          <span>Excel</span>
+                        </Button>
+                      </div>
                     </div>
                   </div>
 
