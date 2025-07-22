@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, Area, AreaChart } from 'recharts';
-import { Calendar, Users, TrendingUp, MapPin, Clock, Activity, Filter, AlertTriangle } from 'lucide-react';
+import { Calendar, Users, TrendingUp, MapPin, Clock, Activity, Filter, AlertTriangle, BarChart3 } from 'lucide-react';
 import { format, subDays, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { AdminLayout } from '@/components/AdminLayout';
@@ -211,7 +211,10 @@ export default function VisitorDashboard() {
       <AdminLayout>
         <div className="p-6 space-y-6">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+              <BarChart3 className="w-8 h-8" />
+              Dashboard
+            </h1>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {[...Array(4)].map((_, i) => (
@@ -234,8 +237,11 @@ export default function VisitorDashboard() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-            <p className="text-gray-600">Análisis y estadísticas del conteo de visitantes</p>
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+              <BarChart3 className="w-8 h-8" />
+              Dashboard
+            </h1>
+            <p className="text-gray-600 mt-2">Análisis y estadísticas del conteo de visitantes</p>
           </div>
 
         </div>
