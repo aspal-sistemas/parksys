@@ -4,7 +4,7 @@ import { AdminLayout } from '@/components/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Package, DollarSign, Wrench, Plus, MapPin } from 'lucide-react';
+import { Package, DollarSign, Wrench, Plus, MapPin, BarChart3 } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
@@ -129,8 +129,11 @@ const AssetsDashboardFixed: React.FC = () => {
     <AdminLayout>
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Resumen Operativo de Activos</h1>
-          <p className="text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <BarChart3 className="w-8 h-8 text-gray-900" />
+            <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+          </div>
+          <p className="text-muted-foreground mt-2">
             Análisis y estadísticas de activos en parques
           </p>
         </div>
