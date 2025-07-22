@@ -200,6 +200,23 @@ router.get("/", async (req: Request, res: Response) => {
 
     const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
     
+    // Paginación
+    const pageNum = parseInt(page as string) || 1;
+    const limitNum = parseInt(limit as string) || 10;
+    const offset = (pageNum - 1) * limitNum;
+    
+    // Primero obtener el total de registros para paginación
+    const countQuery = `
+      SELECT COUNT(*)
+      FROM park_feedback pf
+      LEFT JOIN parks p ON pf.park_id = p.id
+      ${whereClause}
+    `;
+    
+    const countResult = await pool.query(countQuery, queryParams);
+    const totalItems = parseInt(countResult.rows[0].count);
+    const totalPages = Math.ceil(totalItems / limitNum);
+    
     // Consulta principal con JOIN a parques y usuarios
     const query = `
       SELECT 
@@ -214,22 +231,10 @@ router.get("/", async (req: Request, res: Response) => {
       LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
     `;
 
-    const pageNum = parseInt(page as string);
-    const limitNum = parseInt(limit as string);
-    queryParams.push(limitNum, (pageNum - 1) * limitNum);
+    // Agregar parámetros de paginación
+    queryParams.push(limitNum, offset);
 
     const result = await pool.query(query, queryParams);
-
-    // Consulta para contar el total
-    const countQuery = `
-      SELECT COUNT(*) as total
-      FROM park_feedback pf
-      LEFT JOIN parks p ON pf.park_id = p.id
-      ${whereClause}
-    `;
-    
-    const countResult = await pool.query(countQuery, queryParams.slice(0, -2));
-    const total = parseInt(countResult.rows[0].total);
 
     res.json({
       feedback: result.rows.map(row => ({
@@ -260,8 +265,8 @@ router.get("/", async (req: Request, res: Response) => {
       pagination: {
         page: pageNum,
         limit: limitNum,
-        total,
-        totalPages: Math.ceil(total / limitNum),
+        total: totalItems,
+        totalPages: totalPages,
       }
     });
   } catch (error) {

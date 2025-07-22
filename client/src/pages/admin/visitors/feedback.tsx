@@ -47,7 +47,12 @@ import {
   Lightbulb,
   Calendar,
   Filter,
-  Search
+  Search,
+  Download,
+  Grid,
+  List,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
 interface ParkFeedback {
@@ -100,26 +105,33 @@ function FeedbackManagement() {
   const [parkFilter, setParkFilter] = useState<string>('all');
   const [formTypeFilter, setFormTypeFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards');
   const [editForm, setEditForm] = useState({
     status: '',
     adminNotes: '',
     tags: [] as string[]
   });
 
-  // Fetch feedback data
+  // Fetch feedback data with pagination
   const { data: feedbackData, isLoading } = useQuery({
     queryKey: ['/api/feedback', { 
       search: searchQuery, 
       park: parkFilter, 
       formType: formTypeFilter,
-      status: statusFilter 
+      status: statusFilter,
+      page: currentPage
     }],
+    suspense: false,
+    retry: 1,
     queryFn: async () => {
       const params = new URLSearchParams();
       if (searchQuery) params.append('search', searchQuery);
       if (parkFilter !== 'all') params.append('park', parkFilter);
       if (formTypeFilter !== 'all') params.append('formType', formTypeFilter);
       if (statusFilter !== 'all') params.append('status', statusFilter);
+      params.append('page', currentPage.toString());
+      params.append('limit', '10');
       
       const response = await fetch(`/api/feedback?${params.toString()}`);
       if (!response.ok) throw new Error('Error al cargar retroalimentación');
@@ -130,15 +142,11 @@ function FeedbackManagement() {
   // Fetch parks for filter
   const { data: parksResponse } = useQuery({
     queryKey: ['/api/parks'],
-    queryFn: async () => {
-      const response = await fetch('/api/parks');
-      if (!response.ok) throw new Error('Error al cargar parques');
-      const result = await response.json();
-      return result;
-    },
+    suspense: false,
+    retry: 1
   });
-
-  const parks = parksResponse?.data || [];
+  
+  const parks = Array.isArray(parksResponse) ? parksResponse : parksResponse?.data || [];
 
   // Fetch feedback stats
   const { data: stats } = useQuery({
@@ -296,6 +304,65 @@ function FeedbackManagement() {
   }
 
   const feedback = feedbackData?.feedback || [];
+  const pagination = feedbackData?.pagination || null;
+  const totalItems = pagination?.total || 0;
+  const totalPages = pagination?.totalPages || 0;
+
+  // Reset to page 1 when filters change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, parkFilter, formTypeFilter, statusFilter]);
+
+  // Export function
+  const exportToCSV = () => {
+    if (feedback.length === 0) {
+      toast({
+        title: "No hay datos",
+        description: "No hay retroalimentación para exportar",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const headers = [
+      'ID', 'Parque', 'Tipo Formulario', 'Nombre', 'Email', 'Teléfono',
+      'Asunto', 'Estado', 'Prioridad', 'Fecha Creación'
+    ];
+
+    const csvData = feedback.map(item => [
+      item.id,
+      item.parkName,
+      getFormTypeLabel(item.formType),
+      item.fullName,
+      item.email,
+      item.phone || '',
+      item.subject || '',
+      item.status,
+      item.priority || '',
+      format(new Date(item.createdAt), 'dd/MM/yyyy HH:mm', { locale: es })
+    ]);
+
+    const csvContent = [headers, ...csvData]
+      .map(row => row.map(field => `"${field}"`).join(','))
+      .join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `retroalimentacion_${format(new Date(), 'dd-MM-yyyy')}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    toast({
+      title: "Exportado",
+      description: "Los datos han sido exportados exitosamente",
+    });
+  };
 
   return (
     <AdminLayout>
@@ -360,6 +427,53 @@ function FeedbackManagement() {
           </Card>
         </div>
       )}
+
+      {/* Controls Bar */}
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div className="flex items-center space-x-4">
+          <Badge variant="secondary">
+            {totalItems} registros total
+          </Badge>
+          {pagination && (
+            <Badge variant="outline">
+              Página {pagination.page} de {totalPages}
+            </Badge>
+          )}
+        </div>
+        
+        <div className="flex items-center space-x-2">
+          {/* View mode toggle */}
+          <div className="flex items-center border rounded-lg p-1">
+            <Button
+              variant={viewMode === 'cards' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('cards')}
+              className="px-3"
+            >
+              <Grid className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={viewMode === 'list' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('list')}
+              className="px-3"
+            >
+              <List className="h-4 w-4" />
+            </Button>
+          </div>
+          
+          {/* Export button */}
+          <Button
+            variant="outline"
+            onClick={exportToCSV}
+            disabled={feedback.length === 0}
+            className="flex items-center space-x-2"
+          >
+            <Download className="h-4 w-4" />
+            <span>Exportar CSV</span>
+          </Button>
+        </div>
+      </div>
 
       {/* Filters */}
       <Card>
@@ -449,7 +563,7 @@ function FeedbackManagement() {
       </Card>
 
       {/* Feedback List */}
-      <div className="grid gap-4">
+      <div className={viewMode === 'cards' ? 'grid gap-4' : 'space-y-4'}>
         {feedback.length === 0 ? (
           <Card>
             <CardContent className="p-8 text-center">
@@ -462,7 +576,8 @@ function FeedbackManagement() {
               </p>
             </CardContent>
           </Card>
-        ) : (
+        ) : viewMode === 'cards' ? (
+          /* Cards View */
           feedback.map((item: ParkFeedback) => (
             <Card key={item.id} className="hover:shadow-md transition-shadow">
               <CardContent className="p-6">
@@ -554,8 +669,154 @@ function FeedbackManagement() {
               </CardContent>
             </Card>
           ))
+        ) : (
+          /* List View */
+          <Card>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b bg-gray-50">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Tipo
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Usuario
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Parque
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Estado
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Fecha
+                      </th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                        Acciones
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {feedback.map((item: ParkFeedback) => (
+                      <tr key={item.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center space-x-2">
+                            {getFormTypeIcon(item.formType)}
+                            <span className="text-sm font-medium">
+                              {getFormTypeLabel(item.formType)}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="space-y-1">
+                            <div className="text-sm font-medium text-gray-900">
+                              {item.fullName}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {item.email}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="text-sm text-gray-900">
+                            {item.parkName}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {getStatusBadge(item.status)}
+                          {getPriorityBadge(item.priority)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="text-sm text-gray-500">
+                            {format(new Date(item.createdAt), 'dd/MM/yyyy', { locale: es })}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                          <div className="flex justify-end space-x-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleView(item)}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEdit(item)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
         )}
       </div>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6">
+          <div className="text-sm text-gray-600">
+            Mostrando {((currentPage - 1) * 10) + 1} a {Math.min(currentPage * 10, totalItems)} de {totalItems} registros
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Anterior
+            </Button>
+            
+            <div className="flex space-x-1">
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNumber;
+                if (totalPages <= 5) {
+                  pageNumber = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNumber = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  pageNumber = totalPages - 4 + i;
+                } else {
+                  pageNumber = currentPage - 2 + i;
+                }
+                
+                return (
+                  <Button
+                    key={pageNumber}
+                    variant={pageNumber === currentPage ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setCurrentPage(pageNumber)}
+                    className="w-8 h-8 p-0"
+                  >
+                    {pageNumber}
+                  </Button>
+                );
+              })}
+            </div>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            >
+              Siguiente
+              <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* View Modal */}
       <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
