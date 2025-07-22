@@ -165,8 +165,11 @@ const TreesDashboard: React.FC = () => {
         {/* Header con botón de actualizar */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Dashboard de Arbolado</h1>
-            <p className="text-gray-600">Análisis y estadísticas del arbolado urbano</p>
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+              <TreePine className="w-8 h-8" />
+              Dashboard de Arbolado
+            </h1>
+            <p className="text-gray-600 mt-2">Análisis y estadísticas del arbolado urbano</p>
           </div>
           <Button onClick={handleRefresh} variant="outline">
             <RefreshCw className="h-4 w-4 mr-2" />
