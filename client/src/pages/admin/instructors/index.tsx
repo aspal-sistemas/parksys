@@ -82,14 +82,12 @@ export default function InstructorsListPage() {
   const { toast } = useToast();
 
   // Obtener datos de instructores
-  const { data: instructorsResponse, isLoading, isError, refetch } = useQuery({
+  const { data: instructors = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['/api/instructors'],
     retry: 1,
     suspense: false,
     enabled: true, // Hacemos la consulta automáticamente
   });
-  
-  const instructors = instructorsResponse?.data || [];
 
   // Mutación para eliminar todos los instructores
   const deleteAllInstructorsMutation = useMutation({
