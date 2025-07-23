@@ -162,23 +162,25 @@ export default function SpaceReservationsCalendarPage() {
   return (
     <AdminLayout>
       <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <div className="flex items-center gap-2">
-            <Calendar className="w-8 h-8 text-gray-900" />
-            <h1 className="text-3xl font-bold text-gray-900">Calendario de Reservas</h1>
+      {/* Header con patrón Card estandarizado */}
+      <Card className="p-4 bg-gray-50">
+        <div className="flex justify-between items-center">
+          <div>
+            <div className="flex items-center gap-2">
+              <Calendar className="w-8 h-8 text-gray-900" />
+              <h1 className="text-3xl font-bold text-gray-900">Calendario de Reservas</h1>
+            </div>
+            <p className="text-gray-600 mt-2">Visualiza las reservas de espacios en formato calendario</p>
           </div>
-          <p className="text-gray-600">Visualiza las reservas de espacios en formato calendario</p>
+          <Button 
+            onClick={handleNewReservation}
+            className="bg-[#00a587] hover:bg-[#067f5f] text-white"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Nueva Reserva
+          </Button>
         </div>
-        <Button 
-          onClick={handleNewReservation}
-          className="bg-[#00a587] hover:bg-[#067f5f] text-white"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Nueva Reserva
-        </Button>
-      </div>
+      </Card>
 
       {/* Calendar Controls */}
       <Card>
