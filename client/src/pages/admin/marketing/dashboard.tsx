@@ -1,6 +1,6 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { TrendingUp, Users, FileText, Calendar, Star, DollarSign, Target, Award } from 'lucide-react';
+import { TrendingUp, Users, FileText, Calendar, Star, DollarSign, Target, Award, BarChart } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -83,8 +83,11 @@ const SponsorshipDashboard = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard de Patrocinios</h1>
-          <p className="text-gray-600">Resumen general del sistema de patrocinios</p>
+          <div className="flex items-center gap-2">
+            <BarChart className="w-8 h-8 text-gray-900" />
+            <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+          </div>
+          <p className="text-gray-600 mt-2">Resumen general del sistema de patrocinios</p>
         </div>
         <div className="text-sm text-gray-500">
           Última actualización: {format(new Date(), 'dd/MM/yyyy HH:mm', { locale: es })}
