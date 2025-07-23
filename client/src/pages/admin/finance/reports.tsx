@@ -131,18 +131,16 @@ const FinancialReports = () => {
     <AdminLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <FileText className="h-6 w-6 text-green-600" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                Reportes Ejecutivos
+          <div>
+            <div className="flex items-center gap-2">
+              <FileText className="w-8 h-8 text-gray-900" />
+              <h1 className="text-3xl font-bold text-gray-900">
+                Dashboard
               </h1>
-              <p className="text-gray-600">
-                Análisis integral y proyecciones estratégicas
-              </p>
             </div>
+            <p className="text-gray-600 mt-2">
+              Análisis integral y proyecciones estratégicas
+            </p>
           </div>
 
           <div className="flex items-center gap-3">
