@@ -649,17 +649,18 @@ function TreeSpeciesCatalog() {
       </Helmet>
       
       <div className="container mx-auto px-4 py-6">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-black flex items-center">
-              <Leaf className="mr-2 h-8 w-8" />
-              Catálogo de Especies Arbóreas
-            </h1>
-            <p className="text-gray-600 mt-1">
-              Gestiona el catálogo de especies arbóreas para los parques y espacios públicos
-            </p>
-          </div>
-          <div className="flex gap-2">
+        <Card className="p-4 bg-gray-50 mb-6">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <Leaf className="w-8 h-8 text-gray-900" />
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Catálogo de Especies Arbóreas</h1>
+                <p className="text-gray-600 mt-2">
+                  Gestiona el catálogo de especies arbóreas para los parques y espacios públicos
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-2">
             <Button
               onClick={handleExportCsv}
               variant="outline"
@@ -760,8 +761,9 @@ function TreeSpeciesCatalog() {
             <Button onClick={handleCreateNew} className="bg-green-600 hover:bg-green-700">
               <Plus className="mr-2 h-4 w-4" /> Nueva Especie
             </Button>
+            </div>
           </div>
-        </div>
+        </Card>
 
         <input
           ref={fileInputRef}
