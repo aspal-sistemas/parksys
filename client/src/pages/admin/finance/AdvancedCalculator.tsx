@@ -290,18 +290,16 @@ const AdvancedCalculator = () => {
     <AdminLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <Zap className="h-6 w-6 text-blue-600" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
+          <div>
+            <div className="flex items-center gap-2">
+              <Calculator className="w-8 h-8 text-gray-900" />
+              <h1 className="text-3xl font-bold text-gray-900">
                 Calculadora Avanzada
               </h1>
-              <p className="text-gray-600">
-                Análisis profundo de costos y optimización de precios
-              </p>
             </div>
+            <p className="text-gray-600 mt-2">
+              Análisis profundo de costos y optimización de precios
+            </p>
           </div>
 
           <div className="flex items-center gap-3">
