@@ -187,10 +187,10 @@ const NewEventPage: React.FC = () => {
         <Card className="p-4 bg-gray-50">
           <div className="flex items-center gap-2">
             <Plus className="w-8 h-8 text-gray-900" />
-            <h1 className="text-3xl font-bold text-gray-900">Crear Nuevo Evento</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Nuevo Evento</h1>
           </div>
           <p className="text-gray-600 mt-2">
-            Completa el formulario para crear un nuevo evento en el sistema
+            Crear un nuevo evento
           </p>
         </Card>
 
