@@ -261,19 +261,20 @@ export default function ActivitiesCalendarPage() {
 
   return (
     <AdminLayout>
-      <div className="container mx-auto p-6">
-        <div className="mb-6">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-              <CalendarIcon className="w-8 h-8" />
-              Calendario de Actividades
-            </h1>
-            <p className="text-muted-foreground">
-              Consulta las actividades programadas en el calendario mensual.
-            </p>
+      <div className="container mx-auto p-6 space-y-6">
+        {/* Header con patrón Card estandarizado */}
+        <Card className="p-4 bg-gray-50">
+          <div className="flex items-center gap-2">
+            <CalendarIcon className="w-8 h-8 text-gray-900" />
+            <h1 className="text-3xl font-bold text-gray-900">Calendario de Actividades</h1>
           </div>
-          <div className="flex justify-between items-center mt-4">
-            <div className="flex items-center space-x-2">
+          <p className="text-gray-600 mt-2">
+            Consulta las actividades programadas en el calendario mensual.
+          </p>
+        </Card>
+
+        <div className="flex justify-between items-center">
+          <div className="flex items-center space-x-2">
               <Button variant="outline" size="sm" onClick={prevMonth}>
                 <ChevronLeft className="h-4 w-4" />
               </Button>
@@ -301,13 +302,12 @@ export default function ActivitiesCalendarPage() {
                   />
                 </PopoverContent>
               </Popover>
-            </div>
-            <Button 
-              onClick={() => setLocation('/admin/organizador/catalogo/crear')}
-              className="bg-blue-600 hover:bg-blue-700 text-white">
-              Nueva Actividad
-            </Button>
           </div>
+          <Button 
+            onClick={() => setLocation('/admin/organizador/catalogo/crear')}
+            className="bg-blue-600 hover:bg-blue-700 text-white">
+            Nueva Actividad
+          </Button>
         </div>
 
         {/* Filtros */}
