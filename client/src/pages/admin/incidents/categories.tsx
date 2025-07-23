@@ -10,7 +10,8 @@ import {
   X,
   Folder,
   FolderPlus,
-  AlertTriangle
+  AlertTriangle,
+  Tag
 } from 'lucide-react';
 import AdminLayout from '@/components/AdminLayout';
 import { Button } from '@/components/ui/button';
@@ -697,19 +698,10 @@ const IncidentCategoriesPage = () => {
     <AdminLayout>
       <div className="container mx-auto py-6">
         <div className="mb-6">
-          <Button 
-            variant="ghost" 
-            className="mb-4"
-            onClick={() => setLocation('/admin/incidents')}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Volver a incidencias
-          </Button>
-          
           <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-            <div>
-              <h1 className="text-2xl font-bold">Categorías de incidencias</h1>
-              <p className="text-gray-500">Gestiona las categorías y subcategorías para clasificar incidencias</p>
+            <div className="flex items-center gap-2 mt-2">
+              <Tag className="w-8 h-8 text-gray-900" />
+              <h1 className="text-3xl font-bold text-gray-900">Categorías de incidencias</h1>
             </div>
             
             <div className="flex items-center mt-4 md:mt-0 space-x-2">
