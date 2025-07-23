@@ -61,7 +61,10 @@ export default function VolunteersPage() {
     retry: 1,
   });
 
-  const volunteers = volunteersResponse?.data || [];
+  // Manejar formato de respuesta variable (array directo o {data: array})
+  const volunteers = Array.isArray(volunteersResponse) 
+    ? volunteersResponse 
+    : (volunteersResponse?.data || []);
 
   // Obtener parques para referencia
   const { data: parksResponse } = useQuery({
