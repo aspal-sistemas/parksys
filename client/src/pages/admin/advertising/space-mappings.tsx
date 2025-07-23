@@ -126,8 +126,11 @@ const SpaceMappings: React.FC = () => {
       <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Mapeo de Espacios Publicitarios</h1>
-          <p className="text-gray-600">Visualización completa de espacios publicitarios y sus anuncios asignados</p>
+          <div className="flex items-center gap-2">
+            <LinkIcon className="w-8 h-8 text-gray-900" />
+            <h1 className="text-3xl font-bold text-gray-900">Mapeo de Espacios Publicitarios</h1>
+          </div>
+          <p className="text-gray-600 mt-2">Visualización completa de espacios publicitarios y sus anuncios asignados</p>
         </div>
         <div className="flex gap-2">
           <Link href="/admin/advertising/advertisements">
