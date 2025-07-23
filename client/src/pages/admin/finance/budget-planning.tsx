@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import { Download, Upload, Save, Calculator, TrendingUp, TrendingDown, FileText } from 'lucide-react';
+import { Download, Upload, Save, Calculator, TrendingUp, TrendingDown, FileText, Target } from 'lucide-react';
 import { BudgetMatrix, BudgetEntry } from '../../../shared/budget-planning-schema';
 import { AdminLayout } from '@/components/AdminLayout';
 
@@ -270,7 +270,12 @@ export default function BudgetPlanningPage() {
 
   return (
     <AdminLayout 
-      title="Planificación Presupuestaria" 
+      title={
+        <div className="flex items-center gap-2">
+          <Target className="w-8 h-8 text-gray-900" />
+          <span className="text-3xl font-bold text-gray-900">Planificación Presupuestaria</span>
+        </div>
+      }
       subtitle="Define las proyecciones mensuales por categoría de ingresos y gastos"
     >
       <div className="space-y-6">
