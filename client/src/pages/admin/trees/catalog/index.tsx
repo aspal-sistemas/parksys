@@ -978,7 +978,7 @@ function TreeSpeciesCatalog() {
                               <TreeSpeciesIcon
                                 name={species.commonName}
                                 iconType={species.iconType || 'system'}
-                                customIconUrl={species.customIconUrl}
+                                customIconUrl={species.customIconUrl || undefined}
                                 size={32}
                                 className="text-green-600"
                               />

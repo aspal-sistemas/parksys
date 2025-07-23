@@ -65,7 +65,10 @@ import {
   AlertTriangle,
   CheckCircle,
   Loader2,
-  Filter
+  Filter,
+  Wrench,
+  TreePine,
+  Info
 } from 'lucide-react';
 
 interface TreeMaintenance {
@@ -534,18 +537,23 @@ export default function TreeMaintenancePage() {
   return (
     <AdminLayout>
       <div className="container mx-auto py-6">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Mantenimiento de Árboles</h1>
-            <p className="text-muted-foreground">
-              Gestiona y registra las actividades de mantenimiento realizadas en árboles
-            </p>
+        <Card className="p-4 bg-gray-50 mb-6">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <Wrench className="w-8 h-8 text-gray-900" />
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Mantenimiento de Árboles</h1>
+                <p className="text-gray-600 mt-2">
+                  Gestiona y registra las actividades de mantenimiento realizadas en árboles
+                </p>
+              </div>
+            </div>
+            <Button onClick={() => setOpen(true)} className="bg-green-600 hover:bg-green-700">
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Registrar Mantenimiento
+            </Button>
           </div>
-          <Button onClick={() => setOpen(true)}>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Registrar Mantenimiento
-          </Button>
-        </div>
+        </Card>
 
         {/* Estadísticas */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
