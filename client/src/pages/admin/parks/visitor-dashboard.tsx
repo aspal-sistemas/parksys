@@ -210,12 +210,12 @@ export default function VisitorDashboard() {
     return (
       <AdminLayout>
         <div className="p-6 space-y-6">
-          <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-              <BarChart3 className="w-8 h-8" />
-              Dashboard
-            </h1>
-          </div>
+          <Card className="p-4 bg-gray-50">
+            <div className="flex items-center gap-2">
+              <BarChart3 className="w-8 h-8 text-gray-900" />
+              <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+            </div>
+          </Card>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {[...Array(4)].map((_, i) => (
               <Card key={i} className="animate-pulse">
@@ -234,15 +234,16 @@ export default function VisitorDashboard() {
   return (
     <AdminLayout>
       <div className="p-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-              <BarChart3 className="w-8 h-8" />
-              Dashboard
-            </h1>
-            <p className="text-gray-600 mt-2">Análisis y estadísticas del conteo de visitantes</p>
+        {/* Header con título */}
+        <Card className="p-4 bg-gray-50">
+          <div className="flex items-center gap-2">
+            <BarChart3 className="w-8 h-8 text-gray-900" />
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+              <p className="text-gray-600 mt-2">Análisis y estadísticas del conteo de visitantes</p>
+            </div>
           </div>
+        </Card>
 
         </div>
 
