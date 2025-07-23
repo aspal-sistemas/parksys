@@ -338,38 +338,41 @@ const AdminPermissions = () => {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <div className="flex justify-between items-start">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-              <Shield className="w-8 h-8" />
-              Gestión de Permisos
-            </h1>
-            <p className="text-gray-600 mt-2">
-              Selecciona un rol y configura qué secciones del dashboard puede acceder
-            </p>
-          </div>
-          
-          {hasChanges && (
-            <div className="flex gap-2">
-              <Button 
-                variant="outline" 
-                onClick={resetPermissions}
-                className="flex items-center gap-2"
-              >
-                <RotateCcw className="w-4 h-4" />
-                Revertir
-              </Button>
-              <Button 
-                onClick={savePermissions}
-                disabled={savePermissionsMutation.isPending}
-                className="flex items-center gap-2"
-              >
-                <Save className="w-4 h-4" />
-                {savePermissionsMutation.isPending ? 'Guardando...' : 'Guardar Cambios'}
-              </Button>
+        {/* Header con título */}
+        <Card className="p-4 bg-gray-50">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Shield className="w-8 h-8 text-gray-900" />
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Gestión de Permisos</h1>
+                <p className="text-gray-600 mt-2">
+                  Selecciona un rol y configura qué secciones del dashboard puede acceder
+                </p>
+              </div>
             </div>
-          )}
-        </div>
+            
+            {hasChanges && (
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={resetPermissions}
+                  className="flex items-center gap-2"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  Revertir
+                </Button>
+                <Button 
+                  onClick={savePermissions}
+                  disabled={savePermissionsMutation.isPending}
+                  className="flex items-center gap-2"
+                >
+                  <Save className="w-4 h-4" />
+                  {savePermissionsMutation.isPending ? 'Guardando...' : 'Guardar Cambios'}
+                </Button>
+              </div>
+            )}
+          </div>
+        </Card>
 
         {/* Barra horizontal de selección de roles */}
         {renderRoleSelector()}
