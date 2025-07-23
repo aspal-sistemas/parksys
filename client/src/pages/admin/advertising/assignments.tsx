@@ -656,8 +656,11 @@ export default function AdvertisingAssignments() {
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold">Asignaciones Publicitarias</h1>
-            <p className="text-gray-600">Gestiona la programación y distribución de anuncios en espacios publicitarios</p>
+            <div className="flex items-center gap-2">
+              <Settings className="w-8 h-8 text-gray-900" />
+              <h1 className="text-3xl font-bold text-gray-900">Asignaciones Publicitarias</h1>
+            </div>
+            <p className="text-gray-600 mt-2">Gestiona la programación y distribución de anuncios en espacios publicitarios</p>
           </div>
           <Dialog open={showForm} onOpenChange={setShowForm}>
             <DialogTrigger asChild>
