@@ -243,7 +243,7 @@ export default function NewReservationPage() {
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 {/* Space Selection */}
-                <Card>
+                <Card className="bg-gray-50">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <MapPin className="h-5 w-5" />
@@ -284,7 +284,7 @@ export default function NewReservationPage() {
                 </Card>
 
                 {/* Customer Information */}
-                <Card>
+                <Card className="bg-gray-50">
                   <CardHeader>
                     <CardTitle>Información del Cliente</CardTitle>
                   </CardHeader>
@@ -336,7 +336,7 @@ export default function NewReservationPage() {
                 </Card>
 
                 {/* Date and Time */}
-                <Card>
+                <Card className="bg-gray-50">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <CalendarClock className="h-5 w-5" />
@@ -433,7 +433,7 @@ export default function NewReservationPage() {
                 </Card>
 
                 {/* Additional Information */}
-                <Card>
+                <Card className="bg-gray-50">
                   <CardHeader>
                     <CardTitle>Información Adicional</CardTitle>
                   </CardHeader>
@@ -507,7 +507,7 @@ export default function NewReservationPage() {
           <div className="lg:col-span-1">
             <div className="sticky top-6 space-y-4">
               {selectedSpace && (
-                <Card>
+                <Card className="bg-gray-50">
                   <CardHeader>
                     <CardTitle className="text-lg">Resumen de Reserva</CardTitle>
                   </CardHeader>
@@ -602,7 +602,7 @@ export default function NewReservationPage() {
               )}
               
               {selectedSpace && (
-                <Card>
+                <Card className="bg-gray-50">
                   <CardHeader>
                     <CardTitle className="text-base">Reglas del Espacio</CardTitle>
                   </CardHeader>
