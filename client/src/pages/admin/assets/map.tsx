@@ -239,13 +239,16 @@ const AssetMapPage: React.FC = () => {
     return (
       <AdminLayout>
         <div className="p-6">
-          <div className="flex items-center gap-2">
-            <MapPin className="w-8 h-8 text-gray-900" />
-            <h1 className="text-3xl font-bold text-gray-900">Mapa de Activos</h1>
-          </div>
-          <p className="text-gray-600 mt-2 mb-4">
-            Vista geográfica de todos los activos en los parques
-          </p>
+          {/* Header con patrón Card estandarizado (estado loading) */}
+          <Card className="p-4 bg-gray-50 mb-6">
+            <div className="flex items-center gap-2">
+              <MapPin className="w-8 h-8 text-gray-900" />
+              <h1 className="text-3xl font-bold text-gray-900">Mapa de Activos</h1>
+            </div>
+            <p className="text-gray-600 mt-2">
+              Vista geográfica de todos los activos en los parques
+            </p>
+          </Card>
           <div className="grid gap-6">
             <Skeleton className="h-[600px] w-full" />
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -263,27 +266,30 @@ const AssetMapPage: React.FC = () => {
   return (
     <AdminLayout>
       <div className="p-6">
-        <div className="mb-6">
-          <div className="flex items-center gap-2">
-            <MapPin className="w-8 h-8 text-gray-900" />
-            <h1 className="text-3xl font-bold text-gray-900">Mapa de Activos</h1>
-          </div>
-          <div className="flex items-center justify-between mt-2">
-            <p className="text-gray-600">
-              Vista geográfica de todos los activos en los parques
-            </p>
+        {/* Header con patrón Card estandarizado */}
+        <Card className="p-4 bg-gray-50 mb-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <MapPin className="w-8 h-8 text-gray-900" />
+                <h1 className="text-3xl font-bold text-gray-900">Mapa de Activos</h1>
+              </div>
+              <p className="text-gray-600 mt-2">
+                Vista geográfica de todos los activos en los parques
+              </p>
+            </div>
             <div className="flex space-x-2">
-            <Button variant="outline" onClick={() => setLocation('/admin/assets/inventory')}>
-              <List className="mr-2 h-4 w-4" />
-              Ver Inventario
-            </Button>
-            <Button onClick={() => setLocation('/admin/assets/new')}>
-              <Layers className="mr-2 h-4 w-4" />
-              Nuevo Activo
-            </Button>
+              <Button variant="outline" onClick={() => setLocation('/admin/assets/inventory')}>
+                <List className="mr-2 h-4 w-4" />
+                Ver Inventario
+              </Button>
+              <Button onClick={() => setLocation('/admin/assets/new')}>
+                <Layers className="mr-2 h-4 w-4" />
+                Nuevo Activo
+              </Button>
             </div>
           </div>
-        </div>
+        </Card>
 
         {/* Información sobre activos mostrados */}
         <div className="mb-6">
