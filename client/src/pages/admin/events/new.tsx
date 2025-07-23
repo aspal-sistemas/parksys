@@ -18,7 +18,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import AdminLayout from "@/components/AdminLayout";
-import PageHeader from "@/components/PageHeader";
 import {
   Select,
   SelectContent,
@@ -35,7 +34,8 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { CalendarIcon, Clock, Users, MapPin } from "lucide-react";
+import { CalendarIcon, Clock, Users, MapPin, Plus } from "lucide-react";
+import { Card } from "@/components/ui/card";
 import LoadingSpinner from "@/components/LoadingSpinner";
 
 // Esquema para validar el formulario
@@ -182,16 +182,17 @@ const NewEventPage: React.FC = () => {
 
   return (
     <AdminLayout>
-      <div className="container mx-auto py-6">
-        <PageHeader
-          title="Crear Nuevo Evento"
-          description="Completa el formulario para crear un nuevo evento en el sistema"
-          actions={
-            <Button variant="outline" onClick={() => navigate("/admin/events")}>
-              Volver a eventos
-            </Button>
-          }
-        />
+      <div className="container mx-auto p-6 space-y-6">
+        {/* Header con patrón Card estandarizado */}
+        <Card className="p-4 bg-gray-50">
+          <div className="flex items-center gap-2">
+            <Plus className="w-8 h-8 text-gray-900" />
+            <h1 className="text-3xl font-bold text-gray-900">Crear Nuevo Evento</h1>
+          </div>
+          <p className="text-gray-600 mt-2">
+            Completa el formulario para crear un nuevo evento en el sistema
+          </p>
+        </Card>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
