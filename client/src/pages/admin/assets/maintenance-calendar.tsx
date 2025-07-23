@@ -265,11 +265,9 @@ const MaintenanceCalendarPage = () => {
       <AdminLayout>
         <div className="container py-6">
           <div className="mb-6 flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">Calendario de Mantenimiento</h1>
-              <p className="text-muted-foreground">
-                Programa y visualiza los mantenimientos de activos
-              </p>
+            <div className="flex items-center gap-2 mt-2">
+              <Calendar className="w-8 h-8 text-gray-900" />
+              <h1 className="text-3xl font-bold text-gray-900">Calendario de Mantenimiento</h1>
             </div>
             <Skeleton className="h-10 w-32" />
           </div>
@@ -285,17 +283,9 @@ const MaintenanceCalendarPage = () => {
     <AdminLayout>
       <div className="container py-6">
         <div className="mb-6 flex justify-between items-center">
-          <div className="flex items-center space-x-4">
-            <Button variant="outline" onClick={() => setLocation('/admin/assets')}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Volver a Activos
-            </Button>
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">Calendario de Mantenimiento</h1>
-              <p className="text-muted-foreground">
-                Programa y visualiza los mantenimientos de activos
-              </p>
-            </div>
+          <div className="flex items-center gap-2 mt-2">
+            <Calendar className="w-8 h-8 text-gray-900" />
+            <h1 className="text-3xl font-bold text-gray-900">Calendario de Mantenimiento</h1>
           </div>
           <Button onClick={() => handleDayClick(new Date())}>
             <Plus className="mr-2 h-4 w-4" />
