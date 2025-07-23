@@ -5,6 +5,7 @@ import { useLocation } from 'wouter';
 import AdminLayout from '@/components/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { 
@@ -262,17 +263,18 @@ const AdminActivities = () => {
 
   return (
     <AdminLayout>
-      <div className="p-6">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-              <Calendar className="w-8 h-8" />
-              Listado de Actividades
-            </h1>
-            <p className="text-gray-500 mt-2">Gestiona Todas las Actividades del Sistema</p>
-          </div>
-          <div className="flex items-center gap-3">
+      <div className="space-y-6">
+        {/* Header con patrón Card estandarizado */}
+        <Card className="p-4 bg-gray-50">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <Calendar className="w-8 h-8 text-gray-900" />
+                <h1 className="text-3xl font-bold text-gray-900">Actividades</h1>
+              </div>
+              <p className="text-gray-600 mt-2">Gestiona todas las actividades del sistema</p>
+            </div>
+            <div className="flex items-center gap-3">
             {/* Toggle de vista */}
             <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
               <Button
@@ -303,11 +305,12 @@ const AdminActivities = () => {
               <Plus className="h-4 w-4 mr-2" />
               Nueva Actividad
             </Button>
+            </div>
           </div>
-        </div>
+        </Card>
 
         {/* Filters */}
-        <div className="bg-white rounded-lg shadow p-4 mb-6">
+        <div className="bg-white rounded-lg shadow p-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -339,7 +342,7 @@ const AdminActivities = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todas las categorías</SelectItem>
-                {categoriesData?.map((category: any) => (
+                {Array.isArray(categoriesData) && categoriesData.map((category: any) => (
                   <SelectItem key={category.id} value={category.id.toString()}>
                     {category.name}
                   </SelectItem>
