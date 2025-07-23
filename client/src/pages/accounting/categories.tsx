@@ -310,8 +310,11 @@ export default function AccountingCategories() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">Categorías Contables</h1>
-            <p className="text-gray-600">Gestión del catálogo de cuentas contables jerárquico</p>
+            <div className="flex items-center gap-2">
+              <FolderTree className="w-8 h-8 text-gray-900" />
+              <h1 className="text-3xl font-bold text-gray-900">Categorías Contables</h1>
+            </div>
+            <p className="text-gray-600 mt-2">Gestión del catálogo de cuentas contables jerárquico</p>
           </div>
           <div className="flex items-center space-x-2">
             <Button
