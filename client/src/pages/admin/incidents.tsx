@@ -428,32 +428,39 @@ const IncidentsPage = () => {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-2 mt-2">
-            <ClipboardList className="w-8 h-8 text-gray-900" />
-            <h1 className="text-3xl font-bold text-gray-900">Gestión de Incidencias</h1>
+      <div className="p-6">
+        {/* Header con patrón Card estandarizado */}
+        <Card className="p-4 bg-gray-50 mb-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="w-8 h-8 text-gray-900" />
+                <h1 className="text-3xl font-bold text-gray-900">Gestión de Incidencias</h1>
+              </div>
+              <p className="text-gray-600 mt-2">
+                Reportes y seguimiento de incidencias en parques y activos
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Button
+                onClick={() => setShowImportDialog(true)}
+                variant="outline"
+                className="border-emerald-600 text-emerald-600 hover:bg-emerald-50"
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                Importar CSV
+              </Button>
+              <Button
+                onClick={exportToCSV}
+                variant="outline"
+                className="border-blue-600 text-blue-600 hover:bg-blue-50"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Exportar CSV
+              </Button>
+            </div>
           </div>
-          <div className="flex space-x-2">
-            <Button
-              onClick={() => setShowImportDialog(true)}
-              variant="outline"
-              className="border-emerald-600 text-emerald-600 hover:bg-emerald-50"
-            >
-              <Upload className="w-4 h-4 mr-2" />
-              Importar CSV
-            </Button>
-            <Button
-              onClick={exportToCSV}
-              variant="outline"
-              className="border-blue-600 text-blue-600 hover:bg-blue-50"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Exportar CSV
-            </Button>
-          </div>
-        </div>
+        </Card>
 
         {/* Filtros */}
         <Card>
