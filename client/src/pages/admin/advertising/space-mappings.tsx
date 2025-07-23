@@ -3,8 +3,9 @@ import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ExternalLink, Eye, MapPin, Calendar, Image, Link as LinkIcon, Grid, List, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ExternalLink, Eye, MapPin, Calendar, Image, Link as LinkIcon, Grid, List, ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import { Link } from 'wouter';
 import AdminLayout from '@/components/AdminLayout';
 
@@ -31,6 +32,7 @@ const SpaceMappings: React.FC = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [currentPage, setCurrentPage] = useState(1);
   const [activeOnlyPage, setActiveOnlyPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
   const itemsPerPage = 10;
 
   const { data: mappings, isLoading } = useQuery<SpaceMapping[]>({
@@ -45,18 +47,33 @@ const SpaceMappings: React.FC = () => {
     );
   }
 
-  // Agrupar por página
-  const groupedMappings = mappings?.reduce((acc, mapping) => {
+  // Filter mappings by search term
+  const filteredMappings = mappings?.filter(mapping => {
+    if (!searchTerm) return true;
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      mapping.space_name?.toLowerCase().includes(searchLower) ||
+      mapping.page_type.toLowerCase().includes(searchLower) ||
+      mapping.position.toLowerCase().includes(searchLower) ||
+      mapping.description?.toLowerCase().includes(searchLower) ||
+      mapping.ad_title?.toLowerCase().includes(searchLower) ||
+      getPageDisplayName(mapping.page_type).toLowerCase().includes(searchLower) ||
+      getPositionDisplayName(mapping.position).toLowerCase().includes(searchLower)
+    );
+  }) || [];
+
+  // Agrupar por página (usando mappings filtrados)
+  const groupedMappings = filteredMappings.reduce((acc, mapping) => {
     if (!acc[mapping.page_type]) {
       acc[mapping.page_type] = [];
     }
     acc[mapping.page_type].push(mapping);
     return acc;
-  }, {} as Record<string, SpaceMapping[]>) || {};
+  }, {} as Record<string, SpaceMapping[]>);
 
   // Flatten all mappings for pagination
-  const allMappings = mappings || [];
-  const activeMappings = mappings?.filter(m => m.ad_id && m.placement_active) || [];
+  const allMappings = filteredMappings;
+  const activeMappings = filteredMappings.filter(m => m.ad_id && m.placement_active);
 
   // Pagination logic for all mappings
   const totalPages = Math.ceil(allMappings.length / itemsPerPage);
@@ -145,6 +162,39 @@ const SpaceMappings: React.FC = () => {
               Gestionar Espacios
             </Button>
           </Link>
+        </div>
+      </div>
+
+      {/* Filtro de búsqueda */}
+      <div className="flex items-center gap-4 mb-6">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <Input
+            placeholder="Buscar por contenedor, página, posición, anuncio..."
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+              setActiveOnlyPage(1);
+            }}
+            className="pl-10"
+          />
+        </div>
+        {searchTerm && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setSearchTerm('');
+              setCurrentPage(1);
+              setActiveOnlyPage(1);
+            }}
+          >
+            Limpiar
+          </Button>
+        )}
+        <div className="text-sm text-gray-600">
+          {filteredMappings.length} de {mappings?.length || 0} espacios
         </div>
       </div>
 
