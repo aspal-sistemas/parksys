@@ -184,18 +184,9 @@ export default function VolunteerRegisterPage() {
     <AdminLayout>
       <div className="container mx-auto p-6 max-w-4xl">
         <div className="mb-6">
-          <Button
-            variant="ghost"
-            onClick={() => setLocation('/admin/volunteers')}
-            className="mb-4"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Volver a Voluntarios
-          </Button>
-          
-          <div className="flex items-center gap-3 mb-2">
-            <UserPlus className="h-8 w-8 text-green-600" />
-            <h1 className="text-3xl font-bold tracking-tight">Registro de Nuevo Voluntario</h1>
+          <div className="flex items-center gap-2 mt-2">
+            <UserPlus className="w-8 h-8 text-gray-900" />
+            <h1 className="text-3xl font-bold text-gray-900">Registro de Nuevo Voluntario</h1>
           </div>
           <p className="text-muted-foreground">
             Complete la información del voluntario para registrarlo en el sistema
