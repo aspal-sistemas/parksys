@@ -14,7 +14,8 @@ import {
   Eye,
   Edit,
   Trash2,
-  RefreshCw
+  RefreshCw,
+  Package
 } from 'lucide-react';
 
 import AdminLayout from '@/components/AdminLayout';
@@ -293,13 +294,22 @@ const AssetsPage: React.FC = () => {
       </Helmet>
       
       <div className="container mx-auto px-4 py-6">
-        <div className="mb-6">
-          <div className="mb-4">
-            <h1 className="text-3xl font-bold tracking-tight">Gestión de Activos</h1>
-            <p className="text-muted-foreground">
-              Administra el inventario de activos físicos de los parques y espacios públicos.
-            </p>
+        {/* Header con patrón Card estandarizado */}
+        <Card className="p-4 bg-gray-50 mb-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <Package className="w-8 h-8 text-gray-900" />
+                <h1 className="text-3xl font-bold text-gray-900">Gestión de Activos</h1>
+              </div>
+              <p className="text-gray-600 mt-2">
+                Administra el inventario de activos físicos de los parques y espacios públicos.
+              </p>
+            </div>
           </div>
+        </Card>
+
+        <div className="mb-6">{/* Botones de navegación */}
           <div className="flex flex-wrap gap-2">
             <Button 
               variant="outline" 
