@@ -204,6 +204,10 @@ export default function NewReservationPage() {
     createReservationMutation.mutate(data);
   };
 
+  const handleGoBack = () => {
+    setLocation('/admin/space-reservations');
+  };
+
   // Check if selected time range is valid
   const isTimeRangeValid = () => {
     if (!selectedSpace || !watchedStartTime || !watchedEndTime) return true;
@@ -224,14 +228,14 @@ export default function NewReservationPage() {
   return (
     <AdminLayout>
       <div className="p-6 space-y-6">
-        {/* Header */}
-        <div>
+        {/* Header con patrón Card estandarizado */}
+        <Card className="p-4 bg-gray-50">
           <div className="flex items-center gap-2">
             <Plus className="w-8 h-8 text-gray-900" />
             <h1 className="text-3xl font-bold text-gray-900">Nueva Reserva</h1>
           </div>
-          <p className="text-gray-600">Crear una nueva reserva de espacio</p>
-        </div>
+          <p className="text-gray-600 mt-2">Crear una nueva reserva de espacio</p>
+        </Card>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Form */}
