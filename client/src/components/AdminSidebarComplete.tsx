@@ -832,6 +832,13 @@ const AdminSidebarComplete: React.FC = () => {
               onToggle={toggleSubmenu}
             >
               <NavItem 
+                href="/admin/finance/reports" 
+                icon={<FileText className="h-4 w-4" />}
+                active={location === '/admin/finance/reports'}
+              >
+                Dashboard
+              </NavItem>
+              <NavItem 
                 href="/admin/finance/budget-planning" 
                 icon={<Target className="h-4 w-4" />}
                 active={location === '/admin/finance/budget-planning'}
@@ -851,13 +858,6 @@ const AdminSidebarComplete: React.FC = () => {
                 active={location === '/admin/finance/calculator'}
               >
                 Calculadora
-              </NavItem>
-              <NavItem 
-                href="/admin/finance/reports" 
-                icon={<FileText className="h-4 w-4" />}
-                active={location === '/admin/finance/reports'}
-              >
-                {t('navigation.reports')}
               </NavItem>
             </CollapsibleSubmenu>
 
