@@ -229,7 +229,7 @@ function Router() {
 
         <Route path="/admin/activities/categories">
           <Suspense fallback={<div className="p-8 text-center">Cargando gestión de categorías...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/organizador/categorias')))}
+            {React.createElement(React.lazy(() => import('@/pages/admin/activities/categories')))}
           </Suspense>
         </Route>
         <Route path="/admin/activities/calendar">
