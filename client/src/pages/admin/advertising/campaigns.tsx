@@ -526,8 +526,11 @@ export default function CampaignsPage() {
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold">Campañas Publicitarias</h1>
-            <p className="text-gray-600">Gestiona campañas publicitarias y su rendimiento</p>
+            <div className="flex items-center gap-2">
+              <Target className="w-8 h-8 text-gray-900" />
+              <h1 className="text-3xl font-bold text-gray-900">Campañas Publicitarias</h1>
+            </div>
+            <p className="text-gray-600 mt-2">Gestiona campañas publicitarias y su rendimiento</p>
           </div>
           <Dialog open={showForm} onOpenChange={setShowForm}>
             <DialogTrigger asChild>
