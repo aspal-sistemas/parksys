@@ -352,7 +352,7 @@ const IncidentsPage = () => {
 
   return (
     <AdminLayout>
-      <div className="container mx-auto py-6">
+      <div className="p-6">
         {/* Header con patrón Card estandarizado */}
         <Card className="p-4 bg-gray-50 mb-6">
           <div className="flex items-center justify-between">
