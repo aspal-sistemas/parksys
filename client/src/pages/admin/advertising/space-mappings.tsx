@@ -47,6 +47,32 @@ const SpaceMappings: React.FC = () => {
     );
   }
 
+  const getPageDisplayName = (pageType: string) => {
+    const names: Record<string, string> = {
+      'homepage': 'Página Principal',
+      'parks': 'Parques',
+      'park-landing': 'Landing Pages de Parques',
+      'activities': 'Actividades',
+      'activity-detail': 'Detalles de Actividad',
+      'concessions': 'Concesiones',
+      'instructors': 'Instructores',
+      'instructor-profile': 'Perfil de Instructor',
+      'volunteers': 'Voluntarios',
+      'tree-species': 'Especies Arbóreas'
+    };
+    return names[pageType] || pageType;
+  };
+
+  const getPositionDisplayName = (position: string) => {
+    const names: Record<string, string> = {
+      'header': 'Cabecera',
+      'sidebar': 'Barra Lateral',
+      'footer': 'Pie de Página',
+      'hero': 'Área Principal'
+    };
+    return names[position] || position;
+  };
+
   // Filter mappings by search term
   const filteredMappings = mappings?.filter(mapping => {
     if (!searchTerm) return true;
@@ -96,32 +122,6 @@ const SpaceMappings: React.FC = () => {
     return acc;
   }, {} as Record<string, SpaceMapping[]>);
 
-  const getPageDisplayName = (pageType: string) => {
-    const names: Record<string, string> = {
-      'homepage': 'Página Principal',
-      'parks': 'Parques',
-      'park-landing': 'Landing Pages de Parques',
-      'activities': 'Actividades',
-      'activity-detail': 'Detalles de Actividad',
-      'concessions': 'Concesiones',
-      'instructors': 'Instructores',
-      'instructor-profile': 'Perfil de Instructor',
-      'volunteers': 'Voluntarios',
-      'tree-species': 'Especies Arbóreas'
-    };
-    return names[pageType] || pageType;
-  };
-
-  const getPositionDisplayName = (position: string) => {
-    const names: Record<string, string> = {
-      'header': 'Cabecera',
-      'sidebar': 'Barra Lateral',
-      'footer': 'Pie de Página',
-      'hero': 'Área Principal'
-    };
-    return names[position] || position;
-  };
-
   const getRouteForPage = (pageType: string) => {
     const routes: Record<string, string> = {
       'homepage': '/',
@@ -166,37 +166,39 @@ const SpaceMappings: React.FC = () => {
       </div>
 
       {/* Filtro de búsqueda */}
-      <div className="flex items-center gap-4 mb-6">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <Input
-            placeholder="Buscar por contenedor, página, posición, anuncio..."
-            value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setCurrentPage(1);
-              setActiveOnlyPage(1);
-            }}
-            className="pl-10"
-          />
+      <Card className="p-4 bg-gray-50 border-2 border-dashed border-gray-300">
+        <div className="flex items-center gap-4">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Input
+              placeholder="Buscar por contenedor, página, posición, anuncio..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(1);
+                setActiveOnlyPage(1);
+              }}
+              className="pl-10 bg-white"
+            />
+          </div>
+          {searchTerm && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setSearchTerm('');
+                setCurrentPage(1);
+                setActiveOnlyPage(1);
+              }}
+            >
+              Limpiar
+            </Button>
+          )}
+          <div className="text-sm text-gray-600 font-medium">
+            {filteredMappings.length} de {mappings?.length || 0} espacios
+          </div>
         </div>
-        {searchTerm && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              setSearchTerm('');
-              setCurrentPage(1);
-              setActiveOnlyPage(1);
-            }}
-          >
-            Limpiar
-          </Button>
-        )}
-        <div className="text-sm text-gray-600">
-          {filteredMappings.length} de {mappings?.length || 0} espacios
-        </div>
-      </div>
+      </Card>
 
       <Tabs defaultValue="by-page" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
