@@ -63,7 +63,10 @@ export default function VolunteersList() {
     }
   });
 
-  const volunteers = volunteersResponse?.data || [];
+  // Manejar formato de respuesta variable (array directo o {data: array})
+  const volunteers = Array.isArray(volunteersResponse) 
+    ? volunteersResponse 
+    : (volunteersResponse?.data || []);
 
   // Consulta para obtener lista de parques para el filtro
   const { data: parksResponse } = useQuery({
@@ -77,7 +80,10 @@ export default function VolunteersList() {
     }
   });
 
-  const parks = parksResponse?.data || [];
+  // Manejar formato de respuesta variable (array directo o {data: array})  
+  const parks = Array.isArray(parksResponse) 
+    ? parksResponse 
+    : (parksResponse?.data || []);
 
   // Filtrar voluntarios
   const filteredVolunteers = volunteers.filter(volunteer => {
