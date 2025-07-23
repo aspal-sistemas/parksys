@@ -245,8 +245,6 @@ export default function VisitorDashboard() {
           </div>
         </Card>
 
-        </div>
-
         {/* Filtros */}
         <Card>
           <CardHeader>

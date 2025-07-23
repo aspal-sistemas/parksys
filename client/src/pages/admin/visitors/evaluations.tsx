@@ -859,15 +859,16 @@ export default function EvaluationsPage() {
     <AdminLayout>
       <div className="min-h-screen bg-gray-50">
         <div className="container mx-auto px-6 py-8 max-w-7xl">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-                <Star className="w-8 h-8" />
-                Evaluaciones de Parques
-              </h1>
-              <p className="text-gray-600 mt-2">Gestiona las evaluaciones ciudadanas de los parques</p>
+          {/* Header con título */}
+          <Card className="p-4 bg-gray-50 mb-8">
+            <div className="flex items-center gap-2">
+              <Star className="w-8 h-8 text-gray-900" />
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Evaluaciones</h1>
+                <p className="text-gray-600 mt-2">Gestiona las evaluaciones ciudadanas de los parques</p>
+              </div>
             </div>
-          </div>
+          </Card>
 
           <Tabs defaultValue="evaluations" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
