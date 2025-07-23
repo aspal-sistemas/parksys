@@ -142,23 +142,23 @@ export default function ReservableSpacesPage() {
   return (
     <AdminLayout>
       <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
+      {/* Header con patrón Card estandarizado */}
+      <Card className="p-4 bg-gray-50">
+        <div className="flex justify-between items-center">
           <div className="flex items-center gap-2">
             <MapPin className="w-8 h-8 text-gray-900" />
             <h1 className="text-3xl font-bold text-gray-900">Espacios Disponibles</h1>
           </div>
-          <p className="text-gray-600">Gestiona los espacios reservables en los parques</p>
+          <Button 
+            onClick={handleNewSpace}
+            className="bg-[#00a587] hover:bg-[#067f5f] text-white"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Nuevo Espacio
+          </Button>
         </div>
-        <Button 
-          onClick={handleNewSpace}
-          className="bg-[#00a587] hover:bg-[#067f5f] text-white"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Nuevo Espacio
-        </Button>
-      </div>
+        <p className="text-gray-600 mt-2">Gestiona los espacios reservables en los parques</p>
+      </Card>
 
       {/* Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
