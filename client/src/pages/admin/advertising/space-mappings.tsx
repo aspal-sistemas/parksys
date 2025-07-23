@@ -5,7 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ExternalLink, Eye, MapPin, Calendar, Image, Link as LinkIcon, Grid, List, ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ExternalLink, Eye, MapPin, Calendar, Image, Link as LinkIcon, Grid, List, ChevronLeft, ChevronRight, Search, Filter } from 'lucide-react';
 import { Link } from 'wouter';
 import AdminLayout from '@/components/AdminLayout';
 
@@ -33,6 +34,8 @@ const SpaceMappings: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [activeOnlyPage, setActiveOnlyPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedContainer, setSelectedContainer] = useState<string>('all');
+  const [selectedPage, setSelectedPage] = useState<string>('all');
   const itemsPerPage = 10;
 
   const { data: mappings, isLoading } = useQuery<SpaceMapping[]>({
@@ -73,19 +76,33 @@ const SpaceMappings: React.FC = () => {
     return names[position] || position;
   };
 
-  // Filter mappings by search term
+  // Get unique containers and pages
+  const uniqueContainers = Array.from(new Set(mappings?.map(m => m.space_name).filter(Boolean))) || [];
+  const uniquePages = Array.from(new Set(mappings?.map(m => m.page_type))) || [];
+
+  // Filter mappings by search term and dropdown selections
   const filteredMappings = mappings?.filter(mapping => {
-    if (!searchTerm) return true;
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      mapping.space_name?.toLowerCase().includes(searchLower) ||
-      mapping.page_type.toLowerCase().includes(searchLower) ||
-      mapping.position.toLowerCase().includes(searchLower) ||
-      mapping.description?.toLowerCase().includes(searchLower) ||
-      mapping.ad_title?.toLowerCase().includes(searchLower) ||
-      getPageDisplayName(mapping.page_type).toLowerCase().includes(searchLower) ||
-      getPositionDisplayName(mapping.position).toLowerCase().includes(searchLower)
-    );
+    // Text search filter
+    const searchMatch = !searchTerm || (() => {
+      const searchLower = searchTerm.toLowerCase();
+      return (
+        mapping.space_name?.toLowerCase().includes(searchLower) ||
+        mapping.page_type.toLowerCase().includes(searchLower) ||
+        mapping.position.toLowerCase().includes(searchLower) ||
+        mapping.description?.toLowerCase().includes(searchLower) ||
+        mapping.ad_title?.toLowerCase().includes(searchLower) ||
+        getPageDisplayName(mapping.page_type).toLowerCase().includes(searchLower) ||
+        getPositionDisplayName(mapping.position).toLowerCase().includes(searchLower)
+      );
+    })();
+
+    // Container filter
+    const containerMatch = selectedContainer === 'all' || mapping.space_name === selectedContainer;
+    
+    // Page filter
+    const pageMatch = selectedPage === 'all' || mapping.page_type === selectedPage;
+
+    return searchMatch && containerMatch && pageMatch;
   }) || [];
 
   // Agrupar por página (usando mappings filtrados)
@@ -165,37 +182,99 @@ const SpaceMappings: React.FC = () => {
         </div>
       </div>
 
-      {/* Filtro de búsqueda */}
+      {/* Filtros de búsqueda */}
       <Card className="p-4 bg-gray-50 border-2 border-dashed border-gray-300">
-        <div className="flex items-center gap-4">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            <Input
-              placeholder="Buscar por contenedor, página, posición, anuncio..."
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setCurrentPage(1);
-                setActiveOnlyPage(1);
-              }}
-              className="pl-10 bg-white"
-            />
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Filter className="h-5 w-5 text-gray-600" />
+            <h3 className="font-semibold text-gray-700">Filtros de Búsqueda</h3>
           </div>
-          {searchTerm && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setSearchTerm('');
-                setCurrentPage(1);
-                setActiveOnlyPage(1);
-              }}
-            >
-              Limpiar
-            </Button>
-          )}
-          <div className="text-sm text-gray-600 font-medium">
-            {filteredMappings.length} de {mappings?.length || 0} espacios
+          
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {/* Campo de búsqueda de texto */}
+            <div className="relative md:col-span-2">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                placeholder="Buscar por contenedor, página, posición, anuncio..."
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setCurrentPage(1);
+                  setActiveOnlyPage(1);
+                }}
+                className="pl-10 bg-white"
+              />
+            </div>
+
+            {/* Filtro por contenedor */}
+            <div>
+              <Select 
+                value={selectedContainer} 
+                onValueChange={(value) => {
+                  setSelectedContainer(value);
+                  setCurrentPage(1);
+                  setActiveOnlyPage(1);
+                }}
+              >
+                <SelectTrigger className="bg-white">
+                  <SelectValue placeholder="Todos los contenedores" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los contenedores</SelectItem>
+                  {uniqueContainers.map((container) => (
+                    <SelectItem key={container} value={container}>
+                      {container}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Filtro por página */}
+            <div>
+              <Select 
+                value={selectedPage} 
+                onValueChange={(value) => {
+                  setSelectedPage(value);
+                  setCurrentPage(1);
+                  setActiveOnlyPage(1);
+                }}
+              >
+                <SelectTrigger className="bg-white">
+                  <SelectValue placeholder="Todas las páginas" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas las páginas</SelectItem>
+                  {uniquePages.map((page) => (
+                    <SelectItem key={page} value={page}>
+                      {getPageDisplayName(page)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between pt-2 border-t border-gray-200">
+            <div className="text-sm text-gray-600 font-medium">
+              {filteredMappings.length} de {mappings?.length || 0} espacios mostrados
+            </div>
+            
+            {(searchTerm || selectedContainer !== 'all' || selectedPage !== 'all') && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setSearchTerm('');
+                  setSelectedContainer('all');
+                  setSelectedPage('all');
+                  setCurrentPage(1);
+                  setActiveOnlyPage(1);
+                }}
+              >
+                Limpiar todos los filtros
+              </Button>
+            )}
           </div>
         </div>
       </Card>
