@@ -182,7 +182,7 @@ const NewEventPage: React.FC = () => {
 
   return (
     <AdminLayout>
-      <div className="container mx-auto p-6 space-y-6">
+      <div className="space-y-6">
         {/* Header con patrón Card estandarizado */}
         <Card className="p-4 bg-gray-50">
           <div className="flex items-center gap-2">
