@@ -263,8 +263,11 @@ const EventsPage = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Eventos Patrocinados</h1>
-          <p className="text-gray-600">Gestiona todos los eventos con patrocinio</p>
+          <div className="flex items-center gap-2">
+            <Calendar className="w-8 h-8 text-gray-900" />
+            <h1 className="text-3xl font-bold text-gray-900">Eventos Patrocinados</h1>
+          </div>
+          <p className="text-gray-600 mt-2">Gestiona todos los eventos con patrocinio</p>
         </div>
         <Dialog open={showNewEventDialog} onOpenChange={setShowNewEventDialog}>
           <DialogTrigger asChild>
