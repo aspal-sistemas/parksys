@@ -229,6 +229,16 @@ const AssetsMaintenancePage = () => {
     return (
       <AdminLayout>
         <div className="p-6">
+          {/* Header con patrón Card estandarizado (estado loading) */}
+          <Card className="p-4 bg-gray-50 mb-6">
+            <div className="flex items-center gap-2">
+              <Wrench className="w-8 h-8 text-gray-900" />
+              <h1 className="text-3xl font-bold text-gray-900">Gestión de Mantenimientos</h1>
+            </div>
+            <p className="text-gray-600 mt-2">
+              Registra y gestiona el mantenimiento de activos
+            </p>
+          </Card>
           <div className="text-center">Cargando mantenimientos...</div>
         </div>
       </AdminLayout>
@@ -238,18 +248,16 @@ const AssetsMaintenancePage = () => {
   return (
     <AdminLayout>
       <div className="p-6">
-        {/* Header */}
-        <div className="mb-6">
+        {/* Header con patrón Card estandarizado */}
+        <Card className="p-4 bg-gray-50 mb-6">
           <div className="flex items-center gap-2">
             <Wrench className="w-8 h-8 text-gray-900" />
             <h1 className="text-3xl font-bold text-gray-900">Gestión de Mantenimientos</h1>
           </div>
-          <div className="flex items-center justify-between mt-2">
-            <p className="text-gray-600">
-              Registra y gestiona el mantenimiento de activos
-            </p>
-          </div>
-        </div>
+          <p className="text-gray-600 mt-2">
+            Registra y gestiona el mantenimiento de activos
+          </p>
+        </Card>
 
         {/* Filters */}
         <Card className="mb-6">
