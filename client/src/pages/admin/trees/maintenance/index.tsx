@@ -68,8 +68,12 @@ import {
   Filter,
   Wrench,
   TreePine,
-  Info
+  Info,
+  MapPin,
+  Leaf,
+  Settings
 } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 
 interface TreeMaintenance {
   id: number;
@@ -139,20 +143,18 @@ export default function TreeMaintenancePage() {
   // Cargar datos de árboles para el selector
   const { data: treesResponse, isLoading: loadingTrees } = useQuery({
     queryKey: ['/api/trees'],
-    suspense: false,
     retry: 1,
   });
   
-  const trees = treesResponse?.data || [];
+  const trees = (treesResponse as any)?.data || [];
 
   // Cargar especies para filtros
   const { data: speciesResponse } = useQuery({
     queryKey: ['/api/tree-species'],
-    suspense: false,
     retry: 1,
   });
   
-  const species = speciesResponse?.data || [];
+  const species = (speciesResponse as any)?.data || [];
 
   // Estado para parques
   const [parks, setParks] = React.useState([]);
