@@ -696,15 +696,20 @@ const IncidentCategoriesPage = () => {
 
   return (
     <AdminLayout>
-      <div className="container mx-auto py-6">
-        <div className="mb-6">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-            <div className="flex items-center gap-2 mt-2">
-              <Tag className="w-8 h-8 text-gray-900" />
-              <h1 className="text-3xl font-bold text-gray-900">Categorías de incidencias</h1>
+      <div className="p-6">
+        {/* Header con patrón Card estandarizado */}
+        <Card className="p-4 bg-gray-50 mb-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <Tag className="w-8 h-8 text-gray-900" />
+                <h1 className="text-3xl font-bold text-gray-900">Categorías de incidencias</h1>
+              </div>
+              <p className="text-gray-600 mt-2">
+                Gestión de categorías y subcategorías para clasificar incidencias
+              </p>
             </div>
-            
-            <div className="flex items-center mt-4 md:mt-0 space-x-2">
+            <div className="flex flex-wrap gap-3">
               <Button 
                 variant="outline"
                 onClick={() => {
@@ -726,7 +731,7 @@ const IncidentCategoriesPage = () => {
               </Button>
             </div>
           </div>
-        </div>
+        </Card>
         
         <div className="mb-6">
           <div className="relative">
