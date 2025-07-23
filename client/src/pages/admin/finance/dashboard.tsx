@@ -131,18 +131,14 @@ const FinanceDashboard = () => {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <BarChart3 className="h-6 w-6 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                Dashboard Financiero
-              </h1>
-              <p className="text-gray-600">
-                Analytics avanzado y resumen ejecutivo
-              </p>
+        {/* Header con título */}
+        <Card className="p-4 bg-gray-50">
+          <div className="flex items-center gap-2">
+            <BarChart3 className="w-8 h-8 text-gray-900" />
+            <h1 className="text-3xl font-bold text-gray-900">Dashboard Financiero</h1>
+          </div>
+          <p className="text-gray-600 mt-2">Analytics avanzado y resumen ejecutivo</p>
+        </Card>
             </div>
           </div>
           

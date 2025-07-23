@@ -213,21 +213,24 @@ export default function VolunteersPage() {
   return (
     <AdminLayout>
       <div className="container mx-auto p-6">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <div className="flex items-center gap-2 mt-2">
-              <Users className="w-8 h-8 text-gray-900" />
-              <h1 className="text-3xl font-bold text-gray-900">Gestión de Voluntarios</h1>
+        {/* Header con título */}
+        <Card className="p-4 bg-gray-50 mb-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <Users className="w-8 h-8 text-gray-900" />
+                <h1 className="text-3xl font-bold text-gray-900">Gestión de Voluntarios</h1>
+              </div>
+              <p className="text-gray-600 mt-2">Administra los voluntarios registrados en el sistema</p>
             </div>
-            <p className="text-muted-foreground">
-              Administra los voluntarios registrados en el sistema
-            </p>
+            <div>
+              <Button onClick={handleNewVolunteer}>
+                <Plus className="h-4 w-4 mr-2" />
+                Nuevo Voluntario
+              </Button>
+            </div>
           </div>
-          <Button onClick={handleNewVolunteer}>
-            <Plus className="h-4 w-4 mr-2" />
-            Nuevo Voluntario
-          </Button>
-        </div>
+        </Card>
 
         {/* Estadísticas */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">

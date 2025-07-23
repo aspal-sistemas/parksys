@@ -122,20 +122,22 @@ export default function AmenitiesDashboard() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        {/* Header con botón de actualizar */}
-        <div className="flex justify-between items-center">
-          <div>
-            <div className="flex items-center gap-2">
-              <Activity className="w-8 h-8 text-gray-900" />
-              <h1 className="text-3xl font-bold text-gray-900">Dashboard de Amenidades</h1>
+        {/* Header con título */}
+        <Card className="p-4 bg-gray-50">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <Activity className="w-8 h-8 text-gray-900" />
+                <h1 className="text-3xl font-bold text-gray-900">Dashboard de Amenidades</h1>
+              </div>
+              <p className="text-gray-600 mt-2">Análisis y estadísticas de amenidades en parques</p>
             </div>
-            <p className="text-gray-600">Análisis y estadísticas de amenidades en parques</p>
+            <Button onClick={handleRefresh} variant="outline">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Actualizar
+            </Button>
           </div>
-          <Button onClick={handleRefresh} variant="outline">
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Actualizar
-          </Button>
-        </div>
+        </Card>
 
         {/* KPIs principales */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

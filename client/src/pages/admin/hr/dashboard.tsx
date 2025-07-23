@@ -71,7 +71,16 @@ export default function HRDashboard() {
   return (
     <AdminLayout>
       <div className="space-y-8">
-        {/* Header */}
+        {/* Header con título */}
+        <Card className="p-4 bg-gray-50">
+          <div className="flex items-center gap-2">
+            <BarChart3 className="w-8 h-8 text-gray-900" />
+            <h1 className="text-3xl font-bold text-gray-900">Dashboard de Recursos Humanos</h1>
+          </div>
+          <p className="text-gray-600 mt-2">Panel de control integral para gestión de personal</p>
+        </Card>
+
+        {/* Previous header area with additional content */}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Dashboard de Recursos Humanos</h1>

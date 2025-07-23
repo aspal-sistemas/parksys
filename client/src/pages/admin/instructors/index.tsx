@@ -264,48 +264,49 @@ export default function InstructorsListPage() {
       </AlertDialog>
 
       <div className="container mx-auto p-6">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-              <GraduationCap className="w-8 h-8" />
-              Instructores
-            </h1>
-            <p className="text-muted-foreground">
-              Gestiona la lista de instructores registrados en la plataforma.
-            </p>
+        {/* Header con título */}
+        <Card className="p-4 bg-gray-50 mb-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <GraduationCap className="w-8 h-8 text-gray-900" />
+                <h1 className="text-3xl font-bold text-gray-900">Instructores</h1>
+              </div>
+              <p className="text-gray-600 mt-2">Gestiona la lista de instructores registrados en la plataforma</p>
+            </div>
+            <div className="flex space-x-2">
+              <Button onClick={() => setLocation('/admin/activities/instructors/new')}>
+                <Plus className="mr-2 h-4 w-4" />
+                Nuevo Instructor
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline">
+                    <Download className="mr-2 h-4 w-4" />
+                    Exportar
+                    <ChevronDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuLabel>Formato</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>
+                    <FileEdit className="mr-2 h-4 w-4" />
+                    Excel
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <FileEdit className="mr-2 h-4 w-4" />
+                    CSV
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <FileEdit className="mr-2 h-4 w-4" />
+                    PDF
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
-          <div className="flex space-x-2">
-            <Button onClick={() => setLocation('/admin/activities/instructors/new')}>
-              <Plus className="mr-2 h-4 w-4" />
-              Nuevo Instructor
-            </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline">
-                  <Download className="mr-2 h-4 w-4" />
-                  Exportar
-                  <ChevronDown className="ml-2 h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuLabel>Formato</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <FileEdit className="mr-2 h-4 w-4" />
-                  Excel
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <FileEdit className="mr-2 h-4 w-4" />
-                  CSV
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <FileEdit className="mr-2 h-4 w-4" />
-                  PDF
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
+        </Card>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
           <Card>

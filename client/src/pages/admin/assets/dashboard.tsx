@@ -132,13 +132,17 @@ const AssetsDashboard: React.FC = () => {
 
   return (
     <AdminLayout>
+      {/* Header con título */}
+      <Card className="p-4 bg-gray-50 mb-6">
+        <div className="flex items-center gap-2">
+          <Tag className="w-8 h-8 text-gray-900" />
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard de Activos</h1>
+        </div>
+        <p className="text-gray-600 mt-2">Panel de control y estadísticas de activos del parque</p>
+      </Card>
+
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Gestión de Activos</h1>
-          <p className="text-muted-foreground">
-            Panel de control y estadísticas de activos del parque.
-          </p>
-        </div>
         <div className="flex space-x-2">
           <Button onClick={() => setLocation('/admin/assets/inventory')}>
             Ver Inventario

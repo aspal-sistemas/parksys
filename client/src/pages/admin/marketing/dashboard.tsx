@@ -80,19 +80,21 @@ const SponsorshipDashboard = () => {
   return (
     <AdminLayout>
       <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <BarChart className="w-8 h-8 text-gray-900" />
-            <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+      {/* Header con título */}
+      <Card className="p-4 bg-gray-50">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-2">
+              <BarChart className="w-8 h-8 text-gray-900" />
+              <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+            </div>
+            <p className="text-gray-600 mt-2">Resumen general del sistema de patrocinios</p>
           </div>
-          <p className="text-gray-600 mt-2">Resumen general del sistema de patrocinios</p>
+          <div className="text-sm text-gray-500">
+            Última actualización: {format(new Date(), 'dd/MM/yyyy HH:mm', { locale: es })}
+          </div>
         </div>
-        <div className="text-sm text-gray-500">
-          Última actualización: {format(new Date(), 'dd/MM/yyyy HH:mm', { locale: es })}
-        </div>
-      </div>
+      </Card>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

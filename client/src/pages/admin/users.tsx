@@ -1071,18 +1071,16 @@ const AdminUsers = () => {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        {/* Custom Header */}
-        <div className="flex justify-between items-start">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-              <Users className="w-8 h-8" />
-              {tUsers('title')}
-            </h1>
-            <p className="text-gray-600 mt-2">
-              {tUsers('subtitle')}
-            </p>
+        {/* Header con título */}
+        <Card className="p-4 bg-gray-50">
+          <div className="flex items-center gap-2">
+            <Users className="w-8 h-8 text-gray-900" />
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">{tUsers('title')}</h1>
+              <p className="text-gray-600 mt-2">{tUsers('subtitle')}</p>
+            </div>
           </div>
-        </div>
+        </Card>
         
         {/* Search and actions bar */}
         <div className="mb-6 space-y-4">

@@ -113,27 +113,31 @@ export default function InstructorsCardsView() {
   return (
     <AdminLayout>
       <div className="container mx-auto p-6">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Instructores</h1>
-            <p className="text-muted-foreground">
-              Explora todos los instructores disponibles para las actividades.
-            </p>
+        {/* Header con título */}
+        <Card className="p-4 bg-gray-50 mb-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <GraduationCap className="w-8 h-8 text-gray-900" />
+                <h1 className="text-3xl font-bold text-gray-900">Instructores</h1>
+              </div>
+              <p className="text-gray-600 mt-2">Explora todos los instructores disponibles para las actividades</p>
+            </div>
+            <div className="flex space-x-2">
+              <Button 
+                variant="outline"
+                onClick={() => setLocation('/admin/instructors')}
+              >
+                <Users className="mr-2 h-4 w-4" />
+                Ver como lista
+              </Button>
+              <Button onClick={() => setLocation('/admin/users')}>
+                <Plus className="mr-2 h-4 w-4" />
+                Nuevo Instructor
+              </Button>
+            </div>
           </div>
-          <div className="flex space-x-2">
-            <Button 
-              variant="outline"
-              onClick={() => setLocation('/admin/instructors')}
-            >
-              <Users className="mr-2 h-4 w-4" />
-              Ver como lista
-            </Button>
-            <Button onClick={() => setLocation('/admin/users')}>
-              <Plus className="mr-2 h-4 w-4" />
-              Nuevo Instructor
-            </Button>
-          </div>
-        </div>
+        </Card>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
           <Card>

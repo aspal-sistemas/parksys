@@ -337,13 +337,17 @@ export default function ConcessionTypeCatalog() {
       </Helmet>
 
       <div className="container mx-auto py-6">
+        {/* Header con título */}
+        <Card className="p-4 bg-gray-50 mb-6">
+          <div className="flex items-center gap-2">
+            <FileText className="w-8 h-8 text-gray-900" />
+            <h1 className="text-3xl font-bold text-gray-900">Catálogo de Concesiones</h1>
+          </div>
+          <p className="text-gray-600 mt-2">Administra los tipos de concesiones disponibles para los parques</p>
+        </Card>
+
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Catálogo de Concesiones</h1>
-            <p className="text-muted-foreground">
-              Administra los tipos de concesiones disponibles para los parques
-            </p>
-          </div>
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
               <Button className="gap-2">
