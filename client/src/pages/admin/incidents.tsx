@@ -17,7 +17,8 @@ import {
   ChevronLeft,
   ChevronRight,
   FileText,
-  Eye
+  Eye,
+  ClipboardList
 } from 'lucide-react';
 import AdminLayout from '@/components/AdminLayout';
 import { Button } from '@/components/ui/button';
@@ -430,11 +431,9 @@ const IncidentsPage = () => {
       <div className="space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Gestión de Incidencias</h1>
-            <p className="text-gray-600">
-              Mostrando {filteredIncidents.length} de {incidents.length} incidencias
-            </p>
+          <div className="flex items-center gap-2 mt-2">
+            <ClipboardList className="w-8 h-8 text-gray-900" />
+            <h1 className="text-3xl font-bold text-gray-900">Gestión de Incidencias</h1>
           </div>
           <div className="flex space-x-2">
             <Button
