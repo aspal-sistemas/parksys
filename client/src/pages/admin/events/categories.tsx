@@ -136,7 +136,7 @@ export default function EventCategoriesPage() {
     mutationFn: async (data: CategoryFormData) => {
       return apiRequest('/api/event-categories', {
         method: 'POST',
-        body: data
+        data: data
       });
     },
     onSuccess: () => {
@@ -160,7 +160,7 @@ export default function EventCategoriesPage() {
     mutationFn: async ({ id, data }: { id: number; data: CategoryFormData }) => {
       return apiRequest(`/api/event-categories/${id}`, {
         method: 'PUT',
-        body: data
+        data: data
       });
     },
     onSuccess: () => {
@@ -233,35 +233,37 @@ export default function EventCategoriesPage() {
 
   return (
     <AdminLayout>
-      <div className="container mx-auto py-6">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center gap-2">
-            <BarChart3 className="w-8 h-8" />
+      <div className="space-y-6">
+        {/* Header con patrón Card estandarizado */}
+        <Card className="p-4 bg-gray-50">
+          <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Categorías de Eventos</h1>
-              <p className="text-gray-600">Gestiona las categorías para clasificar eventos</p>
+              <div className="flex items-center gap-2">
+                <BarChart3 className="w-8 h-8 text-gray-900" />
+                <h1 className="text-3xl font-bold text-gray-900">Categorías de Eventos</h1>
+              </div>
+              <p className="text-gray-600 mt-2">Gestiona las categorías para clasificar eventos</p>
             </div>
+            
+            <Dialog open={showNewForm} onOpenChange={setShowNewForm}>
+              <DialogTrigger asChild>
+                <Button className="bg-green-600 hover:bg-green-700">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nueva Categoría
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Crear Nueva Categoría</DialogTitle>
+                </DialogHeader>
+                <CategoryForm
+                  onSave={handleSaveNew}
+                  onCancel={() => setShowNewForm(false)}
+                />
+              </DialogContent>
+            </Dialog>
           </div>
-          
-          <Dialog open={showNewForm} onOpenChange={setShowNewForm}>
-            <DialogTrigger asChild>
-              <Button className="bg-green-600 hover:bg-green-700">
-                <Plus className="h-4 w-4 mr-2" />
-                Nueva Categoría
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Crear Nueva Categoría</DialogTitle>
-              </DialogHeader>
-              <CategoryForm
-                onSave={handleSaveNew}
-                onCancel={() => setShowNewForm(false)}
-              />
-            </DialogContent>
-          </Dialog>
-        </div>
+        </Card>
 
         {/* Lista de categorías */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
