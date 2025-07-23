@@ -561,8 +561,11 @@ export default function AccountingTransactions() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">Transacciones</h1>
-            <p className="text-gray-600">Gestiona los ingresos y gastos de la empresa</p>
+            <div className="flex items-center gap-2">
+              <Receipt className="w-8 h-8 text-gray-900" />
+              <h1 className="text-3xl font-bold text-gray-900">Transacciones</h1>
+            </div>
+            <p className="text-gray-600 mt-2">Gestiona los ingresos y gastos de la empresa</p>
           </div>
           <div className="flex items-center space-x-2">
             <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
