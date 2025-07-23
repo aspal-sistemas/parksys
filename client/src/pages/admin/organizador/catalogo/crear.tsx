@@ -142,8 +142,6 @@ const CrearActividadPage = () => {
   // Consulta para obtener la lista de parques
   const { data: parquesResponse } = useQuery({
     queryKey: ['/api/parks'],
-    suspense: false,
-    retry: 1,
   });
   
   const parques = parquesResponse?.data || [];
@@ -151,8 +149,6 @@ const CrearActividadPage = () => {
   // Consulta para obtener las categorías de actividades
   const { data: categoriasResponse } = useQuery({
     queryKey: ['/api/activity-categories'],
-    suspense: false,
-    retry: 1,
   });
   
   const categorias = categoriasResponse?.data || [];
@@ -160,12 +156,10 @@ const CrearActividadPage = () => {
   // Consulta para obtener la lista de usuarios con rol de instructor
   const { data: usersResponse } = useQuery({
     queryKey: ['/api/users'],
-    suspense: false,
-    retry: 1,
   });
   
   const allUsers = usersResponse?.data || [];
-  const instructores = allUsers.filter(user => user.role === 'instructor');
+  const instructores = allUsers.filter((user: any) => user.role === 'instructor');
 
   // Configuración del formulario
   const form = useForm<FormValues>({
@@ -205,7 +199,7 @@ const CrearActividadPage = () => {
       
       if (values.instructorId) {
         const selectedInstructor = instructores.find(
-          instructor => instructor.id.toString() === values.instructorId
+          (instructor: any) => instructor.id.toString() === values.instructorId
         );
         
         if (selectedInstructor) {
@@ -300,28 +294,30 @@ const CrearActividadPage = () => {
 
   return (
     <AdminLayout>
-      <div className="mb-6">
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-            <Plus className="w-8 h-8" />
-            Crear Nueva Actividad
-          </h1>
-          <Button variant="outline" onClick={() => setLocation('/admin/organizador/catalogo/ver')}>
-            Actividades Disponibles
-          </Button>
-        </div>
-        <p className="text-gray-500">
-          Completa el formulario para crear una nueva actividad para el catálogo
-        </p>
-      </div>
+      <div className="space-y-6">
+        {/* Header con patrón Card estandarizado */}
+        <Card className="p-4 bg-gray-50">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <Plus className="w-8 h-8 text-gray-900" />
+                <h1 className="text-3xl font-bold text-gray-900">Crear Nueva Actividad</h1>
+              </div>
+              <p className="text-gray-600 mt-2">Completa el formulario para crear una nueva actividad para el catálogo</p>
+            </div>
+            <Button variant="outline" onClick={() => setLocation('/admin/organizador/catalogo/ver')}>
+              Actividades Disponibles
+            </Button>
+          </div>
+        </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Formulario de Actividad</CardTitle>
-          <CardDescription>
-            Ingresa la información completa de la actividad. Los campos marcados con * son obligatorios.
-          </CardDescription>
-        </CardHeader>
+        <Card>
+          <CardHeader>
+            <CardTitle>Formulario de Actividad</CardTitle>
+            <CardDescription>
+              Ingresa la información completa de la actividad. Los campos marcados con * son obligatorios.
+            </CardDescription>
+          </CardHeader>
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -359,7 +355,7 @@ const CrearActividadPage = () => {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {categorias.map((categoria) => (
+                            {categorias.map((categoria: any) => (
                               <SelectItem key={categoria.id} value={categoria.id.toString()}>
                                 {categoria.name}
                               </SelectItem>
@@ -409,7 +405,7 @@ const CrearActividadPage = () => {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {parques.map((parque) => (
+                          {parques.map((parque: any) => (
                             <SelectItem key={parque.id} value={parque.id.toString()}>
                               {parque.name}
                             </SelectItem>
@@ -914,7 +910,7 @@ const CrearActividadPage = () => {
                               No hay instructores disponibles
                             </SelectItem>
                           ) : (
-                            instructores.map((instructor) => (
+                            instructores.map((instructor: any) => (
                               <SelectItem key={instructor.id} value={instructor.id.toString()}>
                                 {instructor.firstName} {instructor.lastName} ({instructor.email})
                               </SelectItem>
@@ -960,6 +956,7 @@ const CrearActividadPage = () => {
           </Form>
         </CardContent>
       </Card>
+      </div>
     </AdminLayout>
   );
 };
