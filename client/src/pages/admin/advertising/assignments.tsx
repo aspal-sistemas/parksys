@@ -479,7 +479,7 @@ export default function AdvertisingAssignments() {
   const [editingAssignment, setEditingAssignment] = useState<Assignment | undefined>();
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const recordsPerPage = 10;
+  const recordsPerPage = 12;
 
   const queryClient = useQueryClient();
 
