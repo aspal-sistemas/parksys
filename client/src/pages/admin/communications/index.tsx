@@ -19,13 +19,13 @@ const CommunicationsPage: React.FC = () => {
       <div className="space-y-6">
 
         {/* Header con título */}
-        <div className="p-4 bg-gray-50">
+        <Card className="p-4 bg-gray-50">
           <div className="flex items-center gap-2">
             <MessageSquare className="w-8 h-8 text-gray-900" />
             <h1 className="text-3xl font-bold text-gray-900">Dashboard de Comunicaciones</h1>
           </div>
           <p className="text-gray-600 mt-2">Panel de control para gestión de comunicaciones y campañas</p>
-        </div>
+        </Card>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-4 gap-6">
