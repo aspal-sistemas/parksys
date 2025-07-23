@@ -21,18 +21,16 @@ const SettingsPage = () => {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        {/* Custom Header */}
-        <div className="flex justify-between items-start">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-              <Settings className="w-8 h-8" />
-              Configuración del Sistema
-            </h1>
-            <p className="text-gray-600 mt-2">
-              Administra la configuración de seguridad, respaldos y parámetros del sistema
-            </p>
+        {/* Header con título */}
+        <Card className="p-4 bg-gray-50">
+          <div className="flex items-center gap-2">
+            <Settings className="w-8 h-8 text-gray-900" />
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Configuración del Sistema</h1>
+              <p className="text-gray-600 mt-2">Administra la configuración de seguridad, respaldos y parámetros del sistema</p>
+            </div>
           </div>
-        </div>
+        </Card>
         
         <div className="container mx-auto px-4 py-8">
 
