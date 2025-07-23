@@ -261,17 +261,9 @@ const AssetsAssignmentsPage: React.FC = () => {
       <div className="p-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-4">
-            <Button variant="outline" onClick={() => setLocation('/admin/assets')}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Volver a Activos
-            </Button>
-            <div>
-              <h1 className="text-3xl font-bold">Gestión de Asignaciones</h1>
-              <p className="text-muted-foreground">
-                Asigna activos a instructores y actividades
-              </p>
-            </div>
+          <div className="flex items-center gap-2 mt-2">
+            <UserCheck className="w-8 h-8 text-gray-900" />
+            <h1 className="text-3xl font-bold text-gray-900">Gestión de Asignaciones</h1>
           </div>
 
           <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
