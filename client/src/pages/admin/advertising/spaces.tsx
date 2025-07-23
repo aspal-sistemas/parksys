@@ -166,8 +166,11 @@ const AdSpaces = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Espacios Publicitarios</h1>
-            <p className="text-gray-600">Gestión de espacios publicitarios organizados por páginas del sistema</p>
+            <div className="flex items-center gap-2">
+              <MapPin className="w-8 h-8 text-gray-900" />
+              <h1 className="text-3xl font-bold text-gray-900">Espacios Publicitarios</h1>
+            </div>
+            <p className="text-gray-600 mt-2">Gestión de espacios publicitarios organizados por páginas del sistema</p>
           </div>
           <div className="flex gap-2">
             <Link href="/admin/advertising/advertisements">
