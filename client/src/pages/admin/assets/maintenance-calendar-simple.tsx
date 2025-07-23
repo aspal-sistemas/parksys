@@ -119,16 +119,24 @@ const MaintenanceCalendarSimplePage = () => {
   return (
     <AdminLayout>
       <div className="container py-6">
-        <div className="mb-6 flex justify-between items-center">
-          <div className="flex items-center gap-2 mt-2">
-            <Calendar className="w-8 h-8 text-gray-900" />
-            <h1 className="text-3xl font-bold text-gray-900">Calendario de Mantenimiento</h1>
+        {/* Header con patrón Card estandarizado */}
+        <Card className="p-4 bg-gray-50 mb-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <Calendar className="w-8 h-8 text-gray-900" />
+                <h1 className="text-3xl font-bold text-gray-900">Calendario de Mantenimiento</h1>
+              </div>
+              <p className="text-gray-600 mt-2">
+                Programa y visualiza el mantenimiento de activos por fechas
+              </p>
+            </div>
+            <Button onClick={() => setLocation('/admin/assets/maintenance/schedule')}>
+              <Plus className="mr-2 h-4 w-4" />
+              Programar Mantenimiento
+            </Button>
           </div>
-          <Button onClick={() => setLocation('/admin/assets/maintenance/schedule')}>
-            <Plus className="mr-2 h-4 w-4" />
-            Programar Mantenimiento
-          </Button>
-        </div>
+        </Card>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Panel de próximos mantenimientos */}
