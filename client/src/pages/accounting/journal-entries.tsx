@@ -13,9 +13,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
-import { ChevronLeft, Plus, Eye, Filter, Search, RefreshCw, Download, Upload, FileText, ChevronRight } from 'lucide-react';
+import { ChevronLeft, Plus, Eye, Filter, Search, RefreshCw, Download, Upload, FileText, ChevronRight, ClipboardList } from 'lucide-react';
 import { AdminLayout } from '@/components/AdminLayout';
-import { useLocation } from 'wouter';
 
 const journalEntrySchema = z.object({
   date: z.string().min(1, 'La fecha es requerida'),
@@ -33,7 +32,6 @@ const journalEntrySchema = z.object({
 type JournalEntryFormData = z.infer<typeof journalEntrySchema>;
 
 export default function JournalEntries() {
-  const [, setLocation] = useLocation();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
@@ -107,10 +105,6 @@ export default function JournalEntries() {
 
   const handleGenerateAutomatic = () => {
     generateAutomaticMutation.mutate();
-  };
-
-  const handleBack = () => {
-    setLocation('/admin/accounting/dashboard');
   };
 
   const handleViewEntry = (entry: any) => {
@@ -417,20 +411,12 @@ export default function JournalEntries() {
       <div className="p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={handleBack}
-              className="flex items-center space-x-2"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              <span>Regresar</span>
-            </Button>
-            <div>
-              <h1 className="text-3xl font-bold">Asientos Contables</h1>
-              <p className="text-gray-600">Registro de movimientos contables con partida doble</p>
+          <div>
+            <div className="flex items-center gap-2">
+              <ClipboardList className="w-8 h-8 text-gray-900" />
+              <h1 className="text-3xl font-bold text-gray-900">Asientos Contables</h1>
             </div>
+            <p className="text-gray-600 mt-2">Registro de movimientos contables con partida doble</p>
           </div>
           <div className="flex items-center space-x-2">
             <Button
