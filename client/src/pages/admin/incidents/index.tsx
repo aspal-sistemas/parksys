@@ -353,19 +353,27 @@ const IncidentsPage = () => {
   return (
     <AdminLayout>
       <div className="container mx-auto py-6">
-        <div className="flex flex-col space-y-4 md:space-y-0 md:flex-row md:justify-between md:items-center mb-6">
-          <h1 className="text-2xl font-bold">Gestión de Incidencias</h1>
-          
-          {/* Botones de acción principales */}
-          <div className="flex flex-wrap gap-3">
-            <Button 
-              variant="default" 
-              onClick={handleViewDashboard}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              <BarChart className="h-4 w-4 mr-2" />
-              Dashboard
-            </Button>
+        {/* Header con patrón Card estandarizado */}
+        <Card className="p-4 bg-gray-50 mb-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="w-8 h-8 text-gray-900" />
+                <h1 className="text-3xl font-bold text-gray-900">Gestión de Incidencias</h1>
+              </div>
+              <p className="text-gray-600 mt-2">
+                Reportes y seguimiento de incidencias en parques y activos
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Button 
+                variant="default" 
+                onClick={handleViewDashboard}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <BarChart className="h-4 w-4 mr-2" />
+                Dashboard
+              </Button>
             
             <Button 
               variant="outline" 
@@ -375,15 +383,16 @@ const IncidentsPage = () => {
               Categorías
             </Button>
             
-            <Button 
-              onClick={handleNewIncident}
-              className="bg-green-600 hover:bg-green-700 text-white"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Nueva Incidencia
-            </Button>
+              <Button 
+                onClick={handleNewIncident}
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Nueva Incidencia
+              </Button>
+            </div>
           </div>
-        </div>
+        </Card>
           
         <Tabs defaultValue="all" className="flex-1">
           <TabsList>
