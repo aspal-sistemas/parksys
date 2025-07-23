@@ -444,13 +444,85 @@ export default function CashFlowMatrix() {
               <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
               Actualizar
             </Button>
-            <Button onClick={exportToExcel} variant="outline">
+          </div>
+        </div>
+
+        {/* Controles de filtros y acciones */}
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-6">
+          <div className="space-y-2">
+            <Label htmlFor="year-select">Año</Label>
+            <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(parseInt(value))}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i).map(year => (
+                  <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="park-select">Parque</Label>
+            <Select value={selectedPark} onValueChange={setSelectedPark}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los parques</SelectItem>
+                {parks && Array.isArray(parks) && parks.map((park: { id: number; name: string }) => (
+                  <SelectItem key={`park-${park.id}`} value={park.id.toString()}>
+                    {park.name || `Parque ${park.id}`}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="view-mode">Vista</Label>
+            <Select value={viewMode} onValueChange={(value: 'monthly' | 'quarterly' | 'annual') => setViewMode(value)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="monthly">Mensual</SelectItem>
+                <SelectItem value="quarterly">Trimestral</SelectItem>
+                <SelectItem value="annual">Anual</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {showProjections && (
+            <div className="space-y-2">
+              <Label htmlFor="scenario-select">Escenario</Label>
+              <Select value={selectedScenario} onValueChange={(value: 'optimistic' | 'realistic' | 'pessimistic') => setSelectedScenario(value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="optimistic">Optimista</SelectItem>
+                  <SelectItem value="realistic">Realista</SelectItem>
+                  <SelectItem value="pessimistic">Pesimista</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <Label>Exportar</Label>
+            <Button onClick={exportToExcel} variant="outline" className="w-full">
               <Download className="h-4 w-4 mr-2" />
               Exportar
             </Button>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Importar</Label>
             <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
               <DialogTrigger asChild>
-                <Button variant="outline">
+                <Button variant="outline" className="w-full">
                   <Upload className="h-4 w-4 mr-2" />
                   Importar CSV
                 </Button>
@@ -534,70 +606,6 @@ export default function CashFlowMatrix() {
               </DialogContent>
             </Dialog>
           </div>
-        </div>
-
-        {/* Controles de filtros */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="space-y-2">
-            <Label htmlFor="year-select">Año</Label>
-            <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(parseInt(value))}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i).map(year => (
-                  <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="park-select">Parque</Label>
-            <Select value={selectedPark} onValueChange={setSelectedPark}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los parques</SelectItem>
-                {parks && Array.isArray(parks) && parks.map((park: { id: number; name: string }) => (
-                  <SelectItem key={`park-${park.id}`} value={park.id.toString()}>
-                    {park.name || `Parque ${park.id}`}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="view-mode">Vista</Label>
-            <Select value={viewMode} onValueChange={(value: 'monthly' | 'quarterly' | 'annual') => setViewMode(value)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="monthly">Mensual</SelectItem>
-                <SelectItem value="quarterly">Trimestral</SelectItem>
-                <SelectItem value="annual">Anual</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {showProjections && (
-            <div className="space-y-2">
-              <Label htmlFor="scenario-select">Escenario</Label>
-              <Select value={selectedScenario} onValueChange={(value: 'optimistic' | 'realistic' | 'pessimistic') => setSelectedScenario(value)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="optimistic">Optimista</SelectItem>
-                  <SelectItem value="realistic">Realista</SelectItem>
-                  <SelectItem value="pessimistic">Pesimista</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          )}
         </div>
 
         {/* Panel de configuración de factores personalizados */}
