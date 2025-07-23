@@ -215,7 +215,10 @@ export default function VolunteersPage() {
       <div className="container mx-auto p-6">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Gestión de Voluntarios</h1>
+            <div className="flex items-center gap-2 mt-2">
+              <Users className="w-8 h-8 text-gray-900" />
+              <h1 className="text-3xl font-bold text-gray-900">Gestión de Voluntarios</h1>
+            </div>
             <p className="text-muted-foreground">
               Administra los voluntarios registrados en el sistema
             </p>
