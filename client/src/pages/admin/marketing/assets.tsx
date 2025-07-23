@@ -104,8 +104,11 @@ const AssetsPage = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Activos Promocionales</h1>
-          <p className="text-gray-600">Gestiona todos los activos de marca de los patrocinadores</p>
+          <div className="flex items-center gap-2">
+            <Image className="w-8 h-8 text-gray-900" />
+            <h1 className="text-3xl font-bold text-gray-900">Activos Promocionales</h1>
+          </div>
+          <p className="text-gray-600 mt-2">Gestiona todos los activos de marca de los patrocinadores</p>
         </div>
         <Dialog open={showNewAssetDialog} onOpenChange={setShowNewAssetDialog}>
           <DialogTrigger asChild>
