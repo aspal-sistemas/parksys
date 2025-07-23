@@ -4,12 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ChevronLeft, Download, Printer, Calendar, Search, Filter } from 'lucide-react';
+import { ChevronLeft, Download, Printer, Calendar, Search, Filter, Scale } from 'lucide-react';
 import { AdminLayout } from '@/components/AdminLayout';
-import { useLocation } from 'wouter';
 
 export default function TrialBalance() {
-  const [, setLocation] = useLocation();
   const [period, setPeriod] = useState(new Date().toISOString().split('T')[0].substring(0, 7)); // YYYY-MM format
   const [search, setSearch] = useState('');
   const [levelFilter, setLevelFilter] = useState<string>('all');
@@ -20,9 +18,7 @@ export default function TrialBalance() {
     enabled: true
   });
 
-  const handleBack = () => {
-    setLocation('/admin/accounting/dashboard');
-  };
+
 
   const handleExport = () => {
     // Implementar exportación
@@ -210,20 +206,12 @@ export default function TrialBalance() {
       <div className="p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={handleBack}
-              className="flex items-center space-x-2"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              <span>Regresar</span>
-            </Button>
-            <div>
-              <h1 className="text-3xl font-bold">Balanza</h1>
-              <p className="text-gray-600">Estado de saldos y movimientos contables</p>
+          <div>
+            <div className="flex items-center gap-2">
+              <Scale className="w-8 h-8 text-gray-900" />
+              <h1 className="text-3xl font-bold text-gray-900">Balanza</h1>
             </div>
+            <p className="text-gray-600 mt-2">Estado de saldos y movimientos contables</p>
           </div>
           <div className="flex items-center space-x-2">
             <Button variant="outline" onClick={handlePrint} className="flex items-center space-x-2">
