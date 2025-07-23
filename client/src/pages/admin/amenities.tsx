@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -457,17 +458,19 @@ const AdminAmenitiesPage = () => {
 
   return (
     <AdminLayout>
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <Activity className="w-8 h-8 text-gray-900" />
-            <h2 className="text-3xl font-bold text-gray-900">Gestión de Amenidades</h2>
+      {/* Header con patrón Card estandarizado */}
+      <Card className="p-4 bg-gray-50 mb-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-2">
+              <Activity className="w-8 h-8 text-gray-900" />
+              <h2 className="text-3xl font-bold text-gray-900">Gestión de Amenidades</h2>
+            </div>
+            <p className="text-gray-600 mt-2">
+              Gestiona las amenidades disponibles para los parques
+            </p>
           </div>
-          <p className="text-muted-foreground mt-2">
-            Gestiona las amenidades disponibles para los parques
-          </p>
-        </div>
-        <div className="flex gap-2">
+          <div className="flex gap-2">
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
               <Button>
@@ -731,8 +734,9 @@ const AdminAmenitiesPage = () => {
               </form>
             </DialogContent>
           </Dialog>
+          </div>
         </div>
-      </div>
+      </Card>
 
       {/* Controles de filtrado y ordenamiento */}
       <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
