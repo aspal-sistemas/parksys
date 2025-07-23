@@ -237,13 +237,13 @@ export default function NewReservationPage() {
           <p className="text-gray-600 mt-2">Crear una nueva reserva de espacio</p>
         </Card>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
           {/* Form */}
-          <div className="lg:col-span-2">
+          <div className="xl:col-span-3">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 {/* Space Selection */}
-                <Card className="bg-gray-50">
+                <Card className="w-full">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <MapPin className="h-5 w-5" />
@@ -284,7 +284,7 @@ export default function NewReservationPage() {
                 </Card>
 
                 {/* Customer Information */}
-                <Card className="bg-gray-50">
+                <Card className="w-full">
                   <CardHeader>
                     <CardTitle>Información del Cliente</CardTitle>
                   </CardHeader>
@@ -336,7 +336,7 @@ export default function NewReservationPage() {
                 </Card>
 
                 {/* Date and Time */}
-                <Card className="bg-gray-50">
+                <Card className="w-full">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <CalendarClock className="h-5 w-5" />
@@ -433,7 +433,7 @@ export default function NewReservationPage() {
                 </Card>
 
                 {/* Additional Information */}
-                <Card className="bg-gray-50">
+                <Card className="w-full">
                   <CardHeader>
                     <CardTitle>Información Adicional</CardTitle>
                   </CardHeader>
@@ -504,10 +504,10 @@ export default function NewReservationPage() {
           </div>
 
           {/* Summary Panel */}
-          <div className="lg:col-span-1">
+          <div className="xl:col-span-1">
             <div className="sticky top-6 space-y-4">
               {selectedSpace && (
-                <Card className="bg-gray-50">
+                <Card className="w-full">
                   <CardHeader>
                     <CardTitle className="text-lg">Resumen de Reserva</CardTitle>
                   </CardHeader>
@@ -602,7 +602,7 @@ export default function NewReservationPage() {
               )}
               
               {selectedSpace && (
-                <Card className="bg-gray-50">
+                <Card className="w-full">
                   <CardHeader>
                     <CardTitle className="text-base">Reglas del Espacio</CardTitle>
                   </CardHeader>
