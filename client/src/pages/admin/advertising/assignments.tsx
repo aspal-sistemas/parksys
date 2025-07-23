@@ -931,7 +931,7 @@ export default function AdvertisingAssignments() {
 
         {/* Paginación */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between">
+          <div className="flex justify-end">
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
