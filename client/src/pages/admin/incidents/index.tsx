@@ -374,15 +374,15 @@ const IncidentsPage = () => {
                 <BarChart className="h-4 w-4 mr-2" />
                 Dashboard
               </Button>
-            
-            <Button 
-              variant="outline" 
-              onClick={handleManageCategories}
-            >
-              <Bookmark className="h-4 w-4 mr-2" />
-              Categorías
-            </Button>
-            
+              
+              <Button 
+                variant="outline" 
+                onClick={handleManageCategories}
+              >
+                <Bookmark className="h-4 w-4 mr-2" />
+                Categorías
+              </Button>
+              
               <Button 
                 onClick={handleNewIncident}
                 className="bg-green-600 hover:bg-green-700 text-white"
