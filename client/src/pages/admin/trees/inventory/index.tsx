@@ -508,17 +508,18 @@ function TreeInventoryPage() {
       </Helmet>
       
       <div className="container mx-auto px-4 py-6">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-black flex items-center">
-              <TreeDeciduous className="mr-2 h-8 w-8" />
-              Inventario de Árboles
-            </h1>
-            <p className="text-gray-600 mt-1">
-              Gestión y seguimiento de árboles individuales en los parques
-            </p>
-          </div>
-          <div className="flex gap-2">
+        <Card className="p-4 bg-gray-50 mb-6">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <TreeDeciduous className="w-8 h-8 text-gray-900" />
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Inventario de Árboles</h1>
+                <p className="text-gray-600 mt-2">
+                  Gestión y seguimiento de árboles individuales en los parques
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-2">
             <Button
               onClick={handleExportCsv}
               variant="outline"
@@ -636,17 +637,18 @@ function TreeInventoryPage() {
             >
               <Plus className="mr-2 h-4 w-4" /> Agregar Árbol
             </Button>
+            </div>
+            
+            {/* Input oculto para selección de archivos */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".csv"
+              onChange={handleFileUpload}
+              style={{ display: 'none' }}
+            />
           </div>
-          
-          {/* Input oculto para selección de archivos */}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".csv"
-            onChange={handleFileUpload}
-            style={{ display: 'none' }}
-          />
-        </div>
+        </Card>
         
         <Card className="mb-6">
           <CardHeader className="pb-3">
