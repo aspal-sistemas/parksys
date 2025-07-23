@@ -591,23 +591,25 @@ const AssetCategoriesPage: React.FC = () => {
   return (
     <AdminLayout>
       <div className="p-6 max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <div className="flex items-center gap-2">
-              <Tag className="w-8 h-8 text-gray-900" />
-              <h1 className="text-3xl font-bold text-gray-900">Categorías de Activos</h1>
+        {/* Header con patrón Card estandarizado */}
+        <Card className="p-4 bg-gray-50 mb-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <Tag className="w-8 h-8 text-gray-900" />
+                <h1 className="text-3xl font-bold text-gray-900">Categorías de Activos</h1>
+              </div>
+              <p className="text-gray-600 mt-2">Gestiona las categorías jerárquicas para organizar tus activos</p>
             </div>
-            <p className="text-gray-600 mt-2">Gestiona las categorías jerárquicas para organizar tus activos</p>
+            <Button 
+              onClick={() => openCreateDialog()}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              <FolderPlus className="mr-2" size={20} />
+              Nueva Categoría Principal
+            </Button>
           </div>
-          <Button 
-            onClick={() => openCreateDialog()}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
-          >
-            <FolderPlus className="mr-2" size={20} />
-            Nueva Categoría Principal
-          </Button>
-        </div>
+        </Card>
 
       {/* Tabs de navegación */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
