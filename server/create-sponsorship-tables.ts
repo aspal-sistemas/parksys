@@ -1,5 +1,6 @@
 import { db } from './db';
 import { sponsorshipPackages, sponsors, sponsorshipCampaigns } from '../shared/schema';
+import { eq } from 'drizzle-orm';
 
 /**
  * Script para crear las tablas del sistema de patrocinios y agregar datos iniciales
@@ -174,13 +175,20 @@ export async function createSponsorshipTables() {
       }
     ];
     
-    // Insertar patrocinadores iniciales
+    // Insertar patrocinadores iniciales (solo si no existen)
     for (const sponsor of initialSponsors) {
       try {
-        await db.insert(sponsors).values(sponsor);
-        console.log(`✅ Patrocinador creado: ${sponsor.name}`);
+        // Verificar si el patrocinador ya existe
+        const existing = await db.select().from(sponsors).where(eq(sponsors.name, sponsor.name));
+        
+        if (existing.length === 0) {
+          await db.insert(sponsors).values(sponsor);
+          console.log(`✅ Patrocinador creado: ${sponsor.name}`);
+        } else {
+          console.log(`ℹ️  Patrocinador ya existe: ${sponsor.name}`);
+        }
       } catch (error) {
-        console.log(`ℹ️  Patrocinador ya existe: ${sponsor.name}`);
+        console.log(`⚠️  Error al crear/verificar patrocinador ${sponsor.name}:`, error);
       }
     }
     
