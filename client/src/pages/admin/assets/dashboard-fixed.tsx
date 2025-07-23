@@ -127,17 +127,22 @@ const AssetsDashboardFixed: React.FC = () => {
 
   return (
     <AdminLayout>
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <div className="flex items-center gap-2">
-            <BarChart3 className="w-8 h-8 text-gray-900" />
-            <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+      {/* Header con patrón Card estandarizado */}
+      <Card className="p-4 bg-gray-50 mb-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-2">
+              <BarChart3 className="w-8 h-8 text-gray-900" />
+              <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+            </div>
+            <p className="text-gray-600 mt-2">
+              Análisis y estadísticas de activos en parques
+            </p>
           </div>
-          <p className="text-muted-foreground mt-2">
-            Análisis y estadísticas de activos en parques
-          </p>
         </div>
-      </div>
+      </Card>
+
+
 
       {/* Tarjetas de estadísticas principales */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
