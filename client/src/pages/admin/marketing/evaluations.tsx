@@ -99,8 +99,11 @@ const EvaluationsPage = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Evaluaciones de Patrocinio</h1>
-          <p className="text-gray-600">Analiza la satisfacción de los patrocinadores</p>
+          <div className="flex items-center gap-2">
+            <Award className="w-8 h-8 text-gray-900" />
+            <h1 className="text-3xl font-bold text-gray-900">Evaluaciones de Patrocinio</h1>
+          </div>
+          <p className="text-gray-600 mt-2">Analiza la satisfacción de los patrocinadores</p>
         </div>
         <Dialog open={showNewEvaluationDialog} onOpenChange={setShowNewEvaluationDialog}>
           <DialogTrigger asChild>
