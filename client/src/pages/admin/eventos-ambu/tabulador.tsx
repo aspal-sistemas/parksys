@@ -37,19 +37,19 @@ export default function TabuladorCostosAmbu() {
 
   return (
     <AdminLayout>
-      <div className="container mx-auto py-6">
-        {/* Header */}
-        <div className="flex items-center gap-2 mb-6">
-          <DollarSign className="w-8 h-8" />
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+      <div className="space-y-6">
+        {/* Header con patrón Card estandarizado */}
+        <Card className="p-4 bg-gray-50">
+          <div className="flex items-center gap-2">
+            <DollarSign className="w-8 h-8 text-gray-900" />
+            <h1 className="text-3xl font-bold text-gray-900">
               Tabulador de Costos
             </h1>
-            <p className="text-gray-600">
-              Tarifas Oficiales
-            </p>
           </div>
-        </div>
+          <p className="text-gray-600 mt-2">
+            Tarifas Oficiales
+          </p>
+        </Card>
 
       {/* Información General */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
