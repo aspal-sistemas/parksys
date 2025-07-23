@@ -295,8 +295,11 @@ const ContractsPage = () => {
         {/* Encabezado */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Contratos de Patrocinio</h1>
-            <p className="text-gray-600">Gestión de contratos, pagos y compromisos</p>
+            <div className="flex items-center gap-2">
+              <FileText className="w-8 h-8 text-gray-900" />
+              <h1 className="text-3xl font-bold text-gray-900">Contratos de Patrocinio</h1>
+            </div>
+            <p className="text-gray-600 mt-2">Gestión de contratos, pagos y compromisos</p>
           </div>
           <Button 
             onClick={() => setIsCreateModalOpen(true)}
