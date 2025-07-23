@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { CalendarIcon, Clock, Target, BarChart3, Settings, Plus, Edit, Trash2, CheckCircle, XCircle, AlertCircle, Video } from 'lucide-react';
+import { CalendarIcon, Clock, Target, BarChart3, Settings, Plus, Edit, Trash2, CheckCircle, XCircle, AlertCircle, Video, Grid, List, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -477,6 +477,9 @@ export default function AdvertisingAssignments() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [showForm, setShowForm] = useState(false);
   const [editingAssignment, setEditingAssignment] = useState<Assignment | undefined>();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const recordsPerPage = 10;
 
   const queryClient = useQueryClient();
 
@@ -618,6 +621,18 @@ export default function AdvertisingAssignments() {
     return false;
   }) : [];
 
+  // Paginación
+  const totalRecords = filteredAssignments.length;
+  const totalPages = Math.ceil(totalRecords / recordsPerPage);
+  const startIndex = (currentPage - 1) * recordsPerPage;
+  const endIndex = startIndex + recordsPerPage;
+  const paginatedAssignments = filteredAssignments.slice(startIndex, endIndex);
+
+  // Reset página cuando cambian filtros
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter]);
+
   // Estadísticas con validación segura
   const totalAssignments = Array.isArray(assignments) ? assignments.length : 0;
   const activeAssignments = Array.isArray(assignments) ? assignments.filter(a => {
@@ -724,28 +739,55 @@ export default function AdvertisingAssignments() {
           </Card>
         </div>
 
-        {/* Filtros */}
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1">
-            <Input
-              placeholder="Buscar por anuncio o espacio..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full"
-            />
+        {/* Filtros y controles */}
+        <div className="space-y-4">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
+              <Input
+                placeholder="Buscar por anuncio o espacio..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full"
+              />
+            </div>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full md:w-48">
+                <SelectValue placeholder="Filtrar por estado" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="active">Activas</SelectItem>
+                <SelectItem value="pending">Pendientes</SelectItem>
+                <SelectItem value="expired">Expiradas</SelectItem>
+                <SelectItem value="inactive">Inactivas</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-full md:w-48">
-              <SelectValue placeholder="Filtrar por estado" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
-              <SelectItem value="active">Activas</SelectItem>
-              <SelectItem value="pending">Pendientes</SelectItem>
-              <SelectItem value="expired">Expiradas</SelectItem>
-              <SelectItem value="inactive">Inactivas</SelectItem>
-            </SelectContent>
-          </Select>
+
+          {/* Controles de vista y paginación */}
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">
+                Mostrando {startIndex + 1} a {Math.min(endIndex, totalRecords)} de {totalRecords} asignaciones
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant={viewMode === 'grid' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setViewMode('grid')}
+              >
+                <Grid className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+              >
+                <List className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
         </div>
 
         {/* Lista de Asignaciones */}
@@ -754,9 +796,9 @@ export default function AdvertisingAssignments() {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
             <p className="mt-4 text-gray-600">Cargando asignaciones...</p>
           </div>
-        ) : (
+        ) : viewMode === 'grid' ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-4 lg:gap-6">
-            {filteredAssignments.map((assignment) => (
+            {paginatedAssignments.map((assignment) => (
               <AssignmentCard
                 key={assignment.id}
                 assignment={assignment}
@@ -765,9 +807,170 @@ export default function AdvertisingAssignments() {
               />
             ))}
           </div>
+        ) : (
+          /* Vista de Lista */
+          <div className="space-y-4">
+            <div className="bg-white rounded-lg border">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Anuncio
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Espacio
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Período
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Estado
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Prioridad
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Acciones
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {paginatedAssignments.map((assignment) => {
+                      const safeStartDate = assignment.startDate ? new Date(assignment.startDate) : null;
+                      const safeEndDate = assignment.endDate ? new Date(assignment.endDate) : null;
+                      const now = new Date();
+                      
+                      const isActive = assignment.isActive && 
+                        safeStartDate && safeEndDate && 
+                        !isNaN(safeStartDate.getTime()) && !isNaN(safeEndDate.getTime()) &&
+                        now >= safeStartDate && now <= safeEndDate;
+                        
+                      const isExpired = safeEndDate && !isNaN(safeEndDate.getTime()) && now > safeEndDate;
+                      const isPending = safeStartDate && !isNaN(safeStartDate.getTime()) && now < safeStartDate;
+
+                      return (
+                        <tr key={assignment.id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div className="flex-shrink-0 h-10 w-10">
+                                <ImagePreview 
+                                  src={assignment.advertisement?.imageUrl} 
+                                  alt={assignment.advertisement?.title || ''} 
+                                />
+                              </div>
+                              <div className="ml-4">
+                                <div className="text-sm font-medium text-gray-900">
+                                  {assignment.advertisement?.title}
+                                </div>
+                                <div className="text-sm text-gray-500 truncate max-w-xs">
+                                  {assignment.advertisement?.description}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-900">{assignment.space?.name}</div>
+                            <div className="text-sm text-gray-500">{assignment.space?.pageType}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <div>
+                              {safeStartDate ? format(safeStartDate, 'dd/MM/yyyy', { locale: es }) : 'N/A'}
+                            </div>
+                            <div className="text-gray-500">
+                              {safeEndDate ? format(safeEndDate, 'dd/MM/yyyy', { locale: es }) : 'N/A'}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <Badge className={
+                              isActive ? 'bg-green-100 text-green-800' :
+                              isExpired ? 'bg-red-100 text-red-800' :
+                              isPending ? 'bg-yellow-100 text-yellow-800' :
+                              'bg-gray-100 text-gray-800'
+                            }>
+                              {isActive ? 'Activa' : isExpired ? 'Expirada' : isPending ? 'Pendiente' : 'Inactiva'}
+                            </Badge>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <div className="flex items-center">
+                              <div className={`w-2 h-2 rounded-full mr-2 ${
+                                assignment.priority >= 8 ? 'bg-red-500' :
+                                assignment.priority >= 5 ? 'bg-yellow-500' : 'bg-green-500'
+                              }`}></div>
+                              {assignment.priority}/10
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleEdit(assignment)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDelete(assignment.id)}
+                                className="text-red-600 hover:text-red-700"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         )}
 
-        {filteredAssignments.length === 0 && !isLoading && (
+        {/* Paginación */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Anterior
+              </Button>
+              
+              <div className="flex gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                  <Button
+                    key={pageNum}
+                    variant={currentPage === pageNum ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setCurrentPage(pageNum)}
+                    className="w-10"
+                  >
+                    {pageNum}
+                  </Button>
+                ))}
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+              >
+                Siguiente
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {paginatedAssignments.length === 0 && !isLoading && (
           <div className="text-center py-12">
             <Target className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No hay asignaciones</h3>
