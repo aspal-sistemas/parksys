@@ -57,50 +57,15 @@ export default function AccountingDashboard() {
     <AdminLayout>
       <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold text-gray-900">Módulo de Contabilidad</h1>
-        <p className="text-gray-600 max-w-4xl mx-auto">
-          Sistema contable completo que se integra automáticamente con las transacciones para generar reportes financieros precisos
+      <div>
+        <div className="flex items-center gap-2">
+          <BookOpen className="w-8 h-8 text-gray-900" />
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+        </div>
+        <p className="text-gray-600 mt-2">
+          Sistema Contable Integral Automatizado
         </p>
       </div>
-
-      {/* Integración Automática Banner */}
-      <Card className="bg-gradient-to-r from-teal-50 to-green-50 border-teal-200">
-        <CardContent className="p-6">
-          <div className="flex items-start space-x-4">
-            <div className="flex-shrink-0">
-              <div className="w-10 h-10 bg-teal-500 rounded-full flex items-center justify-center">
-                <Zap className="h-5 w-5 text-white" />
-              </div>
-            </div>
-            <div className="flex-1">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Integración Automática</h3>
-              <p className="text-gray-700 mb-4">
-                Este módulo se conecta automáticamente con las transacciones existentes para generar asientos contables, 
-                eliminar datos ficticios de los reportes y proporcionar estados financieros precisos.
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-green-600" />
-                  <span className="text-sm text-gray-700">Transacciones → Asientos Automáticos</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-green-600" />
-                  <span className="text-sm text-gray-700">Saldos en Tiempo Real</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-green-600" />
-                  <span className="text-sm text-gray-700">Reportes con Datos Reales</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-green-600" />
-                  <span className="text-sm text-gray-700">Depreciación Automática</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Módulos Principales */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
