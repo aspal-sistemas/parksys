@@ -248,8 +248,11 @@ const SponsorsManagement = () => {
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Gestión de Patrocinios</h1>
-            <p className="text-gray-600">Administra patrocinadores, paquetes y campañas</p>
+            <div className="flex items-center gap-2">
+              <Building className="w-8 h-8 text-gray-900" />
+              <h1 className="text-3xl font-bold text-gray-900">Patrocinadores</h1>
+            </div>
+            <p className="text-gray-600 mt-2">Administra patrocinadores, paquetes y campañas</p>
           </div>
           <div className="flex space-x-4">
             <Dialog open={isNewPackageOpen} onOpenChange={setIsNewPackageOpen}>
