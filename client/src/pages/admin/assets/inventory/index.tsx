@@ -853,15 +853,23 @@ const InventoryPage: React.FC = () => {
         <title>Inventario de Activos - ParkSys</title>
       </Helmet>
       
-      {/* Header con métricas rápidas */}
-      <div className="mb-6">
-        <div className="flex items-center gap-2">
-          <Package className="w-8 h-8 text-gray-900" />
-          <h1 className="text-3xl font-bold text-gray-900">Inventario de Activos</h1>
+      {/* Header con patrón Card estandarizado */}
+      <Card className="p-4 bg-gray-50 mb-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-2">
+              <Package className="w-8 h-8 text-gray-900" />
+              <h1 className="text-3xl font-bold text-gray-900">Inventario de Activos</h1>
+            </div>
+            <p className="text-gray-600 mt-2">
+              Gestión completa del inventario de activos de los parques
+            </p>
+          </div>
         </div>
-        <p className="text-gray-600 mt-2 mb-4">
-          Gestión completa del inventario de activos de los parques
-        </p>
+      </Card>
+
+      {/* Métricas debajo del header */}
+      <div className="mb-6">
         
         {/* Métricas rápidas */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
