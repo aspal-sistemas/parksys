@@ -35,7 +35,7 @@ import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { CalendarIcon, Clock, Users, MapPin, Plus } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import LoadingSpinner from "@/components/LoadingSpinner";
 
 // Esquema para validar el formulario
