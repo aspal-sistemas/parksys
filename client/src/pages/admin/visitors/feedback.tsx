@@ -592,16 +592,18 @@ function FeedbackManagement() {
   return (
     <AdminLayout>
       <div className="p-6 space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-          <MessageSquare className="w-8 h-8" />
-          Retroalimentación de Parques
-        </h1>
-        <p className="text-gray-600 mt-2">
-          Gestiona la retroalimentación de los visitantes sobre los parques
-        </p>
-      </div>
+      {/* Header con título */}
+      <Card className="p-4 bg-gray-50">
+        <div className="flex items-center gap-2">
+          <MessageSquare className="w-8 h-8 text-gray-900" />
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Retroalimentación</h1>
+            <p className="text-gray-600 mt-2">
+              Gestiona la retroalimentación de los visitantes sobre los parques
+            </p>
+          </div>
+        </div>
+      </Card>
 
       {/* Statistics Cards */}
       {stats && (
