@@ -1005,24 +1005,27 @@ export default function VisitorCountPage() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-              <Users className="w-8 h-8" />
-              Conteo de Visitantes
-            </h1>
-            <p className="text-gray-600 mt-2">Gestión diaria de visitantes por parque</p>
+        {/* Header con título */}
+        <Card className="p-4 bg-gray-50">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Users className="w-8 h-8 text-gray-900" />
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Conteo</h1>
+                <p className="text-gray-600 mt-2">Gestión diaria de visitantes por parque</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <Button 
+                onClick={() => setShowForm(true)}
+                className="bg-emerald-600 hover:bg-emerald-700"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Nuevo Registro
+              </Button>
+            </div>
           </div>
-          <div className="flex items-center space-x-3">
-            <Button 
-              onClick={() => setShowForm(true)}
-              className="bg-emerald-600 hover:bg-emerald-700"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Nuevo Registro
-            </Button>
-          </div>
-        </div>
+        </Card>
 
         <Tabs defaultValue="registros" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
