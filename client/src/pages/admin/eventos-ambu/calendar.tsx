@@ -177,21 +177,19 @@ export default function CalendarioEventosAmbu() {
 
   return (
     <AdminLayout>
-      <div className="container mx-auto py-6">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-6">
+      <div className="space-y-6">
+        {/* Header con patrón Card estandarizado */}
+        <Card className="p-4 bg-gray-50">
           <div className="flex items-center gap-2">
-            <Calendar className="w-8 h-8" />
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                Calendario de Eventos
-              </h1>
-              <p className="text-gray-600 mt-1">
-                Vista mensual de eventos de bajo y alto impacto ({eventos.length} eventos cargados)
-              </p>
-            </div>
+            <Calendar className="w-8 h-8 text-gray-900" />
+            <h1 className="text-3xl font-bold text-gray-900">
+              Calendario de Eventos
+            </h1>
           </div>
-        </div>
+          <p className="text-gray-600 mt-2">
+            Vista mensual de eventos de bajo y alto impacto ({eventos.length} eventos cargados)
+          </p>
+        </Card>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Calendario Principal */}
