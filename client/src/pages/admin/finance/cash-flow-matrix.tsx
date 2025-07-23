@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { RefreshCw, Calculator, TrendingUp, TrendingDown, Download, Settings, Upload, FileText } from "lucide-react";
+import { RefreshCw, Calculator, TrendingUp, TrendingDown, Download, Settings, Upload, FileText, BarChart3 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { useToast } from "@/hooks/use-toast";
 import AdminLayout from "@/components/AdminLayout";
@@ -415,7 +415,10 @@ export default function CashFlowMatrix() {
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Matriz de Flujo de Efectivo</h1>
+            <div className="flex items-center gap-2">
+              <BarChart3 className="w-8 h-8 text-gray-900" />
+              <h1 className="text-3xl font-bold text-gray-900">Matriz de Flujo de Efectivo</h1>
+            </div>
             <p className="text-gray-600 mt-2">
               Seguimiento financiero mensual con datos reales de ingresos y gastos
             </p>
