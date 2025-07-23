@@ -582,8 +582,11 @@ const AdAdvertisements = () => {
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Gestión de Anuncios</h1>
-            <p className="text-gray-600">Crea y gestiona el contenido publicitario para tus espacios</p>
+            <div className="flex items-center gap-2">
+              <ImageIcon className="w-8 h-8 text-gray-900" />
+              <h1 className="text-3xl font-bold text-gray-900">Gestión de Anuncios</h1>
+            </div>
+            <p className="text-gray-600 mt-2">Crea y gestiona el contenido publicitario para tus espacios</p>
           </div>
           <div className="flex gap-2">
             <Button onClick={forceAd13Update} variant="outline" className="bg-orange-50 hover:bg-orange-100 text-orange-700">
