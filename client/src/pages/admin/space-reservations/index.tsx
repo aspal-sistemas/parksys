@@ -132,27 +132,27 @@ export default function SpaceReservationsPage() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center gap-2">
-            <CalendarClock className="w-8 h-8" />
-            <div>
+        {/* Header con patrón Card estandarizado */}
+        <Card className="p-4 bg-gray-50">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <MapPin className="w-8 h-8 text-gray-900" />
               <h1 className="text-3xl font-bold text-gray-900">
                 Reservas de Espacios
               </h1>
-              <p className="text-gray-600 mt-1">
-                Gestiona las reservas de espacios recreativos en los parques
-              </p>
             </div>
+            <Button 
+              onClick={handleNewReservation}
+              className="bg-[#00a587] hover:bg-[#067f5f] text-white"
+            >
+              <CalendarClock className="h-4 w-4 mr-2" />
+              Nueva Reserva
+            </Button>
           </div>
-          <Button 
-            onClick={handleNewReservation}
-            className="bg-[#00a587] hover:bg-[#067f5f] text-white"
-          >
-            <CalendarClock className="h-4 w-4 mr-2" />
-            Nueva Reserva
-          </Button>
-        </div>
+          <p className="text-gray-600 mt-2">
+            Gestiona las reservas de espacios recreativos en los parques
+          </p>
+        </Card>
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
