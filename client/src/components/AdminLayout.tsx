@@ -4,7 +4,7 @@ import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface AdminLayoutProps {
-  title?: string | React.ReactNode;
+  title?: string;
   children: React.ReactNode;
   subtitle?: string;
 }
@@ -37,26 +37,16 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ title, subtitle, children }) 
             >
               <Menu className="h-5 w-5" />
             </Button>
+            <div>
+              <h1 className="text-2xl font-semibold text-gray-900">
+                {title}
+              </h1>
+              {subtitle && (
+                <p className="text-sm text-gray-500 mt-1">{subtitle}</p>
+              )}
+            </div>
           </div>
         </header>
-        
-        {/* Área gris para títulos */}
-        {(title || subtitle) && (
-          <div className="bg-gray-100 border-b border-gray-200 px-6 py-4">
-            {title && (
-              <div className="mb-2">
-                {typeof title === 'string' ? (
-                  <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
-                ) : (
-                  title
-                )}
-              </div>
-            )}
-            {subtitle && (
-              <p className="text-sm text-gray-600">{subtitle}</p>
-            )}
-          </div>
-        )}
         
         <main className="flex-1 overflow-y-auto p-6">
           {children}

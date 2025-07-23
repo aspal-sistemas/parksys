@@ -269,20 +269,22 @@ export default function BudgetPlanningPage() {
   }
 
   return (
-    <AdminLayout 
-      title={
+    <AdminLayout>
+      <div className="space-y-6">
+      {/* Header con título, subtítulo y controles */}
+      <div className="space-y-4">
+        {/* Título y subtítulo */}
         <div className="flex items-center gap-2">
           <Target className="w-8 h-8 text-gray-900" />
-          <span className="text-3xl font-bold text-gray-900">Planificación Presupuestaria</span>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Planificación Presupuestaria</h1>
+            <p className="text-sm text-gray-600 mt-1">Define las proyecciones mensuales por categoría de ingresos y gastos</p>
+          </div>
         </div>
-      }
-      subtitle="Define las proyecciones mensuales por categoría de ingresos y gastos"
-    >
-      <div className="space-y-6">
-      {/* Header eliminado ya que AdminLayout maneja títulos */}
-      <div className="flex items-center justify-end">
         
-        <div className="flex items-center gap-3">
+        {/* Controles de acción */}
+        <div className="flex items-center justify-end">
+          <div className="flex items-center gap-3">
           <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
             <DialogTrigger asChild>
               <Button variant="outline" className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100">
@@ -377,6 +379,7 @@ export default function BudgetPlanningPage() {
             <Save className="h-4 w-4 mr-2" />
             {saveMutation.isPending ? 'Guardando...' : 'Guardar Presupuesto'}
           </Button>
+          </div>
         </div>
       </div>
 
