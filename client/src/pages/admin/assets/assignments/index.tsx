@@ -259,131 +259,137 @@ const AssetsAssignmentsPage: React.FC = () => {
   return (
     <AdminLayout>
       <div className="p-6">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2 mt-2">
-            <UserCheck className="w-8 h-8 text-gray-900" />
-            <h1 className="text-3xl font-bold text-gray-900">Gestión de Asignaciones</h1>
+        {/* Header con patrón Card estandarizado */}
+        <Card className="p-4 bg-gray-50 mb-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <UserCheck className="w-8 h-8 text-gray-900" />
+                <h1 className="text-3xl font-bold text-gray-900">Gestión de Asignaciones</h1>
+              </div>
+              <p className="text-gray-600 mt-2">
+                Asigna activos a instructores para actividades específicas
+              </p>
+            </div>
+            <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Nueva Asignación
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Crear Nueva Asignación</DialogTitle>
+                  <DialogDescription>
+                    Asigna un activo a un instructor o actividad
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <form onSubmit={handleCreateAssignment} className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium">Activo</label>
+                    <Select name="assetId" required>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar activo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {assets.filter(asset => asset.status === 'active').map((asset) => (
+                          <SelectItem key={asset.id} value={asset.id.toString()}>
+                            {asset.name} - {asset.parkName}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium">Instructor (opcional)</label>
+                    <Select name="instructorId">
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar instructor" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {instructors.map((instructor) => (
+                          <SelectItem key={instructor.id} value={instructor.id.toString()}>
+                            {instructor.firstName} {instructor.lastName}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium">Actividad (opcional)</label>
+                    <Select name="activityId">
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar actividad" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {activities.map((activity) => (
+                          <SelectItem key={activity.id} value={activity.id.toString()}>
+                            {activity.title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium">Fecha de Asignación</label>
+                    <Input 
+                      name="assignmentDate" 
+                      type="date" 
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium">Propósito</label>
+                    <Input 
+                      name="purpose" 
+                      placeholder="Propósito de la asignación"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium">Condición al Asignar</label>
+                    <Select name="condition" required>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar condición" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {ASSIGNMENT_CONDITIONS.map((condition) => (
+                          <SelectItem key={condition.value} value={condition.value}>
+                            {condition.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium">Notas</label>
+                    <Textarea 
+                      name="notes" 
+                      placeholder="Notas adicionales"
+                    />
+                  </div>
+
+                  <div className="flex justify-end space-x-2">
+                    <Button type="button" variant="outline" onClick={() => setShowCreateDialog(false)}>
+                      Cancelar
+                    </Button>
+                    <Button type="submit" disabled={createAssignmentMutation.isPending}>
+                      {createAssignmentMutation.isPending ? 'Creando...' : 'Crear Asignación'}
+                    </Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
           </div>
-
-          <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Nueva Asignación
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Crear Nueva Asignación</DialogTitle>
-                <DialogDescription>
-                  Asigna un activo a un instructor o actividad
-                </DialogDescription>
-              </DialogHeader>
-              
-              <form onSubmit={handleCreateAssignment} className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium">Activo</label>
-                  <Select name="assetId" required>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar activo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {assets.filter(asset => asset.status === 'active').map((asset) => (
-                        <SelectItem key={asset.id} value={asset.id.toString()}>
-                          {asset.name} - {asset.parkName}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium">Instructor (opcional)</label>
-                  <Select name="instructorId">
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar instructor" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {instructors.map((instructor) => (
-                        <SelectItem key={instructor.id} value={instructor.id.toString()}>
-                          {instructor.firstName} {instructor.lastName}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium">Actividad (opcional)</label>
-                  <Select name="activityId">
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar actividad" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {activities.map((activity) => (
-                        <SelectItem key={activity.id} value={activity.id.toString()}>
-                          {activity.title}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium">Fecha de Asignación</label>
-                  <Input 
-                    name="assignmentDate" 
-                    type="date" 
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium">Propósito</label>
-                  <Input 
-                    name="purpose" 
-                    placeholder="Propósito de la asignación"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium">Condición al Asignar</label>
-                  <Select name="condition" required>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar condición" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {ASSIGNMENT_CONDITIONS.map((condition) => (
-                        <SelectItem key={condition.value} value={condition.value}>
-                          {condition.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium">Notas</label>
-                  <Textarea 
-                    name="notes" 
-                    placeholder="Notas adicionales"
-                  />
-                </div>
-
-                <div className="flex justify-end space-x-2">
-                  <Button type="button" variant="outline" onClick={() => setShowCreateDialog(false)}>
-                    Cancelar
-                  </Button>
-                  <Button type="submit" disabled={createAssignmentMutation.isPending}>
-                    {createAssignmentMutation.isPending ? 'Creando...' : 'Crear Asignación'}
-                  </Button>
-                </div>
-              </form>
-            </DialogContent>
-          </Dialog>
-        </div>
+        </Card>
 
         {/* Filtros */}
         <Card className="mb-6">
