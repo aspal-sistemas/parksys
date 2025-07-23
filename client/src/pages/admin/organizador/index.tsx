@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Calendar, Plus, Tag, Users, MapPin, Clock, Edit, Eye, BarChart3 } from 'lucide-react';
 import AdminLayout from '@/components/AdminLayout';
 
@@ -19,22 +20,19 @@ const OrganizadorPage: React.FC = () => {
   // Obtener actividades
   const { data: activities = [], isLoading: isLoadingActivities } = useQuery({
     queryKey: ['/api/activities'],
-    suspense: false,
     retry: 1,
   });
 
   // Obtener parques
   const { data: parksResponse, isLoading: isLoadingParks } = useQuery({
     queryKey: ['/api/parks'],
-    suspense: false,
     retry: 1,
   });
-  const parks = parksResponse?.data || [];
+  const parks = (parksResponse as any)?.data || [];
 
   // Obtener categorías de actividades
   const { data: categories = [], isLoading: isLoadingCategories } = useQuery({
     queryKey: ['/api/activity-categories'],
-    suspense: false,
     retry: 1,
   });
 
@@ -101,16 +99,16 @@ const OrganizadorPage: React.FC = () => {
       name: parkNamesMap[parkId] || `Parque ${parkId}`,
       count
     }))
-    .sort((a, b) => b.count - a.count)
+    .sort((a, b) => Number(b.count) - Number(a.count))
     .slice(0, 5);
 
   // Actividades próximas (próximas 5)
   const upcomingActivities = Array.isArray(activities) ? activities
     .filter(a => new Date(a.startDate) >= new Date())
-    .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
+    .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())
     .slice(0, 5) : [];
 
-  const maxParkCount = Math.max(...Object.values(parkCounts), 1);
+  const maxParkCount = Math.max(...Object.values(parkCounts).map(Number), 1);
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -331,6 +329,7 @@ const OrganizadorPage: React.FC = () => {
             )}
           </div>
         </div>
+      </div>
       </div>
     </AdminLayout>
   );
