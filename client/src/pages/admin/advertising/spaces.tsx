@@ -163,30 +163,34 @@ const AdSpaces = () => {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <MapPin className="w-8 h-8 text-gray-900" />
-              <h1 className="text-3xl font-bold text-gray-900">Espacios Publicitarios</h1>
+        {/* Header Card */}
+        <Card className="bg-gray-50">
+          <CardContent className="p-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-8 h-8 text-gray-900" />
+                  <h1 className="text-3xl font-bold text-gray-900">Espacios Publicitarios</h1>
+                </div>
+                <p className="text-gray-600 mt-2">Gestión de espacios publicitarios organizados por páginas del sistema</p>
+              </div>
+              <div className="flex gap-2">
+                <Link href="/admin/advertising/advertisements">
+                  <Button className="bg-[#00a587] hover:bg-[#067f5f]">
+                    <Image className="h-4 w-4 mr-2" />
+                    Gestionar Anuncios
+                  </Button>
+                </Link>
+                <Link href="/admin/advertising/space-mappings">
+                  <Button className="bg-[#00a587] hover:bg-[#067f5f]">
+                    <MapPin className="h-4 w-4 mr-2" />
+                    Ver Mapeos
+                  </Button>
+                </Link>
+              </div>
             </div>
-            <p className="text-gray-600 mt-2">Gestión de espacios publicitarios organizados por páginas del sistema</p>
-          </div>
-          <div className="flex gap-2">
-            <Link href="/admin/advertising/advertisements">
-              <Button variant="outline">
-                <Image className="h-4 w-4 mr-2" />
-                Gestionar Anuncios
-              </Button>
-            </Link>
-            <Link href="/admin/advertising/space-mappings">
-              <Button variant="outline">
-                <MapPin className="h-4 w-4 mr-2" />
-                Ver Mapeos
-              </Button>
-            </Link>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
         {/* Filtros */}
         <div className="flex flex-col md:flex-row gap-4">
@@ -266,7 +270,7 @@ const AdSpaces = () => {
                       {getPageDisplayName(pageType)}
                     </CardTitle>
                     <CardDescription>
-                      {spaces.length} espacios publicitarios configurados
+                      {(spaces as any[]).length} espacios publicitarios configurados
                     </CardDescription>
                   </div>
                   <div className="flex gap-2">
@@ -282,7 +286,7 @@ const AdSpaces = () => {
               <CardContent>
                 {viewMode === 'grid' ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {spaces.map((space: SpaceMapping) => (
+                    {(spaces as any[]).map((space: SpaceMapping) => (
                       <div key={`${space.space_id}-${space.placement_id}`} className="border rounded-lg p-4">
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
@@ -337,7 +341,9 @@ const AdSpaces = () => {
                                 <div className="flex items-center gap-2">
                                   <Calendar className="h-3 w-3 text-gray-500" />
                                   <span className="text-xs text-gray-600">
-                                    {new Date(space.start_date).toLocaleDateString()} - {new Date(space.end_date).toLocaleDateString()}
+                                    {space.start_date && space.end_date && 
+                                      `${new Date(space.start_date as string).toLocaleDateString()} - ${new Date(space.end_date as string).toLocaleDateString()}`
+                                    }
                                   </span>
                                 </div>
                               </div>
@@ -384,7 +390,7 @@ const AdSpaces = () => {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {spaces.map((space: SpaceMapping) => (
+                    {(spaces as any[]).map((space: SpaceMapping) => (
                       <div key={`${space.space_id}-${space.placement_id}`} className="flex items-center justify-between p-4 border rounded-lg">
                         <div className="flex items-center gap-4">
                           <div className="flex flex-col">
@@ -414,9 +420,9 @@ const AdSpaces = () => {
                           <Badge variant={space.placement_active ? "default" : "outline"}>
                             {space.placement_active ? 'Activo' : 'Inactivo'}
                           </Badge>
-                          {space.ad_id && (
+                          {space.ad_id && space.start_date && space.end_date && (
                             <Badge variant="outline">
-                              {new Date(space.start_date).toLocaleDateString()} - {new Date(space.end_date).toLocaleDateString()}
+                              {new Date(space.start_date as string).toLocaleDateString()} - {new Date(space.end_date as string).toLocaleDateString()}
                             </Badge>
                           )}
                           <Button
