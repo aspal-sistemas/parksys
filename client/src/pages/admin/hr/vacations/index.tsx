@@ -163,7 +163,7 @@ export default function VacationManagement() {
     mutationFn: async ({ id, action, reviewComments }: { id: number, action: string, reviewComments: string }) => {
       return await apiRequest(`/api/hr/vacation-requests/${id}/review`, {
         method: 'PUT',
-        body: JSON.stringify({ action, reviewComments })
+        data: { action, reviewComments }
       });
     },
     onSuccess: () => {
@@ -230,21 +230,30 @@ export default function VacationManagement() {
 
   return (
     <AdminLayout>
+      <div className="container mx-auto py-6">
+        {/* Card Header */}
+        <Card className="p-4 bg-gray-50 mb-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Calendar className="w-8 h-8 text-gray-900" />
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Gestión de Vacaciones</h1>
+                <p className="text-gray-600 mt-2">Sistema integral para gestión de vacaciones, permisos e incapacidades</p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                onClick={() => setNewRequestDialog(true)}
+                className="bg-green-600 hover:bg-green-700 text-white gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                Nueva Solicitud
+              </Button>
+            </div>
+          </div>
+        </Card>
+
       <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Gestión de Vacaciones</h1>
-          <p className="text-gray-600">Sistema integral para gestión de vacaciones, permisos e incapacidades</p>
-        </div>
-        <Button 
-          onClick={() => setNewRequestDialog(true)}
-          className="bg-[#00a587] hover:bg-[#067f5f] text-white"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Nueva Solicitud
-        </Button>
-      </div>
 
       {/* Tabs Navigation */}
       <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
@@ -880,6 +889,7 @@ export default function VacationManagement() {
           )}
         </DialogContent>
       </Dialog>
+      </div>
       </div>
     </AdminLayout>
   );
