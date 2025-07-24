@@ -183,38 +183,46 @@ const VolunteerEvaluations: React.FC = () => {
 
   return (
     <AdminLayout>
-      <div className="container mx-auto py-6">
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center gap-2 mt-2">
-            <Star className="w-8 h-8 text-gray-900" />
-            <h1 className="text-3xl font-bold text-gray-900">Evaluaciones de Voluntarios</h1>
-          </div>
-          <div className="flex gap-2">
-            {evaluations.length === 0 && (
-              <Button 
-                variant="outline" 
-                onClick={() => loadSampleData.mutate()}
-                disabled={loadSampleData.isPending}
-              >
-                {loadSampleData.isPending ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Cargando...
-                  </>
-                ) : (
-                  <>
-                    <Database className="h-4 w-4 mr-2" />
-                    Cargar datos de muestra
-                  </>
-                )}
+      <div className="p-6">
+        {/* Header con patrón Card estandarizado */}
+        <Card className="p-4 bg-gray-50 mb-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <Star className="w-8 h-8 text-gray-900" />
+                <h1 className="text-3xl font-bold text-gray-900">Evaluaciones de Voluntarios</h1>
+              </div>
+              <p className="text-gray-600 mt-2">
+                Monitoreo y seguimiento del desempeño de voluntarios
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              {evaluations.length === 0 && (
+                <Button 
+                  variant="outline" 
+                  onClick={() => loadSampleData.mutate()}
+                  disabled={loadSampleData.isPending}
+                >
+                  {loadSampleData.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Cargando...
+                    </>
+                  ) : (
+                    <>
+                      <Database className="h-4 w-4 mr-2" />
+                      Cargar datos de muestra
+                    </>
+                  )}
+                </Button>
+              )}
+              <Button variant="outline" onClick={() => refetch()}>
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Actualizar
               </Button>
-            )}
-            <Button variant="outline" onClick={() => refetch()}>
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Actualizar
-            </Button>
+            </div>
           </div>
-        </div>
+        </Card>
 
         <Card className="mb-6">
           <CardHeader>
