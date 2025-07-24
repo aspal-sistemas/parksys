@@ -929,6 +929,13 @@ const AdminSidebarComplete: React.FC = () => {
               onToggle={toggleSubmenu}
             >
               <NavItem 
+                href="/admin/concessions/reports" 
+                icon={<BarChart3 className="h-4 w-4" />}
+                active={location.startsWith('/admin/concessions/reports')}
+              >
+                Dashboard
+              </NavItem>
+              <NavItem 
                 href="/admin/concessions/catalog" 
                 icon={<ListChecks className="h-4 w-4" />}
                 active={location.startsWith('/admin/concessions/catalog')}
@@ -955,13 +962,6 @@ const AdminSidebarComplete: React.FC = () => {
                 active={location.startsWith('/admin/concessions/active')}
               >
                 C. Activas
-              </NavItem>
-              <NavItem 
-                href="/admin/concessions/reports" 
-                icon={<BarChart className="h-4 w-4" />}
-                active={location.startsWith('/admin/concessions/reports')}
-              >
-                {t('navigation.reports')}
               </NavItem>
             </CollapsibleSubmenu>
           </ModuleNav>
