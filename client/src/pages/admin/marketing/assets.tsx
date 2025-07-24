@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { safeApiRequest } from '@/lib/queryClient';
-import { SponsorAsset } from '@/shared/schema';
+// import { SponsorAsset } from '@/shared/schema';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import AdminLayout from '@/components/AdminLayout';
@@ -65,15 +65,15 @@ const AssetsPage = () => {
     }
   };
 
-  const filteredAssets = allAssets?.filter((asset: SponsorAsset) => {
+  const filteredAssets = allAssets?.filter((asset: any) => {
     const matchesSponsor = selectedSponsor === 'all' || asset.sponsorId === parseInt(selectedSponsor);
     const matchesType = selectedAssetType === 'all' || asset.assetType === selectedAssetType;
     return matchesSponsor && matchesType;
   }) || [];
 
-  const approvedAssets = filteredAssets.filter(asset => asset.approvalStatus === 'approved').length;
-  const pendingAssets = filteredAssets.filter(asset => asset.approvalStatus === 'pending').length;
-  const totalSize = filteredAssets.reduce((sum, asset) => sum + (asset.fileSize || 0), 0);
+  const approvedAssets = filteredAssets.filter((asset: any) => asset.approvalStatus === 'approved').length;
+  const pendingAssets = filteredAssets.filter((asset: any) => asset.approvalStatus === 'pending').length;
+  const totalSize = filteredAssets.reduce((sum: number, asset: any) => sum + (asset.fileSize || 0), 0);
 
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
@@ -101,35 +101,39 @@ const AssetsPage = () => {
   return (
     <AdminLayout>
       <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <Image className="w-8 h-8 text-gray-900" />
-            <h1 className="text-3xl font-bold text-gray-900">Activos Promocionales</h1>
-          </div>
-          <p className="text-gray-600 mt-2">Gestiona todos los activos de marca de los patrocinadores</p>
-        </div>
-        <Dialog open={showNewAssetDialog} onOpenChange={setShowNewAssetDialog}>
-          <DialogTrigger asChild>
-            <Button className="bg-[#00a587] hover:bg-[#067f5f]">
-              <Plus className="w-4 h-4 mr-2" />
-              Subir Activo
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Subir Nuevo Activo</DialogTitle>
-            </DialogHeader>
-            <div className="text-center py-8">
-              <Upload className="w-16 h-16 mx-auto text-[#00a587] mb-4" />
-              <p className="text-gray-600">
-                Funcionalidad de subida de activos en desarrollo
-              </p>
+        {/* Header Card */}
+        <Card className="bg-gray-50">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Image className="w-8 h-8 text-gray-900" />
+                  <h1 className="text-3xl font-bold text-gray-900">Activos Promocionales</h1>
+                </div>
+                <p className="text-gray-600 mt-2">Gestiona todos los activos de marca de los patrocinadores</p>
+              </div>
+              <Dialog open={showNewAssetDialog} onOpenChange={setShowNewAssetDialog}>
+                <DialogTrigger asChild>
+                  <Button className="bg-[#00a587] hover:bg-[#067f5f]">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Subir Activo
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>Subir Nuevo Activo</DialogTitle>
+                  </DialogHeader>
+                  <div className="text-center py-8">
+                    <Upload className="w-16 h-16 mx-auto text-[#00a587] mb-4" />
+                    <p className="text-gray-600">
+                      Funcionalidad de subida de activos en desarrollo
+                    </p>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
-          </DialogContent>
-        </Dialog>
-      </div>
+          </CardContent>
+        </Card>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -215,7 +219,7 @@ const AssetsPage = () => {
 
       {/* Assets Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredAssets.map((asset: SponsorAsset) => {
+        {filteredAssets.map((asset: any) => {
           const sponsor = sponsors?.find((s: any) => s.id === asset.sponsorId);
           
           return (
