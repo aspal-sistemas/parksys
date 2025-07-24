@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { CalendarIcon, DownloadIcon, FilterIcon, TrendingUpIcon, TrendingDownIcon, DollarSignIcon, BuildingIcon, MapPinIcon, UsersIcon } from 'lucide-react';
+import { CalendarIcon, DownloadIcon, FilterIcon, TrendingUpIcon, TrendingDownIcon, DollarSignIcon, BuildingIcon, MapPinIcon, UsersIcon, BarChart3 } from 'lucide-react';
 import AdminLayout from '@/components/AdminLayout';
 
 interface ReportData {
@@ -92,17 +92,51 @@ export default function ConcessionsReports() {
 
   if (loadingConcessions || loadingParks) {
     return (
-      <AdminLayout title="Reportes de Concesiones" subtitle="Generando reportes...">
-        <div className="flex justify-center items-center min-h-screen">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-500"></div>
+      <AdminLayout>
+        <div className="container mx-auto py-6">
+          <Card className="p-4 bg-gray-50 mb-6">
+            <div className="flex items-center gap-2">
+              <BarChart3 className="w-8 h-8 text-gray-900" />
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Reportes de Concesiones</h1>
+                <p className="text-gray-600 mt-2">Generando reportes...</p>
+              </div>
+            </div>
+          </Card>
+          <div className="flex justify-center items-center min-h-screen">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-500"></div>
+          </div>
         </div>
       </AdminLayout>
     );
   }
 
   return (
-    <AdminLayout title="Reportes de Concesiones" subtitle="Análisis y reportes del sistema de concesiones">
-      <div className="space-y-6">
+    <AdminLayout>
+      <div className="container mx-auto py-6">
+        {/* Header con título */}
+        <Card className="p-4 bg-gray-50 mb-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <BarChart3 className="w-8 h-8 text-gray-900" />
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Reportes de Concesiones</h1>
+                <p className="text-gray-600 mt-2">Análisis y reportes del sistema de concesiones</p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                onClick={handleExportReport}
+                className="bg-green-600 hover:bg-green-700 text-white gap-2"
+              >
+                <DownloadIcon size={16} />
+                Exportar Reporte
+              </Button>
+            </div>
+          </div>
+        </Card>
+
+        <div className="space-y-6">
         {/* Filtros y Controles */}
         <Card>
           <CardHeader>
@@ -319,6 +353,7 @@ export default function ConcessionsReports() {
             )}
           </CardContent>
         </Card>
+        </div>
       </div>
     </AdminLayout>
   );
