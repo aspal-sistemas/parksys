@@ -1164,13 +1164,6 @@ const AdminSidebarComplete: React.FC = () => {
             >
               Vacaciones
             </NavItem>
-            <NavItem 
-              href="/admin/hr/reports" 
-              icon={<FileText className="h-5 w-5" />}
-              active={location === '/admin/hr/reports'}
-            >
-              Reportes
-            </NavItem>
           </ModuleNav>
 
 
