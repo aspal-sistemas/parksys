@@ -873,7 +873,7 @@ function Router() {
         
         <Route path="/admin/concessions/concessionaires">
           <Suspense fallback={<div className="p-8 text-center">Cargando gestión de concesionarios...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/concessions/concessionaires/ConcessionairesTabbed')))}
+            {React.createElement(React.lazy(() => import('@/pages/admin/concessions/concessionaires/index')))}
           </Suspense>
         </Route>
         
