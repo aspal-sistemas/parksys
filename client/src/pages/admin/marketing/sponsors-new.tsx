@@ -50,7 +50,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 const packageSchema = z.object({
   name: z.string().min(1, "El nombre es requerido"),
   level: z.string().min(1, "El nivel es requerido"),
-  price: z.string().min(1, "El precio es requerido"),
+  price: z.number().min(1, "El precio es requerido"),
   duration: z.number().min(1, "La duración es requerida"),
   benefits: z.array(z.string()).min(1, "Al menos un beneficio es requerido"),
   eventsIncluded: z.number().min(0, "Los eventos incluidos no pueden ser negativos"),
@@ -68,7 +68,7 @@ const sponsorSchema = z.object({
   address: z.string().min(1, "La dirección es requerida"),
   status: z.string().min(1, "El estado es requerido"),
   level: z.string().min(1, "El nivel es requerido"),
-  contractValue: z.string().min(1, "El valor del contrato es requerido"),
+  contractValue: z.number().min(1, "El valor del contrato es requerido"),
   contractStart: z.string().min(1, "La fecha de inicio es requerida"),
   contractEnd: z.string().min(1, "La fecha de fin es requerida"),
   eventsSponsored: z.number().min(0, "Los eventos patrocinados no pueden ser negativos"),
@@ -148,7 +148,7 @@ const SponsorsManagement = () => {
     defaultValues: {
       name: '',
       level: '',
-      price: '',
+      price: 0,
       duration: 12,
       benefits: [],
       eventsIncluded: 0,
@@ -169,7 +169,7 @@ const SponsorsManagement = () => {
       address: '',
       status: '',
       level: '',
-      contractValue: '',
+      contractValue: 0,
       contractStart: '',
       contractEnd: '',
       eventsSponsored: 0,
@@ -181,7 +181,7 @@ const SponsorsManagement = () => {
   const onSubmitPackage = (data: PackageFormData) => {
     const formattedData = {
       ...data,
-      price: parseFloat(data.price), // Convertir a número para el backend
+      price: data.price, // Ya es número por el esquema
       benefits: data.benefits.filter(benefit => benefit.trim() !== '')
     };
     createPackageMutation.mutate(formattedData);
@@ -190,7 +190,7 @@ const SponsorsManagement = () => {
   const onSubmitSponsor = (data: SponsorFormData) => {
     const formattedData = {
       ...data,
-      contractValue: parseFloat(data.contractValue) // Convertir a número para el backend
+      contractValue: data.contractValue // Ya es número por el esquema
     };
     createSponsorMutation.mutate(formattedData);
   };
@@ -244,24 +244,286 @@ const SponsorsManagement = () => {
 
   return (
     <AdminLayout>
-      <div className="p-6 space-y-6">
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <div>
+      <div className="container mx-auto py-6">
+        {/* Card Header */}
+        <Card className="p-4 bg-gray-50 mb-6">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Building className="w-8 h-8 text-gray-900" />
-              <h1 className="text-3xl font-bold text-gray-900">Patrocinadores</h1>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Patrocinadores</h1>
+                <p className="text-gray-600 mt-2">Administra patrocinadores, paquetes y campañas</p>
+              </div>
             </div>
-            <p className="text-gray-600 mt-2">Administra patrocinadores, paquetes y campañas</p>
-          </div>
-          <div className="flex space-x-4">
-            <Dialog open={isNewPackageOpen} onOpenChange={setIsNewPackageOpen}>
-              <DialogTrigger asChild>
-                <Button className="bg-[#00a587] hover:bg-[#067f5f] text-white">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Nuevo Paquete
-                </Button>
-              </DialogTrigger>
+            <div className="flex gap-2">
+              <Button className="bg-green-600 hover:bg-green-700 text-white gap-2">
+                <Plus className="w-4 h-4" />
+                Nuevo Parque
+              </Button>
+              <Dialog open={isNewSponsorOpen} onOpenChange={setIsNewSponsorOpen}>
+                <DialogTrigger asChild>
+                  <Button className="bg-green-600 hover:bg-green-700 text-white gap-2">
+                    <Plus className="w-4 h-4" />
+                    Nuevo Patrocinador
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>Crear Nuevo Patrocinador</DialogTitle>
+                    <DialogDescription>
+                      Registra un nuevo patrocinador en el sistema
+                    </DialogDescription>
+                  </DialogHeader>
+                  <Form {...sponsorForm}>
+                    <form onSubmit={sponsorForm.handleSubmit(onSubmitSponsor)} className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={sponsorForm.control}
+                          name="name"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Nombre de la Empresa</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Ej: Coca-Cola FEMSA" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={sponsorForm.control}
+                          name="category"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Categoría</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Selecciona categoría" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="corporativo">Corporativo</SelectItem>
+                                  <SelectItem value="local">Local</SelectItem>
+                                  <SelectItem value="institucional">Institucional</SelectItem>
+                                  <SelectItem value="ong">ONG</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={sponsorForm.control}
+                          name="representative"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Representante</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Nombre del representante" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={sponsorForm.control}
+                          name="email"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Email</FormLabel>
+                              <FormControl>
+                                <Input type="email" placeholder="representante@empresa.com" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={sponsorForm.control}
+                          name="phone"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Teléfono</FormLabel>
+                              <FormControl>
+                                <Input placeholder="+52 33 1234-5678" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={sponsorForm.control}
+                          name="address"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Dirección</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Dirección completa" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={sponsorForm.control}
+                          name="status"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Estado</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Selecciona estado" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="activo">Activo</SelectItem>
+                                  <SelectItem value="potencial">Potencial</SelectItem>
+                                  <SelectItem value="inactivo">Inactivo</SelectItem>
+                                  <SelectItem value="renovacion">Renovación</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={sponsorForm.control}
+                          name="level"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Nivel</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Selecciona nivel" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="bronce">Bronce</SelectItem>
+                                  <SelectItem value="plata">Plata</SelectItem>
+                                  <SelectItem value="oro">Oro</SelectItem>
+                                  <SelectItem value="platino">Platino</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={sponsorForm.control}
+                          name="contractValue"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Valor del Contrato</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  placeholder="100000" 
+                                  type="number" 
+                                  {...field} 
+                                  onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={sponsorForm.control}
+                          name="eventsSponsored"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Eventos Patrocinados</FormLabel>
+                              <FormControl>
+                                <Input placeholder="5" type="number" {...field} onChange={(e) => field.onChange(parseInt(e.target.value) || 0)} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={sponsorForm.control}
+                          name="contractStart"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Fecha de Inicio</FormLabel>
+                              <FormControl>
+                                <Input type="date" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={sponsorForm.control}
+                          name="contractEnd"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Fecha de Fin</FormLabel>
+                              <FormControl>
+                                <Input type="date" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <FormField
+                        control={sponsorForm.control}
+                        name="renewalProbability"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Probabilidad de Renovación (%)</FormLabel>
+                            <FormControl>
+                              <Input placeholder="85" type="number" min="0" max="100" {...field} onChange={(e) => field.onChange(parseInt(e.target.value) || 0)} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={sponsorForm.control}
+                        name="notes"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Notas</FormLabel>
+                            <FormControl>
+                              <Textarea placeholder="Notas adicionales sobre el patrocinador..." {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <div className="flex justify-end space-x-2">
+                        <Button type="button" variant="outline" onClick={() => setIsNewSponsorOpen(false)}>
+                          Cancelar
+                        </Button>
+                        <Button type="submit" className="bg-[#00a587] hover:bg-[#067f5f]">
+                          Crear Patrocinador
+                        </Button>
+                      </div>
+                    </form>
+                  </Form>
+                </DialogContent>
+              </Dialog>
+              <Dialog open={isNewPackageOpen} onOpenChange={setIsNewPackageOpen}>
+                <DialogTrigger asChild>
+                  <Button className="bg-green-600 hover:bg-green-700 text-white gap-2">
+                    <Plus className="w-4 h-4" />
+                    Nuevo Paquete
+                  </Button>
+                </DialogTrigger>
               <DialogContent className="max-w-2xl">
                 <DialogHeader>
                   <DialogTitle>Crear Nuevo Paquete</DialogTitle>
@@ -317,7 +579,12 @@ const SponsorsManagement = () => {
                           <FormItem>
                             <FormLabel>Precio</FormLabel>
                             <FormControl>
-                              <Input type="number" placeholder="100000" {...field} />
+                              <Input 
+                                type="number" 
+                                placeholder="100000" 
+                                {...field} 
+                                onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -580,7 +847,12 @@ const SponsorsManagement = () => {
                           <FormItem>
                             <FormLabel>Valor del Contrato</FormLabel>
                             <FormControl>
-                              <Input type="number" placeholder="500000" {...field} />
+                              <Input 
+                                type="number" 
+                                placeholder="500000" 
+                                {...field} 
+                                onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -663,6 +935,7 @@ const SponsorsManagement = () => {
             </Dialog>
           </div>
         </div>
+        </Card>
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
