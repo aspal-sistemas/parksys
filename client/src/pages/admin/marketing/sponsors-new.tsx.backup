@@ -677,6 +677,244 @@ const SponsorsManagement = () => {
                 </Form>
               </DialogContent>
             </Dialog>
+                <Form {...sponsorForm}>
+                  <form onSubmit={sponsorForm.handleSubmit(onSubmitSponsor)} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={sponsorForm.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Nombre de la Empresa</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Ej: Coca-Cola FEMSA" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={sponsorForm.control}
+                        name="category"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Categoría</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Selecciona categoría" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="corporativo">Corporativo</SelectItem>
+                                <SelectItem value="local">Local</SelectItem>
+                                <SelectItem value="institucional">Institucional</SelectItem>
+                                <SelectItem value="ong">ONG</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={sponsorForm.control}
+                        name="representative"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Representante</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Nombre del representante" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={sponsorForm.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Email</FormLabel>
+                            <FormControl>
+                              <Input type="email" placeholder="representante@empresa.com" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={sponsorForm.control}
+                        name="phone"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Teléfono</FormLabel>
+                            <FormControl>
+                              <Input placeholder="+52 33 1234-5678" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={sponsorForm.control}
+                        name="address"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Dirección</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Dirección completa" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={sponsorForm.control}
+                        name="status"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Estado</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Selecciona estado" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="activo">Activo</SelectItem>
+                                <SelectItem value="potencial">Potencial</SelectItem>
+                                <SelectItem value="inactivo">Inactivo</SelectItem>
+                                <SelectItem value="renovacion">Renovación</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={sponsorForm.control}
+                        name="level"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Nivel</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Selecciona nivel" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="bronce">Bronce</SelectItem>
+                                <SelectItem value="plata">Plata</SelectItem>
+                                <SelectItem value="oro">Oro</SelectItem>
+                                <SelectItem value="platino">Platino</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={sponsorForm.control}
+                        name="contractValue"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Valor del Contrato</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number" 
+                                placeholder="500000" 
+                                {...field} 
+                                onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={sponsorForm.control}
+                        name="renewalProbability"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Probabilidad de Renovación (%)</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number" 
+                                placeholder="85" 
+                                {...field}
+                                onChange={(e) => field.onChange(parseInt(e.target.value))}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={sponsorForm.control}
+                        name="contractStart"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Fecha de Inicio</FormLabel>
+                            <FormControl>
+                              <Input type="date" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={sponsorForm.control}
+                        name="contractEnd"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Fecha de Fin</FormLabel>
+                            <FormControl>
+                              <Input type="date" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <FormField
+                      control={sponsorForm.control}
+                      name="notes"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Notas</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Notas adicionales sobre el patrocinador"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <div className="flex justify-end space-x-2">
+                      <Button type="button" variant="outline" onClick={() => setIsNewSponsorOpen(false)}>
+                        Cancelar
+                      </Button>
+                      <Button type="submit" className="bg-[#00a587] hover:bg-[#067f5f]">
+                        Crear Patrocinador
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
         </Card>
