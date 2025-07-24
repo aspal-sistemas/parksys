@@ -426,21 +426,24 @@ export default function ConcessionContracts() {
       </Helmet>
 
       <div className="container mx-auto py-6">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Contratos de Concesiones</h1>
-            <p className="text-muted-foreground">
-              Administra los contratos de concesiones para los espacios de los parques
-            </p>
-          </div>
-          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="gap-2">
-                <Plus size={16} />
-                Nuevo contrato
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[750px] max-h-[90vh] overflow-y-auto">
+        {/* Header con título */}
+        <Card className="p-4 bg-gray-50 mb-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <FileText className="w-8 h-8 text-gray-900" />
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Contratos de Concesiones</h1>
+                <p className="text-gray-600 mt-2">Administra los contratos de concesiones para los espacios de los parques</p>
+              </div>
+            </div>
+            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="gap-2">
+                  <Plus size={16} />
+                  Nuevo Contrato
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[750px] max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Crear nuevo contrato de concesión</DialogTitle>
                 <DialogDescription>
@@ -803,7 +806,8 @@ export default function ConcessionContracts() {
               </Form>
             </DialogContent>
           </Dialog>
-        </div>
+          </div>
+        </Card>
 
         <Card className="mb-6">
           <CardContent className="p-4">
