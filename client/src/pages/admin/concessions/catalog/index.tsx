@@ -75,24 +75,38 @@ const concessionTypeSchema = z.object({
   isActive: z.boolean().default(true)
 });
 
-type ConcessionTypeFormValues = z.infer<typeof concessionTypeSchema>;
+type ConcessionTypeForm = z.infer<typeof concessionTypeSchema>;
 
-export default function ConcessionTypeCatalog() {
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [currentConcessionType, setCurrentConcessionType] = useState<any>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+interface ConcessionType {
+  id: number;
+  name: string;
+  description: string;
+  technicalRequirements?: string;
+  legalRequirements?: string;
+  operatingRules?: string;
+  impactLevel: 'bajo' | 'medio' | 'alto' | 'muy_alto';
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export default function ConcessionsCatalog() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // Estados para modales
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<ConcessionType | null>(null);
+  
+  // Estados para paginación y filtros
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const itemsPerPage = 10;
 
-  // Obtener catálogo de tipos de concesiones
-  const { data: concessionTypes, isLoading } = useQuery({
-    queryKey: ["/api/concession-types/all"],
-  });
-
-  // Formulario para crear un nuevo tipo de concesión
-  const createForm = useForm<ConcessionTypeFormValues>({
+  // Formularios
+  const createForm = useForm<ConcessionTypeForm>({
     resolver: zodResolver(concessionTypeSchema),
     defaultValues: {
       name: "",
@@ -105,197 +119,118 @@ export default function ConcessionTypeCatalog() {
     },
   });
 
-  // Formulario para editar un tipo de concesión existente
-  const editForm = useForm<ConcessionTypeFormValues>({
+  const editForm = useForm<ConcessionTypeForm>({
     resolver: zodResolver(concessionTypeSchema),
-    defaultValues: {
-      name: "",
-      description: "",
-      technicalRequirements: "",
-      legalRequirements: "",
-      operatingRules: "",
-      impactLevel: "bajo",
-      isActive: true
-    },
   });
 
-  // Mutación para crear un nuevo tipo de concesión
+  // Query para obtener los tipos de concesión
+  const { data: concessionTypes = [], isLoading } = useQuery({
+    queryKey: ['/api/concession-types'],
+    suspense: false,
+    retry: 1
+  });
+
+  // Mutaciones
   const createMutation = useMutation({
-    mutationFn: async (data: ConcessionTypeFormValues) => {
-      const response = await fetch("/api/concession-types", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": localStorage.getItem("token") || "",
-          "X-User-Id": localStorage.getItem("userId") || "",
-          "X-User-Role": localStorage.getItem("userRole") || "",
-        },
+    mutationFn: async (data: ConcessionTypeForm) => {
+      const response = await fetch('/api/concession-types', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Error al crear el tipo de concesión");
-      }
-
-      return await response.json();
+      if (!response.ok) throw new Error('Error al crear el tipo de concesión');
+      return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/concession-types/all"] });
+      queryClient.invalidateQueries({ queryKey: ['/api/concession-types'] });
+      setIsCreateDialogOpen(false);
+      createForm.reset();
       toast({
         title: "Tipo de concesión creado",
-        description: "El tipo de concesión ha sido creado exitosamente.",
+        description: "El nuevo tipo de concesión ha sido agregado exitosamente.",
       });
-      createForm.reset();
-      setIsCreateDialogOpen(false);
     },
-    onError: (error: Error) => {
+    onError: () => {
       toast({
         title: "Error",
-        description: error.message,
+        description: "No se pudo crear el tipo de concesión.",
         variant: "destructive",
       });
     },
   });
 
-  // Mutación para actualizar un tipo de concesión existente
   const updateMutation = useMutation({
-    mutationFn: async (data: ConcessionTypeFormValues & { id: number }) => {
-      const { id, ...updateData } = data;
-      const response = await fetch(`/api/concession-types/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": localStorage.getItem("token") || "",
-          "X-User-Id": localStorage.getItem("userId") || "",
-          "X-User-Role": localStorage.getItem("userRole") || "",
-        },
-        body: JSON.stringify(updateData),
+    mutationFn: async (data: ConcessionTypeForm & { id: number }) => {
+      const response = await fetch(`/api/concession-types/${data.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
       });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Error al actualizar el tipo de concesión");
-      }
-
-      return await response.json();
+      if (!response.ok) throw new Error('Error al actualizar el tipo de concesión');
+      return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/concession-types/all"] });
+      queryClient.invalidateQueries({ queryKey: ['/api/concession-types'] });
+      setIsEditDialogOpen(false);
+      setEditingItem(null);
+      editForm.reset();
       toast({
         title: "Tipo de concesión actualizado",
-        description: "El tipo de concesión ha sido actualizado exitosamente.",
+        description: "Los cambios han sido guardados exitosamente.",
       });
-      editForm.reset();
-      setIsEditDialogOpen(false);
     },
-    onError: (error: Error) => {
+    onError: () => {
       toast({
         title: "Error",
-        description: error.message,
+        description: "No se pudo actualizar el tipo de concesión.",
         variant: "destructive",
       });
     },
   });
 
-  // Mutación para cambiar el estado de un tipo de concesión
-  const toggleStatusMutation = useMutation({
-    mutationFn: async (id: number) => {
-      const response = await fetch(`/api/concession-types/${id}/toggle-status`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": localStorage.getItem("token") || "",
-          "X-User-Id": localStorage.getItem("userId") || "",
-          "X-User-Role": localStorage.getItem("userRole") || "",
-        },
-      });
+  // Filtrado y paginación
+  const filteredTypes = useMemo(() => {
+    return concessionTypes.filter((type: ConcessionType) => {
+      const matchesSearch = type.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           type.description.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesStatus = statusFilter === "all" || 
+                           (statusFilter === "active" && type.isActive) ||
+                           (statusFilter === "inactive" && !type.isActive);
+      return matchesSearch && matchesStatus;
+    });
+  }, [concessionTypes, searchTerm, statusFilter]);
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Error al cambiar el estado del tipo de concesión");
-      }
+  const totalPages = Math.ceil(filteredTypes.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedTypes = filteredTypes.slice(startIndex, startIndex + itemsPerPage);
 
-      return await response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/concession-types/all"] });
-      toast({
-        title: "Estado actualizado",
-        description: "El estado del tipo de concesión ha sido actualizado.",
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
-
-  const onCreateSubmit = (values: ConcessionTypeFormValues) => {
-    createMutation.mutate(values);
+  // Handlers
+  const onCreateSubmit = (data: ConcessionTypeForm) => {
+    createMutation.mutate(data);
   };
 
-  const onEditSubmit = (values: ConcessionTypeFormValues) => {
-    if (currentConcessionType) {
-      updateMutation.mutate({
-        ...values,
-        id: currentConcessionType.id,
-      });
+  const onEditSubmit = (data: ConcessionTypeForm) => {
+    if (editingItem) {
+      updateMutation.mutate({ ...data, id: editingItem.id });
     }
   };
 
-  const handleEdit = (concessionType: any) => {
-    setCurrentConcessionType(concessionType);
+  const handleEdit = (item: ConcessionType) => {
+    setEditingItem(item);
     editForm.reset({
-      name: concessionType.name,
-      description: concessionType.description,
-      technicalRequirements: concessionType.technicalRequirements || "",
-      legalRequirements: concessionType.legalRequirements || "",
-      operatingRules: concessionType.operatingRules || "",
-      impactLevel: concessionType.impactLevel,
-      isActive: concessionType.isActive
+      name: item.name,
+      description: item.description,
+      technicalRequirements: item.technicalRequirements || "",
+      legalRequirements: item.legalRequirements || "",
+      operatingRules: item.operatingRules || "",
+      impactLevel: item.impactLevel,
+      isActive: item.isActive,
     });
     setIsEditDialogOpen(true);
   };
 
-  const handleToggleStatus = (id: number) => {
-    toggleStatusMutation.mutate(id);
-  };
-
-  // Cálculos de paginación
-  const paginatedData = useMemo(() => {
-    const concessionTypesArray = Array.isArray(concessionTypes) ? concessionTypes : [];
-    
-    if (concessionTypesArray.length === 0) {
-      return {
-        data: [],
-        totalItems: 0,
-        totalPages: 0,
-        startIndex: 0,
-        endIndex: 0,
-      };
-    }
-
-    const totalItems = concessionTypesArray.length;
-    const totalPages = Math.ceil(totalItems / itemsPerPage);
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
-    const data = concessionTypesArray.slice(startIndex, endIndex);
-
-    return {
-      data,
-      totalItems,
-      totalPages,
-      startIndex: startIndex + 1,
-      endIndex,
-    };
-  }, [concessionTypes, currentPage, itemsPerPage]);
-
-  // Función para obtener el color de la badge según el nivel de impacto
-  const getImpactLevelColor = (level: string) => {
+  // Función para obtener el color de badge del nivel de impacto
+  const getImpactBadgeColor = (level: string) => {
     switch (level) {
       case 'bajo':
         return 'bg-green-100 text-green-800';
@@ -346,8 +281,27 @@ export default function ConcessionTypeCatalog() {
           <p className="text-gray-600 mt-2">Administra los tipos de concesiones disponibles para los parques</p>
         </Card>
 
+        {/* Controles y botón nuevo */}
         <div className="flex justify-between items-center mb-6">
-          <div>
+          <div className="flex gap-4">
+            <Input
+              placeholder="Buscar tipos de concesión..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-64"
+            />
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Estado" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="active">Activos</SelectItem>
+                <SelectItem value="inactive">Inactivos</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
               <Button className="gap-2">
@@ -397,69 +351,215 @@ export default function ConcessionTypeCatalog() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={createForm.control}
-                      name="technicalRequirements"
+                      name="impactLevel"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Requisitos técnicos</FormLabel>
-                          <FormControl>
-                            <Textarea 
-                              placeholder="Requisitos técnicos para este tipo de concesión" 
-                              {...field}
-                              rows={3}
-                            />
-                          </FormControl>
+                          <FormLabel>Nivel de impacto</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecciona el nivel" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="bajo">Bajo</SelectItem>
+                              <SelectItem value="medio">Medio</SelectItem>
+                              <SelectItem value="alto">Alto</SelectItem>
+                              <SelectItem value="muy_alto">Muy alto</SelectItem>
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                     <FormField
                       control={createForm.control}
-                      name="legalRequirements"
+                      name="isActive"
                       render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Requisitos legales</FormLabel>
+                        <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4">
                           <FormControl>
-                            <Textarea 
-                              placeholder="Requisitos legales para este tipo de concesión" 
-                              {...field}
-                              rows={3}
+                            <input
+                              type="checkbox"
+                              checked={field.value}
+                              onChange={field.onChange}
+                              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                             />
                           </FormControl>
-                          <FormMessage />
+                          <div className="leading-none">
+                            <FormLabel>Activo</FormLabel>
+                          </div>
                         </FormItem>
                       )}
                     />
                   </div>
+                  <DialogFooter>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      onClick={() => setIsCreateDialogOpen(false)}
+                    >
+                      Cancelar
+                    </Button>
+                    <Button 
+                      type="submit" 
+                      disabled={createMutation.isPending}
+                    >
+                      {createMutation.isPending ? 'Creando...' : 'Crear tipo'}
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </Form>
+            </DialogContent>
+          </Dialog>
+        </div>
+
+        {/* Tabla de tipos de concesión */}
+        <Card>
+          <CardContent className="p-0">
+            {isLoading ? (
+              <div className="flex justify-center items-center py-8">
+                <div>Cargando tipos de concesión...</div>
+              </div>
+            ) : paginatedTypes.length > 0 ? (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nombre</TableHead>
+                      <TableHead>Descripción</TableHead>
+                      <TableHead>Nivel de impacto</TableHead>
+                      <TableHead>Estado</TableHead>
+                      <TableHead className="text-right">Acciones</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedTypes.map((type) => (
+                      <TableRow key={type.id}>
+                        <TableCell className="font-medium">{type.name}</TableCell>
+                        <TableCell className="max-w-xs truncate">{type.description}</TableCell>
+                        <TableCell>
+                          <Badge className={getImpactBadgeColor(type.impactLevel)}>
+                            {formatImpactLevel(type.impactLevel)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={type.isActive ? "default" : "secondary"}>
+                            {type.isActive ? "Activo" : "Inactivo"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEdit(type)}
+                            >
+                              <Edit size={16} />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <AlertTriangle className="mx-auto h-12 w-12 text-gray-400" />
+                <h3 className="mt-2 text-sm font-medium text-gray-900">No hay tipos de concesión</h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  {searchTerm || statusFilter !== "all" 
+                    ? "No se encontraron tipos que coincidan con los filtros."
+                    : "Comienza creando tu primer tipo de concesión."
+                  }
+                </p>
+              </div>
+            )}
+
+            {/* Paginación */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between px-2 py-4">
+                <div className="text-sm text-muted-foreground">
+                  Mostrando {startIndex + 1} a {Math.min(startIndex + itemsPerPage, filteredTypes.length)} de {filteredTypes.length} tipos
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(currentPage - 1)}
+                    disabled={currentPage <= 1}
+                  >
+                    <ChevronLeft size={16} />
+                  </Button>
+                  <span className="text-sm font-medium">
+                    Página {currentPage} de {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(currentPage + 1)}
+                    disabled={currentPage >= totalPages}
+                  >
+                    <ChevronRight size={16} />
+                  </Button>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Modal de edición */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle>Editar tipo de concesión</DialogTitle>
+              <DialogDescription>
+                Modifica la información del tipo de concesión
+              </DialogDescription>
+            </DialogHeader>
+            <Form {...editForm}>
+              <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
+                <FormField
+                  control={editForm.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nombre</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Ej: Venta de alimentos" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Descripción</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Describe en qué consiste este tipo de concesión" 
+                          {...field}
+                          rows={3}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
-                    control={createForm.control}
-                    name="operatingRules"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Reglas de operación</FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="Reglas de operación para este tipo de concesión" 
-                            {...field}
-                            rows={3}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={createForm.control}
+                    control={editForm.control}
                     name="impactLevel"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Nivel de impacto ambiental/social</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
+                        <FormLabel>Nivel de impacto</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Selecciona un nivel de impacto" />
+                              <SelectValue placeholder="Selecciona el nivel" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -473,313 +573,46 @@ export default function ConcessionTypeCatalog() {
                       </FormItem>
                     )}
                   />
-                  <DialogFooter>
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      onClick={() => setIsCreateDialogOpen(false)}
-                    >
-                      Cancelar
-                    </Button>
-                    <Button 
-                      type="submit" 
-                      disabled={createMutation.isPending}
-                    >
-                      {createMutation.isPending ? 'Guardando...' : 'Guardar'}
-                    </Button>
-                  </DialogFooter>
-                </form>
-              </Form>
-            </DialogContent>
-          </Dialog>
-        </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Tipos de concesiones</CardTitle>
-            <CardDescription>
-              Lista de tipos de concesiones disponibles para asignar a los parques
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="flex justify-center items-center py-8">
-                <p>Cargando catálogo de concesiones...</p>
-              </div>
-            ) : paginatedData.totalItems > 0 ? (
-              <>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Nombre</TableHead>
-                        <TableHead>Descripción</TableHead>
-                        <TableHead>Nivel de impacto</TableHead>
-                        <TableHead>Estado</TableHead>
-                        <TableHead className="text-right">Acciones</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {paginatedData.data.map((concessionType: any) => (
-                        <TableRow key={concessionType.id}>
-                        <TableCell className="font-medium">{concessionType.name}</TableCell>
-                        <TableCell className="max-w-[300px] truncate">
-                          {concessionType.description}
-                        </TableCell>
-                        <TableCell>
-                          <Badge className={getImpactLevelColor(concessionType.impactLevel)}>
-                            {formatImpactLevel(concessionType.impactLevel)}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {concessionType.isActive ? (
-                            <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200">
-                              Activo
-                            </Badge>
-                          ) : (
-                            <Badge variant="outline" className="bg-gray-100 text-gray-800 border-gray-200">
-                              Inactivo
-                            </Badge>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleEdit(concessionType)}
-                              title="Editar"
-                            >
-                              <Edit size={16} />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleToggleStatus(concessionType.id)}
-                              title={concessionType.isActive ? "Desactivar" : "Activar"}
-                            >
-                              {concessionType.isActive ? (
-                                <ToggleRight size={16} className="text-green-500" />
-                              ) : (
-                                <ToggleLeft size={16} className="text-gray-500" />
-                              )}
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-
-              {/* Controles de paginación */}
-              {paginatedData.totalPages > 1 && (
-                <div className="flex items-center justify-between px-2 py-4">
-                  <div className="text-sm text-muted-foreground">
-                    Mostrando {paginatedData.startIndex} a {paginatedData.endIndex} de {paginatedData.totalItems} tipos de concesiones
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage(currentPage - 1)}
-                      disabled={currentPage === 1}
-                      className="gap-1"
-                    >
-                      <ChevronLeft size={16} />
-                      Anterior
-                    </Button>
-                    
-                    <div className="flex items-center gap-1">
-                      {Array.from({ length: Math.min(5, paginatedData.totalPages) }, (_, i) => {
-                        const startPage = Math.max(1, currentPage - 2);
-                        const pageNumber = startPage + i;
-                        
-                        if (pageNumber > paginatedData.totalPages) return null;
-                        
-                        return (
-                          <Button
-                            key={pageNumber}
-                            variant={pageNumber === currentPage ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => setCurrentPage(pageNumber)}
-                            className={pageNumber === currentPage ? "bg-[#00a587] hover:bg-[#067f5f]" : ""}
-                          >
-                            {pageNumber}
-                          </Button>
-                        );
-                      })}
-                    </div>
-
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage(currentPage + 1)}
-                      disabled={currentPage === paginatedData.totalPages}
-                      className="gap-1"
-                    >
-                      Siguiente
-                      <ChevronRight size={16} />
-                    </Button>
-                  </div>
                 </div>
-              )}
-              </>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-8 text-center">
-                <AlertTriangle className="h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold">No hay tipos de concesiones</h3>
-                <p className="text-muted-foreground max-w-md mt-2">
-                  No se encontraron tipos de concesiones en el catálogo. Crea un nuevo tipo para comenzar.
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                <FormField
+                  control={editForm.control}
+                  name="isActive"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                      <FormControl>
+                        <input
+                          type="checkbox"
+                          checked={field.value}
+                          onChange={field.onChange}
+                          className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                        />
+                      </FormControl>
+                      <div className="leading-none">
+                        <FormLabel>Activo</FormLabel>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+                <DialogFooter>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setIsEditDialogOpen(false)}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    disabled={updateMutation.isPending}
+                  >
+                    {updateMutation.isPending ? 'Guardando...' : 'Guardar cambios'}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
       </div>
-
-      {/* Diálogo para editar tipo de concesión */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>Editar tipo de concesión</DialogTitle>
-            <DialogDescription>
-              Modifica la información del tipo de concesión
-            </DialogDescription>
-          </DialogHeader>
-          <Form {...editForm}>
-            <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
-              <FormField
-                control={editForm.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nombre</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={editForm.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Descripción</FormLabel>
-                    <FormControl>
-                      <Textarea {...field} rows={3} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={editForm.control}
-                  name="technicalRequirements"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Requisitos técnicos</FormLabel>
-                      <FormControl>
-                        <Textarea {...field} rows={3} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={editForm.control}
-                  name="legalRequirements"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Requisitos legales</FormLabel>
-                      <FormControl>
-                        <Textarea {...field} rows={3} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <FormField
-                control={editForm.control}
-                name="operatingRules"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Reglas de operación</FormLabel>
-                    <FormControl>
-                      <Textarea {...field} rows={3} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={editForm.control}
-                name="impactLevel"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nivel de impacto ambiental/social</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecciona un nivel de impacto" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="bajo">Bajo</SelectItem>
-                        <SelectItem value="medio">Medio</SelectItem>
-                        <SelectItem value="alto">Alto</SelectItem>
-                        <SelectItem value="muy_alto">Muy alto</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={editForm.control}
-                name="isActive"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                    <FormControl>
-                      <input
-                        type="checkbox"
-                        checked={field.value}
-                        onChange={field.onChange}
-                        className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                      />
-                    </FormControl>
-                    <div className="leading-none">
-                      <FormLabel>Activo</FormLabel>
-                    </div>
-                  </FormItem>
-                )}
-              />
-              <DialogFooter>
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => setIsEditDialogOpen(false)}
-                >
-                  Cancelar
-                </Button>
-                <Button 
-                  type="submit" 
-                  disabled={updateMutation.isPending}
-                >
-                  {updateMutation.isPending ? 'Guardando...' : 'Guardar cambios'}
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
     </AdminLayout>
   );
 }
