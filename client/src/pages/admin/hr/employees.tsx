@@ -902,29 +902,103 @@ export default function Employees() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <Users className="h-6 w-6 text-blue-600" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                Gestión de Personal
-              </h1>
-              <p className="text-gray-600">
-                Administración integral de empleados y recursos humanos con jerarquías organizacionales
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <Dialog open={isDepartmentDialogOpen} onOpenChange={setIsDepartmentDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" className="flex items-center gap-2">
-                  <Settings className="h-4 w-4" />
-                  Gestionar Departamentos
+        {/* Header con patrón Card estandarizado */}
+        <Card className="bg-gray-50">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Users className="w-8 h-8 text-black" />
+                <h1 className="text-3xl font-bold text-gray-900">
+                  Gestión de Personal
+                </h1>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <Button className="flex items-center gap-2" onClick={() => {
+                  toast({
+                    title: "Función disponible",
+                    description: "El formulario de nuevo empleado está listo para usar.",
+                  });
+                  setIsNewEmployeeOpen(true);
+                }}>
+                  <UserPlus className="h-4 w-4" />
+                  Nuevo Empleado
                 </Button>
-              </DialogTrigger>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Estadísticas */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="p-3 bg-blue-100 rounded-lg">
+                  <Users className="h-6 w-6 text-blue-600" />
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-blue-600">{employees.length}</div>
+                  <div className="text-sm text-blue-800">Total Empleados</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="p-3 bg-green-100 rounded-lg">
+                  <Building className="h-6 w-6 text-green-600" />
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-green-600">{departmentsList.length}</div>
+                  <div className="text-sm text-green-800">Departamentos</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="p-3 bg-purple-100 rounded-lg">
+                  <Award className="h-6 w-6 text-purple-600" />
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-purple-600">5</div>
+                  <div className="text-sm text-purple-800">Niveles Jerárquicos</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="p-3 bg-orange-100 rounded-lg">
+                  <DollarSign className="h-6 w-6 text-orange-600" />
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-orange-600">
+                    {formatCurrency(employees.reduce((sum, emp) => sum + emp.salary, 0) / employees.length)}
+                  </div>
+                  <div className="text-sm text-orange-800">Salario Promedio</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Botones de Importar/Exportar debajo de los indicadores */}
+        <div className="flex items-center gap-3">
+          <Dialog open={isDepartmentDialogOpen} onOpenChange={setIsDepartmentDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="flex items-center gap-2">
+                <Settings className="h-4 w-4" />
+                Gestionar Departamentos
+              </Button>
+            </DialogTrigger>
               <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Gestión de Departamentos</DialogTitle>
@@ -1245,16 +1319,163 @@ export default function Employees() {
               </DialogContent>
             </Dialog>
 
-            <Button className="flex items-center gap-2" onClick={() => {
-              toast({
-                title: "Función disponible",
-                description: "El formulario de nuevo empleado está listo para usar.",
-              });
-              setIsNewEmployeeOpen(true);
-            }}>
-              <UserPlus className="h-4 w-4" />
-              Nuevo Empleado
-            </Button>
+            <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="flex items-center gap-2">
+                  <Upload className="h-4 w-4" />
+                  Importar CSV
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Importar Empleados desde CSV</DialogTitle>
+                  <DialogDescription>
+                    Sube un archivo CSV para importar empleados masivamente al sistema
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-6">
+                  <div className="flex items-center gap-4 p-4 bg-blue-50 rounded-lg">
+                    <Button variant="outline" onClick={downloadTemplate}>
+                      <FileText className="h-4 w-4 mr-2" />
+                      Descargar Plantilla
+                    </Button>
+                    <div className="text-sm text-gray-600">
+                      Descarga la plantilla CSV con el formato correcto para importar datos
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="csvFile">Seleccionar archivo CSV</Label>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".csv"
+                        onChange={handleFileSelect}
+                        className="hidden"
+                      />
+                      <div className="mt-2 flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={() => fileInputRef.current?.click()}
+                        >
+                          <Upload className="h-4 w-4 mr-2" />
+                          Seleccionar Archivo
+                        </Button>
+                        {importFile && (
+                          <span className="text-sm text-green-600">
+                            ✓ {importFile.name}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {importPreview.length > 0 && (
+                      <div className="space-y-4">
+                        <div>
+                          <h4 className="font-medium">Vista previa de datos (primeras 5 filas)</h4>
+                          <div className="mt-2 border rounded-lg overflow-x-auto">
+                            <table className="w-full text-sm">
+                              <thead className="bg-gray-50">
+                                <tr>
+                                  {Object.keys(importPreview[0] || {}).map(header => (
+                                    <th key={header} className="px-3 py-2 text-left font-medium">
+                                      {header}
+                                    </th>
+                                  ))}
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {importPreview.map((row, index) => (
+                                  <tr key={index} className="border-t">
+                                    {Object.values(row).map((value: any, cellIndex) => (
+                                      <td key={cellIndex} className="px-3 py-2">
+                                        {String(value)}
+                                      </td>
+                                    ))}
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            onClick={() => {
+                              setIsImportDialogOpen(false);
+                              setImportFile(null);
+                              setImportPreview([]);
+                            }}
+                          >
+                            Cancelar
+                          </Button>
+                          <Button
+                            onClick={processImport}
+                            disabled={isProcessingImport}
+                          >
+                            {isProcessingImport ? 'Procesando...' : 'Importar Empleados'}
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog open={isExportDialogOpen} onOpenChange={setIsExportDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="flex items-center gap-2">
+                  <Download className="h-4 w-4" />
+                  Exportar CSV
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Exportar Empleados a CSV</DialogTitle>
+                  <DialogDescription>
+                    Selecciona el formato de exportación para descargar los datos
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 gap-4">
+                    <Card className="cursor-pointer hover:bg-gray-50" onClick={() => exportToCSV('simple')}>
+                      <CardContent className="p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-blue-100 rounded-lg">
+                            <FileText className="h-5 w-5 text-blue-600" />
+                          </div>
+                          <div>
+                            <h4 className="font-medium">Exportación Simple</h4>
+                            <p className="text-sm text-gray-600">
+                              Información básica: nombre, email, teléfono, puesto, departamento, salario
+                            </p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="cursor-pointer hover:bg-gray-50" onClick={() => exportToCSV('complete')}>
+                      <CardContent className="p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-green-100 rounded-lg">
+                            <FileText className="h-5 w-5 text-green-600" />
+                          </div>
+                          <div>
+                            <h4 className="font-medium">Exportación Completa</h4>
+                            <p className="text-sm text-gray-600">
+                              Toda la información disponible
+                            </p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
 
