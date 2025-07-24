@@ -631,22 +631,32 @@ export default function Payroll() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Gestión de Nómina</h1>
-            <p className="text-gray-600 mt-1">Sistema integral de nómina con integración automática a finanzas</p>
-          </div>
-          <div className="flex gap-3">
-            <Button 
-              onClick={() => setIsNewPeriodDialogOpen(true)}
-              className="bg-[#00a587] hover:bg-[#067f5f] text-white"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Nuevo Período
-            </Button>
-          </div>
-        </div>
+        {/* Header con patrón Card estandarizado */}
+        <Card className="bg-gray-50">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Calculator className="w-8 h-8 text-black" />
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900">
+                    Gestión de Nómina
+                  </h1>
+                  <p className="text-gray-600 mt-1">Sistema integral de nómina con integración automática a finanzas</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <Button 
+                  className="flex items-center gap-2"
+                  onClick={() => setIsNewPeriodDialogOpen(true)}
+                >
+                  <Plus className="h-4 w-4" />
+                  Nuevo Período
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Dashboard Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
