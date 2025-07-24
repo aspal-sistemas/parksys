@@ -292,23 +292,27 @@ const ContractsPage = () => {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        {/* Encabezado */}
-        <div className="flex justify-between items-center">
-          <div>
-            <div className="flex items-center gap-2">
-              <FileText className="w-8 h-8 text-gray-900" />
-              <h1 className="text-3xl font-bold text-gray-900">Contratos de Patrocinio</h1>
+        {/* Header Card */}
+        <Card className="bg-gray-50">
+          <CardContent className="p-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <div className="flex items-center gap-2">
+                  <FileText className="w-8 h-8 text-gray-900" />
+                  <h1 className="text-3xl font-bold text-gray-900">Contratos de Patrocinio</h1>
+                </div>
+                <p className="text-gray-600 mt-2">Gestión de contratos, pagos y compromisos</p>
+              </div>
+              <Button 
+                onClick={() => setIsCreateModalOpen(true)}
+                className="bg-[#00a587] hover:bg-[#067f5f] text-white"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Nuevo Contrato
+              </Button>
             </div>
-            <p className="text-gray-600 mt-2">Gestión de contratos, pagos y compromisos</p>
-          </div>
-          <Button 
-            onClick={() => setIsCreateModalOpen(true)}
-            className="bg-[#00a587] hover:bg-[#067f5f] text-white"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Nuevo Contrato
-          </Button>
-        </div>
+          </CardContent>
+        </Card>
 
         {/* Filtros */}
         <div className="flex flex-col sm:flex-row gap-4">
