@@ -182,16 +182,21 @@ export default function VolunteerRegisterPage() {
 
   return (
     <AdminLayout>
-      <div className="container mx-auto p-6 max-w-4xl">
-        <div className="mb-6">
-          <div className="flex items-center gap-2 mt-2">
-            <UserPlus className="w-8 h-8 text-gray-900" />
-            <h1 className="text-3xl font-bold text-gray-900">Registro de Nuevo Voluntario</h1>
+      <div className="p-6 max-w-4xl mx-auto">
+        {/* Header con patrón Card estandarizado */}
+        <Card className="p-4 bg-gray-50 mb-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <UserPlus className="w-8 h-8 text-gray-900" />
+                <h1 className="text-3xl font-bold text-gray-900">Registro de Nuevo Voluntario</h1>
+              </div>
+              <p className="text-gray-600 mt-2">
+                Complete la información del voluntario para registrarlo en el sistema
+              </p>
+            </div>
           </div>
-          <p className="text-muted-foreground">
-            Complete la información del voluntario para registrarlo en el sistema
-          </p>
-        </div>
+        </Card>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
