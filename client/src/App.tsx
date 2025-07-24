@@ -127,6 +127,9 @@ function Router() {
           </Suspense>
         </Route>
 
+        {/* Ruta de login principal */}
+        <Route path="/login" component={AdminLogin} />
+        
         <Route path="/admin" component={AdminDashboard} />
         <Route path="/admin/parks" component={AdminParks} />
         <Route path="/admin/parks/dashboard">
