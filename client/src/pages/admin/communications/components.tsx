@@ -1887,7 +1887,6 @@ export const AnalyticsSection: React.FC = () => {
       {/* Header con filtros */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Análisis de Comunicaciones</h2>
           <p className="text-gray-600">Métricas de rendimiento y reportes detallados</p>
         </div>
         <div className="flex gap-3">
