@@ -193,45 +193,46 @@ const VolunteerRecognitions: React.FC = () => {
 
   return (
     <AdminLayout>
-      <div className="container mx-auto py-6">
-        <Card className="border-0 shadow-md">
-          <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-t-lg">
-            <div className="flex justify-between items-center">
-              <div>
-                <CardTitle className="text-2xl font-bold flex items-center">
-                  <Award className="mr-2 h-6 w-6" />
-                  Reconocimientos de Voluntarios
-                </CardTitle>
-                <CardDescription className="text-gray-100 mt-1">
-                  Gestión de reconocimientos otorgados a voluntarios
-                </CardDescription>
+      <div className="p-6">
+        {/* Header con patrón Card estandarizado */}
+        <Card className="p-4 bg-gray-50 mb-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <Award className="w-8 h-8 text-gray-900" />
+                <h1 className="text-3xl font-bold text-gray-900">Reconocimientos de Voluntarios</h1>
               </div>
-              <div className="flex gap-2">
-                <Button 
-                  onClick={() => loadSampleData.mutate()}
-                  variant="secondary" 
-                  className="bg-green-600 text-white hover:bg-green-700"
-                  disabled={loadSampleData.isPending}
-                >
-                  {loadSampleData.isPending ? (
-                    <div className="flex items-center">
-                      <div className="animate-spin h-4 w-4 mr-2 border-2 border-b-0 border-r-0 border-white rounded-full"></div>
-                      Cargando...
-                    </div>
-                  ) : (
-                    <>
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                      Cargar datos de muestra
-                    </>
-                  )}
-                </Button>
-                <Button variant="default" className="bg-white text-blue-700 hover:bg-gray-100">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  Nuevo Reconocimiento
-                </Button>
-              </div>
+              <p className="text-gray-600 mt-2">
+                Gestión de reconocimientos otorgados a voluntarios
+              </p>
             </div>
-          </CardHeader>
+            <div className="flex flex-wrap gap-3">
+              <Button 
+                onClick={() => loadSampleData.mutate()}
+                variant="outline"
+                disabled={loadSampleData.isPending}
+              >
+                {loadSampleData.isPending ? (
+                  <div className="flex items-center">
+                    <div className="animate-spin h-4 w-4 mr-2 border-2 border-b-0 border-r-0 border-gray-400 rounded-full"></div>
+                    Cargando...
+                  </div>
+                ) : (
+                  <>
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Cargar datos de muestra
+                  </>
+                )}
+              </Button>
+              <Button variant="outline">
+                <Calendar className="h-4 w-4 mr-2" />
+                Nuevo Reconocimiento
+              </Button>
+            </div>
+          </div>
+        </Card>
+
+        <Card>
           <CardContent className="pt-6">
             {/* Filters and search */}
             <div className="flex flex-col md:flex-row gap-4 mb-6">
