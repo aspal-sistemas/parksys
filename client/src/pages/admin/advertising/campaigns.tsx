@@ -524,35 +524,36 @@ export default function CampaignsPage() {
     <AdminLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex justify-between items-center">
-          <div>
-            <div className="flex items-center gap-2">
-              <Target className="w-8 h-8 text-gray-900" />
-              <h1 className="text-3xl font-bold text-gray-900">Campañas Publicitarias</h1>
+        <Card className="bg-gray-50">
+          <CardContent className="p-6">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <Target className="w-8 h-8 text-gray-900" />
+                <h1 className="text-3xl font-bold text-gray-900">Gestión de Campañas</h1>
+              </div>
+              <Dialog open={showForm} onOpenChange={setShowForm}>
+                <DialogTrigger asChild>
+                  <Button className="bg-[#00a587] hover:bg-[#067f5f]">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Nueva Campaña
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>
+                      {editingCampaign ? 'Editar Campaña' : 'Nueva Campaña'}
+                    </DialogTitle>
+                  </DialogHeader>
+                  <CampaignForm
+                    campaign={editingCampaign}
+                    onSubmit={handleSubmit}
+                    onCancel={handleCancel}
+                  />
+                </DialogContent>
+              </Dialog>
             </div>
-            <p className="text-gray-600 mt-2">Gestiona campañas publicitarias y su rendimiento</p>
-          </div>
-          <Dialog open={showForm} onOpenChange={setShowForm}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="w-4 h-4 mr-2" />
-                Nueva Campaña
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>
-                  {editingCampaign ? 'Editar Campaña' : 'Nueva Campaña'}
-                </DialogTitle>
-              </DialogHeader>
-              <CampaignForm
-                campaign={editingCampaign}
-                onSubmit={handleSubmit}
-                onCancel={handleCancel}
-              />
-            </DialogContent>
-          </Dialog>
-        </div>
+          </CardContent>
+        </Card>
 
         {/* Estadísticas */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
