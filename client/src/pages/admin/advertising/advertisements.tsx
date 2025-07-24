@@ -579,64 +579,68 @@ const AdAdvertisements = () => {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <div>
-            <div className="flex items-center gap-2">
-              <ImageIcon className="w-8 h-8 text-gray-900" />
-              <h1 className="text-3xl font-bold text-gray-900">Gestión de Anuncios</h1>
-            </div>
-            <p className="text-gray-600 mt-2">Crea y gestiona el contenido publicitario para tus espacios</p>
-          </div>
-          <div className="flex gap-2">
-            <Button onClick={forceAd13Update} variant="outline" className="bg-orange-50 hover:bg-orange-100 text-orange-700">
-              <Eye className="h-4 w-4 mr-2" />
-              Actualizar Anuncio 13
-            </Button>
-            <Button 
-              onClick={() => {
-                // Disparar eventos globales para actualizar todas las páginas
-                localStorage.setItem('adForceUpdate', Date.now().toString());
-                window.dispatchEvent(new CustomEvent('adForceUpdate'));
-                
-                // Disparar evento cross-window
-                window.dispatchEvent(new StorageEvent('storage', {
-                  key: 'adForceUpdate',
-                  newValue: Date.now().toString(),
-                  oldValue: null,
-                  url: window.location.href
-                }));
-                
-                // Invalidar cache múltiple
-                const invalidationDelays = [0, 500, 1000, 1500, 2000];
-                invalidationDelays.forEach((delay) => {
-                  setTimeout(() => {
-                    queryClient.invalidateQueries({ queryKey: ['/api/advertising/placements'] });
-                    queryClient.refetchQueries({ queryKey: ['/api/advertising/placements'] });
-                  }, delay);
-                });
-                
-                console.log('🔄 Actualización manual de todas las imágenes publicitarias disparada');
-                
-                toast({
-                  title: "Actualización enviada",
-                  description: "Se ha disparado la actualización de todas las imágenes publicitarias en las páginas",
-                });
-              }}
-              variant="outline" 
-              className="bg-blue-50 hover:bg-blue-100 text-blue-700"
-            >
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Actualizar Todas las Imágenes
-            </Button>
-            <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-              <DialogTrigger asChild>
-                <Button className="bg-[#00a587] hover:bg-[#067f5f]">
+        {/* Header Card */}
+        <Card className="bg-gray-50">
+          <CardContent className="p-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <div className="flex items-center gap-2">
+                  <ImageIcon className="w-8 h-8 text-gray-900" />
+                  <h1 className="text-3xl font-bold text-gray-900">Gestión de Anuncios</h1>
+                </div>
+                <p className="text-gray-600 mt-2">Crea y gestiona el contenido publicitario para tus espacios</p>
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={() => {
+                    // Disparar eventos globales para actualizar todas las páginas
+                    localStorage.setItem('adForceUpdate', Date.now().toString());
+                    window.dispatchEvent(new CustomEvent('adForceUpdate'));
+                    
+                    // Disparar evento cross-window
+                    window.dispatchEvent(new StorageEvent('storage', {
+                      key: 'adForceUpdate',
+                      newValue: Date.now().toString(),
+                      oldValue: null,
+                      url: window.location.href
+                    }));
+                    
+                    // Invalidar cache múltiple
+                    const invalidationDelays = [0, 500, 1000, 1500, 2000];
+                    invalidationDelays.forEach((delay) => {
+                      setTimeout(() => {
+                        queryClient.invalidateQueries({ queryKey: ['/api/advertising/placements'] });
+                        queryClient.refetchQueries({ queryKey: ['/api/advertising/placements'] });
+                      }, delay);
+                    });
+                    
+                    console.log('🔄 Actualización manual de todas las imágenes publicitarias disparada');
+                    
+                    toast({
+                      title: "Actualización enviada",
+                      description: "Se ha disparado la actualización de todas las imágenes publicitarias en las páginas",
+                    });
+                  }}
+                  variant="outline" 
+                  className="bg-blue-50 hover:bg-blue-100 text-blue-700"
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Actualizar Todas las Imágenes
+                </Button>
+                <Button 
+                  onClick={() => setIsCreateModalOpen(true)}
+                  className="bg-[#00a587] hover:bg-[#067f5f]"
+                >
                   <Plus className="h-4 w-4 mr-2" />
                   Nuevo Anuncio
                 </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl">
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+          <DialogContent className="max-w-2xl">
                 <DialogHeader>
                   <DialogTitle>Crear Nuevo Anuncio</DialogTitle>
                 </DialogHeader>
@@ -888,9 +892,7 @@ const AdAdvertisements = () => {
                   </div>
                 </form>
               </DialogContent>
-            </Dialog>
-          </div>
-        </div>
+        </Dialog>
 
         {/* Statistics */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
