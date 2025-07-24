@@ -331,7 +331,7 @@ const AdminSidebarComplete: React.FC = () => {
     if (location.startsWith('/admin/users') || location.startsWith('/admin/permissions') || location.startsWith('/admin/settings')) return ['system'];
     if (location.startsWith('/admin/hr')) return ['hr'];
     if (location.startsWith('/admin/security')) return ['security'];
-    if (location.startsWith('/admin/analytics') || location.startsWith('/admin/documents') || location.startsWith('/admin/comments')) return ['system'];
+    if (location.startsWith('/admin/documents') || location.startsWith('/admin/comments')) return ['system'];
     return []; // Sin módulos abiertos por defecto
   };
   
@@ -1074,13 +1074,6 @@ const AdminSidebarComplete: React.FC = () => {
                 active={location.startsWith('/admin/advertising/space-mappings')}
               >
                 Mapeo de Espacios
-              </NavItem>
-              <NavItem 
-                href="/admin/advertising/analytics" 
-                icon={<TrendingUp className="h-4 w-4" />}
-                active={location.startsWith('/admin/advertising/analytics')}
-              >
-                Análisis
               </NavItem>
             </CollapsibleSubmenu>
 
