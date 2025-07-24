@@ -266,8 +266,8 @@ const AssignmentForm: React.FC<{ assignment?: Assignment; onSubmit: (data: Assig
   });
 
   // Extract data from API response structure
-  const spaces = spacesResponse?.data || spacesResponse || [];
-  const advertisements = advertisementsResponse?.data || advertisementsResponse || [];
+  const spaces = (spacesResponse as any)?.data || spacesResponse || [];
+  const advertisements = (advertisementsResponse as any)?.data || advertisementsResponse || [];
 
   const handleSubmit = (data: AssignmentFormData) => {
     onSubmit(data);
@@ -488,7 +488,7 @@ export default function AdvertisingAssignments() {
   });
 
   // Extract assignments from the API response structure
-  const assignments = assignmentsResponse?.data || assignmentsResponse || [];
+  const assignments = (assignmentsResponse as any)?.data || assignmentsResponse || [];
 
   const createMutation = useMutation({
     mutationFn: async (data: AssignmentFormData) => {
@@ -669,35 +669,36 @@ export default function AdvertisingAssignments() {
     <AdminLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex justify-between items-center">
-          <div>
-            <div className="flex items-center gap-2">
-              <Settings className="w-8 h-8 text-gray-900" />
-              <h1 className="text-3xl font-bold text-gray-900">Asignaciones Publicitarias</h1>
+        <Card className="bg-gray-50">
+          <CardContent className="p-6">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <Settings className="w-8 h-8 text-gray-900" />
+                <h1 className="text-3xl font-bold text-gray-900">Gestión de Asignaciones</h1>
+              </div>
+              <Dialog open={showForm} onOpenChange={setShowForm}>
+                <DialogTrigger asChild>
+                  <Button className="bg-[#00a587] hover:bg-[#067f5f]">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Nueva Asignación
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-4xl">
+                  <DialogHeader>
+                    <DialogTitle>
+                      {editingAssignment ? 'Editar Asignación' : 'Nueva Asignación'}
+                    </DialogTitle>
+                  </DialogHeader>
+                  <AssignmentForm
+                    assignment={editingAssignment}
+                    onSubmit={handleSubmit}
+                    onCancel={handleCancel}
+                  />
+                </DialogContent>
+              </Dialog>
             </div>
-            <p className="text-gray-600 mt-2">Gestiona la programación y distribución de anuncios en espacios publicitarios</p>
-          </div>
-          <Dialog open={showForm} onOpenChange={setShowForm}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="w-4 h-4 mr-2" />
-                Nueva Asignación
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-4xl">
-              <DialogHeader>
-                <DialogTitle>
-                  {editingAssignment ? 'Editar Asignación' : 'Nueva Asignación'}
-                </DialogTitle>
-              </DialogHeader>
-              <AssignmentForm
-                assignment={editingAssignment}
-                onSubmit={handleSubmit}
-                onCancel={handleCancel}
-              />
-            </DialogContent>
-          </Dialog>
-        </div>
+          </CardContent>
+        </Card>
 
         {/* Estadísticas */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
