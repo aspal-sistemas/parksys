@@ -215,13 +215,13 @@ export default function ConcessionairesPage() {
 
       <div className="container mx-auto py-6">
         {/* Header con título - Patrón Card estandarizado */}
-        <Card className="p-4 bg-gray-50 mb-6">
+        <div className="p-4 bg-gray-50 mb-6 rounded-lg border">
           <div className="flex items-center gap-2">
             <Users className="w-8 h-8 text-gray-900" />
             <h1 className="text-3xl font-bold text-gray-900">Gestión de Concesionarios</h1>
           </div>
           <p className="text-gray-600 mt-2">Administra los concesionarios autorizados para operar en los parques</p>
-        </Card>
+        </div>
 
         <div className="flex justify-between items-center mb-6">
           <div></div>
