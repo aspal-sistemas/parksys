@@ -158,29 +158,35 @@ const SpaceMappings: React.FC = () => {
   return (
     <AdminLayout>
       <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <LinkIcon className="w-8 h-8 text-gray-900" />
-            <h1 className="text-3xl font-bold text-gray-900">Mapeo de Espacios Publicitarios</h1>
-          </div>
-          <p className="text-gray-600 mt-2">Visualización completa de espacios publicitarios y sus anuncios asignados</p>
-        </div>
-        <div className="flex gap-2">
-          <Link href="/admin/advertising/advertisements">
-            <Button variant="outline">
-              <Image className="h-4 w-4 mr-2" />
-              Gestionar Anuncios
-            </Button>
-          </Link>
-          <Link href="/admin/advertising/spaces">
-            <Button variant="outline">
-              <MapPin className="h-4 w-4 mr-2" />
-              Gestionar Espacios
-            </Button>
-          </Link>
-        </div>
-      </div>
+        {/* Header Card */}
+        <Card className="bg-gray-50">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <LinkIcon className="w-8 h-8 text-gray-900" />
+                <h1 className="text-3xl font-bold text-gray-900">Mapeo de Espacios</h1>
+              </div>
+              <div className="flex gap-2">
+                <Link href="/admin/advertising/advertisements">
+                  <Button 
+                    className="bg-[#00a587] hover:bg-[#067f5f] text-white"
+                  >
+                    <Image className="h-4 w-4 mr-2" />
+                    Gestionar Anuncios
+                  </Button>
+                </Link>
+                <Link href="/admin/advertising/spaces">
+                  <Button 
+                    className="bg-[#00a587] hover:bg-[#067f5f] text-white"
+                  >
+                    <MapPin className="h-4 w-4 mr-2" />
+                    Gestionar Espacios
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
       {/* Filtros de búsqueda */}
       <Card className="p-4 bg-gray-50">
