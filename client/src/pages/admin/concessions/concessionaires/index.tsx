@@ -41,7 +41,6 @@ export default function ConcessionairesPage() {
   const [selectedConcessionaire, setSelectedConcessionaire] = useState<any>(null);
   const [activeTab, setActiveTab] = useState("listado");
   const [searchTerm, setSearchTerm] = useState("");
-  const [showNewConcessionaireDialog, setShowNewConcessionaireDialog] = useState(false);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -83,13 +82,13 @@ export default function ConcessionairesPage() {
 
   // Mutación para crear un nuevo concesionario
   const createConcessionaire = useMutation({
-    mutationFn: async (data: ConcessionaireFormValues) => {
+    mutationFn: async (values: ConcessionaireFormValues) => {
       const response = await fetch("/api/concessionaires", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(values),
       });
       
       if (!response.ok) {
@@ -119,8 +118,7 @@ export default function ConcessionairesPage() {
 
   // Mutación para actualizar un concesionario existente
   const updateConcessionaire = useMutation({
-    mutationFn: async (data: ConcessionaireFormValues & { id: number }) => {
-      const { id, ...rest } = data;
+    mutationFn: async ({ id, ...rest }: ConcessionaireFormValues & { id: number }) => {
       const response = await fetch(`/api/concessionaires/${id}`, {
         method: "PUT",
         headers: {
@@ -216,20 +214,158 @@ export default function ConcessionairesPage() {
       <div className="container mx-auto py-6">
         {/* Header con título */}
         <Card className="p-4 bg-gray-50 mb-6">
-          <div className="flex items-center gap-2">
-            <Users className="w-8 h-8 text-gray-900" />
-            <h1 className="text-3xl font-bold text-gray-900">Gestión de Concesionarios</h1>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Users className="w-8 h-8 text-gray-900" />
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Gestión de Concesionarios</h1>
+                <p className="text-gray-600 mt-2">Administra los concesionarios autorizados para operar en los parques</p>
+              </div>
+            </div>
+            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="gap-2">
+                  <Plus size={16} />
+                  Nuevo Concesionario
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[800px]">
+                <DialogHeader>
+                  <DialogTitle>Crear nuevo concesionario</DialogTitle>
+                  <DialogDescription>
+                    Registra un nuevo concesionario autorizado para operar en los parques.
+                  </DialogDescription>
+                </DialogHeader>
+                <Form {...createForm}>
+                  <form onSubmit={createForm.handleSubmit(onCreateSubmit)} className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={createForm.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Nombre o Razón Social *</FormLabel>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={createForm.control}
+                        name="type"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Tipo de Concesionario *</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Selecciona un tipo" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="persona_fisica">Persona Física</SelectItem>
+                                <SelectItem value="persona_moral">Persona Moral</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={createForm.control}
+                        name="rfc"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>RFC *</FormLabel>
+                            <FormControl>
+                              <Input {...field} placeholder="Ej: XAXX010101000" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={createForm.control}
+                        name="legal_representative"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Representante Legal</FormLabel>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={createForm.control}
+                        name="phone"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Teléfono</FormLabel>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={createForm.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Correo Electrónico</FormLabel>
+                            <FormControl>
+                              <Input {...field} type="email" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <FormField
+                      control={createForm.control}
+                      name="tax_address"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Dirección Fiscal *</FormLabel>
+                          <FormControl>
+                            <Textarea {...field} rows={2} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={createForm.control}
+                      name="notes"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Notas adicionales</FormLabel>
+                          <FormControl>
+                            <Textarea {...field} rows={3} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <DialogFooter>
+                      <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                        Cancelar
+                      </Button>
+                      <Button type="submit" disabled={createConcessionaire.isPending}>
+                        {createConcessionaire.isPending ? "Guardando..." : "Guardar concesionario"}
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                </Form>
+              </DialogContent>
+            </Dialog>
           </div>
-          <p className="text-gray-600 mt-2">Administra los concesionarios autorizados para operar en los parques</p>
         </Card>
-
-        <div className="flex justify-between items-center mb-6">
-          <div></div>
-          <Button className="gap-2" onClick={() => window.location.href = "/admin/users"}>
-            <Plus size={16} />
-            Nuevo Concesionario
-          </Button>
-        </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid grid-cols-3 w-[400px]">
@@ -268,13 +404,16 @@ export default function ConcessionairesPage() {
               </CardHeader>
               <CardContent>
                 {isLoadingConcessionaires ? (
-                  <p className="text-center py-4">Cargando concesionarios...</p>
+                  <div className="text-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
+                    <p>Cargando concesionarios...</p>
+                  </div>
                 ) : filteredConcessionaires.length === 0 ? (
                   <div className="text-center py-8">
-                    <AlertTriangle className="h-10 w-10 text-yellow-500 mx-auto mb-2" />
+                    <UserRound className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                     <p className="text-lg font-medium">No hay concesionarios registrados</p>
                     <p className="text-muted-foreground">
-                      {searchTerm ? "No se encontraron resultados para tu búsqueda" : "Registra el primer concesionario haciendo clic en 'Nuevo Concesionario'"}
+                      {searchTerm ? "No se encontraron resultados" : "Comienza registrando tu primer concesionario"}
                     </p>
                   </div>
                 ) : (
@@ -284,10 +423,10 @@ export default function ConcessionairesPage() {
                         <TableHead>Nombre/Razón Social</TableHead>
                         <TableHead>Tipo</TableHead>
                         <TableHead>RFC</TableHead>
-                        <TableHead>Representante</TableHead>
-                        <TableHead>Contacto</TableHead>
+                        <TableHead>Teléfono</TableHead>
+                        <TableHead>Email</TableHead>
                         <TableHead>Estado</TableHead>
-                        <TableHead className="text-right">Acciones</TableHead>
+                        <TableHead>Acciones</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -295,27 +434,21 @@ export default function ConcessionairesPage() {
                         <TableRow key={concessionaire.id}>
                           <TableCell className="font-medium">{concessionaire.name}</TableCell>
                           <TableCell>
-                            {concessionaire.type === "persona_fisica" ? "Persona Física" : "Persona Moral"}
+                            <Badge variant="outline">
+                              {concessionaire.type === "persona_fisica" ? "P. Física" : "P. Moral"}
+                            </Badge>
                           </TableCell>
-                          <TableCell>{concessionaire.rfc}</TableCell>
-                          <TableCell>{concessionaire.legal_representative || "-"}</TableCell>
+                          <TableCell className="font-mono text-sm">{concessionaire.rfc}</TableCell>
+                          <TableCell>{concessionaire.phone || "-"}</TableCell>
+                          <TableCell>{concessionaire.email || "-"}</TableCell>
+                          <TableCell>{renderStatus(concessionaire.status || "activo")}</TableCell>
                           <TableCell>
-                            {concessionaire.email && (
-                              <div className="text-sm">{concessionaire.email}</div>
-                            )}
-                            {concessionaire.phone && (
-                              <div className="text-sm text-muted-foreground">{concessionaire.phone}</div>
-                            )}
-                          </TableCell>
-                          <TableCell>{renderStatus(concessionaire.status)}</TableCell>
-                          <TableCell className="text-right">
-                            <Button 
-                              variant="ghost" 
+                            <Button
+                              variant="outline"
                               size="sm"
                               onClick={() => handleEdit(concessionaire)}
                             >
-                              <Edit className="h-4 w-4 mr-1" />
-                              Editar
+                              <Edit className="h-4 w-4" />
                             </Button>
                           </TableCell>
                         </TableRow>
@@ -326,92 +459,129 @@ export default function ConcessionairesPage() {
               </CardContent>
             </Card>
           </TabsContent>
-
+          
           <TabsContent value="documentos">
             <Card>
               <CardHeader>
-                <CardTitle>Documentación de Concesionarios</CardTitle>
+                <CardTitle>Documentos de Concesionarios</CardTitle>
                 <CardDescription>
-                  Gestiona los documentos legales y administrativos de los concesionarios
+                  Gestiona los documentos requeridos para cada concesionario
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="text-center py-8">
-                  <FileUp className="h-10 w-10 text-blue-500 mx-auto mb-2" />
-                  <p className="text-lg font-medium">Módulo de Documentación</p>
-                  <p className="text-muted-foreground mb-4">
-                    Aquí podrás cargar y verificar documentos como RFC, identificaciones, actas constitutivas y más.
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Selecciona un concesionario en la pestaña de Listado para gestionar sus documentos.
+                  <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-lg font-medium">Gestión de Documentos</p>
+                  <p className="text-muted-foreground">
+                    Funcionalidad próximamente disponible
                   </p>
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
-
+          
           <TabsContent value="evaluaciones">
             <Card>
               <CardHeader>
-                <CardTitle>Evaluaciones de Concesionarios</CardTitle>
+                <CardTitle>Evaluaciones de Desempeño</CardTitle>
                 <CardDescription>
-                  Historial de evaluaciones y calificaciones de desempeño
+                  Califica el desempeño de los concesionarios
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="text-center py-8">
-                  <Star className="h-10 w-10 text-yellow-500 mx-auto mb-2" />
-                  <p className="text-lg font-medium">Módulo de Evaluaciones</p>
-                  <p className="text-muted-foreground mb-4">
-                    Aquí podrás ver y registrar evaluaciones periódicas de los concesionarios.
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Selecciona un concesionario en la pestaña de Listado para gestionar sus evaluaciones.
+                  <Star className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-lg font-medium">Sistema de Evaluaciones</p>
+                  <p className="text-muted-foreground">
+                    Funcionalidad próximamente disponible
                   </p>
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
-
-
         </Tabs>
-      </div>
 
-      {/* Diálogo para crear nuevo concesionario */}
-      <Dialog open={showNewConcessionaireDialog} onOpenChange={setShowNewConcessionaireDialog}>
-        <DialogContent className="sm:max-w-[800px]">
-          <DialogHeader>
-            <DialogTitle>Registro de Nuevo Concesionario</DialogTitle>
-            <DialogDescription>
-              Ingresa los datos para registrar un nuevo concesionario.
-            </DialogDescription>
-          </DialogHeader>
-
-          <Tabs defaultValue="datos" className="w-full">
-            <TabsList className="grid grid-cols-3 w-full">
-              <TabsTrigger value="datos">
-                <Users className="h-4 w-4 mr-2" />
-                Datos Generales
-              </TabsTrigger>
-              <TabsTrigger value="documentos">
-                <FileText className="h-4 w-4 mr-2" />
-                Documentación
-              </TabsTrigger>
-              <TabsTrigger value="evaluaciones">
-                <Star className="h-4 w-4 mr-2" />
-                Evaluaciones
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="datos">
-              <Form {...createForm}>
-                <form onSubmit={createForm.handleSubmit(onCreateSubmit)} className="space-y-4">
+        {/* Diálogo para editar concesionario */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle>Editar Concesionario</DialogTitle>
+              <DialogDescription>
+                Actualiza los datos fiscales y de contacto del concesionario.
+              </DialogDescription>
+            </DialogHeader>
+            <Form {...editForm}>
+              <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
+                <FormField
+                  control={editForm.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nombre o Razón Social *</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="type"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tipo de Concesionario *</FormLabel>
+                      <Select 
+                        onValueChange={field.onChange} 
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecciona un tipo" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="persona_fisica">Persona Física</SelectItem>
+                          <SelectItem value="persona_moral">Persona Moral</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="rfc"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>RFC *</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="Ej: XAXX010101000" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="tax_address"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Dirección Fiscal *</FormLabel>
+                      <FormControl>
+                        <Textarea {...field} rows={2} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
-                    control={createForm.control}
-                    name="name"
+                    control={editForm.control}
+                    name="phone"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Nombre o Razón Social</FormLabel>
+                        <FormLabel>Teléfono</FormLabel>
                         <FormControl>
                           <Input {...field} />
                         </FormControl>
@@ -419,85 +589,8 @@ export default function ConcessionairesPage() {
                       </FormItem>
                     )}
                   />
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={createForm.control}
-                      name="rfc"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>RFC</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={createForm.control}
-                      name="type"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Tipo</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Selecciona el tipo" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="persona_fisica">Persona Física</SelectItem>
-                              <SelectItem value="persona_moral">Persona Moral</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
                   <FormField
-                    control={createForm.control}
-                    name="tax_address"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Domicilio Fiscal</FormLabel>
-                        <FormControl>
-                          <Textarea {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={createForm.control}
-                      name="legal_representative"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Representante Legal</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={createForm.control}
-                      name="phone"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Teléfono</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <FormField
-                    control={createForm.control}
+                    control={editForm.control}
                     name="email"
                     render={({ field }) => (
                       <FormItem>
@@ -509,142 +602,7 @@ export default function ConcessionairesPage() {
                       </FormItem>
                     )}
                   />
-                  <FormField
-                    control={createForm.control}
-                    name="notes"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Notas</FormLabel>
-                        <FormControl>
-                          <Textarea {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <DialogFooter>
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      onClick={() => setShowNewConcessionaireDialog(false)}
-                    >
-                      Cancelar
-                    </Button>
-                    <Button type="submit" disabled={createForm.formState.isSubmitting}>
-                      {createForm.formState.isSubmitting ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Guardando...
-                        </>
-                      ) : "Guardar Concesionario"}
-                    </Button>
-                  </DialogFooter>
-                </form>
-              </Form>
-            </TabsContent>
-            
-            <TabsContent value="documentos">
-              <div className="space-y-4 py-4">
-                <div className="text-center py-6">
-                  <FileUp className="h-10 w-10 text-blue-500 mx-auto mb-2" />
-                  <p className="text-lg font-medium">Documentos Requeridos</p>
-                  <p className="text-muted-foreground mb-4">
-                    Guarda primero los datos generales del concesionario para poder subir documentos.
-                  </p>
                 </div>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="evaluaciones">
-              <div className="space-y-4 py-4">
-                <div className="text-center py-6">
-                  <Star className="h-10 w-10 text-yellow-500 mx-auto mb-2" />
-                  <p className="text-lg font-medium">Evaluaciones de Desempeño</p>
-                  <p className="text-muted-foreground mb-4">
-                    Guarda primero los datos generales del concesionario para registrar evaluaciones.
-                  </p>
-                </div>
-              </div>
-            </TabsContent>
-          </Tabs>
-        </DialogContent>
-      </Dialog>
-
-      {/* Diálogo para editar concesionario */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>Editar Concesionario</DialogTitle>
-            <DialogDescription>
-              Actualiza los datos fiscales y de contacto del concesionario.
-            </DialogDescription>
-          </DialogHeader>
-          <Form {...editForm}>
-            <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
-              <FormField
-                control={editForm.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nombre o Razón Social *</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={editForm.control}
-                name="type"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Tipo de Concesionario *</FormLabel>
-                    <Select 
-                      onValueChange={field.onChange} 
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecciona un tipo" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="persona_fisica">Persona Física</SelectItem>
-                        <SelectItem value="persona_moral">Persona Moral</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={editForm.control}
-                name="rfc"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>RFC *</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={editForm.control}
-                name="tax_address"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Dirección Fiscal *</FormLabel>
-                    <FormControl>
-                      <Textarea {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={editForm.control}
                   name="legal_representative"
@@ -660,56 +618,30 @@ export default function ConcessionairesPage() {
                 />
                 <FormField
                   control={editForm.control}
-                  name="phone"
+                  name="notes"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Teléfono</FormLabel>
+                      <FormLabel>Notas adicionales</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Textarea {...field} rows={3} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-              </div>
-              <FormField
-                control={editForm.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Correo Electrónico</FormLabel>
-                    <FormControl>
-                      <Input {...field} type="email" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={editForm.control}
-                name="notes"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Notas</FormLabel>
-                    <FormControl>
-                      <Textarea {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <DialogFooter>
-                <Button 
-                  type="submit" 
-                  disabled={updateConcessionaire.isPending}
-                >
-                  {updateConcessionaire.isPending ? "Guardando..." : "Guardar Cambios"}
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
+                <DialogFooter>
+                  <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                    Cancelar
+                  </Button>
+                  <Button type="submit" disabled={updateConcessionaire.isPending}>
+                    {updateConcessionaire.isPending ? "Actualizando..." : "Actualizar concesionario"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
+      </div>
     </AdminLayout>
   );
 }
