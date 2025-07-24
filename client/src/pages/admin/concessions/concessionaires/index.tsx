@@ -214,7 +214,7 @@ export default function ConcessionairesPage() {
       </Helmet>
 
       <div className="container mx-auto py-6">
-        {/* Header con título */}
+        {/* Header con título - Patrón Card estandarizado */}
         <Card className="p-4 bg-gray-50 mb-6">
           <div className="flex items-center gap-2">
             <Users className="w-8 h-8 text-gray-900" />
