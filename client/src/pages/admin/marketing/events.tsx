@@ -87,7 +87,7 @@ const EventsPage = () => {
     mutationFn: (data: EventFormData) => 
       apiRequest('/api/sponsor-events', {
         method: 'POST',
-        body: JSON.stringify(data)
+        data: data
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/sponsor-events'] });
@@ -112,7 +112,7 @@ const EventsPage = () => {
     mutationFn: ({ id, data }: { id: number; data: EventFormData }) => 
       apiRequest(`/api/sponsor-events/${id}`, {
         method: 'PUT',
-        body: JSON.stringify(data)
+        data: data
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/sponsor-events'] });
@@ -260,23 +260,25 @@ const EventsPage = () => {
   return (
     <AdminLayout>
       <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <Calendar className="w-8 h-8 text-gray-900" />
-            <h1 className="text-3xl font-bold text-gray-900">Eventos Patrocinados</h1>
-          </div>
-          <p className="text-gray-600 mt-2">Gestiona todos los eventos con patrocinio</p>
-        </div>
-        <Dialog open={showNewEventDialog} onOpenChange={setShowNewEventDialog}>
-          <DialogTrigger asChild>
-            <Button className="bg-[#00a587] hover:bg-[#067f5f]">
-              <Plus className="w-4 h-4 mr-2" />
-              Nuevo Evento
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        {/* Header Card */}
+        <Card className="bg-gray-50">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-8 h-8 text-gray-900" />
+                  <h1 className="text-3xl font-bold text-gray-900">Eventos Patrocinados</h1>
+                </div>
+                <p className="text-gray-600 mt-2">Gestiona todos los eventos con patrocinio</p>
+              </div>
+              <Dialog open={showNewEventDialog} onOpenChange={setShowNewEventDialog}>
+                <DialogTrigger asChild>
+                  <Button className="bg-[#00a587] hover:bg-[#067f5f]">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Nuevo Evento
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Crear Nuevo Evento Patrocinado</DialogTitle>
             </DialogHeader>
@@ -526,7 +528,9 @@ const EventsPage = () => {
             </Form>
           </DialogContent>
         </Dialog>
-      </div>
+            </div>
+          </CardContent>
+        </Card>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -632,10 +636,10 @@ const EventsPage = () => {
                   </div>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <Badge variant={getSponsorshipLevelColor(event.sponsorshipLevel)}>
+                  <Badge className={getSponsorshipLevelColor(event.sponsorshipLevel)}>
                     {event.sponsorshipLevel}
                   </Badge>
-                  <Badge variant={getStatusColor(event.status)}>
+                  <Badge className={getStatusColor(event.status)}>
                     {getStatusText(event.status)}
                   </Badge>
                 </div>
