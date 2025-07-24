@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, MapPin, User, Phone, Mail, Building, Clock, ChevronLeft, ChevronRight, Plus, Search, Filter, Eye, Edit, Trash2, Images, RefreshCw } from 'lucide-react';
+import { Calendar, MapPin, User, Phone, Mail, Building, Clock, ChevronLeft, ChevronRight, Plus, Search, Filter, Eye, Edit, Trash2, Images, RefreshCw, FileText } from 'lucide-react';
 import { Link } from 'wouter';
 import { apiRequest } from '@/lib/queryClient';
 import AdminLayout from '@/components/AdminLayout';
@@ -161,36 +161,58 @@ function ActiveConcessionsList() {
 
   if (isLoading) {
     return (
-      <AdminLayout title="Concesiones Activas" subtitle="Gestión integral de concesiones operativas">
-        <div className="flex justify-center items-center min-h-screen">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-500"></div>
+      <AdminLayout>
+        <div className="container mx-auto py-6">
+          <Card className="p-4 bg-gray-50 mb-6">
+            <div className="flex items-center gap-2">
+              <FileText className="w-8 h-8 text-gray-900" />
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Concesiones Activas</h1>
+                <p className="text-gray-600 mt-2">Gestión integral de concesiones operativas</p>
+              </div>
+            </div>
+          </Card>
+          <div className="flex justify-center items-center min-h-screen">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-500"></div>
+          </div>
         </div>
       </AdminLayout>
     );
   }
 
   return (
-    <AdminLayout title="Concesiones Activas" subtitle="Gestión integral de concesiones operativas">
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="flex gap-2">
-            <Link href="/admin/concessions/active/new">
-              <Button className="bg-green-600 hover:bg-green-700 text-white">
-                <Plus className="h-4 w-4 mr-2" />
-                Nueva Concesión Activa
+    <AdminLayout>
+      <div className="container mx-auto py-6">
+        {/* Header con título */}
+        <Card className="p-4 bg-gray-50 mb-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <FileText className="w-8 h-8 text-gray-900" />
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Concesiones Activas</h1>
+                <p className="text-gray-600 mt-2">Gestión integral de concesiones operativas</p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Link href="/admin/concessions/active/new">
+                <Button className="bg-green-600 hover:bg-green-700 text-white gap-2">
+                  <Plus size={16} />
+                  Nueva Concesión Activa
+                </Button>
+              </Link>
+              <Button 
+                variant="outline" 
+                onClick={handleRefresh}
+                className="border-green-600 text-green-600 hover:bg-green-50 gap-2"
+              >
+                <RefreshCw size={16} />
+                Actualizar
               </Button>
-            </Link>
-            <Button 
-              variant="outline" 
-              onClick={handleRefresh}
-              className="border-green-600 text-green-600 hover:bg-green-50"
-            >
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Actualizar
-            </Button>
+            </div>
           </div>
-        </div>
+        </Card>
+
+        <div className="space-y-6">
 
       {/* Filtros */}
       <Card>
@@ -532,6 +554,7 @@ function ActiveConcessionsList() {
           )}
         </DialogContent>
       </Dialog>
+        </div>
       </div>
     </AdminLayout>
   );
