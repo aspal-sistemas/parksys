@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { safeApiRequest } from '@/lib/queryClient';
-import { SponsorshipEvaluation } from '@/shared/schema';
+// import { SponsorshipEvaluation } from '@/shared/schema';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import AdminLayout from '@/components/AdminLayout';
@@ -35,20 +35,20 @@ const EvaluationsPage = () => {
     gcTime: 10 * 60 * 1000 // 10 minutos
   });
 
-  const filteredEvaluations = allEvaluations?.filter((evaluation: SponsorshipEvaluation) => {
+  const filteredEvaluations = allEvaluations?.filter((evaluation: any) => {
     if (selectedSponsor === 'all') return true;
     return evaluation.sponsorId === parseInt(selectedSponsor);
   }) || [];
 
-  const calculateAverageRating = (evaluations: SponsorshipEvaluation[]) => {
+  const calculateAverageRating = (evaluations: any[]) => {
     if (evaluations.length === 0) return 0;
-    const totalRating = evaluations.reduce((sum, evaluation) => sum + (evaluation.overallSatisfaction || 0), 0);
+    const totalRating = evaluations.reduce((sum: number, evaluation: any) => sum + (evaluation.overallSatisfaction || 0), 0);
     return totalRating / evaluations.length;
   };
 
-  const calculateRenewalRate = (evaluations: SponsorshipEvaluation[]) => {
+  const calculateRenewalRate = (evaluations: any[]) => {
     if (evaluations.length === 0) return 0;
-    const willRenew = evaluations.filter(evaluation => evaluation.wouldRenew).length;
+    const willRenew = evaluations.filter((evaluation: any) => evaluation.wouldRenew).length;
     return (willRenew / evaluations.length) * 100;
   };
 
@@ -56,7 +56,7 @@ const EvaluationsPage = () => {
   const renewalRate = calculateRenewalRate(filteredEvaluations);
   const totalEvaluations = filteredEvaluations.length;
   const avgNPS = filteredEvaluations.length > 0 
-    ? filteredEvaluations.reduce((sum, evaluation) => sum + (evaluation.recommendationScore || 0), 0) / filteredEvaluations.length 
+    ? filteredEvaluations.reduce((sum: number, evaluation: any) => sum + (evaluation.recommendationScore || 0), 0) / filteredEvaluations.length 
     : 0;
 
   const getRatingColor = (rating: number) => {
@@ -96,35 +96,39 @@ const EvaluationsPage = () => {
   return (
     <AdminLayout>
       <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <Award className="w-8 h-8 text-gray-900" />
-            <h1 className="text-3xl font-bold text-gray-900">Evaluaciones de Patrocinio</h1>
-          </div>
-          <p className="text-gray-600 mt-2">Analiza la satisfacción de los patrocinadores</p>
-        </div>
-        <Dialog open={showNewEvaluationDialog} onOpenChange={setShowNewEvaluationDialog}>
-          <DialogTrigger asChild>
-            <Button className="bg-[#00a587] hover:bg-[#067f5f]">
-              <Plus className="w-4 h-4 mr-2" />
-              Nueva Evaluación
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Crear Nueva Evaluación</DialogTitle>
-            </DialogHeader>
-            <div className="text-center py-8">
-              <Star className="w-16 h-16 mx-auto text-[#00a587] mb-4" />
-              <p className="text-gray-600">
-                Funcionalidad de evaluaciones en desarrollo
-              </p>
+        {/* Header Card */}
+        <Card className="bg-gray-50">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Award className="w-8 h-8 text-gray-900" />
+                  <h1 className="text-3xl font-bold text-gray-900">Evaluaciones de Patrocinio</h1>
+                </div>
+                <p className="text-gray-600 mt-2">Analiza la satisfacción de los patrocinadores</p>
+              </div>
+              <Dialog open={showNewEvaluationDialog} onOpenChange={setShowNewEvaluationDialog}>
+                <DialogTrigger asChild>
+                  <Button className="bg-[#00a587] hover:bg-[#067f5f]">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Nueva Evaluación
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>Crear Nueva Evaluación</DialogTitle>
+                  </DialogHeader>
+                  <div className="text-center py-8">
+                    <Star className="w-16 h-16 mx-auto text-[#00a587] mb-4" />
+                    <p className="text-gray-600">
+                      Funcionalidad de evaluaciones en desarrollo
+                    </p>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
-          </DialogContent>
-        </Dialog>
-      </div>
+          </CardContent>
+        </Card>
 
       {/* Filter */}
       <div className="flex items-center gap-4">
@@ -207,7 +211,7 @@ const EvaluationsPage = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-6">
-            {filteredEvaluations.map((evaluation: SponsorshipEvaluation) => {
+            {filteredEvaluations.map((evaluation: any) => {
               const sponsor = sponsors?.find((s: any) => s.id === evaluation.sponsorId);
               
               return (
