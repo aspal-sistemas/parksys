@@ -19,13 +19,13 @@ const SalesMunicipalPage = () => {
     {
       category: "Gestión Integral",
       items: [
-        { name: "Visitantes (Dashboard, Conteo, Evaluaciones, Criterios, Retroalimentación)", esencial: "Dashboard", profesional: "Completo", enterprise: "Completo" },
-        { name: "Parques (Dashboard, Gestión)", esencial: "Dashboard", profesional: "Completo", enterprise: "Completo" },
-        { name: "Arbolado (Dashboard, Inventario, Especies, Mantenimiento)", esencial: false, profesional: "Dashboard + Inventario", enterprise: "Completo" },
-        { name: "Actividades (Dashboard, Categorías, Listado, Nueva Actividad, Calendario, Instructores)", esencial: "Dashboard", profesional: "Completo", enterprise: "Completo" },
-        { name: "Eventos (Dashboard, Nuevo Evento, Categorías, Eventos, Calendario, Tabulador de costos)", esencial: "Dashboard", profesional: "Completo", enterprise: "Completo" },
-        { name: "Reservas (Dashboard, Reservas Activas, Espacios Disponibles, Nueva Reserva, Calendario)", esencial: false, profesional: "Completo", enterprise: "Completo" },
-        { name: "Amenidades (Dashboard, Gestión)", esencial: false, profesional: "Completo", enterprise: "Completo" }
+        { name: "Visitantes (Dashboard, Conteo, Evaluaciones, Criterios, Retroalimentación)", esencial: false, profesional: true, enterprise: true },
+        { name: "Parques (Dashboard, Gestión)", esencial: true, profesional: true, enterprise: true },
+        { name: "Arbolado (Dashboard, Inventario, Especies, Mantenimiento)", esencial: false, profesional: true, enterprise: true },
+        { name: "Actividades (Dashboard, Categorías, Listado, Nueva Actividad, Calendario, Instructores)", esencial: false, profesional: true, enterprise: true },
+        { name: "Eventos (Dashboard, Nuevo Evento, Categorías, Eventos, Calendario, Tabulador de costos)", esencial: false, profesional: true, enterprise: true },
+        { name: "Reservas (Dashboard, Reservas Activas, Espacios Disponibles, Nueva Reserva, Calendario)", esencial: false, profesional: true, enterprise: true },
+        { name: "Amenidades (Dashboard, Gestión)", esencial: false, profesional: true, enterprise: true }
       ]
     },
     {
