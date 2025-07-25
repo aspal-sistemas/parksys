@@ -108,7 +108,7 @@ export default function VisitorCountPage() {
     retry: 1
   });
   
-  const parks = Array.isArray(parksResponse) ? parksResponse : (parksResponse?.data && Array.isArray(parksResponse.data) ? parksResponse.data : []);
+  const parks = Array.isArray(parksResponse) ? parksResponse : ((parksResponse as any)?.data && Array.isArray((parksResponse as any).data) ? (parksResponse as any).data : []);
 
   const { data: visitorCounts, isLoading } = useQuery<{
     data: VisitorCount[];
@@ -373,7 +373,7 @@ export default function VisitorCountPage() {
 
       // Estadísticas por tipo de día
       const dayTypeStats = visitorCounts.data.reduce((acc, count) => {
-        const dayType = dayTypeTranslations[count.dayType || 'weekday'] || count.dayType;
+        const dayType = dayTypeTranslations[count.dayType || 'weekday'] || (count.dayType || 'Día de semana');
         acc[dayType] = (acc[dayType] || 0) + 1;
         return acc;
       }, {} as Record<string, number>);
@@ -854,17 +854,31 @@ export default function VisitorCountPage() {
           records.push(record);
         }
         
-        // Crear todos los registros
-        const responses = await Promise.all(
-          records.map(record => 
-            apiRequest('/api/visitor-counts', {
+        // Crear todos los registros con manejo de duplicados
+        const responses = [];
+        let successCount = 0;
+        let duplicateCount = 0;
+        
+        for (const record of records) {
+          try {
+            const response = await apiRequest('/api/visitor-counts', {
               method: 'POST',
               data: record
-            })
-          )
-        );
+            });
+            responses.push(response);
+            successCount++;
+          } catch (error: any) {
+            if (error.status === 409) {
+              // Registro duplicado - no es un error crítico
+              console.log(`⚠️ Registro duplicado para fecha ${record.date}`);
+              duplicateCount++;
+            } else {
+              throw error; // Re-lanzar otros errores
+            }
+          }
+        }
         
-        return responses;
+        return { responses, successCount, duplicateCount };
       } else {
         // Para conteo diario
         const requestData = { 
@@ -889,15 +903,31 @@ export default function VisitorCountPage() {
         });
       }
     },
-    onSuccess: () => {
-      const recordsCount = countingMode === 'range' ? 
-        Math.ceil((new Date(formData.endDate!).getTime() - new Date(formData.startDate!).getTime()) / (1000 * 60 * 60 * 24)) + 1 : 1;
+    onSuccess: (result: any) => {
+      if (countingMode === 'range' && result.successCount !== undefined) {
+        // Modo rango con manejo de duplicados
+        const totalAttempted = Math.ceil((new Date(formData.endDate!).getTime() - new Date(formData.startDate!).getTime()) / (1000 * 60 * 60 * 24)) + 1;
+        let message = `${result.successCount} registro(s) creado(s) exitosamente`;
+        if (result.duplicateCount > 0) {
+          message += `, ${result.duplicateCount} ya existían`;
+        }
+        
+        toast({
+          title: "Registro completado",
+          description: message,
+        });
+      } else {
+        // Modo diario normal
+        toast({
+          title: "Registro exitoso",
+          description: "Registro de visitantes creado correctamente",
+        });
+      }
       
-      toast({
-        title: "Registro exitoso",
-        description: `${recordsCount} registro(s) de visitantes creado(s) correctamente`,
-      });
+      // Invalidar múltiples queries para actualizar dashboard
       queryClient.invalidateQueries({ queryKey: ['/api/visitor-counts'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/visitor-counts/dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/visitor-summary'] });
       setShowForm(false);
       setFormData({
         parkId: 0,

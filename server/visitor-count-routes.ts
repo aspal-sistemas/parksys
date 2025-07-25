@@ -101,6 +101,26 @@ router.post('/visitor-counts', async (req, res) => {
     const validatedData = createVisitorCountSchema.parse(req.body);
     console.log('✅ Datos validados:', validatedData);
     
+    // Verificar si ya existe un registro para esta fecha y parque
+    const existingRecord = await db
+      .select()
+      .from(visitorCounts)
+      .where(
+        and(
+          eq(visitorCounts.parkId, validatedData.parkId),
+          eq(visitorCounts.date, validatedData.date)
+        )
+      )
+      .limit(1);
+
+    if (existingRecord.length > 0) {
+      console.log('⚠️ Registro duplicado detectado:', existingRecord[0]);
+      return res.status(409).json({ 
+        error: 'Ya existe un registro para esta fecha y parque',
+        existingRecord: existingRecord[0]
+      });
+    }
+    
     const [newRecord] = await db
       .insert(visitorCounts)
       .values({

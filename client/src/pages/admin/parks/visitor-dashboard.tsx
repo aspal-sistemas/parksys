@@ -97,7 +97,11 @@ export default function VisitorDashboard() {
       const data = await response.json();
       console.log('🌐 [FRONTEND] Datos recibidos del dashboard:', data);
       return data;
-    }
+    },
+    suspense: false,
+    retry: 1,
+    refetchOnWindowFocus: true,
+    staleTime: 0 // Siempre fetch fresh data
   });
 
   // Obtener lista de parques  
