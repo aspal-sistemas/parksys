@@ -7,76 +7,70 @@ const SalesNetworkPage = () => {
     {
       category: "Configuración y Setup",
       items: [
-        { name: "Dashboard de red centralizado", esencial: true, profesional: true, enterprise: true },
-        { name: "Gestión multi-parque", esencial: "Hasta 15", profesional: "Hasta 20", enterprise: "Ilimitados" },
-        { name: "Configuración unificada", esencial: "Básica", profesional: "Avanzada", enterprise: "Completa" },
-        { name: "Branding corporativo", esencial: false, profesional: true, enterprise: true },
-        { name: "APIs de integración", esencial: false, profesional: true, enterprise: true },
-        { name: "Arquitectura escalable", esencial: false, profesional: false, enterprise: true }
+        { name: "Dashboard Administrativo", esencial: true, profesional: true, enterprise: true },
+        { name: "Gestión de Usuarios", esencial: "1 usuario", profesional: "Ilimitados", enterprise: "Ilimitados" },
+        { name: "Configuración de parques", esencial: "Hasta 3", profesional: "Ilimitados", enterprise: "Ilimitados" },
+        { name: "Configuración Personalizada", esencial: false, profesional: true, enterprise: true },
+        { name: "Branding Personalizado", esencial: false, profesional: true, enterprise: true },
+        { name: "Permisos", esencial: false, profesional: "Completos", enterprise: "Completos" },
+        { name: "Notificaciones", esencial: false, profesional: "Email", enterprise: "Email" }
       ]
     },
     {
-      category: "Gestión Operativa Distribuida",
+      category: "Gestión Integral",
       items: [
-        { name: "Operación centralizada", esencial: "Básica", profesional: "Completa", enterprise: "Avanzada" },
-        { name: "Sincronización de datos", esencial: true, profesional: true, enterprise: true },
-        { name: "Gestión de personal distribuido", esencial: false, profesional: true, enterprise: true },
-        { name: "Control de calidad unificado", esencial: false, profesional: true, enterprise: true },
-        { name: "Protocolos operativos", esencial: false, profesional: true, enterprise: true },
-        { name: "Mantenimiento coordinado", esencial: false, profesional: "Básico", enterprise: "Completo" }
+        { name: "Visitantes (Dashboard, Conteo, Evaluaciones, Criterios, Retroalimentación)", esencial: false, profesional: true, enterprise: true },
+        { name: "Parques (Dashboard, Gestión)", esencial: true, profesional: true, enterprise: true },
+        { name: "Arbolado (Dashboard, Inventario, Especies, Mantenimiento)", esencial: false, profesional: true, enterprise: true },
+        { name: "Actividades (Dashboard, Categorías, Listado, Nueva Actividad, Calendario, Instructores)", esencial: false, profesional: true, enterprise: true },
+        { name: "Eventos (Dashboard, Nuevo Evento, Categorías, Eventos, Calendario, Tabulador de costos)", esencial: false, profesional: true, enterprise: true },
+        { name: "Reservas (Dashboard, Reservas Activas, Espacios Disponibles, Nueva Reserva, Calendario)", esencial: false, profesional: true, enterprise: true },
+        { name: "Amenidades (Dashboard, Gestión)", esencial: false, profesional: true, enterprise: true }
       ]
     },
     {
       category: "Marketing y Comunicación",
       items: [
-        { name: "Portal web unificado", esencial: true, profesional: true, enterprise: true },
-        { name: "Campañas multi-parque", esencial: false, profesional: true, enterprise: true },
-        { name: "Análisis de audiencia", esencial: "Básico", profesional: "Avanzado", enterprise: "Completo" },
-        { name: "Publicidad coordinada", esencial: false, profesional: true, enterprise: true },
-        { name: "Comunicación corporativa", esencial: false, profesional: true, enterprise: true },
-        { name: "Branding consistente", esencial: false, profesional: true, enterprise: true }
+        { name: "Marketing (Dashboard, Patrocinadores, Contratos, Eventos, Activos, Evaluaciones)", esencial: false, profesional: true, enterprise: true },
+        { name: "Publicidad Digital (Dashboard, Espacios Publicitarios, Anuncios, Campañas, Asignaciones, Mapeo de Espacios)", esencial: false, profesional: true, enterprise: true },
+        { name: "Comunicación (Dashboard, Plantillas, Cola de Emails, Campañas)", esencial: false, profesional: true, enterprise: true }
       ]
     },
     {
       category: "Operación y Mantenimiento",
       items: [
-        { name: "Inventario centralizado", esencial: false, profesional: false, enterprise: true },
-        { name: "Mantenimiento preventivo", esencial: false, profesional: "Básico", enterprise: "Completo" },
-        { name: "Gestión de proveedores", esencial: false, profesional: false, enterprise: true },
-        { name: "Control de calidad", esencial: false, profesional: true, enterprise: true },
-        { name: "Logística coordinada", esencial: false, profesional: false, enterprise: true },
-        { name: "Optimización de recursos", esencial: false, profesional: false, enterprise: true }
+        { name: "Activos (Dashboard, Categorías, Inventario, Mapa, Mantenimiento, Calendario de Mantenimiento, Asignaciones)", esencial: false, profesional: false, enterprise: true },
+        { name: "Incidencias (Listado, Categorías)", esencial: false, profesional: false, enterprise: true },
+        { name: "Voluntarios (Listado, Registro, Evaluaciones, Reconocimientos)", esencial: false, profesional: false, enterprise: true }
       ]
     },
     {
       category: "Administración y Finanzas",
       items: [
-        { name: "Contabilidad centralizada", esencial: false, profesional: false, enterprise: true },
-        { name: "Presupuestos por parque", esencial: false, profesional: "Básico", enterprise: "Completo" },
-        { name: "Análisis de rentabilidad", esencial: false, profesional: false, enterprise: true },
-        { name: "Control de costos", esencial: false, profesional: false, enterprise: true },
-        { name: "Reportes financieros", esencial: false, profesional: "Básicos", enterprise: "Completos" },
-        { name: "Facturación automática", esencial: false, profesional: false, enterprise: true }
+        { name: "Finanzas (Dashboard, Presupuestos, Flujo de Efectivo, Calculadora de recuperación de costos para actividades)", esencial: false, profesional: false, enterprise: true },
+        { name: "Contabilidad (Dashboard, Categorías, Transacciones, Asientos Contables, Balanza, Estados Financieros)", esencial: false, profesional: false, enterprise: true },
+        { name: "Concesiones (Dashboard, Catálogo, Concesionarios, Contratos, Concesiones Activas)", esencial: false, profesional: false, enterprise: true }
       ]
     },
     {
       category: "Recursos Humanos",
       items: [
-        { name: "Gestión de personal", esencial: false, profesional: false, enterprise: true },
-        { name: "Nómina centralizada", esencial: false, profesional: false, enterprise: true },
-        { name: "Capacitación corporativa", esencial: false, profesional: false, enterprise: true },
+        { name: "Gestión de empleados", esencial: false, profesional: false, enterprise: true },
+        { name: "Control de nómina", esencial: false, profesional: false, enterprise: true },
+        { name: "Gestión de vacaciones", esencial: false, profesional: false, enterprise: true },
         { name: "Evaluaciones de desempeño", esencial: false, profesional: false, enterprise: true },
-        { name: "Políticas unificadas", esencial: false, profesional: false, enterprise: true }
+        { name: "Capacitación y desarrollo", esencial: false, profesional: false, enterprise: true }
       ]
     },
     {
       category: "Seguridad y Soporte",
       items: [
-        { name: "Seguridad empresarial", esencial: "Básica", profesional: "Avanzada", enterprise: "Completa" },
-        { name: "Roles distribuidos", esencial: "Básico", profesional: "Avanzado", enterprise: "Completo" },
-        { name: "Auditoría centralizada", esencial: false, profesional: true, enterprise: true },
-        { name: "Backup redundante", esencial: false, profesional: true, enterprise: true },
-        { name: "Soporte dedicado", esencial: "Email", profesional: "Chat + Email", enterprise: "Gerente de cuenta 24/7" }
+        { name: "Reportes y Datos (Exportación de KPIs de todo el sistema en Excel / CSV)", esencial: false, profesional: true, enterprise: true },
+        { name: "Autenticación básica", esencial: true, profesional: true, enterprise: true },
+        { name: "Control de roles y permisos", esencial: "Básico", profesional: "Avanzado", enterprise: "Completo" },
+        { name: "Auditoría y logs", esencial: false, profesional: true, enterprise: true },
+        { name: "Backup automático", esencial: false, profesional: true, enterprise: true },
+        { name: "Soporte técnico", esencial: "Email", profesional: "Email + Chat", enterprise: "Prioritario 24/7" }
       ]
     }
   ];

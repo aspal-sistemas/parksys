@@ -5,79 +5,72 @@ import { Button } from '@/components/ui/button';
 const SalesProPage = () => {
   const features = [
     {
-      category: "Configuración y Setup Premium",
+      category: "Configuración y Setup",
       items: [
-        { name: "Dashboard ejecutivo personalizado", esencial: true, profesional: true, enterprise: true },
-        { name: "Configuración premium sin límites", esencial: "Básica", profesional: "Avanzada", enterprise: "Ultra personalizada" },
-        { name: "Branding completamente personalizado", esencial: false, profesional: true, enterprise: true },
-        { name: "Arquitectura dedicada", esencial: false, profesional: false, enterprise: true },
-        { name: "APIs privadas personalizadas", esencial: false, profesional: true, enterprise: true },
-        { name: "Integración con sistemas legacy", esencial: false, profesional: false, enterprise: true }
+        { name: "Dashboard Administrativo", esencial: true, profesional: true, enterprise: true },
+        { name: "Gestión de Usuarios", esencial: "1 usuario", profesional: "Ilimitados", enterprise: "Ilimitados" },
+        { name: "Configuración de parques", esencial: "Hasta 3", profesional: "Ilimitados", enterprise: "Ilimitados" },
+        { name: "Configuración Personalizada", esencial: false, profesional: true, enterprise: true },
+        { name: "Branding Personalizado", esencial: false, profesional: true, enterprise: true },
+        { name: "Permisos", esencial: false, profesional: "Completos", enterprise: "Completos" },
+        { name: "Notificaciones", esencial: false, profesional: "Email", enterprise: "Email" }
       ]
     },
     {
-      category: "Gestión Operativa de Excelencia",
+      category: "Gestión Integral",
       items: [
-        { name: "Operación de clase mundial", esencial: "Básica", profesional: "Premium", enterprise: "Ultra premium" },
-        { name: "IA para optimización automática", esencial: false, profesional: true, enterprise: true },
-        { name: "Análisis predictivo avanzado", esencial: false, profesional: "Básico", enterprise: "Completo" },
-        { name: "Gestión de experiencia VIP", esencial: false, profesional: true, enterprise: true },
-        { name: "Servicios concierge digitales", esencial: false, profesional: false, enterprise: true },
-        { name: "Automatización inteligente", esencial: false, profesional: true, enterprise: true }
+        { name: "Visitantes (Dashboard, Conteo, Evaluaciones, Criterios, Retroalimentación)", esencial: false, profesional: true, enterprise: true },
+        { name: "Parques (Dashboard, Gestión)", esencial: true, profesional: true, enterprise: true },
+        { name: "Arbolado (Dashboard, Inventario, Especies, Mantenimiento)", esencial: false, profesional: true, enterprise: true },
+        { name: "Actividades (Dashboard, Categorías, Listado, Nueva Actividad, Calendario, Instructores)", esencial: false, profesional: true, enterprise: true },
+        { name: "Eventos (Dashboard, Nuevo Evento, Categorías, Eventos, Calendario, Tabulador de costos)", esencial: false, profesional: true, enterprise: true },
+        { name: "Reservas (Dashboard, Reservas Activas, Espacios Disponibles, Nueva Reserva, Calendario)", esencial: false, profesional: true, enterprise: true },
+        { name: "Amenidades (Dashboard, Gestión)", esencial: false, profesional: true, enterprise: true }
       ]
     },
     {
-      category: "Marketing y Comunicación Premium",
+      category: "Marketing y Comunicación",
       items: [
-        { name: "Portal web de clase mundial", esencial: true, profesional: true, enterprise: true },
-        { name: "Marketing personalizado con IA", esencial: false, profesional: true, enterprise: true },
-        { name: "Análisis de comportamiento avanzado", esencial: false, profesional: true, enterprise: true },
-        { name: "Campañas omnicanal", esencial: false, profesional: true, enterprise: true },
-        { name: "Experiencia personalizada", esencial: false, profesional: true, enterprise: true },
-        { name: "Sistema de fidelización", esencial: false, profesional: true, enterprise: true }
+        { name: "Marketing (Dashboard, Patrocinadores, Contratos, Eventos, Activos, Evaluaciones)", esencial: false, profesional: true, enterprise: true },
+        { name: "Publicidad Digital (Dashboard, Espacios Publicitarios, Anuncios, Campañas, Asignaciones, Mapeo de Espacios)", esencial: false, profesional: true, enterprise: true },
+        { name: "Comunicación (Dashboard, Plantillas, Cola de Emails, Campañas)", esencial: false, profesional: true, enterprise: true }
       ]
     },
     {
-      category: "Operación y Mantenimiento de Elite",
+      category: "Operación y Mantenimiento",
       items: [
-        { name: "Mantenimiento predictivo con IoT", esencial: false, profesional: false, enterprise: true },
-        { name: "Gestión de activos premium", esencial: false, profesional: true, enterprise: true },
-        { name: "Sensores ambientales integrados", esencial: false, profesional: false, enterprise: true },
-        { name: "Control de calidad automatizado", esencial: false, profesional: true, enterprise: true },
-        { name: "Optimización energética", esencial: false, profesional: false, enterprise: true },
-        { name: "Mantenimiento de clase mundial", esencial: false, profesional: true, enterprise: true }
+        { name: "Activos (Dashboard, Categorías, Inventario, Mapa, Mantenimiento, Calendario de Mantenimiento, Asignaciones)", esencial: false, profesional: false, enterprise: true },
+        { name: "Incidencias (Listado, Categorías)", esencial: false, profesional: false, enterprise: true },
+        { name: "Voluntarios (Listado, Registro, Evaluaciones, Reconocimientos)", esencial: false, profesional: false, enterprise: true }
       ]
     },
     {
-      category: "Administración y Finanzas Corporativas",
+      category: "Administración y Finanzas",
       items: [
-        { name: "Contabilidad corporativa completa", esencial: false, profesional: false, enterprise: true },
-        { name: "Análisis financiero avanzado", esencial: false, profesional: "Básico", enterprise: "Completo" },
-        { name: "Proyecciones con IA", esencial: false, profesional: false, enterprise: true },
-        { name: "Control de rentabilidad", esencial: false, profesional: true, enterprise: true },
-        { name: "Reportes ejecutivos", esencial: false, profesional: true, enterprise: true },
-        { name: "Optimización de ingresos", esencial: false, profesional: false, enterprise: true }
+        { name: "Finanzas (Dashboard, Presupuestos, Flujo de Efectivo, Calculadora de recuperación de costos para actividades)", esencial: false, profesional: false, enterprise: true },
+        { name: "Contabilidad (Dashboard, Categorías, Transacciones, Asientos Contables, Balanza, Estados Financieros)", esencial: false, profesional: false, enterprise: true },
+        { name: "Concesiones (Dashboard, Catálogo, Concesionarios, Contratos, Concesiones Activas)", esencial: false, profesional: false, enterprise: true }
       ]
     },
     {
-      category: "Recursos Humanos Premium",
+      category: "Recursos Humanos",
       items: [
-        { name: "Gestión de talento avanzada", esencial: false, profesional: false, enterprise: true },
-        { name: "Desarrollo profesional", esencial: false, profesional: false, enterprise: true },
-        { name: "Evaluaciones 360 grados", esencial: false, profesional: false, enterprise: true },
-        { name: "Planes de carrera", esencial: false, profesional: false, enterprise: true },
-        { name: "Cultura organizacional", esencial: false, profesional: false, enterprise: true }
+        { name: "Gestión de empleados", esencial: false, profesional: false, enterprise: true },
+        { name: "Control de nómina", esencial: false, profesional: false, enterprise: true },
+        { name: "Gestión de vacaciones", esencial: false, profesional: false, enterprise: true },
+        { name: "Evaluaciones de desempeño", esencial: false, profesional: false, enterprise: true },
+        { name: "Capacitación y desarrollo", esencial: false, profesional: false, enterprise: true }
       ]
     },
     {
-      category: "Seguridad y Soporte VIP",
+      category: "Seguridad y Soporte",
       items: [
-        { name: "Seguridad de nivel bancario", esencial: "Básica", profesional: "Avanzada", enterprise: "Máxima" },
-        { name: "Cumplimiento regulatorio", esencial: false, profesional: true, enterprise: true },
-        { name: "Auditoría continua", esencial: false, profesional: true, enterprise: true },
-        { name: "Backup geográficamente distribuido", esencial: false, profesional: true, enterprise: true },
-        { name: "Gerente de cuenta dedicado", esencial: false, profesional: false, enterprise: true },
-        { name: "Soporte VIP 24/7/365", esencial: "Email", profesional: "Chat + Phone", enterprise: "Gerente dedicado + On-site" }
+        { name: "Reportes y Datos (Exportación de KPIs de todo el sistema en Excel / CSV)", esencial: false, profesional: true, enterprise: true },
+        { name: "Autenticación básica", esencial: true, profesional: true, enterprise: true },
+        { name: "Control de roles y permisos", esencial: "Básico", profesional: "Avanzado", enterprise: "Completo" },
+        { name: "Auditoría y logs", esencial: false, profesional: true, enterprise: true },
+        { name: "Backup automático", esencial: false, profesional: true, enterprise: true },
+        { name: "Soporte técnico", esencial: "Email", profesional: "Email + Chat", enterprise: "Prioritario 24/7" }
       ]
     }
   ];
