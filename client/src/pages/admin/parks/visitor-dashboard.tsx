@@ -70,23 +70,8 @@ export default function VisitorDashboard() {
   const { toast } = useToast();
 
   // Obtener datos del dashboard de visitantes
-  const { data: dashboardData, isLoading } = useQuery<{
-    records: VisitorCount[];
-    metrics: {
-      totalVisitors: number;
-      totalAdults: number;
-      totalChildren: number;
-      totalSeniors: number;
-      totalPets: number;
-      totalRecords: number;
-      avgDailyVisitors: number;
-      uniqueParks: number;
-    };
-    parkSummaries: ParkSummary[];
-  }>({
+  const { data: dashboardData, isLoading } = useQuery({
     queryKey: ['/api/visitor-counts/dashboard', selectedPark, dateRange],
-    suspense: false,
-    retry: 1,
     queryFn: async () => {
       const params = new URLSearchParams();
       if (selectedPark !== 'all') params.append('parkId', selectedPark);
@@ -106,17 +91,15 @@ export default function VisitorDashboard() {
 
   // Obtener lista de parques  
   const { data: parksResponse } = useQuery({
-    queryKey: ['/api/parks'],
-    suspense: false,
-    retry: 1
+    queryKey: ['/api/parks']
   });
   
-  const parks = Array.isArray(parksResponse) ? parksResponse : parksResponse?.data || [];
+  const parks = Array.isArray(parksResponse) ? parksResponse : (parksResponse as any)?.data || [];
 
   // Datos procesados desde el dashboard
-  const visitorData = dashboardData?.records || [];
-  const metrics = dashboardData?.metrics || null;
-  const parkSummaries = dashboardData?.parkSummaries || [];
+  const visitorData = (dashboardData as any)?.records || [];
+  const metrics = (dashboardData as any)?.metrics || null;
+  const parkSummaries = (dashboardData as any)?.parkSummaries || [];
 
 
 
@@ -125,9 +108,9 @@ export default function VisitorDashboard() {
     if (!visitorData || !Array.isArray(visitorData)) return { daily: [], parks: [], methods: [], weather: [] };
 
     // Datos diarios
-    const dailyData = visitorData.reduce((acc, record) => {
+    const dailyData = visitorData.reduce((acc: any[], record: any) => {
       const date = record.date;
-      const existing = acc.find(item => item.date === date);
+      const existing = acc.find((item: any) => item.date === date);
       if (existing) {
         existing.visitors += record.totalVisitors;
         existing.adults += record.adults;
@@ -146,28 +129,28 @@ export default function VisitorDashboard() {
         });
       }
       return acc;
-    }, [] as any[]).sort((a, b) => a.date.localeCompare(b.date));
+    }, []).sort((a: any, b: any) => a.date.localeCompare(b.date));
 
     // Datos por parque
-    const parkData = visitorData.reduce((acc, record) => {
-      const existing = acc.find(item => item.parkName === record.parkName);
+    const parkData = visitorData.reduce((acc: any[], record: any) => {
+      const existing = acc.find((item: any) => item.parkName === record.parkName);
       if (existing) {
         existing.visitors += record.totalVisitors;
         existing.records += 1;
       } else {
         acc.push({
-          parkName: record.parkName,
-          visitors: record.totalVisitors,
+          parkName: record.parkName || 'Sin nombre',
+          visitors: record.totalVisitors || 0,
           records: 1
         });
       }
       return acc;
-    }, [] as any[]).sort((a, b) => b.visitors - a.visitors);
+    }, []).sort((a: any, b: any) => b.visitors - a.visitors);
 
     // Datos por método
-    const methodData = visitorData.reduce((acc, record) => {
-      const method = methodLabels[record.countingMethod] || record.countingMethod;
-      const existing = acc.find(item => item.method === method);
+    const methodData = visitorData.reduce((acc: any[], record: any) => {
+      const method = (methodLabels as any)[record.countingMethod] || record.countingMethod;
+      const existing = acc.find((item: any) => item.method === method);
       if (existing) {
         existing.count += 1;
         existing.visitors += record.totalVisitors;
@@ -179,12 +162,12 @@ export default function VisitorDashboard() {
         });
       }
       return acc;
-    }, [] as any[]);
+    }, []);
 
     // Datos por clima
-    const weatherData = visitorData.reduce((acc, record) => {
-      const weather = weatherLabels[record.weather] || record.weather;
-      const existing = acc.find(item => item.weather === weather);
+    const weatherData = visitorData.reduce((acc: any[], record: any) => {
+      const weather = (weatherLabels as any)[record.weather] || record.weather;
+      const existing = acc.find((item: any) => item.weather === weather);
       if (existing) {
         existing.count += 1;
         existing.visitors += record.totalVisitors;
@@ -196,7 +179,7 @@ export default function VisitorDashboard() {
         });
       }
       return acc;
-    }, [] as any[]);
+    }, []);
 
     return {
       daily: dailyData,
@@ -497,7 +480,7 @@ export default function VisitorDashboard() {
                         fill="#8884d8"
                         dataKey="count"
                       >
-                        {chartData.methods.map((entry, index) => (
+                        {chartData.methods.map((entry: any, index: number) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
@@ -526,7 +509,7 @@ export default function VisitorDashboard() {
                         fill="#8884d8"
                         dataKey="count"
                       >
-                        {chartData.weather.map((entry, index) => (
+                        {chartData.weather.map((entry: any, index: number) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
@@ -546,7 +529,7 @@ export default function VisitorDashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {parkSummaries.map((summary, index) => (
+                {parkSummaries.map((summary: any, index: number) => (
                   <div key={summary.parkId} className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="flex items-center space-x-4">
                       <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
