@@ -39,12 +39,9 @@ const SalesMunicipalPage = () => {
     {
       category: "Operación y Mantenimiento",
       items: [
-        { name: "Gestión de activos", esencial: false, profesional: false, enterprise: true },
-        { name: "Mantenimiento preventivo", esencial: false, profesional: false, enterprise: true },
-        { name: "Control de inventario", esencial: false, profesional: false, enterprise: true },
-        { name: "Gestión de arbolado", esencial: false, profesional: "Básica", enterprise: "Completa" },
-        { name: "Sistema de incidencias", esencial: false, profesional: true, enterprise: true },
-        { name: "Mantenimiento correctivo", esencial: false, profesional: false, enterprise: true }
+        { name: "Activos (Dashboard, Categorías, Inventario, Mapa, Mantenimiento, Calendario de Mantenimiento, Asignaciones)", esencial: false, profesional: false, enterprise: true },
+        { name: "Incidencias (Listado, Categorías)", esencial: false, profesional: false, enterprise: true },
+        { name: "Voluntarios (Listado, Registro, Evaluaciones, Reconocimientos)", esencial: false, profesional: false, enterprise: true }
       ]
     },
     {
