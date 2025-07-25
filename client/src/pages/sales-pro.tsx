@@ -9,7 +9,6 @@ const SalesProPage = () => {
       items: [
         { name: "Dashboard Administrativo", esencial: true, profesional: true, enterprise: true },
         { name: "Gestión de Usuarios", esencial: "1 usuario", profesional: "Ilimitados", enterprise: "Ilimitados" },
-        { name: "Configuración de parques", esencial: "Hasta 3", profesional: "Ilimitados", enterprise: "Ilimitados" },
         { name: "Configuración Personalizada", esencial: false, profesional: true, enterprise: true },
         { name: "Branding Personalizado", esencial: false, profesional: true, enterprise: true },
         { name: "Permisos", esencial: false, profesional: "Completos", enterprise: "Completos" },
