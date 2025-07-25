@@ -147,11 +147,18 @@ export default function VisitorDashboard() {
     
     if (parkSummaries && parkSummaries.length > 0) {
       // Usar datos de parkSummaries que vienen del backend
-      parkData = parkSummaries.map((summary: any) => ({
+      parkData = parkSummaries.map((summary: any, index: number) => ({
         parkName: summary.parkName || 'Sin nombre',
+        parkNumber: index + 1,
         visitors: parseInt(summary.totalVisitors) || 0,
         records: parseInt(summary.totalRecords) || 0
       })).sort((a: any, b: any) => b.visitors - a.visitors);
+      
+      // Reasignar números después del ordenamiento
+      parkData = parkData.map((park: any, index: number) => ({
+        ...park,
+        parkNumber: index + 1
+      }));
       
       console.log('🌐 [CHART DEBUG] Usando parkSummaries:', parkData);
     } else {
@@ -170,6 +177,12 @@ export default function VisitorDashboard() {
         }
         return acc;
       }, []).sort((a: any, b: any) => b.visitors - a.visitors);
+      
+      // Agregar números después del ordenamiento
+      parkData = parkData.map((park: any, index: number) => ({
+        ...park,
+        parkNumber: index + 1
+      }));
       
       console.log('🌐 [CHART DEBUG] Usando visitorData:', parkData);
     }
@@ -487,15 +500,13 @@ export default function VisitorDashboard() {
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart 
                         data={chartData.parks} 
-                        margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                        margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
                       >
                         <CartesianGrid strokeDasharray="3 3" stroke="#e0e7ff" />
                         <XAxis 
-                          dataKey="parkName" 
-                          tick={{ fontSize: 10, fill: '#374151' }}
-                          angle={-45}
-                          textAnchor="end"
-                          height={80}
+                          dataKey="parkNumber" 
+                          tick={{ fontSize: 14, fill: '#374151', fontWeight: 'bold' }}
+                          height={40}
                           interval={0}
                         />
                         <YAxis 
@@ -505,6 +516,10 @@ export default function VisitorDashboard() {
                         />
                         <Tooltip 
                           formatter={(value: any) => [`${Number(value).toLocaleString()} visitantes`, 'Total']}
+                          labelFormatter={(label: any) => {
+                            const park = chartData.parks.find((p: any) => p.parkNumber === label);
+                            return park ? `${label}. ${park.parkName}` : `Parque ${label}`;
+                          }}
                           labelStyle={{ color: '#374151', fontWeight: 'bold' }}
                           contentStyle={{ 
                             backgroundColor: 'white', 
