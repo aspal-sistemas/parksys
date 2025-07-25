@@ -53,6 +53,21 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/sales-basic')))}
           </Suspense>
         </Route>
+        <Route path="/sales/municipal">
+          <Suspense fallback={<div className="p-8 text-center">Cargando página de ParkSys Municipal...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/sales-municipal')))}
+          </Suspense>
+        </Route>
+        <Route path="/sales/network">
+          <Suspense fallback={<div className="p-8 text-center">Cargando página de ParkSys Network...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/sales-network')))}
+          </Suspense>
+        </Route>
+        <Route path="/sales/pro">
+          <Suspense fallback={<div className="p-8 text-center">Cargando página de ParkSys Pro...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/sales-pro')))}
+          </Suspense>
+        </Route>
         <Route path="/parks-module" component={ParksModuleShowcase} />
         <Route path="/parks" component={Parks} />
         <Route path="/parks/:id" component={ParkDetail} />

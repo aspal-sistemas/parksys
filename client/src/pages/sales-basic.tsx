@@ -59,7 +59,9 @@ const SalesPage = () => {
               <p className="text-gray-600 text-center mb-6">
                 Para gobiernos municipales con múltiples parques
               </p>
-              <Button className="w-full">Más información</Button>
+              <Button className="w-full" onClick={() => window.location.href = '/sales/municipal'}>
+                Más información
+              </Button>
             </div>
 
             <div className="bg-white p-8 rounded-2xl shadow-lg">
@@ -70,7 +72,9 @@ const SalesPage = () => {
               <p className="text-gray-600 text-center mb-6">
                 Para sistemas de parques grandes (15-20 parques)
               </p>
-              <Button className="w-full">Más información</Button>
+              <Button className="w-full" onClick={() => window.location.href = '/sales/network'}>
+                Más información
+              </Button>
             </div>
 
             <div className="bg-white p-8 rounded-2xl shadow-lg">
@@ -81,7 +85,9 @@ const SalesPage = () => {
               <p className="text-gray-600 text-center mb-6">
                 Para parques individuales de gran escala
               </p>
-              <Button className="w-full">Más información</Button>
+              <Button className="w-full" onClick={() => window.location.href = '/sales/pro'}>
+                Más información
+              </Button>
             </div>
           </div>
         </div>
