@@ -17,7 +17,7 @@ const SalesMunicipalPage = () => {
       ]
     },
     {
-      category: "Gestión Operativa",
+      category: "Gestión Integral",
       items: [
         { name: "Gestión de actividades", esencial: "Básica", profesional: "Completa", enterprise: "Avanzada" },
         { name: "Calendario de eventos", esencial: true, profesional: true, enterprise: true },
