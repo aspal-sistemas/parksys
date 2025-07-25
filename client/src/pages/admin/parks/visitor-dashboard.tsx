@@ -83,6 +83,9 @@ export default function VisitorDashboard() {
       params.append('limit', '1000');
       
       const response = await fetch(`/api/visitor-counts/dashboard?${params}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       const data = await response.json();
       console.log('🌐 [FRONTEND] Datos recibidos del dashboard:', data);
       return data;
