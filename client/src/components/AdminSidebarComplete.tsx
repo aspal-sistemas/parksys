@@ -472,9 +472,9 @@ const AdminSidebarComplete: React.FC = () => {
               onToggle={toggleSubmenu}
             >
               <NavItem 
-                href="/admin/parks/dashboard" 
+                href="/admin/parks/visitor-dashboard" 
                 icon={<BarChart className="h-4 w-4" />}
-                active={location === '/admin/parks/dashboard'}
+                active={location === '/admin/parks/visitor-dashboard'}
               >
                 {t('navigation.operativeSummary')}
               </NavItem>

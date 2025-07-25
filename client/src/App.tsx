@@ -157,6 +157,11 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/parks-dashboard')))}
           </Suspense>
         </Route>
+        <Route path="/admin/parks/visitor-dashboard">
+          <Suspense fallback={<div className="p-8 text-center">Cargando dashboard de visitantes...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/parks/visitor-dashboard')))}
+          </Suspense>
+        </Route>
         {/* Rutas del módulo de visitantes - nuevas rutas */}
         <Route path="/admin/visitors">
           <Suspense fallback={<div className="p-8 text-center">Cargando dashboard de visitantes...</div>}>
