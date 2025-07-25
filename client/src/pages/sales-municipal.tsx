@@ -8,7 +8,7 @@ const SalesMunicipalPage = () => {
       category: "Configuración y Setup",
       items: [
         { name: "Dashboard Administrativo", esencial: true, profesional: true, enterprise: true },
-        { name: "Gestión Básica de Usuarios", esencial: true, profesional: true, enterprise: true },
+        { name: "Gestión de Usuarios", esencial: "1 usuario", profesional: "Ilimitados", enterprise: "Ilimitados" },
         { name: "Configuración de parques", esencial: "Hasta 3", profesional: "Ilimitados", enterprise: "Ilimitados" },
         { name: "Configuración Personalizada", esencial: false, profesional: true, enterprise: true },
         { name: "Branding Personalizado", esencial: false, profesional: true, enterprise: true },
