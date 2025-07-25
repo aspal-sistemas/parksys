@@ -38,7 +38,7 @@ import Header from "@/components/Header";
 function Router() {
   const [location] = useLocation();
   const isAdminRoute = location.startsWith('/admin');
-  const isVentasRoute = location === '/ventas' || location === '/landing';
+  const isVentasRoute = location === '/ventas' || location === '/landing' || location === '/sales';
   
   return (
     <div className="flex flex-col min-h-screen">
@@ -48,6 +48,11 @@ function Router() {
         <Route path="/home" component={Home} />
         <Route path="/ventas" component={Landing} />
         <Route path="/landing" component={Landing} />
+        <Route path="/sales">
+          <Suspense fallback={<div className="p-8 text-center">Cargando página de ventas...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/sales')))}
+          </Suspense>
+        </Route>
         <Route path="/parks-module" component={ParksModuleShowcase} />
         <Route path="/parks" component={Parks} />
         <Route path="/parks/:id" component={ParkDetail} />
