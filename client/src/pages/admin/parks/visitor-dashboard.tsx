@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -68,6 +68,14 @@ export default function VisitorDashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Limpiar cache de consultas incorrectas al montar el componente
+  useEffect(() => {
+    // Invalidar cualquier cache que pueda tener la URL incorrecta
+    queryClient.invalidateQueries({ queryKey: ['/api/parks/visitor-dashboard'] });
+    queryClient.removeQueries({ queryKey: ['/api/parks/visitor-dashboard'] });
+  }, [queryClient]);
 
   // Obtener datos del dashboard de visitantes
   const { data: dashboardData, isLoading } = useQuery({
