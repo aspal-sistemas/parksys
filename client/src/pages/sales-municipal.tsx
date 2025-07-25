@@ -65,6 +65,7 @@ const SalesMunicipalPage = () => {
     {
       category: "Seguridad y Soporte",
       items: [
+        { name: "Reportes y Datos (Exportación de KPIs de todo el sistema en Excel / CSV)", esencial: false, profesional: true, enterprise: true },
         { name: "Autenticación básica", esencial: true, profesional: true, enterprise: true },
         { name: "Control de roles y permisos", esencial: "Básico", profesional: "Avanzado", enterprise: "Completo" },
         { name: "Auditoría y logs", esencial: false, profesional: true, enterprise: true },
