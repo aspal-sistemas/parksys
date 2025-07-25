@@ -19,13 +19,13 @@ const SalesMunicipalPage = () => {
     {
       category: "Gestión Integral",
       items: [
-        { name: "Gestión de actividades", esencial: "Básica", profesional: "Completa", enterprise: "Avanzada" },
-        { name: "Calendario de eventos", esencial: true, profesional: true, enterprise: true },
-        { name: "Sistema de reservas", esencial: false, profesional: true, enterprise: true },
-        { name: "Gestión de amenidades", esencial: false, profesional: true, enterprise: true },
-        { name: "Control de visitantes", esencial: false, profesional: true, enterprise: true },
-        { name: "Gestión de voluntarios", esencial: false, profesional: "Básica", enterprise: "Completa" },
-        { name: "Sistema de instructores", esencial: false, profesional: true, enterprise: true }
+        { name: "Visitantes (Dashboard, Conteo, Evaluaciones, Criterios, Retroalimentación)", esencial: "Dashboard", profesional: "Completo", enterprise: "Completo" },
+        { name: "Parques (Dashboard, Gestión)", esencial: "Dashboard", profesional: "Completo", enterprise: "Completo" },
+        { name: "Arbolado (Dashboard, Inventario, Especies, Mantenimiento)", esencial: false, profesional: "Dashboard + Inventario", enterprise: "Completo" },
+        { name: "Actividades (Dashboard, Categorías, Listado, Nueva Actividad, Calendario, Instructores)", esencial: "Dashboard", profesional: "Completo", enterprise: "Completo" },
+        { name: "Eventos (Dashboard, Nuevo Evento, Categorías, Eventos, Calendario, Tabulador de costos)", esencial: "Dashboard", profesional: "Completo", enterprise: "Completo" },
+        { name: "Reservas (Dashboard, Reservas Activas, Espacios Disponibles, Nueva Reserva, Calendario)", esencial: false, profesional: "Completo", enterprise: "Completo" },
+        { name: "Amenidades (Dashboard, Gestión)", esencial: false, profesional: "Completo", enterprise: "Completo" }
       ]
     },
     {
