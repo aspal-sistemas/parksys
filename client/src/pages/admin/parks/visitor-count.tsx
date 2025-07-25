@@ -1523,7 +1523,7 @@ export default function VisitorCountPage() {
                           <div>
                             <p className="text-sm text-gray-600">Promedio Diario</p>
                             <p className="text-2xl font-bold text-[#00a587]">
-                              {reportData.summary.avgDaily}
+                              {Number(reportData.summary.avgDaily || 0).toLocaleString()}
                             </p>
                           </div>
                           <TrendingUp className="h-8 w-8 text-[#00a587]" />
@@ -1536,7 +1536,7 @@ export default function VisitorCountPage() {
                           <div>
                             <p className="text-sm text-gray-600">Registros</p>
                             <p className="text-2xl font-bold text-[#bcd256]">
-                              {reportData.summary.totalRecords}
+                              {Number(reportData.summary.totalRecords || 0).toLocaleString()}
                             </p>
                           </div>
                           <FileText className="h-8 w-8 text-[#bcd256]" />
@@ -1549,7 +1549,7 @@ export default function VisitorCountPage() {
                           <div>
                             <p className="text-sm text-gray-600">Parques Únicos</p>
                             <p className="text-2xl font-bold text-[#8498a5]">
-                              {reportData.summary.uniqueParks}
+                              {Number(reportData.summary.uniqueParks || 0).toLocaleString()}
                             </p>
                           </div>
                           <MapPin className="h-8 w-8 text-[#8498a5]" />
@@ -1608,7 +1608,7 @@ export default function VisitorCountPage() {
                               <CartesianGrid strokeDasharray="3 3" />
                               <XAxis dataKey="date" />
                               <YAxis />
-                              <Tooltip />
+                              <Tooltip formatter={(value: any) => [Number(value).toLocaleString(), 'Visitantes']} />
                               <Line type="monotone" dataKey="visitors" stroke="#067f5f" strokeWidth={2} />
                               <Line type="monotone" dataKey="adults" stroke="#00a587" strokeWidth={2} />
                               <Line type="monotone" dataKey="children" stroke="#bcd256" strokeWidth={2} />
@@ -1633,7 +1633,7 @@ export default function VisitorCountPage() {
                               <CartesianGrid strokeDasharray="3 3" />
                               <XAxis dataKey="parkName" angle={-45} textAnchor="end" height={100} />
                               <YAxis />
-                              <Tooltip />
+                              <Tooltip formatter={(value: any) => [Number(value).toLocaleString(), 'Visitantes']} />
                               <Bar dataKey="visitors" fill="#067f5f" />
                             </BarChart>
                           </ResponsiveContainer>
