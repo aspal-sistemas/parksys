@@ -7,12 +7,13 @@ const SalesMunicipalPage = () => {
     {
       category: "Configuración y Setup",
       items: [
-        { name: "Dashboard administrativo", esencial: true, profesional: true, enterprise: true },
-        { name: "Gestión básica de usuarios", esencial: true, profesional: true, enterprise: true },
+        { name: "Dashboard Administrativo", esencial: true, profesional: true, enterprise: true },
+        { name: "Gestión Básica de Usuarios", esencial: true, profesional: true, enterprise: true },
         { name: "Configuración de parques", esencial: "Hasta 3", profesional: "Ilimitados", enterprise: "Ilimitados" },
-        { name: "Configuración personalizada", esencial: false, profesional: true, enterprise: true },
-        { name: "Branding personalizado", esencial: false, profesional: true, enterprise: true },
-        { name: "Integración con sistemas existentes", esencial: false, profesional: false, enterprise: true }
+        { name: "Configuración Personalizada", esencial: false, profesional: true, enterprise: true },
+        { name: "Branding Personalizado", esencial: false, profesional: true, enterprise: true },
+        { name: "Permisos", esencial: "Básicos", profesional: "Avanzados", enterprise: "Completos" },
+        { name: "Notificaciones", esencial: "Email", profesional: "Email + SMS", enterprise: "Multi-canal" }
       ]
     },
     {
