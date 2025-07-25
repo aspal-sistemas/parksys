@@ -73,6 +73,7 @@ export default function VisitorCountPage() {
   const [selectedPark, setSelectedPark] = useState<string>("");
   const [showForm, setShowForm] = useState(false);
   const [countingMode, setCountingMode] = useState<'daily' | 'range'>('daily');
+  const [distributionMode, setDistributionMode] = useState<'equal' | 'average'>('average');
   
   // Estados para reportes
   const [reportPeriod, setReportPeriod] = useState<'week' | 'month' | 'quarter' | 'year'>('month');
@@ -834,24 +835,81 @@ export default function VisitorCountPage() {
         const startDate = new Date(data.startDate!);
         const endDate = new Date(data.endDate!);
         
-        for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-          const dateStr = d.toISOString().split('T')[0];
-          const record = {
-            parkId: data.parkId,
-            date: dateStr,
-            adults: data.adults,
-            children: data.children,
-            seniors: data.seniors,
-            pets: data.pets,
-            groups: data.groups,
-            countingMethod: data.countingMethod,
-            dayType: data.dayType,
-            weather: data.weather,
-            notes: data.notes,
-            registeredBy: 1 // Usuario admin por defecto
+        // Calcular número de días en el rango
+        const timeDiff = endDate.getTime() - startDate.getTime();
+        const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1;
+        
+        console.log(`📊 Modo distribución: ${distributionMode}, Días: ${daysDiff}`);
+        console.log(`Total originales: ${data.adults} adultos, ${data.children} niños, ${data.seniors} seniors, ${data.pets} mascotas, ${data.groups} grupos`);
+        
+        if (distributionMode === 'average') {
+          // Distribución con promedio diario y variaciones
+          const avgAdults = Math.round(data.adults / daysDiff);
+          const avgChildren = Math.round(data.children / daysDiff);
+          const avgSeniors = Math.round(data.seniors / daysDiff);
+          const avgPets = Math.round(data.pets / daysDiff);
+          const avgGroups = Math.round(data.groups / daysDiff);
+          
+          console.log(`📈 Promedio diario: ${avgAdults} adultos, ${avgChildren} niños, ${avgSeniors} seniors, ${avgPets} mascotas, ${avgGroups} grupos`);
+          
+          // Función para crear variación realista (±15% del promedio)
+          const addVariation = (value: number) => {
+            if (value === 0) return 0;
+            const variation = Math.round(value * 0.15); // 15% de variación
+            const randomVariation = Math.floor(Math.random() * (variation * 2 + 1)) - variation;
+            return Math.max(0, value + randomVariation);
           };
-          console.log('Registro individual para rango:', record);
-          records.push(record);
+          
+          for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+            const dateStr = d.toISOString().split('T')[0];
+            
+            // Aplicar variación realista a cada categoría
+            const dayAdults = addVariation(avgAdults);
+            const dayChildren = addVariation(avgChildren);
+            const daySeniors = addVariation(avgSeniors);
+            const dayPets = addVariation(avgPets);
+            const dayGroups = addVariation(avgGroups);
+            
+            const record = {
+              parkId: data.parkId,
+              date: dateStr,
+              adults: dayAdults,
+              children: dayChildren,
+              seniors: daySeniors,
+              pets: dayPets,
+              groups: dayGroups,
+              countingMethod: data.countingMethod,
+              dayType: data.dayType,
+              weather: data.weather,
+              notes: `${data.notes || ''} (Promedio diario distribuido del período ${data.startDate} a ${data.endDate})`.trim(),
+              registeredBy: 1
+            };
+            console.log(`📅 ${dateStr}: ${dayAdults + dayChildren + daySeniors} visitantes (${dayAdults}+${dayChildren}+${daySeniors})`);
+            records.push(record);
+          }
+        } else {
+          // Distribución igual (números idénticos cada día)
+          console.log(`📋 Usando números idénticos cada día`);
+          
+          for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+            const dateStr = d.toISOString().split('T')[0];
+            const record = {
+              parkId: data.parkId,
+              date: dateStr,
+              adults: data.adults,
+              children: data.children,
+              seniors: data.seniors,
+              pets: data.pets,
+              groups: data.groups,
+              countingMethod: data.countingMethod,
+              dayType: data.dayType,
+              weather: data.weather,
+              notes: `${data.notes || ''} (Números idénticos para período ${data.startDate} a ${data.endDate})`.trim(),
+              registeredBy: 1
+            };
+            console.log(`📅 ${dateStr}: ${data.adults + data.children + data.seniors} visitantes (números idénticos)`);
+            records.push(record);
+          }
         }
         
         // Crear todos los registros con manejo de duplicados
@@ -1722,6 +1780,41 @@ export default function VisitorCountPage() {
                         </Button>
                       </div>
                     </div>
+
+                    {/* Modo de distribución para rangos */}
+                    {countingMode === 'range' && (
+                      <div className="space-y-2 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <Label>Tipo de distribución para el período *</Label>
+                        <div className="flex gap-4">
+                          <Button
+                            type="button"
+                            variant={distributionMode === 'average' ? 'default' : 'outline'}
+                            onClick={() => setDistributionMode('average')}
+                            className="flex items-center gap-2 text-sm"
+                            size="sm"
+                          >
+                            <TrendingUp className="h-4 w-4" />
+                            Promedio diario distribuido
+                          </Button>
+                          <Button
+                            type="button"
+                            variant={distributionMode === 'equal' ? 'default' : 'outline'}
+                            onClick={() => setDistributionMode('equal')}
+                            className="flex items-center gap-2 text-sm"
+                            size="sm"
+                          >
+                            <BarChart3 className="h-4 w-4" />
+                            Números idénticos
+                          </Button>
+                        </div>
+                        <p className="text-xs text-gray-600 mt-2">
+                          {distributionMode === 'average' 
+                            ? 'Los números se dividirán entre los días del período con variaciones naturales (±15%)'
+                            : 'Los mismos números se aplicarán idénticamente a cada día del período'
+                          }
+                        </p>
+                      </div>
+                    )}
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
