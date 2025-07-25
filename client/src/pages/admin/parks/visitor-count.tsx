@@ -1304,7 +1304,7 @@ export default function VisitorCountPage() {
                             </div>
                             <div className="text-right">
                               <div className="text-xl font-bold text-emerald-600">
-                                {count.totalVisitors}
+                                {Number(count.totalVisitors || 0).toLocaleString()}
                               </div>
                               <div className="text-xs text-gray-500">visitantes</div>
                             </div>
@@ -1312,15 +1312,15 @@ export default function VisitorCountPage() {
 
                           <div className="grid grid-cols-3 gap-2">
                             <div className="text-center p-2 bg-blue-50 rounded">
-                              <div className="text-sm font-semibold text-blue-700">{count.adults}</div>
+                              <div className="text-sm font-semibold text-blue-700">{Number(count.adults || 0).toLocaleString()}</div>
                               <div className="text-xs text-blue-600">Adultos</div>
                             </div>
                             <div className="text-center p-2 bg-green-50 rounded">
-                              <div className="text-sm font-semibold text-green-700">{count.children}</div>
+                              <div className="text-sm font-semibold text-green-700">{Number(count.children || 0).toLocaleString()}</div>
                               <div className="text-xs text-green-600">Niños</div>
                             </div>
                             <div className="text-center p-2 bg-orange-50 rounded">
-                              <div className="text-sm font-semibold text-orange-700">{count.seniors}</div>
+                              <div className="text-sm font-semibold text-orange-700">{Number(count.seniors || 0).toLocaleString()}</div>
                               <div className="text-xs text-orange-600">Mayores</div>
                             </div>
                           </div>
@@ -1353,7 +1353,7 @@ export default function VisitorCountPage() {
                             </div>
                             <div className="text-right">
                               <div className="text-2xl font-bold text-emerald-600">
-                                {count.totalVisitors}
+                                {Number(count.totalVisitors || 0).toLocaleString()}
                               </div>
                               <div className="text-sm text-gray-500">visitantes</div>
                             </div>
@@ -1361,23 +1361,23 @@ export default function VisitorCountPage() {
 
                           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-4">
                             <div className="text-center p-3 bg-blue-50 rounded-lg">
-                              <div className="text-lg font-semibold text-blue-700">{count.adults}</div>
+                              <div className="text-lg font-semibold text-blue-700">{Number(count.adults || 0).toLocaleString()}</div>
                               <div className="text-sm text-blue-600">Adultos</div>
                             </div>
                             <div className="text-center p-3 bg-green-50 rounded-lg">
-                              <div className="text-lg font-semibold text-green-700">{count.children}</div>
+                              <div className="text-lg font-semibold text-green-700">{Number(count.children || 0).toLocaleString()}</div>
                               <div className="text-sm text-green-600">Niños</div>
                             </div>
                             <div className="text-center p-3 bg-orange-50 rounded-lg">
-                              <div className="text-lg font-semibold text-orange-700">{count.seniors}</div>
+                              <div className="text-lg font-semibold text-orange-700">{Number(count.seniors || 0).toLocaleString()}</div>
                               <div className="text-sm text-orange-600">Adultos mayores</div>
                             </div>
                             <div className="text-center p-3 bg-pink-50 rounded-lg">
-                              <div className="text-lg font-semibold text-pink-700">{count.pets}</div>
+                              <div className="text-lg font-semibold text-pink-700">{Number(count.pets || 0).toLocaleString()}</div>
                               <div className="text-sm text-pink-600">Mascotas</div>
                             </div>
                             <div className="text-center p-3 bg-purple-50 rounded-lg">
-                              <div className="text-lg font-semibold text-purple-700">{count.groups}</div>
+                              <div className="text-lg font-semibold text-purple-700">{Number(count.groups || 0).toLocaleString()}</div>
                               <div className="text-sm text-purple-600">Grupos</div>
                             </div>
                           </div>
