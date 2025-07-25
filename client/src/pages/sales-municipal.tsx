@@ -31,12 +31,9 @@ const SalesMunicipalPage = () => {
     {
       category: "Marketing y Comunicación",
       items: [
-        { name: "Páginas públicas de parques", esencial: true, profesional: true, enterprise: true },
-        { name: "Sistema de evaluaciones ciudadanas", esencial: false, profesional: true, enterprise: true },
-        { name: "Campañas de marketing", esencial: false, profesional: true, enterprise: true },
-        { name: "Gestión de publicidad", esencial: false, profesional: true, enterprise: true },
-        { name: "Comunicación masiva", esencial: false, profesional: true, enterprise: true },
-        { name: "Análisis y reportes", esencial: "Básicos", profesional: "Avanzados", enterprise: "Completos" }
+        { name: "Marketing (Dashboard, Patrocinadores, Contratos, Eventos, Activos, Evaluaciones)", esencial: false, profesional: true, enterprise: true },
+        { name: "Publicidad Digital (Dashboard, Espacios Publicitarios, Anuncios, Campañas, Asignaciones, Mapeo de Espacios)", esencial: false, profesional: true, enterprise: true },
+        { name: "Comunicación (Dashboard, Plantillas, Cola de Emails, Campañas)", esencial: false, profesional: true, enterprise: true }
       ]
     },
     {
