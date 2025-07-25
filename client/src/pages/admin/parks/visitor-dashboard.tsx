@@ -604,7 +604,10 @@ export default function VisitorDashboard() {
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
-                      <Tooltip />
+                      <Tooltip formatter={(value: any, name: any, props: any) => [
+                        `${Number(value).toLocaleString()} registros`,
+                        props.payload.method
+                      ]} />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
@@ -633,7 +636,10 @@ export default function VisitorDashboard() {
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
-                      <Tooltip />
+                      <Tooltip formatter={(value: any, name: any, props: any) => [
+                        `${Number(value).toLocaleString()} registros`,
+                        props.payload.weather
+                      ]} />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
