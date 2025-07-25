@@ -142,21 +142,37 @@ export default function VisitorDashboard() {
       return acc;
     }, []).sort((a: any, b: any) => a.date.localeCompare(b.date));
 
-    // Datos por parque
-    const parkData = visitorData.reduce((acc: any[], record: any) => {
-      const existing = acc.find((item: any) => item.parkName === record.parkName);
-      if (existing) {
-        existing.visitors += record.totalVisitors;
-        existing.records += 1;
-      } else {
-        acc.push({
-          parkName: record.parkName || 'Sin nombre',
-          visitors: record.totalVisitors || 0,
-          records: 1
-        });
-      }
-      return acc;
-    }, []).sort((a: any, b: any) => b.visitors - a.visitors);
+    // Datos por parque - usar parkSummaries si está disponible, sino procesar records
+    let parkData = [];
+    
+    if (parkSummaries && parkSummaries.length > 0) {
+      // Usar datos de parkSummaries que vienen del backend
+      parkData = parkSummaries.map((summary: any) => ({
+        parkName: summary.parkName || 'Sin nombre',
+        visitors: parseInt(summary.totalVisitors) || 0,
+        records: parseInt(summary.totalRecords) || 0
+      })).sort((a: any, b: any) => b.visitors - a.visitors);
+      
+      console.log('🌐 [CHART DEBUG] Usando parkSummaries:', parkData);
+    } else {
+      // Fallback a procesar records directamente
+      parkData = visitorData.reduce((acc: any[], record: any) => {
+        const existing = acc.find((item: any) => item.parkName === record.parkName);
+        if (existing) {
+          existing.visitors += record.totalVisitors;
+          existing.records += 1;
+        } else {
+          acc.push({
+            parkName: record.parkName || 'Sin nombre',
+            visitors: record.totalVisitors || 0,
+            records: 1
+          });
+        }
+        return acc;
+      }, []).sort((a: any, b: any) => b.visitors - a.visitors);
+      
+      console.log('🌐 [CHART DEBUG] Usando visitorData:', parkData);
+    }
 
     // Datos por método
     const methodData = visitorData.reduce((acc: any[], record: any) => {
@@ -191,6 +207,14 @@ export default function VisitorDashboard() {
       }
       return acc;
     }, []);
+
+    console.log('🌐 [CHART DEBUG] chartData generado:', {
+      daily: dailyData.length,
+      parks: parkData.length,
+      methods: methodData.length,
+      weather: weatherData.length,
+      parksData: parkData
+    });
 
     return {
       daily: dailyData,
@@ -458,11 +482,25 @@ export default function VisitorDashboard() {
             <CardContent>
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData.parks} layout="horizontal">
+                  <BarChart 
+                    data={chartData.parks} 
+                    layout="horizontal"
+                    margin={{ top: 5, right: 30, left: 150, bottom: 5 }}
+                  >
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis type="number" />
-                    <YAxis dataKey="parkName" type="category" width={150} />
-                    <Tooltip />
+                    <YAxis 
+                      dataKey="parkName" 
+                      type="category" 
+                      width={150}
+                      tick={{ fontSize: 12 }}
+                    />
+                    <Tooltip 
+                      formatter={(value: any, name: any) => [
+                        `${value.toLocaleString()} visitantes`, 
+                        'Total de Visitantes'
+                      ]}
+                    />
                     <Bar dataKey="visitors" fill="#00a587" />
                   </BarChart>
                 </ResponsiveContainer>
