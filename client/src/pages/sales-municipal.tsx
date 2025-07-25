@@ -12,7 +12,7 @@ const SalesMunicipalPage = () => {
         { name: "Configuración de parques", esencial: "Hasta 3", profesional: "Ilimitados", enterprise: "Ilimitados" },
         { name: "Configuración Personalizada", esencial: false, profesional: true, enterprise: true },
         { name: "Branding Personalizado", esencial: false, profesional: true, enterprise: true },
-        { name: "Permisos", esencial: "Básicos", profesional: "Avanzados", enterprise: "Completos" },
+        { name: "Permisos", esencial: false, profesional: "Completos", enterprise: "Completos" },
         { name: "Notificaciones", esencial: false, profesional: "Email", enterprise: "Email" }
       ]
     },
