@@ -339,7 +339,7 @@ export default function VisitorDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Total Visitantes</p>
-                  <p className="text-2xl font-bold text-gray-900">{metrics?.totalVisitors?.toLocaleString() || 0}</p>
+                  <p className="text-2xl font-bold text-gray-900">{Number(metrics?.totalVisitors || 0).toLocaleString()}</p>
                 </div>
                 <div className="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
                   <Users className="w-6 h-6 text-green-600" />
@@ -397,7 +397,7 @@ export default function VisitorDashboard() {
             <CardContent className="p-4">
               <div className="text-center">
                 <p className="text-sm font-medium text-gray-600">Adultos</p>
-                <p className="text-xl font-bold text-gray-900">{metrics?.totalAdults?.toLocaleString() || 0}</p>
+                <p className="text-xl font-bold text-gray-900">{Number(metrics?.totalAdults || 0).toLocaleString()}</p>
                 <p className="text-xs text-gray-500">
                   {metrics?.totalVisitors ? Math.round((metrics.totalAdults / metrics.totalVisitors) * 100) : 0}% del total
                 </p>
@@ -409,7 +409,7 @@ export default function VisitorDashboard() {
             <CardContent className="p-4">
               <div className="text-center">
                 <p className="text-sm font-medium text-gray-600">Niños</p>
-                <p className="text-xl font-bold text-gray-900">{metrics?.totalChildren?.toLocaleString() || 0}</p>
+                <p className="text-xl font-bold text-gray-900">{Number(metrics?.totalChildren || 0).toLocaleString()}</p>
                 <p className="text-xs text-gray-500">
                   {metrics?.totalVisitors ? Math.round((metrics.totalChildren / metrics.totalVisitors) * 100) : 0}% del total
                 </p>
@@ -421,7 +421,7 @@ export default function VisitorDashboard() {
             <CardContent className="p-4">
               <div className="text-center">
                 <p className="text-sm font-medium text-gray-600">Adultos Mayores</p>
-                <p className="text-xl font-bold text-gray-900">{metrics?.totalSeniors?.toLocaleString() || 0}</p>
+                <p className="text-xl font-bold text-gray-900">{Number(metrics?.totalSeniors || 0).toLocaleString()}</p>
                 <p className="text-xs text-gray-500">
                   {metrics?.totalVisitors ? Math.round((metrics.totalSeniors / metrics.totalVisitors) * 100) : 0}% del total
                 </p>
@@ -433,7 +433,7 @@ export default function VisitorDashboard() {
             <CardContent className="p-4">
               <div className="text-center">
                 <p className="text-sm font-medium text-gray-600">Mascotas</p>
-                <p className="text-xl font-bold text-gray-900">{metrics?.totalPets?.toLocaleString() || 0}</p>
+                <p className="text-xl font-bold text-gray-900">{Number(metrics?.totalPets || 0).toLocaleString()}</p>
                 <p className="text-xs text-gray-500">Acompañantes</p>
               </div>
             </CardContent>
