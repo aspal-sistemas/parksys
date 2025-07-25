@@ -47,12 +47,9 @@ const SalesMunicipalPage = () => {
     {
       category: "Administración y Finanzas",
       items: [
-        { name: "Gestión de concesiones", esencial: false, profesional: "Básica", enterprise: "Completa" },
-        { name: "Control financiero", esencial: false, profesional: false, enterprise: true },
-        { name: "Presupuestos y planificación", esencial: false, profesional: false, enterprise: true },
-        { name: "Contabilidad integrada", esencial: false, profesional: false, enterprise: true },
-        { name: "Reportes financieros", esencial: false, profesional: false, enterprise: true },
-        { name: "Análisis de ROI", esencial: false, profesional: false, enterprise: true }
+        { name: "Finanzas (Dashboard, Presupuestos, Flujo de Efectivo, Calculadora de recuperación de costos para actividades)", esencial: false, profesional: false, enterprise: true },
+        { name: "Contabilidad (Dashboard, Categorías, Transacciones, Asientos Contables, Balanza, Estados Financieros)", esencial: false, profesional: false, enterprise: true },
+        { name: "Concesiones (Dashboard, Catálogo, Concesionarios, Contratos, Concesiones Activas)", esencial: false, profesional: false, enterprise: true }
       ]
     },
     {
