@@ -480,31 +480,83 @@ export default function VisitorDashboard() {
               <CardTitle>Visitantes por Parque</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart 
-                    data={chartData.parks} 
-                    layout="horizontal"
-                    margin={{ top: 5, right: 30, left: 150, bottom: 5 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis type="number" />
-                    <YAxis 
-                      dataKey="parkName" 
-                      type="category" 
-                      width={150}
-                      tick={{ fontSize: 12 }}
-                    />
-                    <Tooltip 
-                      formatter={(value: any, name: any) => [
-                        `${value.toLocaleString()} visitantes`, 
-                        'Total de Visitantes'
-                      ]}
-                    />
-                    <Bar dataKey="visitors" fill="#00a587" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+              {chartData.parks && chartData.parks.length > 0 ? (
+                <div className="space-y-6">
+                  {/* Gráfica de barras vertical como alternativa */}
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart 
+                        data={chartData.parks} 
+                        margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e0e7ff" />
+                        <XAxis 
+                          dataKey="parkName" 
+                          tick={{ fontSize: 10, fill: '#374151' }}
+                          angle={-45}
+                          textAnchor="end"
+                          height={80}
+                          interval={0}
+                        />
+                        <YAxis 
+                          tick={{ fontSize: 12 }}
+                          axisLine={{ stroke: '#6b7280' }}
+                          tickLine={{ stroke: '#6b7280' }}
+                        />
+                        <Tooltip 
+                          formatter={(value: any) => [`${Number(value).toLocaleString()} visitantes`, 'Total']}
+                          labelStyle={{ color: '#374151', fontWeight: 'bold' }}
+                          contentStyle={{ 
+                            backgroundColor: 'white', 
+                            border: '1px solid #d1d5db',
+                            borderRadius: '6px',
+                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                          }}
+                        />
+                        <Bar 
+                          dataKey="visitors" 
+                          fill="#00a587" 
+                          radius={[4, 4, 0, 0]}
+                          strokeWidth={0}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                  
+                  {/* Lista adicional con datos detallados */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {chartData.parks.map((park: any, index: number) => (
+                      <div key={park.parkName} className="bg-gray-50 p-4 rounded-lg border">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                              <span className="text-sm font-bold text-green-600">{index + 1}</span>
+                            </div>
+                            <div>
+                              <p className="font-medium text-gray-900 text-sm">{park.parkName}</p>
+                              <p className="text-xs text-gray-500">{park.records} registro{park.records !== 1 ? 's' : ''}</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-lg font-bold text-gray-900">{park.visitors.toLocaleString()}</p>
+                            <p className="text-xs text-gray-500">visitantes</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="h-80 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-gray-400 mb-2">
+                      <BarChart3 className="mx-auto h-12 w-12" />
+                    </div>
+                    <p className="text-gray-500">No hay datos disponibles para mostrar</p>
+                    <p className="text-sm text-gray-400 mt-1">Datos esperados: {chartData.parks?.length || 0} parques</p>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
