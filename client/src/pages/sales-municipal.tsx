@@ -13,7 +13,7 @@ const SalesMunicipalPage = () => {
         { name: "Configuración Personalizada", esencial: false, profesional: true, enterprise: true },
         { name: "Branding Personalizado", esencial: false, profesional: true, enterprise: true },
         { name: "Permisos", esencial: "Básicos", profesional: "Avanzados", enterprise: "Completos" },
-        { name: "Notificaciones", esencial: "Email", profesional: "Email + SMS", enterprise: "Multi-canal" }
+        { name: "Notificaciones", esencial: false, profesional: "Email", enterprise: "Email" }
       ]
     },
     {
