@@ -5,14 +5,15 @@ import { Button } from '@/components/ui/button';
 const SalesProPage = () => {
   const features = [
     {
-      category: "Configuración y Setup Premium",
+      category: "Configuración y Setup",
       items: [
-        { name: "Dashboard ejecutivo personalizado", esencial: true, profesional: true, enterprise: true },
-        { name: "Configuración premium sin límites", esencial: "Básica", profesional: "Avanzada", enterprise: "Ultra personalizada" },
-        { name: "Branding completamente personalizado", esencial: false, profesional: true, enterprise: true },
-        { name: "Arquitectura dedicada", esencial: false, profesional: false, enterprise: true },
-        { name: "APIs privadas personalizadas", esencial: false, profesional: true, enterprise: true },
-        { name: "Integración con sistemas legacy", esencial: false, profesional: false, enterprise: true }
+        { name: "Dashboard Administrativo", esencial: true, profesional: true, enterprise: true },
+        { name: "Gestión Básica de Usuarios", esencial: true, profesional: true, enterprise: true },
+        { name: "Configuración de parques", esencial: "Hasta 3", profesional: "Ilimitados", enterprise: "Ilimitados" },
+        { name: "Configuración Personalizada", esencial: false, profesional: true, enterprise: true },
+        { name: "Branding Personalizado", esencial: false, profesional: true, enterprise: true },
+        { name: "Permisos", esencial: "Básicos", profesional: "Avanzados", enterprise: "Completos" },
+        { name: "Notificaciones", esencial: "Email", profesional: "Email + SMS", enterprise: "Multi-canal" }
       ]
     },
     {
