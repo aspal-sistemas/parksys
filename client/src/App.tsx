@@ -50,7 +50,7 @@ function Router() {
         <Route path="/landing" component={Landing} />
         <Route path="/sales">
           <Suspense fallback={<div className="p-8 text-center">Cargando página de ventas...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/sales')))}
+            {React.createElement(React.lazy(() => import('@/pages/sales-basic')))}
           </Suspense>
         </Route>
         <Route path="/parks-module" component={ParksModuleShowcase} />
