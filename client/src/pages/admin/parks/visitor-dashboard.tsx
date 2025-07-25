@@ -353,7 +353,7 @@ export default function VisitorDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Promedio Diario</p>
-                  <p className="text-2xl font-bold text-gray-900">{metrics?.avgDailyVisitors || 0}</p>
+                  <p className="text-2xl font-bold text-gray-900">{Number(metrics?.avgDailyVisitors || 0).toLocaleString()}</p>
                 </div>
                 <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
                   <TrendingUp className="w-6 h-6 text-blue-600" />
@@ -367,7 +367,7 @@ export default function VisitorDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Registros</p>
-                  <p className="text-2xl font-bold text-gray-900">{metrics?.totalRecords || 0}</p>
+                  <p className="text-2xl font-bold text-gray-900">{Number(metrics?.totalRecords || 0).toLocaleString()}</p>
                 </div>
                 <div className="h-12 w-12 bg-purple-100 rounded-lg flex items-center justify-center">
                   <Activity className="w-6 h-6 text-purple-600" />
@@ -381,7 +381,7 @@ export default function VisitorDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Parques Activos</p>
-                  <p className="text-2xl font-bold text-gray-900">{metrics?.uniqueParks || 0}</p>
+                  <p className="text-2xl font-bold text-gray-900">{Number(metrics?.uniqueParks || 0).toLocaleString()}</p>
                 </div>
                 <div className="h-12 w-12 bg-orange-100 rounded-lg flex items-center justify-center">
                   <MapPin className="w-6 h-6 text-orange-600" />
@@ -461,7 +461,7 @@ export default function VisitorDashboard() {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="formattedDate" />
                     <YAxis />
-                    <Tooltip />
+                    <Tooltip formatter={(value: any) => [Number(value).toLocaleString(), 'Visitantes']} />
                     <Area type="monotone" dataKey="visitors" stackId="1" stroke="#00a587" fill="#00a587" fillOpacity={0.6} />
                   </AreaChart>
                 </ResponsiveContainer>
@@ -480,7 +480,7 @@ export default function VisitorDashboard() {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="formattedDate" />
                     <YAxis />
-                    <Tooltip />
+                    <Tooltip formatter={(value: any) => [Number(value).toLocaleString()]} />
                     <Bar dataKey="adults" stackId="a" fill="#00a587" name="Adultos" />
                     <Bar dataKey="children" stackId="a" fill="#bcd256" name="Niños" />
                     <Bar dataKey="seniors" stackId="a" fill="#8498a5" name="Adultos Mayores" />
@@ -665,7 +665,7 @@ export default function VisitorDashboard() {
                     <div className="text-right">
                       <p className="text-lg font-bold text-gray-900">{summary.totalVisitors.toLocaleString()}</p>
                       <p className="text-sm text-gray-500">
-                        {summary.avgDailyVisitors} promedio diario ({summary.totalRecords} registros)
+                        {Number(summary.avgDailyVisitors).toLocaleString()} promedio diario ({Number(summary.totalRecords).toLocaleString()} registros)
                       </p>
                     </div>
                   </div>
