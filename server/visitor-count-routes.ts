@@ -83,6 +83,10 @@ router.get('/visitor-counts', async (req, res) => {
 
     console.log(`🌐 [BACKEND] Resultados: ${results.length} registros, Total en BD: ${count}`);
     console.log(`🌐 [BACKEND] Condiciones aplicadas:`, conditions.length > 0 ? 'SÍ' : 'NO');
+    console.log(`📄 [PAGINATION] Total páginas: ${Math.ceil(count / Number(limit))}, Página actual: ${Math.floor(Number(offset) / Number(limit)) + 1}`);
+
+    const totalPages = Math.ceil(count / Number(limit));
+    const currentPage = Math.floor(Number(offset) / Number(limit)) + 1;
 
     res.json({
       data: results,
@@ -90,6 +94,8 @@ router.get('/visitor-counts', async (req, res) => {
         total: count,
         limit: Number(limit),
         offset: Number(offset),
+        totalPages: totalPages,
+        currentPage: currentPage,
         hasMore: Number(offset) + Number(limit) < count
       }
     });
