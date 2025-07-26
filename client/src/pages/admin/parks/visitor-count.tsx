@@ -123,15 +123,46 @@ export default function VisitorCountPage() {
     data: VisitorCount[];
     pagination: any;
   }>({
-    queryKey: ['/api/visitor-counts', selectedPark, currentPage, searchTerm, dateFilter, methodFilter],
+    queryKey: ['/api/visitor-counts', selectedPark, currentPage, searchTerm, dateFilter, methodFilter, reportPark, reportPeriod],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (selectedPark && selectedPark !== 'all') params.set('parkId', selectedPark);
+      
+      // Usar el filtro de parque de los reportes si está activo, sino usar el selectedPark normal
+      const parkFilter = reportPark !== 'all' ? reportPark : selectedPark;
+      if (parkFilter && parkFilter !== 'all') params.set('parkId', parkFilter);
+      
       params.set('limit', recordsPerPage.toString());
       params.set('offset', ((currentPage - 1) * recordsPerPage).toString());
       if (searchTerm) params.set('search', searchTerm);
       if (dateFilter) params.set('startDate', dateFilter);
       if (methodFilter) params.set('method', methodFilter);
+      
+      // Agregar filtro de período
+      if (reportPeriod !== 'all') {
+        const now = new Date();
+        let startDate: Date;
+
+        switch (reportPeriod) {
+          case 'week':
+            startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            break;
+          case 'month':
+            startDate = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+            break;
+          case 'quarter':
+            startDate = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
+            break;
+          case 'year':
+            startDate = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+            break;
+          default:
+            startDate = new Date(0);
+        }
+        
+        params.set('startDate', startDate.toISOString().split('T')[0]);
+      }
+      
+      console.log(`🌐 [UNIFIED FILTER] Consultando con parámetros:`, Object.fromEntries(params.entries()));
       
       const response = await fetch(`/api/visitor-counts?${params}`);
       return response.json();
@@ -723,50 +754,14 @@ export default function VisitorCountPage() {
     reader.readAsText(file);
   };
 
-  // Calcular datos para reportes
+  // Calcular datos para reportes usando datos ya filtrados
   const reportData = useMemo(() => {
     if (!visitorCounts?.data || visitorCounts.data.length === 0) return null;
 
-    // Filtrar por parque si no es 'all'
-    let filteredData = reportPark === 'all' 
-      ? visitorCounts.data 
-      : visitorCounts.data.filter(count => count.parkId.toString() === reportPark);
+    // Los datos ya vienen filtrados de la query principal
+    const filteredData = visitorCounts.data;
 
-    // Filtrar por período si no es 'all'
-    if (reportPeriod !== 'all') {
-      const now = new Date();
-      let startDate: Date;
-
-      switch (reportPeriod) {
-        case 'week':
-          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-          break;
-        case 'month':
-          startDate = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
-          break;
-        case 'quarter':
-          startDate = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
-          break;
-        case 'year':
-          startDate = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
-          break;
-        default:
-          startDate = new Date(0); // Inicio de época si no coincide
-      }
-
-      console.log(`🌐 [PERIOD FILTER] Período: ${reportPeriod}, Fecha inicio: ${startDate.toISOString().split('T')[0]}, Datos antes filtro: ${filteredData.length}`);
-
-      filteredData = filteredData.filter(count => {
-        const countDate = new Date(count.date);
-        const isInRange = countDate >= startDate;
-        if (!isInRange) {
-          console.log(`🌐 [PERIOD FILTER] Excluido: ${count.date} (${countDate.toISOString().split('T')[0]} < ${startDate.toISOString().split('T')[0]})`);
-        }
-        return isInRange;
-      });
-
-      console.log(`🌐 [PERIOD FILTER] Datos después filtro: ${filteredData.length}`);
-    }
+    console.log(`🌐 [REPORT DATA] Usando datos filtrados: ${filteredData.length} registros`);
 
     // Estadísticas generales
     const totalVisitors = filteredData.reduce((sum, count) => sum + count.totalVisitors, 0);
@@ -866,7 +861,7 @@ export default function VisitorCountPage() {
         trend: last7Days
       }
     };
-  }, [visitorCounts, reportPark, reportPeriod]);
+  }, [visitorCounts]);
 
   // Mutation para crear nuevo registro
   const createVisitorCount = useMutation({
