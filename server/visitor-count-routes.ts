@@ -23,6 +23,8 @@ router.get('/visitor-counts', async (req, res) => {
   try {
     const { parkId, startDate, endDate, method, limit = 1000, offset = 0 } = req.query;
     
+    console.log(`🌐 [BACKEND] Parámetros recibidos:`, { parkId, startDate, endDate, method, limit, offset });
+    
     let query = db
       .select({
         id: visitorCounts.id,
@@ -78,6 +80,9 @@ router.get('/visitor-counts', async (req, res) => {
     }
     
     const [{ count }] = await countQuery;
+
+    console.log(`🌐 [BACKEND] Resultados: ${results.length} registros, Total en BD: ${count}`);
+    console.log(`🌐 [BACKEND] Condiciones aplicadas:`, conditions.length > 0 ? 'SÍ' : 'NO');
 
     res.json({
       data: results,
