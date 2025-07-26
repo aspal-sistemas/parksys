@@ -14,7 +14,7 @@ import { Calendar, Users, Plus, FileText, TrendingUp, MapPin, Clock, Sun, Cloud,
 import { apiRequest } from "@/lib/queryClient";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart as RechartsPieChart, Pie, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart as RechartsPieChart, Pie, Cell, Legend } from 'recharts';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 interface VisitorCount {
@@ -732,13 +732,13 @@ export default function VisitorCountPage() {
     const totalPets = filteredData.reduce((sum, count) => sum + count.pets, 0);
     const avgDaily = filteredData.length > 0 ? Math.round(totalVisitors / filteredData.length) : 0;
 
-    // Datos demográficos para gráfico de pie
+    // Datos demográficos para gráfico de pie (filtrar valores cero para evitar encimamiento)
     const demographicData = [
       { name: 'Adultos', value: totalAdults, color: '#067f5f' },
       { name: 'Niños', value: totalChildren, color: '#bcd256' },
       { name: 'Seniors', value: totalSeniors, color: '#8498a5' },
       { name: 'Mascotas', value: totalPets, color: '#00a587' }
-    ];
+    ].filter(item => item.value > 0); // Solo mostrar segmentos con datos
 
     // Datos por parque para gráfico de barras
     const parkData = filteredData.reduce((acc, count) => {
@@ -1570,24 +1570,41 @@ export default function VisitorCountPage() {
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="h-64">
+                        <div className="h-80">
                           <ResponsiveContainer width="100%" height="100%">
                             <RechartsPieChart>
                               <Pie
                                 data={reportData.charts.demographic}
                                 cx="50%"
-                                cy="50%"
-                                labelLine={false}
-                                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                                outerRadius={80}
+                                cy="45%"
+                                labelLine={true}
+                                label={({ name, percent, value }) => 
+                                  percent > 0.05 ? `${name}: ${Number(value || 0).toLocaleString()} (${(percent * 100).toFixed(1)}%)` : ''
+                                }
+                                outerRadius={70}
+                                innerRadius={20}
                                 fill="#8884d8"
                                 dataKey="value"
+                                minAngle={5}
                               >
                                 {reportData.charts.demographic.map((entry, index) => (
                                   <Cell key={`cell-${index}`} fill={entry.color} />
                                 ))}
                               </Pie>
-                              <Tooltip />
+                              <Tooltip 
+                                formatter={(value: any, name: string) => [
+                                  `${Number(value || 0).toLocaleString()} visitantes`, 
+                                  name
+                                ]}
+                              />
+                              <Legend 
+                                verticalAlign="bottom"
+                                height={36}
+                                iconType="circle"
+                                formatter={(value: string, entry: any) => 
+                                  `${value}: ${Number(entry.payload?.value || 0).toLocaleString()}`
+                                }
+                              />
                             </RechartsPieChart>
                           </ResponsiveContainer>
                         </div>
