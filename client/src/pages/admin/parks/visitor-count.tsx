@@ -891,25 +891,25 @@ export default function VisitorCountPage() {
     reader.readAsText(file);
   };
 
-  // Calcular datos para reportes usando estadísticas globales completas
+  // Calcular datos para reportes usando datos disponibles
   const reportData = useMemo(() => {
-    if (!globalStats?.data || globalStats.data.length === 0) {
-      console.log(`🌐 [REPORT DATA] No hay datos globales disponibles`);
+    // Usar los datos de visitorCounts que sí están funcionando
+    const availableData = visitorCounts?.data || [];
+    
+    if (availableData.length === 0) {
+      console.log(`🌐 [REPORT DATA] No hay datos disponibles`);
       return null;
     }
 
-    // Usar todos los registros obtenidos (sin paginación)
-    const allRecords = (globalStats as any).data;
-
-    console.log(`🌐 [REPORT DATA] Usando ${allRecords.length} registros globales para estadísticas`);
+    console.log(`🌐 [REPORT DATA] Usando ${availableData.length} registros para estadísticas`);
 
     // Calcular estadísticas generales desde todos los registros
-    const totalVisitors = allRecords.reduce((sum: number, count: any) => sum + (count.totalVisitors || 0), 0);
-    const totalAdults = allRecords.reduce((sum: number, count: any) => sum + (count.adults || 0), 0);
-    const totalChildren = allRecords.reduce((sum: number, count: any) => sum + (count.children || 0), 0);
-    const totalSeniors = allRecords.reduce((sum: number, count: any) => sum + (count.seniors || 0), 0);
-    const totalPets = allRecords.reduce((sum: number, count: any) => sum + (count.pets || 0), 0);
-    const avgDaily = allRecords.length > 0 ? Math.round(totalVisitors / allRecords.length) : 0;
+    const totalVisitors = availableData.reduce((sum: number, count: any) => sum + (count.totalVisitors || 0), 0);
+    const totalAdults = availableData.reduce((sum: number, count: any) => sum + (count.adults || 0), 0);
+    const totalChildren = availableData.reduce((sum: number, count: any) => sum + (count.children || 0), 0);
+    const totalSeniors = availableData.reduce((sum: number, count: any) => sum + (count.seniors || 0), 0);
+    const totalPets = availableData.reduce((sum: number, count: any) => sum + (count.pets || 0), 0);
+    const avgDaily = availableData.length > 0 ? Math.round(totalVisitors / availableData.length) : 0;
 
     console.log(`🌐 [REPORT DATA] Estadísticas calculadas: ${totalVisitors.toLocaleString()} visitantes totales`);
 
@@ -922,7 +922,7 @@ export default function VisitorCountPage() {
     ].filter(item => item.value > 0); // Solo mostrar segmentos con datos
 
     // Datos por parque agrupando desde todos los registros
-    const parkData = allRecords.reduce((acc: any[], count: any) => {
+    const parkData = availableData.reduce((acc: any[], count: any) => {
       const existing = acc.find(item => item.parkName === count.parkName);
       if (existing) {
         existing.visitors += count.totalVisitors;
@@ -938,7 +938,7 @@ export default function VisitorCountPage() {
     }, [] as any[]);
 
     // Datos por método de conteo usando todos los registros
-    const methodData = allRecords.reduce((acc, count) => {
+    const methodData = availableData.reduce((acc, count) => {
       const methodKey = count.countingMethod;
       const method = methodLabels[methodKey as keyof typeof methodLabels] || methodKey || 'No especificado';
       const existing = acc.find(item => item.method === method);
@@ -956,7 +956,7 @@ export default function VisitorCountPage() {
     }, [] as any[]);
 
     // Datos por clima usando todos los registros
-    const weatherData = allRecords.reduce((acc, count) => {
+    const weatherData = availableData.reduce((acc, count) => {
       const weatherKey = count.weather || 'other';
       const weather = weatherLabels[weatherKey as keyof typeof weatherLabels] || 'No especificado';
       const existing = acc.find(item => item.weather === weather);
@@ -974,7 +974,7 @@ export default function VisitorCountPage() {
     }, [] as any[]);
 
     // Tendencia temporal (últimos 7 días) usando todos los registros
-    const last7Days = allRecords
+    const last7Days = availableData
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
       .slice(-7)
       .map(count => ({
@@ -992,8 +992,8 @@ export default function VisitorCountPage() {
         totalSeniors,
         totalPets,
         avgDaily,
-        totalRecords: allRecords.length,
-        uniqueParks: Array.from(new Set(allRecords.map(c => c.parkName))).length
+        totalRecords: availableData.length,
+        uniqueParks: Array.from(new Set(availableData.map(c => c.parkName))).length
       },
       charts: {
         demographic: demographicData,
