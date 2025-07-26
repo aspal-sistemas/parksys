@@ -101,7 +101,7 @@ export default function VisitorCountPage() {
   const [quickDateRange, setQuickDateRange] = useState<'week' | 'month' | 'quarter' | 'custom'>('month');
   const [customStartDate, setCustomStartDate] = useState<string>('');
   const [customEndDate, setCustomEndDate] = useState<string>('');
-  const [activeTab, setActiveTab] = useState('resumen');
+  const [activeTab, setActiveTab] = useState('reportes');
   const [formData, setFormData] = useState<VisitorCountForm>({
     parkId: 0,
     date: new Date().toISOString().split('T')[0],
