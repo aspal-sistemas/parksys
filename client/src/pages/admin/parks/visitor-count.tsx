@@ -1250,41 +1250,6 @@ export default function VisitorCountPage() {
     return weatherLabels[weather as keyof typeof weatherLabels] || weather;
   };
 
-  // Función para calcular fechas basado en el rango rápido seleccionado
-  const getDateRangeForQuickFilter = () => {
-    const now = new Date();
-    let startDate: Date;
-    let endDate: Date = new Date();
-
-    switch (quickDateRange) {
-      case 'week':
-        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-        break;
-      case 'month':
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        break;
-      case 'quarter':
-        const quarterStartMonth = Math.floor(now.getMonth() / 3) * 3;
-        startDate = new Date(now.getFullYear(), quarterStartMonth, 1);
-        break;
-      case 'custom':
-        if (customStartDate && customEndDate) {
-          startDate = new Date(customStartDate);
-          endDate = new Date(customEndDate);
-        } else {
-          startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        }
-        break;
-      default:
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-    }
-
-    return {
-      startDate: startDate.toISOString().split('T')[0],
-      endDate: endDate.toISOString().split('T')[0]
-    };
-  };
-
   const getTotalVisitors = () => {
     return formData.adults + formData.children + formData.seniors;
   };
