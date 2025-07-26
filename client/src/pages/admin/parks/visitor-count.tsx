@@ -1174,9 +1174,10 @@ export default function VisitorCountPage() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">Todos los métodos</SelectItem>
-                        <SelectItem value="counting">Conteo directo</SelectItem>
                         <SelectItem value="estimation">Estimación</SelectItem>
-                        <SelectItem value="survey">Encuesta</SelectItem>
+                        <SelectItem value="manual_counter">Contador manual</SelectItem>
+                        <SelectItem value="event_based">Basado en eventos</SelectItem>
+                        <SelectItem value="entrance_control">Control de acceso</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
