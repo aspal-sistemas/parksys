@@ -23,17 +23,46 @@ import {
 import { 
   Label
 } from '@/components/ui/label';
+import { 
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger 
+} from '@/components/ui/dialog';
+import { 
+  Form, FormControl, FormField, FormItem, FormLabel, FormMessage 
+} from '@/components/ui/form';
+import { 
+  Textarea 
+} from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { 
   Users, TrendingUp, FileText, MapPin, Download, Calendar, Activity, Clock, Sun, PieChart, BarChart3, 
   Search, Filter, Plus, Eye, List, Grid, ChevronLeft, ChevronRight, ArrowLeft, Layers, 
-  CloudSun, Cloud, CloudRain, CloudSnow, CloudDrizzle
+  CloudSun, Cloud, CloudRain, CloudSnow, CloudDrizzle, X, AlertCircle, CheckCircle2
 } from 'lucide-react';
 import AdminLayout from '@/components/AdminLayout';
 import { 
   LineChart, Line, BarChart, Bar, PieChart as RechartsPieChart, Pie, Cell, 
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer 
 } from 'recharts';
+
+// Esquema de validación para el formulario
+const visitorCountSchema = z.object({
+  date: z.string().min(1, 'La fecha es requerida'),
+  parkId: z.string().min(1, 'Selecciona un parque'),
+  adults: z.number().min(0, 'Debe ser un número positivo'),
+  children: z.number().min(0, 'Debe ser un número positivo'),
+  seniors: z.number().min(0, 'Debe ser un número positivo'),
+  pets: z.number().min(0, 'Debe ser un número positivo'),
+  groups: z.number().min(0, 'Debe ser un número positivo'),
+  countingMethod: z.string().min(1, 'Selecciona un método'),
+  weather: z.string().min(1, 'Selecciona el clima'),
+  dayType: z.string().min(1, 'Selecciona el tipo de día'),
+  notes: z.string().optional()
+});
+
+type VisitorCountForm = z.infer<typeof visitorCountSchema>;
 
 interface VisitorCount {
   id: number;
@@ -76,13 +105,36 @@ export default function VisitorCountPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [recordsPerPage] = useState(10);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
-  // Estados de filtros
+  // Estados de filtros  
   const [quickDateRange, setQuickDateRange] = useState('month');
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState('');
   const [reportPark, setReportPark] = useState('all');
   const [reportPeriod, setReportPeriod] = useState('month');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterPark, setFilterPark] = useState('all');
+  const [filterMethod, setFilterMethod] = useState('all');
+  const [filterWeather, setFilterWeather] = useState('all');
+
+  // Formulario para crear nuevo registro
+  const form = useForm<VisitorCountForm>({
+    resolver: zodResolver(visitorCountSchema),
+    defaultValues: {
+      date: new Date().toISOString().split('T')[0],
+      parkId: '',
+      adults: 0,
+      children: 0,
+      seniors: 0,
+      pets: 0,
+      groups: 0,
+      countingMethod: '',
+      weather: '',
+      dayType: '',
+      notes: ''
+    }
+  });
 
   // Función para obtener rango de fechas
   const getDateRangeForQuickFilter = () => {
@@ -119,9 +171,62 @@ export default function VisitorCountPage() {
     };
   };
 
+  // Mutación para crear nuevo registro
+  const createVisitorCount = useMutation({
+    mutationFn: async (data: VisitorCountForm) => {
+      const response = await fetch('/api/visitor-counts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...data,
+          parkId: parseInt(data.parkId),
+          totalVisitors: data.adults + data.children + data.seniors
+        })
+      });
+      if (!response.ok) throw new Error('Error al crear el registro');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: 'Éxito',
+        description: 'Registro de visitantes creado correctamente'
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/visitor-counts'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/visitor-counts/park-summary'] });
+      setIsCreateDialogOpen(false);
+      form.reset();
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Error al crear el registro',
+        variant: 'destructive'
+      });
+    }
+  });
+
   // Query para parques
   const { data: parks } = useQuery({
     queryKey: ['/api/parks'],
+    retry: 1
+  });
+
+  // Query para todos los registros con filtros
+  const { data: allVisitorCounts, isLoading: allCountsLoading } = useQuery({
+    queryKey: ['/api/visitor-counts', 'all', searchTerm, filterPark, filterMethod, filterWeather, currentPage],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      params.set('limit', recordsPerPage.toString());
+      params.set('offset', ((currentPage - 1) * recordsPerPage).toString());
+      
+      if (searchTerm) params.set('search', searchTerm);
+      if (filterPark !== 'all') params.set('parkId', filterPark);
+      if (filterMethod !== 'all') params.set('method', filterMethod);
+      if (filterWeather !== 'all') params.set('weather', filterWeather);
+      
+      const response = await fetch(`/api/visitor-counts?${params}`);
+      return response.json();
+    },
     retry: 1
   });
 
@@ -243,20 +348,251 @@ export default function VisitorCountPage() {
             <h1 className="text-3xl font-bold text-gray-900">Conteo de Visitantes</h1>
           </div>
           
-          {/* Filtros de fecha rápidos */}
-          <div className="flex items-center gap-2">
-            <Label htmlFor="date-range">Período:</Label>
-            <Select value={quickDateRange} onValueChange={setQuickDateRange}>
-              <SelectTrigger className="w-40">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="week">Última semana</SelectItem>
-                <SelectItem value="month">Último mes</SelectItem>
-                <SelectItem value="quarter">Último trimestre</SelectItem>
-                <SelectItem value="year">Último año</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="flex items-center gap-3">
+            {/* Botón Nuevo Registro */}
+            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-[#00a587] hover:bg-[#067f5f] text-white">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nuevo Registro
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>Registrar Conteo de Visitantes</DialogTitle>
+                </DialogHeader>
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit((data) => createVisitorCount.mutate(data))} className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="date"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Fecha</FormLabel>
+                            <FormControl>
+                              <Input type="date" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="parkId"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Parque</FormLabel>
+                            <Select value={field.value} onValueChange={field.onChange}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Selecciona un parque" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {parks && Array.isArray(parks) && parks.filter((park: Park) => park.id && park.name).map((park: Park) => (
+                                  <SelectItem key={park.id} value={park.id.toString()}>
+                                    {park.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="adults"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Adultos</FormLabel>
+                            <FormControl>
+                              <Input type="number" min="0" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="children"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Niños</FormLabel>
+                            <FormControl>
+                              <Input type="number" min="0" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="seniors"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Mayores</FormLabel>
+                            <FormControl>
+                              <Input type="number" min="0" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="pets"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Mascotas</FormLabel>
+                            <FormControl>
+                              <Input type="number" min="0" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="groups"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Grupos</FormLabel>
+                            <FormControl>
+                              <Input type="number" min="0" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="countingMethod"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Método de Conteo</FormLabel>
+                            <Select value={field.value} onValueChange={field.onChange}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Selecciona método" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="manual">Conteo Manual</SelectItem>
+                                <SelectItem value="automatic">Contador Automático</SelectItem>
+                                <SelectItem value="estimated">Estimación Visual</SelectItem>
+                                <SelectItem value="turnstile">Torniquete</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="weather"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Clima</FormLabel>
+                            <Select value={field.value} onValueChange={field.onChange}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Selecciona clima" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="sunny">Soleado</SelectItem>
+                                <SelectItem value="cloudy">Nublado</SelectItem>
+                                <SelectItem value="rainy">Lluvioso</SelectItem>
+                                <SelectItem value="other">Otro</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="dayType"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Tipo de Día</FormLabel>
+                            <Select value={field.value} onValueChange={field.onChange}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Selecciona tipo" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="weekday">Día de semana</SelectItem>
+                                <SelectItem value="weekend">Fin de semana</SelectItem>
+                                <SelectItem value="holiday">Día festivo</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <FormField
+                      control={form.control}
+                      name="notes"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Notas (Opcional)</FormLabel>
+                          <FormControl>
+                            <Textarea placeholder="Observaciones adicionales..." {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <div className="flex justify-end space-x-2 pt-4">
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        onClick={() => setIsCreateDialogOpen(false)}
+                        disabled={createVisitorCount.isPending}
+                      >
+                        Cancelar
+                      </Button>
+                      <Button 
+                        type="submit" 
+                        className="bg-[#00a587] hover:bg-[#067f5f]"
+                        disabled={createVisitorCount.isPending}
+                      >
+                        {createVisitorCount.isPending ? 'Guardando...' : 'Guardar Registro'}
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
+              </DialogContent>
+            </Dialog>
+
+            {/* Filtros de fecha rápidos */}
+            <div className="flex items-center gap-2">
+              <Label htmlFor="date-range">Período:</Label>
+              <Select value={quickDateRange} onValueChange={setQuickDateRange}>
+                <SelectTrigger className="w-40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="week">Última semana</SelectItem>
+                  <SelectItem value="month">Último mes</SelectItem>
+                  <SelectItem value="quarter">Último trimestre</SelectItem>
+                  <SelectItem value="year">Último año</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
 
