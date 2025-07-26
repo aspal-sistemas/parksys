@@ -173,7 +173,7 @@ export default function VisitorCountPage() {
 
   // Query adicional para obtener estadísticas globales completas (no paginadas)
   const { data: globalStats } = useQuery({
-    queryKey: ['/api/visitor-counts/dashboard', reportPark, reportPeriod, dateFilter, methodFilter],
+    queryKey: ['/api/visitor-counts/global', reportPark, reportPeriod, dateFilter, methodFilter],
     queryFn: async () => {
       const params = new URLSearchParams();
       
@@ -181,7 +181,7 @@ export default function VisitorCountPage() {
       const parkFilter = reportPark !== 'all' ? reportPark : selectedPark;
       if (parkFilter && parkFilter !== 'all') params.set('parkId', parkFilter);
       
-      if (methodFilter) params.set('method', methodFilter);
+      if (methodFilter && methodFilter !== 'all') params.set('method', methodFilter);
       
       // Aplicar filtros de fecha con la misma lógica
       if (reportPeriod !== 'all') {
@@ -212,10 +212,11 @@ export default function VisitorCountPage() {
       
       params.set('limit', '10000'); // Límite alto para obtener todos los datos
       
-      const response = await fetch(`/api/visitor-counts/dashboard?${params}`);
+      console.log(`🌐 [GLOBAL STATS] Consultando con parámetros:`, Object.fromEntries(params.entries()));
+      
+      const response = await fetch(`/api/visitor-counts?${params}`);
       return response.json();
     },
-    suspense: false,
     retry: 1
   });
 
@@ -806,21 +807,25 @@ export default function VisitorCountPage() {
 
   // Calcular datos para reportes usando estadísticas globales completas
   const reportData = useMemo(() => {
-    if (!globalStats?.metrics) return null;
+    if (!globalStats?.data || globalStats.data.length === 0) {
+      console.log(`🌐 [REPORT DATA] No hay datos globales disponibles`);
+      return null;
+    }
 
-    // Usar métricas globales del dashboard endpoint
-    const metrics = globalStats.metrics;
-    const allRecords = globalStats.records || [];
+    // Usar todos los registros obtenidos (sin paginación)
+    const allRecords = (globalStats as any).data;
 
-    console.log(`🌐 [REPORT DATA] Usando estadísticas globales: ${Number(metrics.totalVisitors || 0).toLocaleString()} visitantes totales`);
+    console.log(`🌐 [REPORT DATA] Usando ${allRecords.length} registros globales para estadísticas`);
 
-    // Estadísticas generales desde las métricas globales
-    const totalVisitors = Number(metrics.totalVisitors || 0);
-    const totalAdults = Number(metrics.totalAdults || 0);
-    const totalChildren = Number(metrics.totalChildren || 0);
-    const totalSeniors = Number(metrics.totalSeniors || 0);
-    const totalPets = Number(metrics.totalPets || 0);
-    const avgDaily = Number(metrics.avgDailyVisitors || 0);
+    // Calcular estadísticas generales desde todos los registros
+    const totalVisitors = allRecords.reduce((sum: number, count: any) => sum + (count.totalVisitors || 0), 0);
+    const totalAdults = allRecords.reduce((sum: number, count: any) => sum + (count.adults || 0), 0);
+    const totalChildren = allRecords.reduce((sum: number, count: any) => sum + (count.children || 0), 0);
+    const totalSeniors = allRecords.reduce((sum: number, count: any) => sum + (count.seniors || 0), 0);
+    const totalPets = allRecords.reduce((sum: number, count: any) => sum + (count.pets || 0), 0);
+    const avgDaily = allRecords.length > 0 ? Math.round(totalVisitors / allRecords.length) : 0;
+
+    console.log(`🌐 [REPORT DATA] Estadísticas calculadas: ${totalVisitors.toLocaleString()} visitantes totales`);
 
     // Datos demográficos para gráfico de pie (filtrar valores cero para evitar encimamiento)
     const demographicData = [
@@ -830,12 +835,21 @@ export default function VisitorCountPage() {
       { name: 'Mascotas', value: totalPets, color: '#00a587' }
     ].filter(item => item.value > 0); // Solo mostrar segmentos con datos
 
-    // Datos por parque usando parkSummaries globales
-    const parkData = globalStats.parkSummaries?.map((summary: any) => ({
-      parkName: summary.parkName || 'Sin nombre',
-      visitors: Number(summary.totalVisitors || 0),
-      records: Number(summary.totalRecords || 0)
-    })) || [];
+    // Datos por parque agrupando desde todos los registros
+    const parkData = allRecords.reduce((acc: any[], count: any) => {
+      const existing = acc.find(item => item.parkName === count.parkName);
+      if (existing) {
+        existing.visitors += count.totalVisitors;
+        existing.records += 1;
+      } else {
+        acc.push({
+          parkName: count.parkName,
+          visitors: count.totalVisitors,
+          records: 1
+        });
+      }
+      return acc;
+    }, [] as any[]);
 
     // Datos por método de conteo usando todos los registros
     const methodData = allRecords.reduce((acc, count) => {
@@ -892,8 +906,8 @@ export default function VisitorCountPage() {
         totalSeniors,
         totalPets,
         avgDaily,
-        totalRecords: Number(metrics.totalRecords || 0),
-        uniqueParks: Number(metrics.uniqueParks || 0)
+        totalRecords: allRecords.length,
+        uniqueParks: Array.from(new Set(allRecords.map(c => c.parkName))).length
       },
       charts: {
         demographic: demographicData,
