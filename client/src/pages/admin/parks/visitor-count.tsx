@@ -298,6 +298,8 @@ export default function VisitorCountPage() {
       params.set('limit', recordsPerPage.toString());
       params.set('offset', ((detailCurrentPage - 1) * recordsPerPage).toString());
       
+      console.log(`🔍 [DETAIL QUERY] Página ${detailCurrentPage}, offset: ${(detailCurrentPage - 1) * recordsPerPage}, params:`, Object.fromEntries(params.entries()));
+      
       const response = await fetch(`/api/visitor-counts?${params}`);
       return response.json();
     },
@@ -1692,7 +1694,7 @@ export default function VisitorCountPage() {
                                       <span>{getWeatherLabel(record.weather)}</span>
                                     </div>
                                     <Badge variant="secondary" className="text-xs">
-                                      {getDayTypeLabel(record.day_type)}
+                                      {getDayTypeLabel(record.dayType)}
                                     </Badge>
                                   </div>
 
@@ -1736,7 +1738,7 @@ export default function VisitorCountPage() {
                                       </td>
                                       <td className="p-3 text-sm">
                                         <Badge variant="outline" className="text-xs">
-                                          {getMethodLabel(record.counting_method)}
+                                          {getMethodLabel(record.countingMethod)}
                                         </Badge>
                                       </td>
                                       <td className="p-3 text-sm text-center font-medium">{record.adults}</td>
@@ -1754,7 +1756,7 @@ export default function VisitorCountPage() {
                                       </td>
                                       <td className="p-3 text-sm">
                                         <Badge variant="secondary" className="text-xs">
-                                          {getDayTypeLabel(record.day_type)}
+                                          {getDayTypeLabel(record.dayType)}
                                         </Badge>
                                       </td>
                                     </tr>
@@ -1778,7 +1780,11 @@ export default function VisitorCountPage() {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  onClick={() => setDetailCurrentPage(Math.max(1, detailCurrentPage - 1))}
+                                  onClick={() => {
+                                    const newPage = Math.max(1, detailCurrentPage - 1);
+                                    console.log(`🔍 [PAGINATION] Página anterior: ${detailCurrentPage} → ${newPage}`);
+                                    setDetailCurrentPage(newPage);
+                                  }}
                                   disabled={detailCurrentPage <= 1}
                                 >
                                   <ChevronLeft className="h-4 w-4" />
@@ -1792,7 +1798,10 @@ export default function VisitorCountPage() {
                                         key={pageNum}
                                         variant={detailCurrentPage === pageNum ? "default" : "outline"}
                                         size="sm"
-                                        onClick={() => setDetailCurrentPage(pageNum)}
+                                        onClick={() => {
+                                          console.log(`🔍 [PAGINATION] Página seleccionada: ${detailCurrentPage} → ${pageNum}`);
+                                          setDetailCurrentPage(pageNum);
+                                        }}
                                         className="w-8 h-8 p-0"
                                       >
                                         {pageNum}
