@@ -171,6 +171,54 @@ export default function VisitorCountPage() {
     },
   });
 
+  // Query adicional para obtener estadísticas globales completas (no paginadas)
+  const { data: globalStats } = useQuery({
+    queryKey: ['/api/visitor-counts/dashboard', reportPark, reportPeriod, dateFilter, methodFilter],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      
+      // Usar los mismos filtros que la query principal
+      const parkFilter = reportPark !== 'all' ? reportPark : selectedPark;
+      if (parkFilter && parkFilter !== 'all') params.set('parkId', parkFilter);
+      
+      if (methodFilter) params.set('method', methodFilter);
+      
+      // Aplicar filtros de fecha con la misma lógica
+      if (reportPeriod !== 'all') {
+        const now = new Date();
+        let startDate: Date;
+        
+        switch (reportPeriod) {
+          case 'week':
+            startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            break;
+          case 'month':
+            startDate = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+            break;
+          case 'quarter':
+            startDate = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
+            break;
+          case 'year':
+            startDate = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+            break;
+          default:
+            startDate = new Date(0);
+        }
+        
+        params.set('startDate', startDate.toISOString().split('T')[0]);
+      } else if (dateFilter) {
+        params.set('startDate', dateFilter);
+      }
+      
+      params.set('limit', '10000'); // Límite alto para obtener todos los datos
+      
+      const response = await fetch(`/api/visitor-counts/dashboard?${params}`);
+      return response.json();
+    },
+    suspense: false,
+    retry: 1
+  });
+
   // Datos filtrados para visualización
   const filteredData = useMemo(() => {
     if (!visitorCounts?.data) return [];
@@ -756,22 +804,23 @@ export default function VisitorCountPage() {
     reader.readAsText(file);
   };
 
-  // Calcular datos para reportes usando datos ya filtrados
+  // Calcular datos para reportes usando estadísticas globales completas
   const reportData = useMemo(() => {
-    if (!visitorCounts?.data || visitorCounts.data.length === 0) return null;
+    if (!globalStats?.metrics) return null;
 
-    // Los datos ya vienen filtrados de la query principal
-    const filteredData = visitorCounts.data;
+    // Usar métricas globales del dashboard endpoint
+    const metrics = globalStats.metrics;
+    const allRecords = globalStats.records || [];
 
-    console.log(`🌐 [REPORT DATA] Usando datos filtrados: ${filteredData.length} registros`);
+    console.log(`🌐 [REPORT DATA] Usando estadísticas globales: ${Number(metrics.totalVisitors || 0).toLocaleString()} visitantes totales`);
 
-    // Estadísticas generales
-    const totalVisitors = filteredData.reduce((sum, count) => sum + count.totalVisitors, 0);
-    const totalAdults = filteredData.reduce((sum, count) => sum + count.adults, 0);
-    const totalChildren = filteredData.reduce((sum, count) => sum + count.children, 0);
-    const totalSeniors = filteredData.reduce((sum, count) => sum + count.seniors, 0);
-    const totalPets = filteredData.reduce((sum, count) => sum + count.pets, 0);
-    const avgDaily = filteredData.length > 0 ? Math.round(totalVisitors / filteredData.length) : 0;
+    // Estadísticas generales desde las métricas globales
+    const totalVisitors = Number(metrics.totalVisitors || 0);
+    const totalAdults = Number(metrics.totalAdults || 0);
+    const totalChildren = Number(metrics.totalChildren || 0);
+    const totalSeniors = Number(metrics.totalSeniors || 0);
+    const totalPets = Number(metrics.totalPets || 0);
+    const avgDaily = Number(metrics.avgDailyVisitors || 0);
 
     // Datos demográficos para gráfico de pie (filtrar valores cero para evitar encimamiento)
     const demographicData = [
@@ -781,24 +830,15 @@ export default function VisitorCountPage() {
       { name: 'Mascotas', value: totalPets, color: '#00a587' }
     ].filter(item => item.value > 0); // Solo mostrar segmentos con datos
 
-    // Datos por parque para gráfico de barras
-    const parkData = filteredData.reduce((acc, count) => {
-      const existing = acc.find(item => item.parkName === count.parkName);
-      if (existing) {
-        existing.visitors += count.totalVisitors;
-        existing.records += 1;
-      } else {
-        acc.push({
-          parkName: count.parkName,
-          visitors: count.totalVisitors,
-          records: 1
-        });
-      }
-      return acc;
-    }, [] as any[]);
+    // Datos por parque usando parkSummaries globales
+    const parkData = globalStats.parkSummaries?.map((summary: any) => ({
+      parkName: summary.parkName || 'Sin nombre',
+      visitors: Number(summary.totalVisitors || 0),
+      records: Number(summary.totalRecords || 0)
+    })) || [];
 
-    // Datos por método de conteo
-    const methodData = filteredData.reduce((acc, count) => {
+    // Datos por método de conteo usando todos los registros
+    const methodData = allRecords.reduce((acc, count) => {
       const methodKey = count.countingMethod;
       const method = methodLabels[methodKey as keyof typeof methodLabels] || methodKey || 'No especificado';
       const existing = acc.find(item => item.method === method);
@@ -815,8 +855,8 @@ export default function VisitorCountPage() {
       return acc;
     }, [] as any[]);
 
-    // Datos por clima
-    const weatherData = filteredData.reduce((acc, count) => {
+    // Datos por clima usando todos los registros
+    const weatherData = allRecords.reduce((acc, count) => {
       const weatherKey = count.weather || 'other';
       const weather = weatherLabels[weatherKey as keyof typeof weatherLabels] || 'No especificado';
       const existing = acc.find(item => item.weather === weather);
@@ -833,8 +873,8 @@ export default function VisitorCountPage() {
       return acc;
     }, [] as any[]);
 
-    // Tendencia temporal (últimos 7 días)
-    const last7Days = filteredData
+    // Tendencia temporal (últimos 7 días) usando todos los registros
+    const last7Days = allRecords
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
       .slice(-7)
       .map(count => ({
@@ -852,8 +892,8 @@ export default function VisitorCountPage() {
         totalSeniors,
         totalPets,
         avgDaily,
-        totalRecords: filteredData.length,
-        uniqueParks: Array.from(new Set(filteredData.map(c => c.parkName))).length
+        totalRecords: Number(metrics.totalRecords || 0),
+        uniqueParks: Number(metrics.uniqueParks || 0)
       },
       charts: {
         demographic: demographicData,
