@@ -89,6 +89,7 @@ export default function VisitorCountPage() {
   
   // Estados para paginación y vista
   const [currentPage, setCurrentPage] = useState(1);
+  const [detailCurrentPage, setDetailCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFilter, setDateFilter] = useState('');
@@ -285,7 +286,7 @@ export default function VisitorCountPage() {
     data: parkDetailData, 
     isLoading: parkDetailLoading 
   } = useQuery({
-    queryKey: ['/api/visitor-counts', 'park-detail', selectedParkForDetail, quickDateRange, customStartDate, customEndDate, currentPage],
+    queryKey: ['/api/visitor-counts', 'park-detail', selectedParkForDetail, quickDateRange, customStartDate, customEndDate, detailCurrentPage],
     queryFn: async () => {
       if (!selectedParkForDetail) return null;
       
@@ -295,7 +296,7 @@ export default function VisitorCountPage() {
       params.set('startDate', startDate);
       params.set('endDate', endDate);
       params.set('limit', recordsPerPage.toString());
-      params.set('offset', ((currentPage - 1) * recordsPerPage).toString());
+      params.set('offset', ((detailCurrentPage - 1) * recordsPerPage).toString());
       
       const response = await fetch(`/api/visitor-counts?${params}`);
       return response.json();
@@ -1231,17 +1232,20 @@ export default function VisitorCountPage() {
     createVisitorCount.mutate(formData);
   };
 
-  const getMethodLabel = (method: string) => {
+  const getMethodLabel = (method: string | undefined) => {
+    if (!method) return 'No especificado';
     const methods = {
       estimation: "Estimación",
       manual_counter: "Contador manual",
       event_based: "Basado en eventos",
-      entrance_control: "Control de acceso"
+      entrance_control: "Control de acceso",
+      counting: "Conteo manual"
     };
     return methods[method as keyof typeof methods] || method;
   };
 
-  const getDayTypeLabel = (dayType: string) => {
+  const getDayTypeLabel = (dayType: string | undefined) => {
+    if (!dayType) return 'No especificado';
     const types = {
       weekday: "Día laborable",
       weekend: "Fin de semana",
@@ -1441,6 +1445,7 @@ export default function VisitorCountPage() {
                     className="hover:shadow-lg transition-all duration-200 cursor-pointer hover:border-emerald-200" 
                     onClick={() => {
                       setSelectedParkForDetail(parkSummary.parkId);
+                      setDetailCurrentPage(1); // Resetear paginación al cambiar de parque
                       setActiveTab('detalle');
                     }}
                   >
@@ -1767,14 +1772,14 @@ export default function VisitorCountPage() {
                           <CardContent className="p-4">
                             <div className="flex items-center justify-between">
                               <div className="text-sm text-gray-600">
-                                Mostrando {((currentPage - 1) * recordsPerPage) + 1} a {Math.min(currentPage * recordsPerPage, parkDetailData.pagination.total)} de {parkDetailData.pagination.total} registros
+                                Mostrando {((detailCurrentPage - 1) * recordsPerPage) + 1} a {Math.min(detailCurrentPage * recordsPerPage, parkDetailData.pagination.total)} de {parkDetailData.pagination.total} registros
                               </div>
                               <div className="flex items-center gap-2">
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                                  disabled={currentPage <= 1}
+                                  onClick={() => setDetailCurrentPage(Math.max(1, detailCurrentPage - 1))}
+                                  disabled={detailCurrentPage <= 1}
                                 >
                                   <ChevronLeft className="h-4 w-4" />
                                 </Button>
@@ -1785,9 +1790,9 @@ export default function VisitorCountPage() {
                                     return (
                                       <Button
                                         key={pageNum}
-                                        variant={currentPage === pageNum ? "default" : "outline"}
+                                        variant={detailCurrentPage === pageNum ? "default" : "outline"}
                                         size="sm"
-                                        onClick={() => setCurrentPage(pageNum)}
+                                        onClick={() => setDetailCurrentPage(pageNum)}
                                         className="w-8 h-8 p-0"
                                       >
                                         {pageNum}
@@ -1799,8 +1804,8 @@ export default function VisitorCountPage() {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  onClick={() => setCurrentPage(Math.min(parkDetailData.pagination.totalPages, currentPage + 1))}
-                                  disabled={currentPage >= parkDetailData.pagination.totalPages}
+                                  onClick={() => setDetailCurrentPage(Math.min(parkDetailData.pagination.totalPages, detailCurrentPage + 1))}
+                                  disabled={detailCurrentPage >= parkDetailData.pagination.totalPages}
                                 >
                                   <ChevronRight className="h-4 w-4" />
                                 </Button>
