@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AdminLayout } from "@/components/AdminLayout";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar, Users, Plus, FileText, TrendingUp, MapPin, Clock, Sun, Cloud, CloudRain, BarChart3, Download, Filter, PieChart, Activity, Grid, List, Upload, ChevronLeft, ChevronRight } from "lucide-react";
+import { Calendar, Users, Plus, FileText, TrendingUp, MapPin, Clock, Sun, Cloud, CloudRain, BarChart3, Download, Filter, PieChart, Activity, Grid, List, Upload, ChevronLeft, ChevronRight, ArrowLeft, Grid3X3 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -291,6 +291,34 @@ export default function VisitorCountPage() {
     },
     retry: 1
   });
+
+  // Query para detalles del parque seleccionado
+  const { 
+    data: parkDetailData, 
+    isLoading: parkDetailLoading 
+  } = useQuery({
+    queryKey: ['/api/visitor-counts', 'park-detail', selectedParkForDetail, quickDateRange, customStartDate, customEndDate, currentPage],
+    queryFn: async () => {
+      if (!selectedParkForDetail) return null;
+      
+      const { startDate, endDate } = getDateRangeForQuickFilter();
+      const params = new URLSearchParams();
+      params.set('parkId', selectedParkForDetail.toString());
+      params.set('startDate', startDate);
+      params.set('endDate', endDate);
+      params.set('limit', recordsPerPage.toString());
+      params.set('offset', ((currentPage - 1) * recordsPerPage).toString());
+      
+      const response = await fetch(`/api/visitor-counts?${params}`);
+      return response.json();
+    },
+    enabled: !!selectedParkForDetail,
+    retry: 1
+  });
+
+  // Variables derivadas para resumen por parques
+  const parkSummaries = parkSummaryData;
+  const parkSummariesLoading = false; // Ya que no tenemos query loading separado
 
   // Datos filtrados para visualización
   const filteredData = useMemo(() => {
@@ -1534,36 +1562,269 @@ export default function VisitorCountPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-sm text-gray-600">
-                      Vista detallada de los registros diarios para el parque seleccionado en el período actual
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm text-gray-600">
+                        Vista detallada de los registros diarios para el parque seleccionado en el período actual
+                      </div>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          setSelectedParkForDetail(null);
+                          setActiveTab('resumen');
+                        }}
+                      >
+                        <ArrowLeft className="h-4 w-4 mr-2" />
+                        Volver al Resumen
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
 
-                {/* Lista detallada de registros diarios */}
-                <div className="space-y-4">
-                  {/* Aquí se mostrará la vista detallada de registros diarios del parque específico */}
-                  <Card>
-                    <CardContent className="p-6">
-                      <div className="text-center py-8 text-gray-500">
-                        <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                        <p>Vista detallada del parque en desarrollo</p>
-                        <p className="text-sm mt-2">
-                          Aquí se mostrarán los registros diarios específicos del parque seleccionado
-                        </p>
-                        <Button 
-                          className="mt-4" 
-                          variant="outline" 
-                          onClick={() => {
-                            setSelectedParkForDetail(null);
-                            setActiveTab('resumen');
-                          }}
+                {/* Controles de vista para detalle */}
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-gray-500" />
+                          <span className="text-sm font-medium">Período:</span>
+                          <span className="text-sm text-gray-600">
+                            {(() => {
+                              const { startDate, endDate } = getDateRangeForQuickFilter();
+                              return `${startDate} hasta ${endDate}`;
+                            })()}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant={viewMode === 'grid' ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setViewMode('grid')}
                         >
-                          Volver al Resumen
+                          <Grid3X3 className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant={viewMode === 'list' ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setViewMode('list')}
+                        >
+                          <List className="h-4 w-4" />
                         </Button>
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Registros detallados del parque */}
+                <div className="space-y-4">
+                  {parkDetailLoading ? (
+                    <Card>
+                      <CardContent className="text-center py-8">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto"></div>
+                        <p className="mt-2 text-gray-600">Cargando registros del parque...</p>
+                      </CardContent>
+                    </Card>
+                  ) : parkDetailData?.data?.length === 0 ? (
+                    <Card>
+                      <CardContent className="text-center py-8">
+                        <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-600">No hay registros para este parque en el período seleccionado</p>
+                        <p className="text-sm text-gray-500 mt-2">
+                          Intenta cambiar el período de tiempo o registra nuevos conteos
+                        </p>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <>
+                      {/* Vista Grid */}
+                      {viewMode === 'grid' && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {parkDetailData?.data?.map((record: any) => (
+                            <Card key={record.id} className="hover:shadow-md transition-shadow">
+                              <CardContent className="p-4">
+                                <div className="space-y-3">
+                                  {/* Fecha y método */}
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                      <Calendar className="h-4 w-4 text-emerald-600" />
+                                      <span className="font-medium text-sm">
+                                        {format(new Date(record.date), 'dd/MM/yyyy', { locale: es })}
+                                      </span>
+                                    </div>
+                                    <Badge variant="outline" className="text-xs">
+                                      {getMethodLabel(record.counting_method)}
+                                    </Badge>
+                                  </div>
+
+                                  {/* Visitantes */}
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <div className="text-center p-2 bg-blue-50 rounded">
+                                      <div className="text-lg font-semibold text-blue-700">
+                                        {record.adults}
+                                      </div>
+                                      <div className="text-xs text-blue-600">Adultos</div>
+                                    </div>
+                                    <div className="text-center p-2 bg-green-50 rounded">
+                                      <div className="text-lg font-semibold text-green-700">
+                                        {record.children}
+                                      </div>
+                                      <div className="text-xs text-green-600">Niños</div>
+                                    </div>
+                                    <div className="text-center p-2 bg-amber-50 rounded">
+                                      <div className="text-lg font-semibold text-amber-700">
+                                        {record.seniors}
+                                      </div>
+                                      <div className="text-xs text-amber-600">Mayores</div>
+                                    </div>
+                                    <div className="text-center p-2 bg-pink-50 rounded">
+                                      <div className="text-lg font-semibold text-pink-700">
+                                        {record.pets}
+                                      </div>
+                                      <div className="text-xs text-pink-600">Mascotas</div>
+                                    </div>
+                                  </div>
+
+                                  {/* Total */}
+                                  <div className="text-center p-2 bg-emerald-50 rounded border border-emerald-200">
+                                    <div className="text-xl font-bold text-emerald-700">
+                                      {(record.adults + record.children + record.seniors).toLocaleString()}
+                                    </div>
+                                    <div className="text-xs text-emerald-600">Total Visitantes</div>
+                                  </div>
+
+                                  {/* Información adicional */}
+                                  <div className="flex items-center justify-between text-xs text-gray-500">
+                                    <div className="flex items-center gap-1">
+                                      {getWeatherIcon(record.weather)}
+                                      <span>{getWeatherLabel(record.weather)}</span>
+                                    </div>
+                                    <Badge variant="secondary" className="text-xs">
+                                      {getDayTypeLabel(record.day_type)}
+                                    </Badge>
+                                  </div>
+
+                                  {/* Notas si existen */}
+                                  {record.notes && (
+                                    <div className="text-xs text-gray-600 bg-gray-50 p-2 rounded">
+                                      <span className="font-medium">Notas:</span> {record.notes}
+                                    </div>
+                                  )}
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Vista Lista */}
+                      {viewMode === 'list' && (
+                        <Card>
+                          <CardContent className="p-0">
+                            <div className="overflow-x-auto">
+                              <table className="w-full">
+                                <thead className="bg-gray-50 border-b">
+                                  <tr>
+                                    <th className="text-left p-3 text-sm font-medium text-gray-700">Fecha</th>
+                                    <th className="text-left p-3 text-sm font-medium text-gray-700">Método</th>
+                                    <th className="text-center p-3 text-sm font-medium text-gray-700">Adultos</th>
+                                    <th className="text-center p-3 text-sm font-medium text-gray-700">Niños</th>
+                                    <th className="text-center p-3 text-sm font-medium text-gray-700">Mayores</th>
+                                    <th className="text-center p-3 text-sm font-medium text-gray-700">Mascotas</th>
+                                    <th className="text-center p-3 text-sm font-medium text-gray-700">Total</th>
+                                    <th className="text-left p-3 text-sm font-medium text-gray-700">Clima</th>
+                                    <th className="text-left p-3 text-sm font-medium text-gray-700">Tipo Día</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {parkDetailData?.data?.map((record: any, index: number) => (
+                                    <tr key={record.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                                      <td className="p-3 text-sm">
+                                        {format(new Date(record.date), 'dd/MM/yyyy', { locale: es })}
+                                      </td>
+                                      <td className="p-3 text-sm">
+                                        <Badge variant="outline" className="text-xs">
+                                          {getMethodLabel(record.counting_method)}
+                                        </Badge>
+                                      </td>
+                                      <td className="p-3 text-sm text-center font-medium">{record.adults}</td>
+                                      <td className="p-3 text-sm text-center font-medium">{record.children}</td>
+                                      <td className="p-3 text-sm text-center font-medium">{record.seniors}</td>
+                                      <td className="p-3 text-sm text-center font-medium">{record.pets}</td>
+                                      <td className="p-3 text-sm text-center font-bold text-emerald-700">
+                                        {(record.adults + record.children + record.seniors).toLocaleString()}
+                                      </td>
+                                      <td className="p-3 text-sm">
+                                        <div className="flex items-center gap-1">
+                                          {getWeatherIcon(record.weather)}
+                                          <span>{getWeatherLabel(record.weather)}</span>
+                                        </div>
+                                      </td>
+                                      <td className="p-3 text-sm">
+                                        <Badge variant="secondary" className="text-xs">
+                                          {getDayTypeLabel(record.day_type)}
+                                        </Badge>
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
+
+                      {/* Paginación */}
+                      {parkDetailData?.pagination && parkDetailData.pagination.totalPages > 1 && (
+                        <Card>
+                          <CardContent className="p-4">
+                            <div className="flex items-center justify-between">
+                              <div className="text-sm text-gray-600">
+                                Mostrando {((currentPage - 1) * recordsPerPage) + 1} a {Math.min(currentPage * recordsPerPage, parkDetailData.pagination.total)} de {parkDetailData.pagination.total} registros
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                                  disabled={currentPage <= 1}
+                                >
+                                  <ChevronLeft className="h-4 w-4" />
+                                </Button>
+                                
+                                <div className="flex items-center gap-1">
+                                  {Array.from({ length: Math.min(5, parkDetailData.pagination.totalPages) }, (_, i) => {
+                                    const pageNum = i + 1;
+                                    return (
+                                      <Button
+                                        key={pageNum}
+                                        variant={currentPage === pageNum ? "default" : "outline"}
+                                        size="sm"
+                                        onClick={() => setCurrentPage(pageNum)}
+                                        className="w-8 h-8 p-0"
+                                      >
+                                        {pageNum}
+                                      </Button>
+                                    );
+                                  })}
+                                </div>
+
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => setCurrentPage(Math.min(parkDetailData.pagination.totalPages, currentPage + 1))}
+                                  disabled={currentPage >= parkDetailData.pagination.totalPages}
+                                >
+                                  <ChevronRight className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
+                    </>
+                  )}
                 </div>
               </div>
             ) : (
