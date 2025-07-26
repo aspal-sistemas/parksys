@@ -326,11 +326,7 @@ export default function VisitorCountPage() {
                           </div>
                           <div className="pt-2 border-t">
                             <p className="text-xs text-gray-500">
-                              Última actualización: {
-                                parkSummary.lastUpdate 
-                                  ? format(new Date(parkSummary.lastUpdate), 'dd/MM/yyyy', { locale: es })
-                                  : 'No disponible'
-                              }
+                              Última actualización: {format(new Date(parkSummary.lastUpdate), 'dd/MM/yyyy', { locale: es })}
                             </p>
                           </div>
                         </div>
