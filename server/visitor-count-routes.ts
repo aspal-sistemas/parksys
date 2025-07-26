@@ -446,4 +446,60 @@ router.get('/visitor-counts/dashboard', async (req, res) => {
   }
 });
 
+// Endpoint para resumen por parques (nueva funcionalidad)
+router.get('/visitor-counts/park-summary', async (req, res) => {
+  try {
+    const { startDate, endDate, groupBy } = req.query;
+    
+    console.log(`🏞️ [PARK SUMMARY] Parámetros:`, { startDate, endDate, groupBy });
+    
+    if (!startDate || !endDate) {
+      return res.status(400).json({ error: 'Se requieren startDate y endDate' });
+    }
+
+    // Consultar datos agrupados por parque
+    const parkSummaries = await db
+      .select({
+        parkId: visitorCounts.parkId,
+        parkName: parks.name,
+        totalVisitors: sql<number>`SUM(${visitorCounts.adults} + ${visitorCounts.children} + ${visitorCounts.seniors})`,
+        totalRecords: sql<number>`COUNT(*)`,
+        avgDaily: sql<number>`AVG(${visitorCounts.adults} + ${visitorCounts.children} + ${visitorCounts.seniors})`,
+        maxDaily: sql<number>`MAX(${visitorCounts.adults} + ${visitorCounts.children} + ${visitorCounts.seniors})`,
+        minDaily: sql<number>`MIN(${visitorCounts.adults} + ${visitorCounts.children} + ${visitorCounts.seniors})`,
+        lastRecord: sql<string>`MAX(${visitorCounts.date})`,
+        totalAdults: sql<number>`SUM(${visitorCounts.adults})`,
+        totalChildren: sql<number>`SUM(${visitorCounts.children})`,
+        totalSeniors: sql<number>`SUM(${visitorCounts.seniors})`,
+        totalPets: sql<number>`SUM(${visitorCounts.pets})`
+      })
+      .from(visitorCounts)
+      .leftJoin(parks, eq(visitorCounts.parkId, parks.id))
+      .where(
+        and(
+          gte(visitorCounts.date, startDate as string),
+          lte(visitorCounts.date, endDate as string)
+        )
+      )
+      .groupBy(visitorCounts.parkId, parks.name)
+      .orderBy(sql<number>`SUM(${visitorCounts.adults} + ${visitorCounts.children} + ${visitorCounts.seniors}) DESC`);
+
+    console.log(`🏞️ [PARK SUMMARY] Encontrados ${parkSummaries.length} parques con datos`);
+
+    res.json({
+      data: parkSummaries,
+      period: { startDate, endDate },
+      summary: {
+        totalParks: parkSummaries.length,
+        grandTotal: parkSummaries.reduce((sum, park) => sum + (park.totalVisitors || 0), 0),
+        avgPerPark: parkSummaries.length > 0 ? 
+          Math.round(parkSummaries.reduce((sum, park) => sum + (park.totalVisitors || 0), 0) / parkSummaries.length) : 0
+      }
+    });
+  } catch (error) {
+    console.error('❌ Error obteniendo resumen por parques:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
 export default router;

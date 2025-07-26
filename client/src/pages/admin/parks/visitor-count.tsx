@@ -95,6 +95,13 @@ export default function VisitorCountPage() {
   const [methodFilter, setMethodFilter] = useState('all');
   const [showImportDialog, setShowImportDialog] = useState(false);
   const recordsPerPage = 10;
+  
+  // Estados para la nueva navegación jerárquica
+  const [selectedParkForDetail, setSelectedParkForDetail] = useState<number | null>(null);
+  const [quickDateRange, setQuickDateRange] = useState<'week' | 'month' | 'quarter' | 'custom'>('month');
+  const [customStartDate, setCustomStartDate] = useState<string>('');
+  const [customEndDate, setCustomEndDate] = useState<string>('');
+  const [activeTab, setActiveTab] = useState('resumen');
   const [formData, setFormData] = useState<VisitorCountForm>({
     parkId: 0,
     date: new Date().toISOString().split('T')[0],
@@ -111,9 +118,58 @@ export default function VisitorCountPage() {
     notes: ""
   });
 
+  // Función para obtener el rango de fechas según el filtro rápido
+  const getDateRangeForQuickFilter = () => {
+    const today = new Date();
+    let startDate: Date;
+    let endDate: Date = today;
+
+    switch (quickDateRange) {
+      case 'week':
+        startDate = new Date(today);
+        startDate.setDate(today.getDate() - 7);
+        break;
+      case 'month':
+        startDate = new Date(today);
+        startDate.setMonth(today.getMonth() - 1);
+        break;
+      case 'quarter':
+        startDate = new Date(today);
+        startDate.setMonth(today.getMonth() - 3);
+        break;
+      case 'custom':
+        return {
+          startDate: customStartDate || today.toISOString().split('T')[0],
+          endDate: customEndDate || today.toISOString().split('T')[0]
+        };
+      default:
+        startDate = new Date(today);
+        startDate.setMonth(today.getMonth() - 1);
+    }
+
+    return {
+      startDate: startDate.toISOString().split('T')[0],
+      endDate: endDate.toISOString().split('T')[0]
+    };
+  };
+
   // Queries  
   const { data: parksResponse } = useQuery({
     queryKey: ['/api/parks'],
+    retry: 1
+  });
+
+  // Query para obtener el resumen por parques
+  const { data: parkSummaries, isLoading: parkSummariesLoading } = useQuery({
+    queryKey: ['/api/visitor-counts/park-summary', quickDateRange, customStartDate, customEndDate],
+    queryFn: async () => {
+      const { startDate, endDate } = getDateRangeForQuickFilter();
+      const response = await fetch(`/api/visitor-counts/park-summary?startDate=${startDate}&endDate=${endDate}`);
+      if (!response.ok) {
+        throw new Error('Error al obtener resumen por parques');
+      }
+      return response.json();
+    },
     retry: 1
   });
   
@@ -215,6 +271,22 @@ export default function VisitorCountPage() {
       console.log(`🌐 [GLOBAL STATS] Consultando con parámetros:`, Object.fromEntries(params.entries()));
       
       const response = await fetch(`/api/visitor-counts?${params}`);
+      return response.json();
+    },
+    retry: 1
+  });
+
+  // Query para resumen por parques (nueva funcionalidad)
+  const { data: parkSummaryData } = useQuery({
+    queryKey: ['/api/visitor-counts/park-summary', quickDateRange, customStartDate, customEndDate],
+    queryFn: async () => {
+      const { startDate, endDate } = getDateRangeForQuickFilter();
+      const params = new URLSearchParams();
+      params.set('startDate', startDate);
+      params.set('endDate', endDate);
+      params.set('groupBy', 'park');
+      
+      const response = await fetch(`/api/visitor-counts/park-summary?${params}`);
       return response.json();
     },
     retry: 1
@@ -1178,6 +1250,41 @@ export default function VisitorCountPage() {
     return weatherLabels[weather as keyof typeof weatherLabels] || weather;
   };
 
+  // Función para calcular fechas basado en el rango rápido seleccionado
+  const getDateRangeForQuickFilter = () => {
+    const now = new Date();
+    let startDate: Date;
+    let endDate: Date = new Date();
+
+    switch (quickDateRange) {
+      case 'week':
+        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        break;
+      case 'month':
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        break;
+      case 'quarter':
+        const quarterStartMonth = Math.floor(now.getMonth() / 3) * 3;
+        startDate = new Date(now.getFullYear(), quarterStartMonth, 1);
+        break;
+      case 'custom':
+        if (customStartDate && customEndDate) {
+          startDate = new Date(customStartDate);
+          endDate = new Date(customEndDate);
+        } else {
+          startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        }
+        break;
+      default:
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+    }
+
+    return {
+      startDate: startDate.toISOString().split('T')[0],
+      endDate: endDate.toISOString().split('T')[0]
+    };
+  };
+
   const getTotalVisitors = () => {
     return formData.adults + formData.children + formData.seniors;
   };
@@ -1211,343 +1318,299 @@ export default function VisitorCountPage() {
           </div>
         </Card>
 
-        <Tabs defaultValue="registros" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="registros">Registros Diarios</TabsTrigger>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="resumen">Resumen por Parque</TabsTrigger>
+            <TabsTrigger value="detalle" disabled={!selectedParkForDetail}>
+              {selectedParkForDetail ? `Detalle - ${parks.find(p => p.id === selectedParkForDetail)?.name}` : 'Detalle del Parque'}
+            </TabsTrigger>
             <TabsTrigger value="reportes">Reportes</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="registros" className="space-y-4">
-            {/* Filtros y Controles */}
+          <TabsContent value="resumen" className="space-y-4">
+            {/* Filtros de Período Prominentes */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Filter className="h-5 w-5" />
-                  Filtros y Controles
+                  <Calendar className="h-5 w-5" />
+                  Período de Análisis
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="search">Buscar</Label>
-                    <Input
-                      id="search"
-                      placeholder="Buscar parque o notas..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="park-filter">Parque</Label>
-                    <Select value={selectedPark} onValueChange={setSelectedPark}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Todos los parques" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Todos los parques</SelectItem>
-                        {parks && Array.isArray(parks) && parks.filter(park => park.id && park.name).map((park) => (
-                          <SelectItem key={park.id} value={park.id.toString()}>
-                            {park.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="date-filter">Fecha</Label>
-                    <Input
-                      id="date-filter"
-                      type="date"
-                      value={dateFilter}
-                      onChange={(e) => setDateFilter(e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="method-filter">Método</Label>
-                    <Select value={methodFilter} onValueChange={setMethodFilter}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Todos los métodos" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Todos los métodos</SelectItem>
-                        <SelectItem value="estimation">Estimación</SelectItem>
-                        <SelectItem value="manual_counter">Contador manual</SelectItem>
-                        <SelectItem value="event_based">Basado en eventos</SelectItem>
-                        <SelectItem value="entrance_control">Control de acceso</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Vista</Label>
-                    <div className="flex space-x-2">
-                      <Button
-                        variant={viewMode === 'grid' ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => setViewMode('grid')}
-                      >
-                        <Grid className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant={viewMode === 'list' ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => setViewMode('list')}
-                      >
-                        <List className="h-4 w-4" />
-                      </Button>
+                {/* Botones de rango rápido */}
+                <div className="flex flex-wrap items-center gap-3 mb-4">
+                  <Button
+                    variant={quickDateRange === 'week' ? 'default' : 'outline'}
+                    size="lg"
+                    onClick={() => setQuickDateRange('week')}
+                    className="flex items-center gap-2"
+                  >
+                    <Clock className="h-5 w-5" />
+                    Esta Semana
+                  </Button>
+                  <Button
+                    variant={quickDateRange === 'month' ? 'default' : 'outline'}
+                    size="lg"
+                    onClick={() => setQuickDateRange('month')}
+                    className="flex items-center gap-2"
+                  >
+                    <Calendar className="h-5 w-5" />
+                    Este Mes
+                  </Button>
+                  <Button
+                    variant={quickDateRange === 'quarter' ? 'default' : 'outline'}
+                    size="lg"
+                    onClick={() => setQuickDateRange('quarter')}
+                    className="flex items-center gap-2"
+                  >
+                    <TrendingUp className="h-5 w-5" />
+                    Este Trimestre
+                  </Button>
+                  <Button
+                    variant={quickDateRange === 'custom' ? 'default' : 'outline'}
+                    size="lg"
+                    onClick={() => setQuickDateRange('custom')}
+                    className="flex items-center gap-2"
+                  >
+                    <Calendar className="h-5 w-5" />
+                    Personalizado
+                  </Button>
+                </div>
+
+                {/* Filtros personalizados cuando se selecciona "custom" */}
+                {quickDateRange === 'custom' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 p-4 bg-blue-50 rounded-lg">
+                    <div className="space-y-2">
+                      <Label htmlFor="custom-start-date">Fecha Inicio</Label>
+                      <Input
+                        id="custom-start-date"
+                        type="date"
+                        value={customStartDate}
+                        onChange={(e) => setCustomStartDate(e.target.value)}
+                      />
                     </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="custom-end-date">Fecha Final</Label>
+                      <Input
+                        id="custom-end-date"
+                        type="date"
+                        value={customEndDate}
+                        onChange={(e) => setCustomEndDate(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Información del período seleccionado */}
+                <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 mb-4">
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-emerald-600" />
+                    <span className="text-sm font-medium text-emerald-700">
+                      Período Seleccionado: {
+                        (() => {
+                          const { startDate, endDate } = getDateRangeForQuickFilter();
+                          return `${startDate} hasta ${endDate}`;
+                        })()
+                      }
+                    </span>
                   </div>
                 </div>
                 
-                <div className="flex justify-between items-center">
-                  <div className="flex space-x-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={exportToCSV}
-                      className="text-green-600 hover:text-green-700"
-                    >
-                      <Download className="h-4 w-4 mr-2" />
-                      Exportar CSV
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={exportToExcel}
-                      className="text-blue-600 hover:text-blue-700"
-                    >
-                      <FileText className="h-4 w-4 mr-2" />
-                      Exportar Excel
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="text-blue-600 hover:text-blue-700"
-                    >
-                      <Upload className="h-4 w-4 mr-2" />
-                      Importar CSV
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={downloadTemplate}
-                      className="text-purple-600 hover:text-purple-700"
-                    >
-                      <FileText className="h-4 w-4 mr-2" />
-                      Plantilla CSV
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={resetFilters}
-                      className="text-gray-600 hover:text-gray-700"
-                    >
-                      <Filter className="h-4 w-4 mr-2" />
-                      Limpiar Filtros
-                    </Button>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept=".csv"
-                      onChange={handleImport}
-                      className="hidden"
-                    />
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    {visitorCounts?.pagination?.total ? (
-                      `Página ${currentPage} de ${totalPages} - Mostrando ${startIndex + 1}-${endIndex} de ${visitorCounts.pagination.total} registros`
-                    ) : (
-                      'Sin registros'
-                    )}
-                  </div>
+                {/* Botón para actualizar datos */}
+                <div className="flex justify-center">
+                  <Button
+                    onClick={() => {
+                      // Invalidar cache para actualizar datos
+                      queryClient.invalidateQueries({ 
+                        queryKey: ['/api/visitor-counts/park-summary'] 
+                      });
+                      toast({
+                        title: "Actualizando datos",
+                        description: "Se están actualizando los datos del resumen por parques"
+                      });
+                    }}
+                    className="bg-emerald-600 hover:bg-emerald-700"
+                  >
+                    <Activity className="h-4 w-4 mr-2" />
+                    Actualizar Resumen
+                  </Button>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Lista de registros */}
-            <div className={`${viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : 'space-y-4'}`}>
-              {isLoading ? (
+            {/* Tarjetas Resumen por Parque */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {parkSummariesLoading ? (
                 <div className="text-center py-8 col-span-full">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto"></div>
-                  <p className="mt-2 text-gray-600">Cargando registros...</p>
+                  <p className="mt-2 text-gray-600">Cargando resumen por parques...</p>
                 </div>
-              ) : visitorCounts?.data?.length === 0 ? (
+              ) : parkSummaries?.data?.length === 0 ? (
                 <Card className="col-span-full">
                   <CardContent className="text-center py-8">
-                    <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-600">No hay registros de visitantes</p>
+                    <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-600">No hay datos para el período seleccionado</p>
                     <p className="text-sm text-gray-500 mt-2">
-                      Comienza registrando el conteo diario de visitantes
+                      Selecciona un período diferente o registra conteos de visitantes
                     </p>
                   </CardContent>
                 </Card>
               ) : (
-                visitorCounts?.data?.map((count) => (
-                  <Card key={count.id} className="hover:shadow-lg transition-shadow">
-                    <CardContent className={`${viewMode === 'grid' ? 'p-4' : 'p-6'}`}>
-                      {viewMode === 'grid' ? (
-                        // Vista Grid - Compacta
-                        <div className="space-y-3">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <div className="flex items-center gap-2 mb-1">
-                                <MapPin className="h-4 w-4 text-emerald-600" />
-                                <h3 className="font-semibold text-sm">{count.parkName}</h3>
-                              </div>
-                              <div className="flex items-center gap-2 text-xs text-gray-600">
-                                <Calendar className="h-3 w-3" />
-                                <span>{format(new Date(count.date), 'dd/MM/yyyy', { locale: es })}</span>
-                              </div>
+                parkSummaries?.data?.map((parkSummary) => (
+                  <Card 
+                    key={parkSummary.parkId} 
+                    className="hover:shadow-lg transition-all duration-200 cursor-pointer hover:border-emerald-200" 
+                    onClick={() => {
+                      setSelectedParkForDetail(parkSummary.parkId);
+                      setActiveTab('detalle');
+                    }}
+                  >
+                    <CardContent className="p-6">
+                      <div className="space-y-4">
+                        {/* Header del Parque */}
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <MapPin className="h-5 w-5 text-emerald-600" />
+                              <h3 className="font-semibold text-lg text-gray-900">{parkSummary.parkName}</h3>
                             </div>
-                            <div className="text-right">
-                              <div className="text-xl font-bold text-emerald-600">
-                                {Number(count.totalVisitors || 0).toLocaleString()}
-                              </div>
-                              <div className="text-xs text-gray-500">visitantes</div>
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-3 gap-2">
-                            <div className="text-center p-2 bg-blue-50 rounded">
-                              <div className="text-sm font-semibold text-blue-700">{Number(count.adults || 0).toLocaleString()}</div>
-                              <div className="text-xs text-blue-600">Adultos</div>
-                            </div>
-                            <div className="text-center p-2 bg-green-50 rounded">
-                              <div className="text-sm font-semibold text-green-700">{Number(count.children || 0).toLocaleString()}</div>
-                              <div className="text-xs text-green-600">Niños</div>
-                            </div>
-                            <div className="text-center p-2 bg-orange-50 rounded">
-                              <div className="text-sm font-semibold text-orange-700">{Number(count.seniors || 0).toLocaleString()}</div>
-                              <div className="text-xs text-orange-600">Mayores</div>
+                            <div className="flex items-center gap-2 text-sm text-gray-600">
+                              <Calendar className="h-4 w-4" />
+                              <span>{parkSummary.totalRecords || 0} registros en el período</span>
                             </div>
                           </div>
-
-                          <div className="flex flex-wrap gap-1">
-                            <Badge variant="outline" className="text-xs">
-                              {getMethodLabel(count.countingMethod)}
-                            </Badge>
-                            {count.weather && (
-                              <Badge variant="outline" className="text-xs flex items-center gap-1">
-                                {getWeatherIcon(count.weather)}
-                                {getWeatherLabel(count.weather)}
-                              </Badge>
-                            )}
+                          <div className="text-right">
+                            <div className="text-3xl font-bold text-emerald-600">
+                              {Number(parkSummary.totalVisitors || 0).toLocaleString()}
+                            </div>
+                            <div className="text-sm text-gray-500">visitantes totales</div>
                           </div>
                         </div>
-                      ) : (
-                        // Vista Lista - Detallada
-                        <div>
-                          <div className="flex justify-between items-start mb-4">
-                            <div>
-                              <div className="flex items-center gap-2 mb-2">
-                                <MapPin className="h-4 w-4 text-emerald-600" />
-                                <h3 className="font-semibold text-lg">{count.parkName}</h3>
-                              </div>
-                              <div className="flex items-center gap-2 text-sm text-gray-600">
-                                <Calendar className="h-4 w-4" />
-                                <span>{format(new Date(count.date), 'dd/MM/yyyy', { locale: es })}</span>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <div className="text-2xl font-bold text-emerald-600">
-                                {Number(count.totalVisitors || 0).toLocaleString()}
-                              </div>
-                              <div className="text-sm text-gray-500">visitantes</div>
-                            </div>
-                          </div>
 
-                          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-4">
-                            <div className="text-center p-3 bg-blue-50 rounded-lg">
-                              <div className="text-lg font-semibold text-blue-700">{Number(count.adults || 0).toLocaleString()}</div>
-                              <div className="text-sm text-blue-600">Adultos</div>
+                        {/* Métricas del Período */}
+                        <div className="grid grid-cols-3 gap-3">
+                          <div className="text-center p-3 bg-blue-50 rounded-lg">
+                            <div className="text-lg font-semibold text-blue-700">
+                              {Number(parkSummary.avgDaily || 0).toLocaleString()}
                             </div>
-                            <div className="text-center p-3 bg-green-50 rounded-lg">
-                              <div className="text-lg font-semibold text-green-700">{Number(count.children || 0).toLocaleString()}</div>
-                              <div className="text-sm text-green-600">Niños</div>
-                            </div>
-                            <div className="text-center p-3 bg-orange-50 rounded-lg">
-                              <div className="text-lg font-semibold text-orange-700">{Number(count.seniors || 0).toLocaleString()}</div>
-                              <div className="text-sm text-orange-600">Adultos mayores</div>
-                            </div>
-                            <div className="text-center p-3 bg-pink-50 rounded-lg">
-                              <div className="text-lg font-semibold text-pink-700">{Number(count.pets || 0).toLocaleString()}</div>
-                              <div className="text-sm text-pink-600">Mascotas</div>
-                            </div>
-                            <div className="text-center p-3 bg-purple-50 rounded-lg">
-                              <div className="text-lg font-semibold text-purple-700">{Number(count.groups || 0).toLocaleString()}</div>
-                              <div className="text-sm text-purple-600">Grupos</div>
-                            </div>
+                            <div className="text-xs text-blue-600">Promedio diario</div>
                           </div>
-
-                          <div className="flex flex-wrap gap-2 mb-3">
-                            <Badge variant="outline" className="flex items-center gap-1">
-                              <Clock className="h-3 w-3" />
-                              {getDayTypeLabel(count.dayType || 'weekday')}
-                            </Badge>
-                            <Badge variant="outline">
-                              {getMethodLabel(count.countingMethod)}
-                            </Badge>
-                            {count.weather && (
-                              <Badge variant="outline" className="flex items-center gap-1">
-                                {getWeatherIcon(count.weather)}
-                                {getWeatherLabel(count.weather)}
-                              </Badge>
-                            )}
-                          </div>
-
-                          {count.notes && (
-                            <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
-                              <strong>Notas:</strong> {count.notes}
+                          <div className="text-center p-3 bg-green-50 rounded-lg">
+                            <div className="text-lg font-semibold text-green-700">
+                              {Number(parkSummary.maxDaily || 0).toLocaleString()}
                             </div>
-                          )}
+                            <div className="text-xs text-green-600">Máximo diario</div>
+                          </div>
+                          <div className="text-center p-3 bg-orange-50 rounded-lg">
+                            <div className="text-lg font-semibold text-orange-700">
+                              {Number(parkSummary.minDaily || 0).toLocaleString()}
+                            </div>
+                            <div className="text-xs text-orange-600">Mínimo diario</div>
+                          </div>
                         </div>
-                      )}
+
+                        {/* Distribución Demográfica */}
+                        <div className="grid grid-cols-4 gap-2">
+                          <div className="text-center p-2 bg-slate-50 rounded">
+                            <div className="text-sm font-semibold text-slate-700">
+                              {Number(parkSummary.totalAdults || 0).toLocaleString()}
+                            </div>
+                            <div className="text-xs text-slate-600">Adultos</div>
+                          </div>
+                          <div className="text-center p-2 bg-teal-50 rounded">
+                            <div className="text-sm font-semibold text-teal-700">
+                              {Number(parkSummary.totalChildren || 0).toLocaleString()}
+                            </div>
+                            <div className="text-xs text-teal-600">Niños</div>
+                          </div>
+                          <div className="text-center p-2 bg-amber-50 rounded">
+                            <div className="text-sm font-semibold text-amber-700">
+                              {Number(parkSummary.totalSeniors || 0).toLocaleString()}
+                            </div>
+                            <div className="text-xs text-amber-600">Mayores</div>
+                          </div>
+                          <div className="text-center p-2 bg-pink-50 rounded">
+                            <div className="text-sm font-semibold text-pink-700">
+                              {Number(parkSummary.totalPets || 0).toLocaleString()}
+                            </div>
+                            <div className="text-xs text-pink-600">Mascotas</div>
+                          </div>
+                        </div>
+
+                        {/* Información adicional */}
+                        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <Clock className="h-4 w-4" />
+                            <span>Último registro: {parkSummary.lastRecord ? format(new Date(parkSummary.lastRecord), 'dd/MM/yyyy', { locale: es }) : 'N/A'}</span>
+                          </div>
+                          <Badge variant="outline" className="text-xs bg-emerald-50 text-emerald-700 border-emerald-200">
+                            Click para ver detalles
+                          </Badge>
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
                 ))
               )}
             </div>
 
-            {/* Paginación */}
-            {visitorCounts?.pagination?.total > recordsPerPage && (
-              <div className="flex justify-center items-center space-x-2 mt-6">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage(currentPage - 1)}
-                  disabled={currentPage === 1}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                  Anterior
-                </Button>
-                
-                <div className="flex items-center space-x-1">
-                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    const page = i + 1;
-                    return (
-                      <Button
-                        key={page}
-                        variant={currentPage === page ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setCurrentPage(page)}
-                        className={currentPage === page ? "bg-emerald-600 hover:bg-emerald-700" : ""}
-                      >
-                        {page}
-                      </Button>
-                    );
-                  })}
+
+          </TabsContent>
+
+          <TabsContent value="detalle" className="space-y-4">
+            {selectedParkForDetail ? (
+              <div className="space-y-6">
+                {/* Header de detalle del parque */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <MapPin className="h-5 w-5 text-emerald-600" />
+                      Detalle del Parque - {parks.find(p => p.id === selectedParkForDetail)?.name}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-sm text-gray-600">
+                      Vista detallada de los registros diarios para el parque seleccionado en el período actual
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Lista detallada de registros diarios */}
+                <div className="space-y-4">
+                  {/* Aquí se mostrará la vista detallada de registros diarios del parque específico */}
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="text-center py-8 text-gray-500">
+                        <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                        <p>Vista detallada del parque en desarrollo</p>
+                        <p className="text-sm mt-2">
+                          Aquí se mostrarán los registros diarios específicos del parque seleccionado
+                        </p>
+                        <Button 
+                          className="mt-4" 
+                          variant="outline" 
+                          onClick={() => {
+                            setSelectedParkForDetail(null);
+                            setActiveTab('resumen');
+                          }}
+                        >
+                          Volver al Resumen
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
-                
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                >
-                  Siguiente
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
               </div>
+            ) : (
+              <Card>
+                <CardContent className="text-center py-8">
+                  <MapPin className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-600">Selecciona un parque del resumen para ver sus detalles</p>
+                  <p className="text-sm text-gray-500 mt-2">
+                    Haz clic en cualquier tarjeta de parque en la pestaña "Resumen por Parque"
+                  </p>
+                </CardContent>
+              </Card>
             )}
           </TabsContent>
 
