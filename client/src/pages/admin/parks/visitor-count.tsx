@@ -69,6 +69,14 @@ export default function VisitorCountPage() {
     rainy: 'Lluvioso',
     other: 'Otro'
   };
+
+  // Mapeo de traducción para métodos de conteo
+  const methodLabels = {
+    estimation: 'Estimación',
+    manual_counter: 'Contador manual',
+    event_based: 'Basado en eventos',
+    entrance_control: 'Control de acceso'
+  };
   
   const [selectedPark, setSelectedPark] = useState<string>("");
   const [showForm, setShowForm] = useState(false);
@@ -758,7 +766,8 @@ export default function VisitorCountPage() {
 
     // Datos por método de conteo
     const methodData = filteredData.reduce((acc, count) => {
-      const method = count.countingMethod;
+      const methodKey = count.countingMethod;
+      const method = methodLabels[methodKey as keyof typeof methodLabels] || methodKey || 'No especificado';
       const existing = acc.find(item => item.method === method);
       if (existing) {
         existing.count += 1;
