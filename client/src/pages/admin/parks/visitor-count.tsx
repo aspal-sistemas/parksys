@@ -134,10 +134,9 @@ export default function VisitorCountPage() {
       params.set('limit', recordsPerPage.toString());
       params.set('offset', ((currentPage - 1) * recordsPerPage).toString());
       if (searchTerm) params.set('search', searchTerm);
-      if (dateFilter) params.set('startDate', dateFilter);
       if (methodFilter) params.set('method', methodFilter);
       
-      // Agregar filtro de período
+      // Priorizar filtro de período de reportes sobre dateFilter manual
       if (reportPeriod !== 'all') {
         const now = new Date();
         let startDate: Date;
@@ -160,6 +159,9 @@ export default function VisitorCountPage() {
         }
         
         params.set('startDate', startDate.toISOString().split('T')[0]);
+      } else if (dateFilter) {
+        // Solo usar dateFilter si no hay filtro de período activo
+        params.set('startDate', dateFilter);
       }
       
       console.log(`🌐 [UNIFIED FILTER] Consultando con parámetros:`, Object.fromEntries(params.entries()));
