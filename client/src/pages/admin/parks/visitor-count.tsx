@@ -754,10 +754,18 @@ export default function VisitorCountPage() {
           startDate = new Date(0); // Inicio de época si no coincide
       }
 
+      console.log(`🌐 [PERIOD FILTER] Período: ${reportPeriod}, Fecha inicio: ${startDate.toISOString().split('T')[0]}, Datos antes filtro: ${filteredData.length}`);
+
       filteredData = filteredData.filter(count => {
         const countDate = new Date(count.date);
-        return countDate >= startDate;
+        const isInRange = countDate >= startDate;
+        if (!isInRange) {
+          console.log(`🌐 [PERIOD FILTER] Excluido: ${count.date} (${countDate.toISOString().split('T')[0]} < ${startDate.toISOString().split('T')[0]})`);
+        }
+        return isInRange;
       });
+
+      console.log(`🌐 [PERIOD FILTER] Datos después filtro: ${filteredData.length}`);
     }
 
     // Estadísticas generales
