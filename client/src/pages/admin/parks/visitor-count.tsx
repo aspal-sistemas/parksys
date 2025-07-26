@@ -159,19 +159,7 @@ export default function VisitorCountPage() {
     retry: 1
   });
 
-  // Query para obtener el resumen por parques
-  const { data: parkSummaries, isLoading: parkSummariesLoading } = useQuery({
-    queryKey: ['/api/visitor-counts/park-summary', quickDateRange, customStartDate, customEndDate],
-    queryFn: async () => {
-      const { startDate, endDate } = getDateRangeForQuickFilter();
-      const response = await fetch(`/api/visitor-counts/park-summary?startDate=${startDate}&endDate=${endDate}`);
-      if (!response.ok) {
-        throw new Error('Error al obtener resumen por parques');
-      }
-      return response.json();
-    },
-    retry: 1
-  });
+
   
   const parks = Array.isArray(parksResponse) ? parksResponse : ((parksResponse as any)?.data && Array.isArray((parksResponse as any).data) ? (parksResponse as any).data : []);
 
@@ -316,9 +304,7 @@ export default function VisitorCountPage() {
     retry: 1
   });
 
-  // Variables derivadas para resumen por parques
-  const parkSummaries = parkSummaryData;
-  const parkSummariesLoading = false; // Ya que no tenemos query loading separado
+
 
   // Datos filtrados para visualización
   const filteredData = useMemo(() => {
@@ -1433,12 +1419,12 @@ export default function VisitorCountPage() {
 
             {/* Tarjetas Resumen por Parque */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {parkSummariesLoading ? (
+              {!parkSummaryData ? (
                 <div className="text-center py-8 col-span-full">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto"></div>
                   <p className="mt-2 text-gray-600">Cargando resumen por parques...</p>
                 </div>
-              ) : parkSummaries?.data?.length === 0 ? (
+              ) : parkSummaryData?.data?.length === 0 ? (
                 <Card className="col-span-full">
                   <CardContent className="text-center py-8">
                     <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -1449,7 +1435,7 @@ export default function VisitorCountPage() {
                   </CardContent>
                 </Card>
               ) : (
-                parkSummaries?.data?.map((parkSummary) => (
+                parkSummaryData?.data?.map((parkSummary: any) => (
                   <Card 
                     key={parkSummary.parkId} 
                     className="hover:shadow-lg transition-all duration-200 cursor-pointer hover:border-emerald-200" 
