@@ -287,6 +287,8 @@ export class DatabaseStorage implements IStorage {
     console.log(`[STORAGE] Iniciando eliminación de amenidad ID: ${amenityId}`);
     
     try {
+      const { pool } = await import('./db');
+      
       // Primero verificar si la amenidad existe
       const existsQuery = await pool.query(
         'SELECT id FROM amenities WHERE id = $1',
