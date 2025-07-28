@@ -1057,6 +1057,7 @@ app.get('/api/assets/:id/maintenances', async (req: Request, res: Response) => {
 import { seedDatabase } from "./seed";
 import { createTreeTables } from "./create-tree-tables";
 import visitorCountRoutes from "./visitor-count-routes";
+import visitorsDashboardRoutes from "./visitors-dashboard-routes";
 import { seedTreeSpecies } from "./seed-tree-species";
 
 import { initializeDatabase } from "./initialize-db";
@@ -1360,6 +1361,10 @@ async function initializeDatabaseAsync() {
     // Importar y registrar rutas de conteo de visitantes
     app.use("/api", visitorCountRoutes);
     console.log("Rutas de conteo de visitantes registradas correctamente");
+    
+    // Registrar rutas del dashboard integral de visitantes
+    app.use("/api/visitors", visitorsDashboardRoutes);
+    console.log("✅ Rutas del dashboard integral de visitantes registradas correctamente");
     
     // CATEGORÍAS DE ACTIVOS: Registradas en la sección principal arriba para evitar duplicación
     // MANTENIMIENTO DE ACTIVOS: Registradas en la sección principal de startup para evitar duplicación
