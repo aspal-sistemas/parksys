@@ -106,9 +106,11 @@ const ParkCard: React.FC<ParkCardProps> = ({ park, onClick }) => {
         <div className="flex justify-between items-start mb-2">
           <div>
             <h3 className="font-medium text-lg text-gray-900">{park.name}</h3>
+            {/* Información de municipio/dirección temporalmente oculta para diseño minimalista
             <p className="text-gray-600 text-sm">
               {park.municipality?.name || ''}, {park.municipality?.state || ''}
             </p>
+            */}
           </div>
           <Badge className={`${getParkTypeBadgeClass(park.parkType)} font-medium`}>
             {getParkTypeLabel(park.parkType)}

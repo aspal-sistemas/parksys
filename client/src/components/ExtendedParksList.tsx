@@ -63,8 +63,10 @@ function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksList
               <div className="w-40 h-24 bg-gray-200 rounded-lg flex-shrink-0"></div>
               <div className="flex-1 space-y-2">
                 <div className="h-5 bg-gray-200 rounded w-1/3"></div>
+                {/* Placeholders de dirección y descripción ocultos para consistencia
                 <div className="h-4 bg-gray-200 rounded w-1/2"></div>
                 <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                */}
               </div>
               <div className="w-32 h-8 bg-gray-200 rounded"></div>
             </div>
@@ -129,19 +131,22 @@ function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksList
                     <h3 className="text-lg font-semibold text-gray-900">
                       {park.name}
                     </h3>
+                    {/* Dirección temporalmente oculta para diseño minimalista
                     <div className="flex items-center text-gray-600 mt-1">
                       <MapPin className="h-4 w-4 mr-1" />
                       <span className="text-sm">{park.address}</span>
                     </div>
+                    */}
                   </div>
                 </div>
 
-                {/* Descripción */}
+                {/* Descripción temporalmente oculta para diseño minimalista
                 {park.description && (
                   <p className="text-gray-600 text-sm mt-2 line-clamp-2">
                     {park.description}
                   </p>
                 )}
+                */}
               </div>
 
               {/* Botón de acción y Green Flag Award */}
