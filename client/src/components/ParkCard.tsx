@@ -115,7 +115,7 @@ const ParkCard: React.FC<ParkCardProps> = ({ park, onClick }) => {
           </Badge>
         </div>
         
-        {/* Amenities */}
+        {/* Amenities - TEMPORALMENTE OCULTAS (FUNCIONALIDAD PRESERVADA PARA REACTIVAR MÁS ADELANTE)
         <div className="flex flex-wrap gap-2 mt-2 mb-auto">
           {park.amenities && park.amenities.slice(0, 3).map((amenity) => (
             <span key={amenity.id} className="inline-flex items-center text-xs bg-gray-100 px-2 py-1 rounded text-gray-800">
@@ -136,6 +136,7 @@ const ParkCard: React.FC<ParkCardProps> = ({ park, onClick }) => {
             </span>
           )}
         </div>
+        */}
         
         <div className="mt-3">
           <Link href={`/parque/${generateParkSlug(park.name, park.id)}`} className="block">
