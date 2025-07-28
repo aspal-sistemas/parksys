@@ -70,88 +70,52 @@ const ParkCard: React.FC<ParkCardProps> = ({ park, onClick }) => {
   };
 
   return (
-    <Card className="park-card overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 h-full flex flex-col relative">
-      {/* Park image */}
-      <div className="w-full h-40 overflow-hidden relative">
-        {park.primaryImage || park.mainImageUrl ? (
-          <img 
-            src={park.primaryImage || park.mainImageUrl || ''} 
-            alt={park.name} 
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              // Si la imagen falla al cargar, mostrar un fallback
-              e.currentTarget.src = 'https://placehold.co/600x400/e2e8f0/64748b?text=Sin+Imagen';
-            }}
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gray-100">
-            <FileImage className="h-12 w-12 text-gray-400" />
-          </div>
-        )}
-      </div>
-
-      {/* Green Flag Award Logo - Solo para parques específicos */}
-      {shouldShowGreenFlag(park.id) && (
-        <div className="absolute top-2 right-2 z-20">
-          <img 
-            src={greenFlagLogo} 
-            alt="Green Flag Award" 
-            className="h-20 w-30 object-contain bg-white rounded-md p-2 shadow-lg border-2 border-green-500"
-            title="Green Flag Award"
-          />
-        </div>
-      )}
-      
-      <CardContent className="p-4 flex-1 flex flex-col">
-        <div className="flex justify-between items-start mb-2">
-          <div>
-            <h3 className="font-medium text-lg text-gray-900">{park.name}</h3>
-            {/* Información de municipio/dirección temporalmente oculta para diseño minimalista
-            <p className="text-gray-600 text-sm">
-              {park.municipality?.name || ''}, {park.municipality?.state || ''}
-            </p>
-            */}
-          </div>
-          <Badge className={`${getParkTypeBadgeClass(park.parkType)} font-medium`}>
-            {getParkTypeLabel(park.parkType)}
-          </Badge>
-        </div>
-        
-        {/* Amenities - TEMPORALMENTE OCULTAS (FUNCIONALIDAD PRESERVADA PARA REACTIVAR MÁS ADELANTE)
-        <div className="flex flex-wrap gap-2 mt-2 mb-auto">
-          {park.amenities && park.amenities.slice(0, 3).map((amenity) => (
-            <span key={amenity.id} className="inline-flex items-center text-xs bg-gray-100 px-2 py-1 rounded text-gray-800">
-              <AmenityIcon 
-                name={amenity.icon || 'default'} 
-                customIconUrl={(amenity as any).customIconUrl || null}
-                iconType={(amenity as any).customIconUrl ? 'custom' : 'system'}
-                size={12}
-                className="mr-1" 
-              />
-              {amenity.name}
-            </span>
-          ))}
-          
-          {park.amenities && park.amenities.length > 3 && (
-            <span className="inline-flex items-center text-xs bg-gray-100 px-2 py-1 rounded text-gray-800">
-              +{park.amenities.length - 3} más
-            </span>
+    <Link 
+      href={`/parque/${generateParkSlug(park.name, park.id)}`}
+      className="group cursor-pointer block"
+    >
+      <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+        {/* Imagen del parque con overlay y Green Flag */}
+        <div className="relative aspect-[4/3] overflow-hidden">
+          {park.primaryImage || park.mainImageUrl ? (
+            <img 
+              src={park.primaryImage || park.mainImageUrl || ''} 
+              alt={park.name} 
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              onError={(e) => {
+                e.currentTarget.src = 'https://images.unsplash.com/photo-1519331379826-f10be5486c6f?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=60';
+              }}
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-primary-100 to-secondary-100 flex items-center justify-center">
+              <FileImage className="h-12 w-12 text-primary-600" />
+            </div>
           )}
+          
+          {/* Overlay con gradiente para el nombre */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          
+          {/* Green Flag Award Logo - Integrado en la esquina superior derecha */}
+          {shouldShowGreenFlag(park.id) && (
+            <div className="absolute top-3 right-3 z-10">
+              <img 
+                src={greenFlagLogo} 
+                alt="Green Flag Award" 
+                className="h-16 w-24 object-contain bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-lg border border-green-500/30"
+                title="Green Flag Award"
+              />
+            </div>
+          )}
+          
+          {/* Nombre del parque - Siempre visible en la parte inferior */}
+          <div className="absolute bottom-0 left-0 right-0 p-4">
+            <h3 className="text-white font-semibold text-lg drop-shadow-lg">
+              {park.name}
+            </h3>
+          </div>
         </div>
-        */}
-        
-        <div className="mt-3">
-          <Link href={`/parque/${generateParkSlug(park.name, park.id)}`} className="block">
-            <Button 
-              variant="default" 
-              className="w-full bg-green-600 hover:bg-green-700 text-white"
-            >
-              Ir al Parque
-            </Button>
-          </Link>
-        </div>
-      </CardContent>
-    </Card>
+      </div>
+    </Link>
   );
 };
 
