@@ -22,9 +22,7 @@ const Parks: React.FC = () => {
   const [selectedParkId, setSelectedParkId] = useState<number | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const parksPerPage = 5;
+  // Grid view - no pagination needed
   
   // Reset scroll to top when component mounts
   useEffect(() => {
@@ -53,22 +51,12 @@ const Parks: React.FC = () => {
   
   const allParks = parksResponse?.data || [];
   
-  // Filtrar parques sin nombre o marcados como eliminados
-  const filteredParks = allParks.filter(park => 
+  // Filtrar parques sin nombre o marcados como eliminados - mostrar todos en grid
+  const parks = allParks.filter(park => 
     park.name.trim() !== '' && !park.isDeleted
   );
-
-  // Calculate pagination
-  const totalParks = filteredParks.length;
-  const totalPages = Math.ceil(totalParks / parksPerPage);
-  const startIndex = (currentPage - 1) * parksPerPage;
-  const endIndex = startIndex + parksPerPage;
-  const parks = filteredParks.slice(startIndex, endIndex);
-
-  // Reset to first page when filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [filters]);
+  
+  const totalParks = parks.length;
 
   // Function to scroll to results section
   const scrollToResults = () => {
@@ -78,11 +66,7 @@ const Parks: React.FC = () => {
     }
   };
 
-  // Function to handle page change with scroll
-  const handlePageChange = (newPage: number) => {
-    setCurrentPage(newPage);
-    setTimeout(scrollToResults, 100); // Small delay to ensure page change has occurred
-  };
+  // Grid view - no page changes needed
   
   // Fetch detailed park data when selected
   const { data: selectedPark, isLoading: isLoadingPark } = useQuery<ExtendedPark>({
@@ -112,9 +96,9 @@ const Parks: React.FC = () => {
   };
 
   // Calcular estadísticas para el hero
-  const uniqueTypes = new Set(filteredParks.map(park => park.parkType)).size;
-  const totalAmenities = filteredParks.reduce((acc, park) => acc + (park.amenities?.length || 0), 0);
-  const averageAmenities = filteredParks.length > 0 ? Math.round(totalAmenities / filteredParks.length) : 0;
+  const uniqueTypes = new Set(parks.map(park => park.parkType)).size;
+  const totalAmenities = parks.reduce((acc, park) => acc + (park.amenities?.length || 0), 0);
+  const averageAmenities = parks.length > 0 ? Math.round(totalAmenities / parks.length) : 0;
 
   if (isLoading) {
     return (
@@ -198,11 +182,11 @@ const Parks: React.FC = () => {
           />
         </div>
 
-        {/* Resultados - Layout con Sidebar Publicitario */}
+        {/* Resultados - Layout Completo */}
         <div className="mb-8" id="resultados-busqueda">
-          <div className="grid grid-cols-1 lg:grid-cols-6 gap-6">
-            {/* Contenido Principal - Mantiene ancho original */}
-            <div className="lg:col-span-5">
+          <div className="grid grid-cols-1 gap-6">
+            {/* Contenido Principal - Ancho Completo */}
+            <div className="col-span-1">
               <div className="bg-white rounded-2xl shadow-sm border p-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                   <div>
@@ -231,16 +215,18 @@ const Parks: React.FC = () => {
               </div>
             </div>
 
-            {/* Sidebar Publicitario - Más estrecho */}
+            {/* Sidebar Publicitario - TEMPORALMENTE DESACTIVADO */}
+            {/*
             <div className="lg:col-span-1">
               <div className="sticky top-4 space-y-6">
                 <AdSpace spaceId="2" position="card" pageType="parks" />
-                <AdSpace spaceId="39" position="card" pageType="parks" />
-                <AdSpace spaceId="40" position="card" pageType="parks" />
-                <AdSpace spaceId="41" position="card" pageType="parks" />
-                <AdSpace spaceId="42" position="card" pageType="parks" />
+                <AdSpace spaceId={39} position="card" pageType="parks" />
+                <AdSpace spaceId={40} position="card" pageType="parks" />
+                <AdSpace spaceId={41} position="card" pageType="parks" />
+                <AdSpace spaceId={42} position="card" pageType="parks" />
               </div>
             </div>
+            */}
           </div>
         </div>
 
