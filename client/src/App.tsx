@@ -8,7 +8,7 @@ import { ProfileCompletionProvider } from "@/components/ProfileCompletionContext
 import "./i18n";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
-import Parks from "@/pages/parks";
+import Parks from "@/pages/parks-grid";
 import ParkDetail from "@/pages/park-detail";
 import AdminDashboard from "@/pages/admin";
 import AdminParks from "@/pages/admin/parks";
