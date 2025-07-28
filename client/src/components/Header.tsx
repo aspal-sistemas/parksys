@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'wouter';
 import { Menu, X, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import GlobalSearch from '@/components/GlobalSearch';
 import logoImage from '@assets/logo_1751306368691.png';
 
 const Header: React.FC = () => {
@@ -148,7 +149,10 @@ const Header: React.FC = () => {
             )}
           </div>
           
-          <div className="flex items-center">
+          <div className="flex items-center gap-3">
+            {/* Búsqueda Global - Solo en sitio público */}
+            {!isAdmin && <GlobalSearch />}
+            
             {isAdmin ? (
               location !== '/admin/login' && (
                 <Link href="/">
