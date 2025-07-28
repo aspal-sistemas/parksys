@@ -231,7 +231,7 @@ export default function EvaluationsPage() {
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [selectedPark, setSelectedPark] = useState('all');
   const [selectedEvaluation, setSelectedEvaluation] = useState<ParkEvaluation | null>(null);
-  const pageSize = 10;
+  const pageSize = 3; // Reduced to test pagination with limited data
 
   // Fetch evaluations with pagination and filters
   const { data: evaluationsData, isLoading } = useQuery({
@@ -401,6 +401,11 @@ export default function EvaluationsPage() {
   const handleViewDetails = (evaluation: ParkEvaluation) => {
     setSelectedEvaluation(evaluation);
   };
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedStatus, selectedPark]);
 
   const evaluations = evaluationsData?.evaluations || [];
   const totalEvaluations = evaluationsData?.pagination?.total || 0;
@@ -587,40 +592,49 @@ export default function EvaluationsPage() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex justify-center items-center gap-2 mt-6">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                disabled={currentPage === 1}
-              >
-                <ChevronLeft className="h-4 w-4" />
-                Anterior
-              </Button>
-              
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                const page = i + 1;
-                return (
+            <div className="bg-white p-4 rounded-lg shadow-sm mt-6">
+              <div className="flex justify-between items-center">
+                <div className="text-sm text-gray-500">
+                  Página {currentPage} de {totalPages}
+                </div>
+                <div className="flex items-center gap-2">
                   <Button
-                    key={page}
-                    variant={currentPage === page ? "default" : "outline"}
+                    variant="outline"
                     size="sm"
-                    onClick={() => setCurrentPage(page)}
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
                   >
-                    {page}
+                    <ChevronLeft className="h-4 w-4 mr-1" />
+                    Anterior
                   </Button>
-                );
-              })}
-              
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                disabled={currentPage === totalPages}
-              >
-                Siguiente
-                <ChevronRight className="h-4 w-4" />
-              </Button>
+                  
+                  {/* Page numbers */}
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    const page = i + 1;
+                    return (
+                      <Button
+                        key={page}
+                        variant={currentPage === page ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setCurrentPage(page)}
+                        className={currentPage === page ? "bg-[#00a587] hover:bg-[#067f5f]" : ""}
+                      >
+                        {page}
+                      </Button>
+                    );
+                  })}
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
+                  >
+                    Siguiente
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </Button>
+                </div>
+              </div>
             </div>
           )}
 
