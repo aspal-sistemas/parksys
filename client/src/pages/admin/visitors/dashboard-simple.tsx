@@ -15,12 +15,17 @@ export default function VisitorsDashboardSimple() {
   });
 
   const { data: parkEvaluations = [], isLoading: loadingEvaluations } = useQuery({
-    queryKey: ['/api/park-evaluations'],
+    queryKey: ['/api/park-evaluations/export-all'],
     retry: 1
   });
 
   const { data: parkFeedback = [], isLoading: loadingFeedback } = useQuery({
     queryKey: ['/api/feedback'],
+    queryFn: async () => {
+      const response = await fetch('/api/feedback?limit=1000');
+      if (!response.ok) throw new Error('Failed to fetch feedback');
+      return response.json();
+    },
     retry: 1
   });
 
