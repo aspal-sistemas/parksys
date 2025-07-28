@@ -293,17 +293,31 @@ const AdminAmenitiesPage = () => {
       return apiRequest(`/api/amenities/${id}`, { method: "DELETE" });
     },
     onSuccess: () => {
+      // Invalidar múltiples queries para asegurar actualización completa
       queryClient.invalidateQueries({ queryKey: ["/api/amenities/dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/amenities"] });
+      
+      // Forzar refetch inmediato
+      queryClient.refetchQueries({ queryKey: ["/api/amenities/dashboard"] });
+      
       toast({ title: "Amenidad eliminada exitosamente" });
       setIsDeleteDialogOpen(false);
+      setCurrentAmenity(null);
     },
     onError: (error: any) => {
-      const errorMessage = error?.message || "Error al eliminar amenidad";
+      const errorMessage = error?.message || "Amenidad no encontrada";
       toast({ 
         title: "No se puede eliminar", 
         description: errorMessage,
         variant: "destructive" 
       });
+      
+      // También cerrar el diálogo en caso de error para evitar estados inconsistentes
+      setIsDeleteDialogOpen(false);
+      setCurrentAmenity(null);
+      
+      // Refrescar datos para asegurar sincronización con el servidor
+      queryClient.invalidateQueries({ queryKey: ["/api/amenities/dashboard"] });
     },
   });
 
