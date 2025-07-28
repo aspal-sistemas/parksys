@@ -22,7 +22,9 @@ const Parks: React.FC = () => {
   const [selectedParkId, setSelectedParkId] = useState<number | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   
-  // Grid view - no pagination needed
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const parksPerPage = 5;
   
   // Reset scroll to top when component mounts
   useEffect(() => {
@@ -51,12 +53,22 @@ const Parks: React.FC = () => {
   
   const allParks = parksResponse?.data || [];
   
-  // Filtrar parques sin nombre o marcados como eliminados - mostrar todos en grid
-  const parks = allParks.filter(park => 
+  // Filtrar parques sin nombre o marcados como eliminados
+  const filteredParks = allParks.filter(park => 
     park.name.trim() !== '' && !park.isDeleted
   );
-  
-  const totalParks = parks.length;
+
+  // Calculate pagination
+  const totalParks = filteredParks.length;
+  const totalPages = Math.ceil(totalParks / parksPerPage);
+  const startIndex = (currentPage - 1) * parksPerPage;
+  const endIndex = startIndex + parksPerPage;
+  const parks = filteredParks.slice(startIndex, endIndex);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters]);
 
   // Function to scroll to results section
   const scrollToResults = () => {
@@ -66,7 +78,11 @@ const Parks: React.FC = () => {
     }
   };
 
-  // Grid view - no page changes needed
+  // Function to handle page change with scroll
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    setTimeout(scrollToResults, 100); // Small delay to ensure page change has occurred
+  };
   
   // Fetch detailed park data when selected
   const { data: selectedPark, isLoading: isLoadingPark } = useQuery<ExtendedPark>({
@@ -96,9 +112,9 @@ const Parks: React.FC = () => {
   };
 
   // Calcular estadísticas para el hero
-  const uniqueTypes = new Set(parks.map(park => park.parkType)).size;
-  const totalAmenities = parks.reduce((acc, park) => acc + (park.amenities?.length || 0), 0);
-  const averageAmenities = parks.length > 0 ? Math.round(totalAmenities / parks.length) : 0;
+  const uniqueTypes = new Set(filteredParks.map(park => park.parkType)).size;
+  const totalAmenities = filteredParks.reduce((acc, park) => acc + (park.amenities?.length || 0), 0);
+  const averageAmenities = filteredParks.length > 0 ? Math.round(totalAmenities / filteredParks.length) : 0;
 
   if (isLoading) {
     return (
