@@ -22,9 +22,7 @@ const Parks: React.FC = () => {
   const [selectedParkId, setSelectedParkId] = useState<number | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const parksPerPage = 5;
+  // Sin paginación - mostrar todos los parques
   
   // Reset scroll to top when component mounts
   useEffect(() => {
@@ -58,17 +56,9 @@ const Parks: React.FC = () => {
     park.name.trim() !== '' && !park.isDeleted
   );
 
-  // Calculate pagination
+  // Mostrar todos los parques sin paginación
   const totalParks = filteredParks.length;
-  const totalPages = Math.ceil(totalParks / parksPerPage);
-  const startIndex = (currentPage - 1) * parksPerPage;
-  const endIndex = startIndex + parksPerPage;
-  const parks = filteredParks.slice(startIndex, endIndex);
-
-  // Reset to first page when filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [filters]);
+  const parks = filteredParks; // Mostrar todos los parques
 
   // Function to scroll to results section
   const scrollToResults = () => {
@@ -78,11 +68,7 @@ const Parks: React.FC = () => {
     }
   };
 
-  // Function to handle page change with scroll
-  const handlePageChange = (newPage: number) => {
-    setCurrentPage(newPage);
-    setTimeout(scrollToResults, 100); // Small delay to ensure page change has occurred
-  };
+  // Sin función de cambio de página ya que no hay paginación
   
   // Fetch detailed park data when selected
   const { data: selectedPark, isLoading: isLoadingPark } = useQuery<ExtendedPark>({
@@ -210,11 +196,7 @@ const Parks: React.FC = () => {
                       Bosques Urbanos de Guadalajara
                     </h2>
                   </div>
-                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 px-4 py-2 rounded-lg border border-green-200">
-                    <div className="text-sm text-gray-600">
-                      Página {currentPage} de {totalPages} - Mostrando {startIndex + 1}-{Math.min(endIndex, totalParks)} de {totalParks}
-                    </div>
-                  </div>
+
                 </div>
                 
                 <ExtendedParksList 
@@ -244,72 +226,7 @@ const Parks: React.FC = () => {
           </div>
         </div>
 
-        {/* Paginación moderna */}
-        {totalPages > 1 && (
-          <div className="bg-white rounded-2xl shadow-sm border p-6">
-            <div className="flex items-center justify-center space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
-                disabled={currentPage === 1}
-                className="flex items-center gap-2 text-primary border-primary hover:bg-primary hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <ChevronLeft className="h-4 w-4" />
-                Anterior
-              </Button>
-              
-              <div className="flex items-center space-x-1">
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  let pageNumber;
-                  if (totalPages <= 5) {
-                    pageNumber = i + 1;
-                  } else if (currentPage <= 3) {
-                    pageNumber = i + 1;
-                  } else if (currentPage >= totalPages - 2) {
-                    pageNumber = totalPages - 4 + i;
-                  } else {
-                    pageNumber = currentPage - 2 + i;
-                  }
-                  
-                  return (
-                    <Button
-                      key={pageNumber}
-                      variant={currentPage === pageNumber ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => handlePageChange(pageNumber)}
-                      className={`w-10 h-10 transition-all duration-200 ${
-                        currentPage === pageNumber 
-                          ? "bg-primary hover:bg-primary-600 text-white shadow-md" 
-                          : "text-primary border-primary hover:bg-primary hover:text-white"
-                      }`}
-                    >
-                      {pageNumber}
-                    </Button>
-                  );
-                })}
-              </div>
-              
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
-                disabled={currentPage === totalPages}
-                className="flex items-center gap-2 text-primary border-primary hover:bg-primary hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Siguiente
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-            
-            {/* Información adicional de paginación */}
-            <div className="mt-4 text-center">
-              <p className="text-sm text-gray-500">
-                Navegando por {totalParks} parques en {totalPages} páginas
-              </p>
-            </div>
-          </div>
-        )}
+        {/* Sin paginación - todos los parques se muestran */}
 
         {/* Espacio Publicitario - Footer */}
         <div className="mt-8 mb-6">
