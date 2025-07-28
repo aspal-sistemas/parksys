@@ -284,13 +284,39 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteAmenity(amenityId: number): Promise<boolean> {
+    console.log(`[STORAGE] Iniciando eliminación de amenidad ID: ${amenityId}`);
+    
     try {
-      const result = await db.delete(amenities)
-        .where(eq(amenities.id, amenityId));
-      console.log(`Amenidad ${amenityId} eliminada exitosamente`);
-      return true;
+      // Primero verificar si la amenidad existe
+      const existsQuery = await pool.query(
+        'SELECT id FROM amenities WHERE id = $1',
+        [amenityId]
+      );
+      
+      console.log(`[STORAGE] Verificando existencia de amenidad ${amenityId}: ${existsQuery.rows.length > 0 ? 'existe' : 'no existe'}`);
+      
+      if (existsQuery.rows.length === 0) {
+        console.log(`[STORAGE] Amenidad ${amenityId} no existe en la base de datos`);
+        return false;
+      }
+      
+      // Usar SQL directo para eliminar y verificar el número de filas afectadas
+      const result = await pool.query(
+        'DELETE FROM amenities WHERE id = $1 RETURNING id',
+        [amenityId]
+      );
+      
+      console.log(`[STORAGE] Resultado de eliminación: ${result.rows.length} filas afectadas`);
+      
+      if (result.rows.length > 0) {
+        console.log(`[STORAGE] Amenidad ${amenityId} eliminada exitosamente`);
+        return true;
+      } else {
+        console.log(`[STORAGE] Amenidad ${amenityId} no pudo ser eliminada`);
+        return false;
+      }
     } catch (error) {
-      console.error("Error al eliminar amenidad:", error);
+      console.error("[STORAGE] Error al eliminar amenidad:", error);
       return false;
     }
   }
