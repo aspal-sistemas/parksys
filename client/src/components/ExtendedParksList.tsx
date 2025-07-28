@@ -68,7 +68,7 @@ function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksList
               </div>
               <div className="w-32 h-8 bg-gray-200 rounded"></div>
             </div>
-            {/* Amenidades ancho completo */}
+            {/* Amenidades ancho completo - TEMPORALMENTE OCULTAS PARA CONSISTENCIA CON DISEÑO
             <div className="space-y-2">
               <div className="h-4 bg-gray-200 rounded w-1/4"></div>
               <div className="grid grid-cols-4 gap-2">
@@ -77,6 +77,7 @@ function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksList
                 ))}
               </div>
             </div>
+            */}
           </div>
         ))}
       </div>
@@ -167,7 +168,7 @@ function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksList
               </div>
             </div>
 
-            {/* Amenidades del parque - Ancho completo */}
+            {/* Amenidades del parque - TEMPORALMENTE OCULTAS (FUNCIONALIDAD PRESERVADA PARA REACTIVAR MÁS ADELANTE)
             <div className="mb-2">
               <h4 className="text-sm font-medium text-gray-900 mb-2">Amenidades, Instalaciones y Servicios:</h4>
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
@@ -197,6 +198,7 @@ function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksList
                 )}
               </div>
             </div>
+            */}
 
             {/* Información adicional compacta - Sin área del parque */}
             <div className="flex items-center gap-4 text-xs text-gray-500">
