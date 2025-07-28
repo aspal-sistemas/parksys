@@ -1644,7 +1644,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           a.icon_type as "iconType",
           a.custom_icon_url as "customIconUrl",
           COUNT(DISTINCT pa.park_id) as "parksCount",
-          COALESCE(SUM(pa.quantity), 0) as "totalModules"
+          COUNT(pa.id) as "totalModules"
         FROM amenities a
         LEFT JOIN park_amenities pa ON a.id = pa.amenity_id
         GROUP BY a.id, a.name, a.icon, a.category, a.icon_type, a.custom_icon_url
@@ -1718,6 +1718,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           { status: 'Inactivas', count: 0, color: '#FF8042' }
         ]
       };
+
+      console.log("[AMENITIES DASHBOARD] Enviando respuesta con", amenityStats.length, "amenidades");
+      console.log("[AMENITIES DASHBOARD] Muestra de datos:", amenityStats.slice(0, 3));
 
       res.json(dashboardData);
     } catch (error) {
