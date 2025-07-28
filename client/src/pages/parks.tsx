@@ -198,11 +198,11 @@ const Parks: React.FC = () => {
           />
         </div>
 
-        {/* Resultados - Layout Completo */}
+        {/* Resultados con Sidebar */}
         <div className="mb-8" id="resultados-busqueda">
-          <div className="grid grid-cols-1 gap-6">
-            {/* Contenido Principal - Ancho Completo */}
-            <div className="col-span-1">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            {/* Contenido Principal */}
+            <div className="lg:col-span-3">
               <div className="bg-white rounded-2xl shadow-sm border p-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                   <div>
@@ -231,18 +231,19 @@ const Parks: React.FC = () => {
               </div>
             </div>
 
-            {/* Sidebar Publicitario - TEMPORALMENTE DESACTIVADO */}
-            {/*
+            {/* Sidebar Publicitario */}
             <div className="lg:col-span-1">
               <div className="sticky top-4 space-y-6">
+                {/* Espacio publicitario principal */}
                 <AdSpace spaceId="2" position="card" pageType="parks" />
+                
+                {/* Espacios publicitarios administrables - Diseño Tipo Tarjeta */}
                 <AdSpace spaceId={39} position="card" pageType="parks" />
                 <AdSpace spaceId={40} position="card" pageType="parks" />
                 <AdSpace spaceId={41} position="card" pageType="parks" />
                 <AdSpace spaceId={42} position="card" pageType="parks" />
               </div>
             </div>
-            */}
           </div>
         </div>
 
