@@ -284,32 +284,39 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteAmenity(amenityId: number): Promise<boolean> {
-    console.log(`[STORAGE] Iniciando eliminación de amenidad ID: ${amenityId}`);
-    
     try {
-      // Primero verificar si la amenidad existe usando Drizzle
-      console.log(`[STORAGE] Verificando existencia con Drizzle...`);
-      const existingAmenity = await db.select().from(amenities).where(eq(amenities.id, amenityId));
+      console.log(`[STORAGE] Iniciando eliminación de amenidad ID: ${amenityId}`);
       
-      console.log(`[STORAGE] Resultado de existencia: ${existingAmenity.length} amenidades encontradas`);
+      // Usar SQL directo y simple
+      const { pool } = await import('./db');
+      console.log(`[STORAGE] Pool importado correctamente`);
       
-      if (existingAmenity.length === 0) {
-        console.log(`[STORAGE] Amenidad ${amenityId} no existe en la base de datos`);
+      // Verificar existencia
+      const existsResult = await pool.query('SELECT id, name FROM amenities WHERE id = $1', [amenityId]);
+      console.log(`[STORAGE] Amenidad existe: ${existsResult.rows.length > 0}`);
+      
+      if (existsResult.rows.length === 0) {
+        console.log(`[STORAGE] Amenidad ${amenityId} no encontrada`);
         return false;
       }
       
-      console.log(`[STORAGE] Amenidad encontrada: ${existingAmenity[0].name}`);
+      console.log(`[STORAGE] Amenidad encontrada: ${existsResult.rows[0].name}`);
       
-      // Eliminar usando Drizzle ORM
-      console.log(`[STORAGE] Procediendo con eliminación...`);
-      const result = await db.delete(amenities).where(eq(amenities.id, amenityId));
+      // Eliminar
+      const deleteResult = await pool.query('DELETE FROM amenities WHERE id = $1 RETURNING id', [amenityId]);
+      console.log(`[STORAGE] Filas eliminadas: ${deleteResult.rows.length}`);
       
-      console.log(`[STORAGE] Eliminación completada, resultado:`, result);
-      console.log(`[STORAGE] Amenidad ${amenityId} eliminada exitosamente`);
-      return true;
+      if (deleteResult.rows.length > 0) {
+        console.log(`[STORAGE] Amenidad ${amenityId} eliminada exitosamente`);
+        return true;
+      }
+      
+      console.log(`[STORAGE] No se pudo eliminar la amenidad`);
+      return false;
       
     } catch (error) {
-      console.error("[STORAGE] Error al eliminar amenidad:", error);
+      console.error("[STORAGE] Error completo:", error);
+      console.error("[STORAGE] Stack trace:", error.stack);
       return false;
     }
   }
