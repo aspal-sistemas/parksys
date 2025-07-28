@@ -175,7 +175,8 @@ const Parks: React.FC = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Filtros modernos */}
+        {/* Filtros modernos - TEMPORALMENTE DESACTIVADO */}
+        {/* 
         <div className="mb-8">
           <div className="bg-white rounded-2xl shadow-sm border p-6">
             <div className="flex items-center gap-2 mb-4">
@@ -185,6 +186,7 @@ const Parks: React.FC = () => {
             <SimpleFilterSidebar onApplyFilters={handleApplyFilters} />
           </div>
         </div>
+        */}
 
         {/* Banner publicitario */}
         <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] my-8">
@@ -196,11 +198,11 @@ const Parks: React.FC = () => {
           />
         </div>
 
-        {/* Resultados con Sidebar */}
+        {/* Resultados - Layout Completo */}
         <div className="mb-8" id="resultados-busqueda">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            {/* Contenido Principal */}
-            <div className="lg:col-span-3">
+          <div className="grid grid-cols-1 gap-6">
+            {/* Contenido Principal - Ancho Completo */}
+            <div className="col-span-1">
               <div className="bg-white rounded-2xl shadow-sm border p-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                   <div>
@@ -229,19 +231,18 @@ const Parks: React.FC = () => {
               </div>
             </div>
 
-            {/* Sidebar Publicitario */}
+            {/* Sidebar Publicitario - TEMPORALMENTE DESACTIVADO */}
+            {/*
             <div className="lg:col-span-1">
               <div className="sticky top-4 space-y-6">
-                {/* Espacio publicitario principal */}
                 <AdSpace spaceId="2" position="card" pageType="parks" />
-                
-                {/* Espacios publicitarios administrables - Diseño Tipo Tarjeta */}
                 <AdSpace spaceId={39} position="card" pageType="parks" />
                 <AdSpace spaceId={40} position="card" pageType="parks" />
                 <AdSpace spaceId={41} position="card" pageType="parks" />
                 <AdSpace spaceId={42} position="card" pageType="parks" />
               </div>
             </div>
+            */}
           </div>
         </div>
 
