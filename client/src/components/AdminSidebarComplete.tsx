@@ -816,9 +816,9 @@ const AdminSidebarComplete: React.FC = () => {
             </CollapsibleSubmenu>
           </ModuleNav>
 
-          {/* 4. ADMIN/FINANZAS */}
+          {/* 4. ADMIN & FINANZAS */}
           <ModuleNav 
-            title="Admin/Finanzas" 
+            title="Admin & Finanzas" 
             icon={<DollarSign className="h-5 w-5" />}
             value="admin-finance"
             defaultOpen={location.startsWith('/admin/finance') || location.startsWith('/admin/accounting') || location.startsWith('/admin/concessions')}
