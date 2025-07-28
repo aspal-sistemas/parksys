@@ -312,50 +312,6 @@ const Parks: React.FC = () => {
           </div>
         )}
 
-        {/* Sección de estadísticas adicionales */}
-        <div className="mt-12 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-8 border border-green-200">
-          <div className="text-center">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">
-              Red de Parques Metropolitanos
-            </h3>
-            <p className="text-gray-600 max-w-3xl mx-auto mb-8">
-              Nuestra red de parques urbanos ofrece espacios diversos para recreación, deporte, cultura y conexión con la naturaleza en toda la zona metropolitana.
-            </p>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
-                  <Trees className="h-8 w-8 text-green-600" />
-                </div>
-                <h4 className="text-lg font-semibold text-gray-900 mb-2">Espacios Verdes</h4>
-                <p className="text-gray-600">
-                  Áreas naturales diseñadas para la conservación y disfrute de la biodiversidad urbana
-                </p>
-              </div>
-              
-              <div className="text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
-                  <Users className="h-8 w-8 text-blue-600" />
-                </div>
-                <h4 className="text-lg font-semibold text-gray-900 mb-2">Actividades Familiares</h4>
-                <p className="text-gray-600">
-                  Programas y eventos diseñados para fortalecer los vínculos comunitarios y familiares
-                </p>
-              </div>
-              
-              <div className="text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-purple-100 rounded-full mb-4">
-                  <MapPin className="h-8 w-8 text-purple-600" />
-                </div>
-                <h4 className="text-lg font-semibold text-gray-900 mb-2">Ubicaciones Estratégicas</h4>
-                <p className="text-gray-600">
-                  Parques distribuidos estratégicamente para garantizar acceso equitativo en toda la ciudad
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Espacio Publicitario - Footer */}
         <div className="mt-8 mb-6">
           <AdSpace spaceId="3" position="footer" pageType="parks" />
