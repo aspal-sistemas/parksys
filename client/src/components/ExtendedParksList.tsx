@@ -179,8 +179,8 @@ function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksList
                     >
                       <AmenityIcon 
                         name={amenity.icon || 'default'} 
-                        customIconUrl={null}
-                        iconType={'system'}
+                        customIconUrl={(amenity as any).customIconUrl || null}
+                        iconType={(amenity as any).customIconUrl ? 'custom' : 'system'}
                         size={16} 
                         className="text-primary-600 flex-shrink-0" 
                       />

@@ -121,8 +121,8 @@ const ParkCard: React.FC<ParkCardProps> = ({ park, onClick }) => {
             <span key={amenity.id} className="inline-flex items-center text-xs bg-gray-100 px-2 py-1 rounded text-gray-800">
               <AmenityIcon 
                 name={amenity.icon || 'default'} 
-                customIconUrl={null}
-                iconType={'system'}
+                customIconUrl={(amenity as any).customIconUrl || null}
+                iconType={(amenity as any).customIconUrl ? 'custom' : 'system'}
                 size={12}
                 className="mr-1" 
               />
