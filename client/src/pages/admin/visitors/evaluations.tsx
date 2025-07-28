@@ -409,7 +409,7 @@ export default function EvaluationsPage() {
 
   const evaluations = evaluationsData?.evaluations || [];
   const totalEvaluations = evaluationsData?.pagination?.total || 0;
-  const totalPages = evaluationsData?.pagination?.totalPages || 1;
+  const totalPages = evaluationsData?.pagination?.pages || 1;
   const parks = parksData?.data || parksData || [];
 
   if (isLoading) {
