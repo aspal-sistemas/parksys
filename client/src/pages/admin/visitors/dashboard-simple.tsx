@@ -9,46 +9,52 @@ import AdminLayout from '@/components/AdminLayout';
 // Dashboard integral de visitantes que combina datos de conteo, evaluaciones y feedback
 export default function VisitorsDashboardSimple() {
   // Queries usando endpoints existentes
-  const { data: visitorCounts = [] } = useQuery({
+  const { data: visitorCounts = [], isLoading: loadingVisitors } = useQuery({
     queryKey: ['/api/visitor-counts'],
     retry: 1
   });
 
-  const { data: parkEvaluations = [] } = useQuery({
+  const { data: parkEvaluations = [], isLoading: loadingEvaluations } = useQuery({
     queryKey: ['/api/park-evaluations'],
     retry: 1
   });
 
-  const { data: parkFeedback = [] } = useQuery({
+  const { data: parkFeedback = [], isLoading: loadingFeedback } = useQuery({
     queryKey: ['/api/feedback'],
     retry: 1
   });
 
-  const { data: parksResponse } = useQuery({
+  const { data: parksResponse, isLoading: loadingParks } = useQuery({
     queryKey: ['/api/parks'],
     retry: 1
   });
 
-  // Acceso seguro a datos de parques
+  // Verificar si hay datos cargando
+  const isLoading = loadingVisitors || loadingEvaluations || loadingFeedback || loadingParks;
+
+  // Acceso seguro a datos - corregir estructura de respuesta
   const parks = parksResponse?.data || parksResponse || [];
+  const visitorData = visitorCounts?.data || visitorCounts || [];
+  const evaluationsData = parkEvaluations?.data || parkEvaluations || [];
+  const feedbackData = parkFeedback?.data || parkFeedback || [];
 
   // Cálculos de métricas principales
-  const totalVisitors = Array.isArray(visitorCounts) 
-    ? visitorCounts.reduce((sum, record) => sum + (record.adults || 0) + (record.children || 0) + (record.seniors || 0), 0)
+  const totalVisitors = Array.isArray(visitorData) 
+    ? visitorData.reduce((sum, record) => sum + (record.adults || 0) + (record.children || 0) + (record.seniors || 0), 0)
     : 0;
 
-  const totalEvaluations = Array.isArray(parkEvaluations) ? parkEvaluations.length : 0;
-  const totalFeedback = Array.isArray(parkFeedback) ? parkFeedback.length : 0;
+  const totalEvaluations = Array.isArray(evaluationsData) ? evaluationsData.length : 0;
+  const totalFeedback = Array.isArray(feedbackData) ? feedbackData.length : 0;
   const totalParks = Array.isArray(parks) ? parks.length : 0;
 
   // Promedio de calificaciones
-  const averageRating = Array.isArray(parkEvaluations) && parkEvaluations.length > 0
-    ? (parkEvaluations.reduce((sum: number, evaluation: any) => sum + (evaluation.overallRating || 0), 0) / parkEvaluations.length).toFixed(1)
+  const averageRating = Array.isArray(evaluationsData) && evaluationsData.length > 0
+    ? (evaluationsData.reduce((sum: number, evaluation: any) => sum + (evaluation.overallRating || 0), 0) / evaluationsData.length).toFixed(1)
     : 0;
 
   // Datos para gráficas - Visitantes por método
-  const methodData = Array.isArray(visitorCounts) ? visitorCounts.reduce((acc, record) => {
-    const method = record.method || 'Directo';
+  const methodData = Array.isArray(visitorData) ? visitorData.reduce((acc, record) => {
+    const method = record.countingMethod || 'Directo';
     acc[method] = (acc[method] || 0) + ((record.adults || 0) + (record.children || 0) + (record.seniors || 0));
     return acc;
   }, {} as Record<string, number>) : {};
@@ -59,23 +65,23 @@ export default function VisitorsDashboardSimple() {
   }));
 
   // Datos para gráficas - Distribución demográfica
-  const demographicData = Array.isArray(visitorCounts) ? [{
+  const demographicData = Array.isArray(visitorData) ? [{
     name: 'Adultos',
-    value: visitorCounts.reduce((sum, record) => sum + (record.adults || 0), 0),
+    value: visitorData.reduce((sum, record) => sum + (record.adults || 0), 0),
     color: '#00a587'
   }, {
     name: 'Niños',
-    value: visitorCounts.reduce((sum, record) => sum + (record.children || 0), 0),
+    value: visitorData.reduce((sum, record) => sum + (record.children || 0), 0),
     color: '#00d4aa'
   }, {
     name: 'Adultos Mayores',
-    value: visitorCounts.reduce((sum, record) => sum + (record.seniors || 0), 0),
+    value: visitorData.reduce((sum, record) => sum + (record.seniors || 0), 0),
     color: '#067f5f'
   }] : [];
 
   // Top parques por visitantes
-  const parkVisitors = Array.isArray(visitorCounts) && Array.isArray(parks) ? parks.map(park => {
-    const parkRecords = visitorCounts.filter(vc => vc.parkId === park.id);
+  const parkVisitors = Array.isArray(visitorData) && Array.isArray(parks) ? parks.map(park => {
+    const parkRecords = visitorData.filter(vc => vc.parkId === park.id);
     const totalParkVisitors = parkRecords.reduce((sum, record) => 
       sum + (record.adults || 0) + (record.children || 0) + (record.seniors || 0), 0);
     return {
@@ -85,7 +91,7 @@ export default function VisitorsDashboardSimple() {
   }).sort((a, b) => b.visitors - a.visitors).slice(0, 5) : [];
 
   // Datos de tendencias (últimos 7 días)
-  const last7Days = Array.isArray(visitorCounts) ? (() => {
+  const last7Days = Array.isArray(visitorData) ? (() => {
     const today = new Date();
     const daysData = [];
     
@@ -94,16 +100,16 @@ export default function VisitorsDashboardSimple() {
       date.setDate(today.getDate() - i);
       const dateStr = date.toISOString().split('T')[0];
       
-      const dayRecords = visitorCounts.filter(vc => vc.date === dateStr);
+      const dayRecords = visitorData.filter(vc => vc.date === dateStr);
       const dayTotal = dayRecords.reduce((sum, record) => 
         sum + (record.adults || 0) + (record.children || 0) + (record.seniors || 0), 0);
       
-      const dayEvaluations = Array.isArray(parkEvaluations) ? parkEvaluations.filter((evaluation: any) => {
+      const dayEvaluations = Array.isArray(evaluationsData) ? evaluationsData.filter((evaluation: any) => {
         const evalDate = new Date(evaluation.createdAt).toISOString().split('T')[0];
         return evalDate === dateStr;
       }).length : 0;
       
-      const dayFeedback = Array.isArray(parkFeedback) ? parkFeedback.filter((feedback: any) => {
+      const dayFeedback = Array.isArray(feedbackData) ? feedbackData.filter((feedback: any) => {
         const fbDate = new Date(feedback.createdAt).toISOString().split('T')[0];
         return fbDate === dateStr;
       }).length : 0;
@@ -118,6 +124,22 @@ export default function VisitorsDashboardSimple() {
     
     return daysData;
   })() : [];
+
+  if (isLoading) {
+    return (
+      <AdminLayout 
+        title="Dashboard Integral de Visitantes"
+        subtitle="Vista consolidada de visitantes, evaluaciones y retroalimentación"
+      >
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Cargando datos del dashboard...</p>
+          </div>
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout 
