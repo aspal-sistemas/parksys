@@ -1632,7 +1632,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Dashboard endpoint específico para amenidades
   apiRouter.get("/amenities/dashboard", async (_req: Request, res: Response) => {
     try {
-      // Obtener amenidades directamente con SQL ya que storage.getAmenities() falla
+      console.log("[AMENITIES DASHBOARD] Iniciando consulta...");
+      
+      // Obtener amenidades con conteo correcto de parques usando LEFT JOIN
       const amenitiesResult = await pool.query(`
         SELECT 
           a.id,
@@ -1640,49 +1642,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
           a.icon,
           a.category,
           a.icon_type as "iconType",
-          a.custom_icon_url as "customIconUrl"
+          a.custom_icon_url as "customIconUrl",
+          COUNT(DISTINCT pa.park_id) as "parksCount",
+          COALESCE(SUM(pa.quantity), 0) as "totalModules"
         FROM amenities a
-        ORDER BY a.name
+        LEFT JOIN park_amenities pa ON a.id = pa.amenity_id
+        GROUP BY a.id, a.name, a.icon, a.category, a.icon_type, a.custom_icon_url
+        ORDER BY COUNT(DISTINCT pa.park_id) DESC, a.name
       `);
       
-      const amenities = amenitiesResult.rows;
+      console.log("[AMENITIES DASHBOARD] Amenidades obtenidas:", amenitiesResult.rows.length);
       
-      // Obtener parques con SQL directo para evitar problemas con storage
-      const parksResult = await pool.query(`
+      const amenities = amenitiesResult.rows.map((row: any) => ({
+        ...row,
+        parksCount: parseInt(row.parksCount) || 0,
+        totalModules: parseInt(row.totalModules) || 0,
+        createdAt: new Date() // Fecha de creación ficticia si no está disponible
+      }));
+      
+      // Obtener total de parques para calcular utilización
+      const totalParksResult = await pool.query('SELECT COUNT(*) as total FROM parks');
+      const totalParks = parseInt(totalParksResult.rows[0].total) || 0;
+      
+      console.log("[AMENITIES DASHBOARD] Total de parques:", totalParks);
+      
+      // Calcular utilización para cada amenidad
+      const amenityStats = amenities.map((amenity: any) => ({
+        ...amenity,
+        utilizationRate: totalParks > 0 ? Math.round((amenity.parksCount / totalParks) * 100) : 0
+      }));
+      
+      // Obtener estadísticas generales
+      const totalAmenityAssignments = amenities.reduce((sum: number, amenity: any) => sum + amenity.totalModules, 0);
+      const parksWithAmenities = await pool.query(`
+        SELECT COUNT(DISTINCT park_id) as count 
+        FROM park_amenities
+      `);
+      const parksWithAmenitiesCount = parseInt(parksWithAmenities.rows[0].count) || 0;
+      
+      // Obtener utilización por parque
+      const parkUtilization = await pool.query(`
         SELECT 
-          p.id, p.name, p.municipality_id as "municipalityId"
+          p.name as park_name,
+          COUNT(pa.amenity_id) as amenities_count
         FROM parks p
-        ORDER BY p.name
+        LEFT JOIN park_amenities pa ON p.id = pa.park_id
+        GROUP BY p.id, p.name
+        ORDER BY amenities_count DESC
       `);
-      const parks = parksResult.rows;
 
-      // Calcular estadísticas para el dashboard
-      const parksWithAmenities = parks.filter((park: any) => park.amenities && park.amenities.length > 0);
-      const totalAmenityAssignments = parks.reduce((sum: number, park: any) => sum + (park.amenities?.length || 0), 0);
-
-      const amenityStats = amenities.map((amenity: any) => {
-        const parksWithThisAmenity = parks.filter((park: any) => 
-          park.amenities?.some((a: any) => a.amenityId === amenity.id)
-        );
-        
-        // Calculate total modules (quantity) for this amenity across all parks
-        const totalModules = parks.reduce((sum: number, park: any) => {
-          const parkAmenities = park.amenities?.filter((a: any) => a.amenityId === amenity.id) || [];
-          return sum + parkAmenities.reduce((amenitySum: number, a: any) => amenitySum + (a.quantity || 1), 0);
-        }, 0);
-        
-        return {
-          ...amenity,
-          parksCount: parksWithThisAmenity.length,
-          totalModules: totalModules,
-          utilizationRate: parks.length > 0 ? Math.round((parksWithThisAmenity.length / parks.length) * 100) : 0
-        };
-      }).sort((a: any, b: any) => b.parksCount - a.parksCount);
+      console.log("[AMENITIES DASHBOARD] Estadísticas calculadas:");
+      console.log("- Total amenidades:", amenities.length);
+      console.log("- Total parques:", totalParks);
+      console.log("- Parques con amenidades:", parksWithAmenitiesCount);
+      console.log("- Total asignaciones:", totalAmenityAssignments);
 
       const dashboardData = {
         totalAmenities: amenities.length,
-        totalParks: parks.length,
-        averageAmenitiesPerPark: parks.length ? Math.round((totalAmenityAssignments / parks.length) * 100) / 100 : 0,
+        totalParks: totalParks,
+        averageAmenitiesPerPark: totalParks > 0 ? Math.round((totalAmenityAssignments / totalParks) * 100) / 100 : 0,
         mostPopularAmenities: amenityStats.slice(0, 5),
         allAmenities: amenityStats,
         amenityDistribution: amenityStats.slice(0, 6).map((amenity: any, index: number) => ({
@@ -1690,10 +1708,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           value: amenity.parksCount,
           color: ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'][index % 6]
         })),
-        utilizationByPark: parks.map((park: any) => ({
-          parkName: park.name.length > 20 ? park.name.substring(0, 20) + '...' : park.name,
-          amenitiesCount: park.amenities?.length || 0
-        })).sort((a: any, b: any) => b.amenitiesCount - a.amenitiesCount),
+        utilizationByPark: parkUtilization.rows.map((park: any) => ({
+          parkName: park.park_name.length > 20 ? park.park_name.substring(0, 20) + '...' : park.park_name,
+          amenitiesCount: parseInt(park.amenities_count) || 0
+        })),
         statusDistribution: [
           { status: 'Activas', count: amenities.length, color: '#00C49F' },
           { status: 'Mantenimiento', count: 0, color: '#FFBB28' },
