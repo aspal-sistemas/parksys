@@ -227,24 +227,19 @@ const ParksGrid: React.FC = () => {
                       </p>
                     )}
                     
-                    {/* Amenidades */}
-                    {park.amenities && park.amenities.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mb-3">
-                        {park.amenities.slice(0, 3).map((amenityId) => (
-                          <span 
-                            key={amenityId} 
-                            className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-primary/10 text-primary"
-                          >
-                            {amenityId}
-                          </span>
-                        ))}
-                        {park.amenities.length > 3 && (
-                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600">
-                            +{park.amenities.length - 3} más
-                          </span>
-                        )}
-                      </div>
-                    )}
+                    {/* Estadísticas del parque */}
+                    <div className="flex items-center gap-4 text-xs text-gray-500 mb-3">
+                      <span className="flex items-center gap-1">
+                        <Trees className="h-3 w-3" />
+                        Parque urbano
+                      </span>
+                      {park.amenities && park.amenities.length > 0 && (
+                        <span className="flex items-center gap-1">
+                          <Star className="h-3 w-3" />
+                          {park.amenities.length} amenidades
+                        </span>
+                      )}
+                    </div>
                     
                     {/* Botón de acción */}
                     <Button 
