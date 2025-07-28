@@ -88,7 +88,7 @@ const Header: React.FC = () => {
                     <div className="py-1">
                       <Link href="/activities"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
-                        Ver Actividades
+                        Actividades
                       </Link>
                       <Link href="/calendar"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
@@ -224,7 +224,7 @@ const Header: React.FC = () => {
                         ? 'bg-primary-100 text-primary-800' 
                         : 'text-gray-600 hover:bg-gray-50'
                     }`}>
-                    Ver Actividades
+                    Actividades
                   </Link>
                   
                   <Link href="/calendar"
