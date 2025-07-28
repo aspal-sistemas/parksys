@@ -9,6 +9,7 @@ const Header: React.FC = () => {
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [contentMenuOpen, setContentMenuOpen] = useState(false);
+  const [biodiversityMenuOpen, setBiodiversityMenuOpen] = useState(false);
   const [usersMenuOpen, setUsersMenuOpen] = useState(false);
   
   const isAdmin = location.startsWith('/admin');
@@ -21,6 +22,10 @@ const Header: React.FC = () => {
     setContentMenuOpen(prev => !prev);
   };
 
+  const toggleBiodiversityMenu = () => {
+    setBiodiversityMenuOpen(prev => !prev);
+  };
+
   const toggleUsersMenu = () => {
     setUsersMenuOpen(prev => !prev);
   };
@@ -29,9 +34,10 @@ const Header: React.FC = () => {
                           location === '/calendar' || 
                           location === '/concessions';
 
-  const isUsersActive = location === '/tree-species' || 
-                        location === '/fauna' || 
-                        location === '/volunteers' || 
+  const isBiodiversityActive = location === '/tree-species' || 
+                               location === '/fauna';
+
+  const isUsersActive = location === '/volunteers' || 
                         location === '/instructors';
 
   return (
@@ -102,6 +108,33 @@ const Header: React.FC = () => {
                   </div>
                 </div>
                 
+                {/* Menú de Biodiversidad con dropdown */}
+                <div className="relative group">
+                  <button
+                    className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium flex items-center ${
+                      isBiodiversityActive
+                        ? 'border-primary text-gray-900' 
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    }`}>
+                    Biodiversidad
+                    <ChevronDown className="ml-1 h-3 w-3" />
+                  </button>
+                  
+                  {/* Dropdown menu */}
+                  <div className="absolute left-0 top-full mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                    <div className="py-1">
+                      <Link href="/tree-species"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
+                        Arbolado
+                      </Link>
+                      <Link href="/fauna"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
+                        Fauna
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+                
                 {/* Menú de Usuarios con dropdown */}
                 <div className="relative group">
                   <button
@@ -117,14 +150,6 @@ const Header: React.FC = () => {
                   {/* Dropdown menu */}
                   <div className="absolute left-0 top-full mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                     <div className="py-1">
-                      <Link href="/tree-species"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
-                        Arbolado
-                      </Link>
-                      <Link href="/fauna"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
-                        Fauna
-                      </Link>
                       <Link href="/volunteers"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
                         Voluntarios
@@ -248,20 +273,20 @@ const Header: React.FC = () => {
               )}
             </div>
             
-            {/* Menú móvil de Usuarios */}
+            {/* Menú móvil de Biodiversidad */}
             <div className="space-y-1">
               <button
-                onClick={toggleUsersMenu}
+                onClick={toggleBiodiversityMenu}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-base font-medium ${
-                  isUsersActive
+                  isBiodiversityActive
                     ? 'bg-primary-50 text-primary-700' 
                     : 'text-gray-700 hover:bg-gray-50'
                 }`}>
-                Usuarios
-                <ChevronDown className={`h-4 w-4 transition-transform ${usersMenuOpen ? 'rotate-180' : ''}`} />
+                Biodiversidad
+                <ChevronDown className={`h-4 w-4 transition-transform ${biodiversityMenuOpen ? 'rotate-180' : ''}`} />
               </button>
               
-              {usersMenuOpen && (
+              {biodiversityMenuOpen && (
                 <div className="ml-4 space-y-1">
                   <Link href="/tree-species"
                     className={`block px-3 py-2 rounded-md text-sm font-medium ${
@@ -280,7 +305,25 @@ const Header: React.FC = () => {
                     }`}>
                     Fauna
                   </Link>
-                  
+                </div>
+              )}
+            </div>
+            
+            {/* Menú móvil de Usuarios */}
+            <div className="space-y-1">
+              <button
+                onClick={toggleUsersMenu}
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-base font-medium ${
+                  isUsersActive
+                    ? 'bg-primary-50 text-primary-700' 
+                    : 'text-gray-700 hover:bg-gray-50'
+                }`}>
+                Usuarios
+                <ChevronDown className={`h-4 w-4 transition-transform ${usersMenuOpen ? 'rotate-180' : ''}`} />
+              </button>
+              
+              {usersMenuOpen && (
+                <div className="ml-4 space-y-1">
                   <Link href="/volunteers"
                     className={`block px-3 py-2 rounded-md text-sm font-medium ${
                       location === '/volunteers' 
