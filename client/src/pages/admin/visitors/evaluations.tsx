@@ -278,9 +278,9 @@ export default function EvaluationsPage() {
   });
 
   const deleteBulkEvaluations = useMutation({
-    mutationFn: (ids: number[]) => apiRequest('/api/park-evaluations/bulk-delete', { 
+    mutationFn: (ids: number[]) => apiRequest('/api/park-evaluations/bulk/delete', { 
       method: 'DELETE', 
-      data: { ids } 
+      data: { evaluationIds: ids } 
     }),
     onSuccess: () => {
       toast({ title: "Evaluaciones eliminadas correctamente" });
