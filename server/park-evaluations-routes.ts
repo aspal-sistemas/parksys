@@ -513,6 +513,65 @@ export function registerParkEvaluationRoutes(app: any, apiRouter: any, isAuthent
     }
   });
 
+  // Eliminar múltiples evaluaciones (administrador)
+  apiRouter.delete('/park-evaluations/bulk/delete', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const { evaluationIds } = req.body;
+      
+      if (!Array.isArray(evaluationIds) || evaluationIds.length === 0) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Se requiere un array de IDs de evaluaciones' 
+        });
+      }
+
+      // Validar que todos los IDs sean números válidos
+      const validIds = evaluationIds.filter(id => !isNaN(parseInt(id))).map(id => parseInt(id));
+      
+      if (validIds.length === 0) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'No se proporcionaron IDs válidos' 
+        });
+      }
+
+      // Verificar cuántas evaluaciones existen
+      const existingEvaluations = await pool.query(
+        `SELECT id FROM park_evaluations WHERE id = ANY($1)`,
+        [validIds]
+      );
+
+      if (existingEvaluations.rows.length === 0) {
+        return res.status(404).json({ 
+          success: false, 
+          message: 'No se encontraron evaluaciones con los IDs proporcionados' 
+        });
+      }
+
+      // Eliminar las evaluaciones
+      const result = await pool.query(
+        `DELETE FROM park_evaluations WHERE id = ANY($1)`,
+        [validIds]
+      );
+
+      console.log(`🗑️ ${result.rowCount} evaluaciones eliminadas exitosamente`);
+      
+      res.json({ 
+        success: true, 
+        message: `${result.rowCount} evaluaciones eliminadas exitosamente`,
+        deletedCount: result.rowCount,
+        requestedCount: validIds.length
+      });
+
+    } catch (error) {
+      console.error('❌ Error al eliminar evaluaciones en bloque:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Error interno del servidor al eliminar evaluaciones' 
+      });
+    }
+  });
+
   // Obtener resumen de evaluaciones de todos los parques
   apiRouter.get('/park-evaluations/summary', async (req: Request, res: Response) => {
     try {
