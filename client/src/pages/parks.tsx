@@ -200,9 +200,9 @@ const Parks: React.FC = () => {
 
         {/* Resultados - Layout con Sidebar Publicitario */}
         <div className="mb-8" id="resultados-busqueda">
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-6 gap-6">
             {/* Contenido Principal - Mantiene ancho original */}
-            <div className="lg:col-span-4">
+            <div className="lg:col-span-5">
               <div className="bg-white rounded-2xl shadow-sm border p-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                   <div>
