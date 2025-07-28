@@ -115,16 +115,28 @@ const GlobalSearch: React.FC = () => {
     const instructors = instructorsData?.data || instructorsData || [];
     if (Array.isArray(instructors)) {
       instructors
-        .filter((instructor: any) => 
-          instructor.name?.toLowerCase().includes(searchLower) ||
-          instructor.specialties?.toLowerCase().includes(searchLower)
-        )
+        .filter((instructor: any) => {
+          const name = instructor.name?.toLowerCase() || '';
+          let specialties = '';
+          
+          if (Array.isArray(instructor.specialties)) {
+            specialties = instructor.specialties.join(' ').toLowerCase();
+          } else if (typeof instructor.specialties === 'string') {
+            specialties = instructor.specialties.toLowerCase();
+          }
+          
+          return name.includes(searchLower) || specialties.includes(searchLower);
+        })
         .slice(0, 2)
         .forEach((instructor: any) => {
+          const specialtiesText = Array.isArray(instructor.specialties) 
+            ? instructor.specialties.join(', ')
+            : (instructor.specialties || 'Especialidades variadas');
+            
           searchResults.push({
             id: `instructor-${instructor.id}`,
             title: instructor.name,
-            description: `Instructor - ${instructor.specialties || 'Especialidades variadas'}`,
+            description: `Instructor - ${specialtiesText}`,
             type: 'instructor',
             url: `/instructors/${instructor.id}`,
             image: instructor.profileImage
