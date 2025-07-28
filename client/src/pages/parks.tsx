@@ -209,9 +209,6 @@ const Parks: React.FC = () => {
                     <h2 className="text-2xl font-bold text-gray-900">
                       Bosques Urbanos de Guadalajara
                     </h2>
-                    <p className="text-gray-600 mt-1">
-                      {totalParks} parques encontrados que coinciden con tus criterios
-                    </p>
                   </div>
                   <div className="bg-gradient-to-r from-green-50 to-emerald-50 px-4 py-2 rounded-lg border border-green-200">
                     <div className="text-sm text-gray-600">
