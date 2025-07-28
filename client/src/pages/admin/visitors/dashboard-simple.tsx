@@ -35,8 +35,10 @@ export default function VisitorsDashboardSimple() {
   // Acceso seguro a datos - corregir estructura de respuesta
   const parks = parksResponse?.data || parksResponse || [];
   const visitorData = visitorCounts?.data || visitorCounts || [];
-  const evaluationsData = parkEvaluations?.data || parkEvaluations || [];
-  const feedbackData = parkFeedback?.data || parkFeedback || [];
+  const evaluationsData = parkEvaluations?.evaluations || parkEvaluations?.data || parkEvaluations || [];
+  const feedbackData = parkFeedback?.feedback || parkFeedback?.data || parkFeedback || [];
+
+
 
   // Cálculos de métricas principales
   const totalVisitors = Array.isArray(visitorData) 
@@ -49,7 +51,7 @@ export default function VisitorsDashboardSimple() {
 
   // Promedio de calificaciones
   const averageRating = Array.isArray(evaluationsData) && evaluationsData.length > 0
-    ? (evaluationsData.reduce((sum: number, evaluation: any) => sum + (evaluation.overallRating || 0), 0) / evaluationsData.length).toFixed(1)
+    ? (evaluationsData.reduce((sum: number, evaluation: any) => sum + (evaluation.overall_rating || evaluation.overallRating || 0), 0) / evaluationsData.length).toFixed(1)
     : 0;
 
   // Datos para gráficas - Visitantes por método
@@ -105,21 +107,33 @@ export default function VisitorsDashboardSimple() {
         sum + (record.adults || 0) + (record.children || 0) + (record.seniors || 0), 0);
       
       const dayEvaluations = Array.isArray(evaluationsData) ? evaluationsData.filter((evaluation: any) => {
-        const evalDate = new Date(evaluation.createdAt).toISOString().split('T')[0];
-        return evalDate === dateStr;
+        try {
+          const evalDate = new Date(evaluation.created_at || evaluation.createdAt).toISOString().split('T')[0];
+          return evalDate === dateStr;
+        } catch (e) {
+          return false;
+        }
       }).length : 0;
       
       const dayFeedback = Array.isArray(feedbackData) ? feedbackData.filter((feedback: any) => {
-        const fbDate = new Date(feedback.createdAt).toISOString().split('T')[0];
-        return fbDate === dateStr;
+        try {
+          const fbDate = new Date(feedback.created_at || feedback.createdAt).toISOString().split('T')[0];
+          return fbDate === dateStr;
+        } catch (e) {
+          return false;
+        }
       }).length : 0;
 
-      daysData.push({
-        date: date.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric' }),
-        visitors: dayTotal,
-        evaluations: dayEvaluations,
-        feedback: dayFeedback
-      });
+      try {
+        daysData.push({
+          date: date.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric' }),
+          visitors: dayTotal,
+          evaluations: dayEvaluations,
+          feedback: dayFeedback
+        });
+      } catch (e) {
+        console.error('Error processing date:', date, e);
+      }
     }
     
     return daysData;
