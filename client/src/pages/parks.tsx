@@ -200,9 +200,9 @@ const Parks: React.FC = () => {
 
         {/* Resultados - Layout con Sidebar Publicitario */}
         <div className="mb-8" id="resultados-busqueda">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Contenido Principal */}
-            <div className="lg:col-span-2">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            {/* Contenido Principal - Mantiene ancho original */}
+            <div className="lg:col-span-3">
               <div className="bg-white rounded-2xl shadow-sm border p-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                   <div>
@@ -231,7 +231,7 @@ const Parks: React.FC = () => {
               </div>
             </div>
 
-            {/* Sidebar Publicitario */}
+            {/* Sidebar Publicitario - Más estrecho */}
             <div className="lg:col-span-1">
               <div className="sticky top-4 space-y-6">
                 <AdSpace spaceId="2" position="card" pageType="parks" />
