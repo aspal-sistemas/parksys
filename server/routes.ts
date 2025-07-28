@@ -1819,31 +1819,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const id = Number(req.params.id);
       console.log(`[ROUTES] ID convertido a número: ${id}`);
       
-      // Verificar si la amenidad está siendo utilizada por algún parque
-      console.log(`[ROUTES] Verificando si amenidad está en uso...`);
-      const inUse = await storage.isAmenityInUse(id);
-      console.log(`[ROUTES] Amenidad ${id} en uso: ${inUse}`);
+      // Verificar si la amenidad está siendo utilizada por algún parque usando SQL directo
+      console.log(`[ROUTES] Verificando si amenidad está en uso con SQL directo...`);
+      const usageResult = await pool.query(`
+        SELECT COUNT(*) as count 
+        FROM park_amenities 
+        WHERE amenity_id = $1
+      `, [id]);
       
-      if (inUse) {
+      const usageCount = Number(usageResult.rows[0]?.count || 0);
+      console.log(`[ROUTES] Amenidad ${id} está siendo usada en ${usageCount} parques`);
+      
+      if (usageCount > 0) {
         console.log(`[ROUTES] Amenidad en uso, devolviendo error 400`);
         return res.status(400).json({ 
           message: "No se puede eliminar esta amenidad porque está siendo utilizada por uno o más parques" 
         });
       }
       
-      console.log(`[ROUTES] Llamando a storage.deleteAmenity(${id})`);
-      const result = await storage.deleteAmenity(id);
-      console.log(`[ROUTES] Resultado de storage.deleteAmenity: ${result}`);
+      // Verificar si la amenidad existe usando SQL directo
+      console.log(`[ROUTES] Verificando existencia de amenidad...`);
+      const existsResult = await pool.query('SELECT id, name FROM amenities WHERE id = $1', [id]);
+      console.log(`[ROUTES] Amenidad encontrada: ${existsResult.rows.length > 0}`);
       
-      if (!result) {
-        console.log(`[ROUTES] Resultado falso, devolviendo 404`);
+      if (existsResult.rows.length === 0) {
+        console.log(`[ROUTES] Amenidad ${id} no encontrada, devolviendo 404`);
         return res.status(404).json({ message: "Amenidad no encontrada" });
       }
       
-      console.log(`[ROUTES] Eliminación exitosa, devolviendo 204`);
-      res.status(204).send();
+      console.log(`[ROUTES] Amenidad encontrada: ${existsResult.rows[0].name}`);
+      
+      // Eliminar usando SQL directo
+      console.log(`[ROUTES] Procediendo con eliminación SQL directa...`);
+      const deleteResult = await pool.query('DELETE FROM amenities WHERE id = $1 RETURNING id, name', [id]);
+      console.log(`[ROUTES] Filas eliminadas: ${deleteResult.rows.length}`);
+      
+      if (deleteResult.rows.length > 0) {
+        console.log(`[ROUTES] Amenidad ${deleteResult.rows[0].name} eliminada exitosamente`);
+        res.status(204).send();
+      } else {
+        console.log(`[ROUTES] No se pudo eliminar la amenidad, devolviendo 404`);
+        res.status(404).json({ message: "Amenidad no encontrada" });
+      }
+      
     } catch (error) {
-      console.error("[ROUTES] Error en eliminación:", error);
+      console.error("[ROUTES] Error completo en eliminación:", error);
+      console.error("[ROUTES] Stack trace:", error.stack);
       res.status(500).json({ message: "Error deleting amenity" });
     }
   });
