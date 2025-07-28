@@ -75,7 +75,7 @@ const ParkCard: React.FC<ParkCardProps> = ({ park, onClick }) => {
       <div className="w-full h-40 overflow-hidden relative">
         {park.primaryImage || park.mainImageUrl ? (
           <img 
-            src={park.primaryImage || park.mainImageUrl} 
+            src={park.primaryImage || park.mainImageUrl || ''} 
             alt={park.name} 
             className="w-full h-full object-cover"
             onError={(e) => {
@@ -121,8 +121,8 @@ const ParkCard: React.FC<ParkCardProps> = ({ park, onClick }) => {
             <span key={amenity.id} className="inline-flex items-center text-xs bg-gray-100 px-2 py-1 rounded text-gray-800">
               <AmenityIcon 
                 name={amenity.icon || 'default'} 
-                customIconUrl={amenity.customIconUrl || null}
-                iconType={amenity.icon === 'custom' ? 'custom' : 'system'}
+                customIconUrl={null}
+                iconType={'system'}
                 size={12}
                 className="mr-1" 
               />

@@ -207,7 +207,7 @@ const Parks: React.FC = () => {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                   <div>
                     <h2 className="text-2xl font-bold text-gray-900">
-                      Resultados de Búsqueda
+                      Bosques Urbanos de Guadalajara
                     </h2>
                     <p className="text-gray-600 mt-1">
                       {totalParks} parques encontrados que coinciden con tus criterios

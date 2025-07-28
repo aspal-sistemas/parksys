@@ -179,8 +179,8 @@ function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksList
                     >
                       <AmenityIcon 
                         name={amenity.icon || 'default'} 
-                        customIconUrl={amenity.customIconUrl || null}
-                        iconType={amenity.icon === 'custom' ? 'custom' : 'system'}
+                        customIconUrl={null}
+                        iconType={'system'}
                         size={16} 
                         className="text-primary-600 flex-shrink-0" 
                       />
@@ -198,22 +198,15 @@ function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksList
               </div>
             </div>
 
-            {/* Información adicional compacta */}
+            {/* Información adicional compacta - Simplificada */}
             <div className="flex items-center gap-4 text-xs text-gray-500">
-              {park.postalCode && (
+              {/* Información específica del parque sin elementos genéricos */}
+              {park.area && (
                 <div className="flex items-center gap-1">
                   <MapPin className="h-3 w-3" />
-                  <span>CP: {park.postalCode}</span>
+                  <span>{park.area.toLocaleString()} m²</span>
                 </div>
               )}
-              <div className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
-                <span>Abierto Diariamente</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Star className="h-3 w-3" />
-                <span>Parque Público</span>
-              </div>
             </div>
           </div>
         </div>
