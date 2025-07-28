@@ -1808,35 +1808,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Delete an amenity (admin only)
   apiRouter.delete("/amenities/:id", isAuthenticated, async (req: Request, res: Response) => {
     try {
-      console.log(`Intento de eliminación de amenidad ID: ${req.params.id}`);
+      console.log(`[ROUTES] Intento de eliminación de amenidad ID: ${req.params.id}`);
       
       // Verificar que el usuario sea administrador
       if (req.user?.role !== "admin" && req.user?.role !== "super_admin") {
-        console.log(`Usuario sin permisos de admin: ${req.user?.role}`);
+        console.log(`[ROUTES] Usuario sin permisos de admin: ${req.user?.role}`);
         return res.status(403).json({ message: "Solo administradores pueden gestionar amenidades" });
       }
       
       const id = Number(req.params.id);
+      console.log(`[ROUTES] ID convertido a número: ${id}`);
       
       // Verificar si la amenidad está siendo utilizada por algún parque
+      console.log(`[ROUTES] Verificando si amenidad está en uso...`);
       const inUse = await storage.isAmenityInUse(id);
-      console.log(`Amenidad ${id} en uso: ${inUse}`);
+      console.log(`[ROUTES] Amenidad ${id} en uso: ${inUse}`);
       
       if (inUse) {
+        console.log(`[ROUTES] Amenidad en uso, devolviendo error 400`);
         return res.status(400).json({ 
           message: "No se puede eliminar esta amenidad porque está siendo utilizada por uno o más parques" 
         });
       }
       
+      console.log(`[ROUTES] Llamando a storage.deleteAmenity(${id})`);
       const result = await storage.deleteAmenity(id);
+      console.log(`[ROUTES] Resultado de storage.deleteAmenity: ${result}`);
       
       if (!result) {
+        console.log(`[ROUTES] Resultado falso, devolviendo 404`);
         return res.status(404).json({ message: "Amenidad no encontrada" });
       }
       
+      console.log(`[ROUTES] Eliminación exitosa, devolviendo 204`);
       res.status(204).send();
     } catch (error) {
-      console.error(error);
+      console.error("[ROUTES] Error en eliminación:", error);
       res.status(500).json({ message: "Error deleting amenity" });
     }
   });
