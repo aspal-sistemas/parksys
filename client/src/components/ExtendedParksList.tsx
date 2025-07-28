@@ -198,15 +198,9 @@ function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksList
               </div>
             </div>
 
-            {/* Información adicional compacta - Simplificada */}
+            {/* Información adicional compacta - Sin área del parque */}
             <div className="flex items-center gap-4 text-xs text-gray-500">
-              {/* Información específica del parque sin elementos genéricos */}
-              {park.area && (
-                <div className="flex items-center gap-1">
-                  <MapPin className="h-3 w-3" />
-                  <span>{park.area.toLocaleString()} m²</span>
-                </div>
-              )}
+              {/* Información específica del parque sin mostrar área */}
             </div>
           </div>
         </div>
