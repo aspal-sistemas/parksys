@@ -231,7 +231,7 @@ export default function EvaluationsPage() {
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [selectedPark, setSelectedPark] = useState('all');
   const [selectedEvaluation, setSelectedEvaluation] = useState<ParkEvaluation | null>(null);
-  const pageSize = 3; // Reduced to test pagination with limited data
+  const pageSize = 10;
 
   // Fetch evaluations with pagination and filters
   const { data: evaluationsData, isLoading } = useQuery({
