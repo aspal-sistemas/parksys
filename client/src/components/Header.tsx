@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'wouter';
-import { Menu, X, ChevronDown } from 'lucide-react';
+import { Menu, X, ChevronDown, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import GlobalSearch from '@/components/GlobalSearch';
 import logoImage from '@assets/logo_1751306368691.png';
@@ -203,9 +203,9 @@ const Header: React.FC = () => {
               )
             ) : (
               <Link href="/admin/login">
-                <Button>
-                  Acceso Institucional
-                </Button>
+                <div className="w-10 h-10 bg-emerald-500 hover:bg-emerald-600 rounded-lg flex items-center justify-center transition-colors duration-200 shadow-md hover:shadow-lg">
+                  <LogIn className="h-5 w-5 text-white" />
+                </div>
               </Link>
             )}
             
