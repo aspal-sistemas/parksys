@@ -600,6 +600,13 @@ const AdminSidebarComplete: React.FC = () => {
                 Categorías
               </NavItem>
               <NavItem 
+                href="/admin/events/list" 
+                icon={<ClipboardList className="h-4 w-4" />}
+                active={location.startsWith('/admin/events/list')}
+              >
+                Listado
+              </NavItem>
+              <NavItem 
                 href="/admin/eventos-ambu" 
                 icon={<FileText className="h-4 w-4" />}
                 active={location.startsWith('/admin/eventos-ambu')}

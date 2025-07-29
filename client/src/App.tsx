@@ -502,6 +502,12 @@ function Router() {
           </Suspense>
         </Route>
 
+        <Route path="/admin/events/list">
+          <Suspense fallback={<div className="p-8 text-center">Cargando listado de eventos...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/events/EventsList')))}
+          </Suspense>
+        </Route>
+
         <Route path="/admin/system/email-settings">
           <Suspense fallback={<div className="p-8 text-center">Cargando configuración de email...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/admin/system/email-settings')))}
