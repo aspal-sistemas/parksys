@@ -28,7 +28,15 @@ const Events: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [parkFilter, setParkFilter] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+
+  // Obtener lista de parques para el filtro
+  const { data: parksData = [] } = useQuery({
+    queryKey: ['/api/parks'],
+    suspense: false,
+    retry: 1
+  });
 
   // Simular datos de eventos por ahora
   const mockEvents: Event[] = [
@@ -150,8 +158,9 @@ const Events: React.FC = () => {
                          event.location.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = categoryFilter === 'all' || event.category === categoryFilter;
     const matchesStatus = statusFilter === 'all' || event.status === statusFilter;
+    const matchesPark = parkFilter === 'all' || event.location === parkFilter;
     
-    return matchesSearch && matchesCategory && matchesStatus;
+    return matchesSearch && matchesCategory && matchesStatus && matchesPark;
   });
 
   const formatDate = (dateString: string) => {
@@ -248,6 +257,20 @@ const Events: React.FC = () => {
                   <SelectItem value="completed">Completados</SelectItem>
                 </SelectContent>
               </Select>
+
+              <Select value={parkFilter} onValueChange={setParkFilter}>
+                <SelectTrigger className="w-full sm:w-48">
+                  <SelectValue placeholder="Parque" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los parques</SelectItem>
+                  {Array.isArray(parksData?.data) ? parksData.data.map((park: any) => (
+                    <SelectItem key={park.id} value={park.name}>{park.name}</SelectItem>
+                  )) : Array.isArray(parksData) ? parksData.map((park: any) => (
+                    <SelectItem key={park.id} value={park.name}>{park.name}</SelectItem>
+                  )) : null}
+                </SelectContent>
+              </Select>
             </div>
             
             <div className="flex items-center gap-2">
@@ -269,62 +292,7 @@ const Events: React.FC = () => {
           </div>
         </div>
 
-        {/* Estadísticas */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Total de Eventos</p>
-                  <p className="text-3xl font-bold text-gray-900">{events.length}</p>
-                </div>
-                <Calendar className="h-8 w-8 text-green-600" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Próximos</p>
-                  <p className="text-3xl font-bold text-blue-600">
-                    {events.filter((e: Event) => e.status === 'upcoming').length}
-                  </p>
-                </div>
-                <Clock className="h-8 w-8 text-blue-600" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">En Curso</p>
-                  <p className="text-3xl font-bold text-green-600">
-                    {events.filter((e: Event) => e.status === 'ongoing').length}
-                  </p>
-                </div>
-                <Star className="h-8 w-8 text-green-600" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Participantes</p>
-                  <p className="text-3xl font-bold text-purple-600">
-                    {events.reduce((sum: number, e: Event) => sum + e.registeredCount, 0).toLocaleString()}
-                  </p>
-                </div>
-                <Users className="h-8 w-8 text-purple-600" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+
 
         {/* Lista de eventos */}
         {filteredEvents.length === 0 ? (
