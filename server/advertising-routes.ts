@@ -453,6 +453,7 @@ router.get('/placements', async (req, res) => {
       LEFT JOIN ad_spaces ads ON ap.ad_space_id = ads.id
       WHERE ap.is_active = true 
         AND a.is_active = true
+        AND ads.is_active = true
         AND ap.start_date <= CURRENT_DATE
         AND ap.end_date >= CURRENT_DATE
     `;
