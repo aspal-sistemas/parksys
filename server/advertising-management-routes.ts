@@ -647,6 +647,139 @@ router.put('/assignments/:id', async (req, res) => {
   }
 });
 
+// Obtener asignaciones activas (ENDPOINT FALTANTE)
+router.get('/placements', async (req, res) => {
+  try {
+    const { spaceId, pageType, position } = req.query;
+    
+    let query = `
+      SELECT 
+        ap.id,
+        ap.advertisement_id,
+        ap.ad_space_id,
+        ap.priority,
+        ap.start_date,
+        ap.end_date,
+        ap.is_active,
+        a.title,
+        a.description,
+        a.image_url,
+        a.content as target_url,
+        a.alt_text,
+        a.button_text,
+        a.media_type,
+        a.duration,
+        a.is_active as ad_is_active,
+        a.updated_at as ad_updated_at
+      FROM ad_placements ap
+      LEFT JOIN advertisements a ON ap.advertisement_id = a.id
+      LEFT JOIN ad_spaces ads ON ap.ad_space_id = ads.id
+      WHERE ap.is_active = true 
+        AND a.is_active = true
+        AND ads.is_active = true
+        AND ap.start_date <= CURRENT_DATE
+        AND ap.end_date >= CURRENT_DATE
+    `;
+    
+    const params = [];
+    
+    if (spaceId) {
+      query += ` AND ads.id = $${params.length + 1}`;
+      params.push(spaceId);
+    }
+    
+    if (pageType) {
+      query += ` AND ads.page_type = $${params.length + 1}`;
+      params.push(pageType);
+    }
+    
+    if (position) {
+      query += ` AND ads.position = $${params.length + 1}`;
+      params.push(position);
+    }
+    
+    query += ` ORDER BY ap.priority DESC LIMIT 10`;
+    
+    const result = await pool.query(query, params);
+    
+    // Formatear los datos para el frontend
+    const formattedData = result.rows.map(row => ({
+      id: row.id,
+      adSpaceId: row.ad_space_id,
+      advertisementId: row.advertisement_id,
+      startDate: row.start_date,
+      endDate: row.end_date,
+      isActive: row.is_active,
+      advertisement: {
+        id: row.advertisement_id,
+        title: row.title,
+        description: row.description,
+        imageUrl: row.image_url,
+        targetUrl: row.target_url,
+        altText: row.alt_text,
+        buttonText: row.button_text,
+        mediaType: row.media_type || 'image',
+        duration: row.duration,
+        isActive: row.ad_is_active,
+        updatedAt: row.ad_updated_at
+      }
+    }));
+    
+    res.json({ success: true, data: formattedData });
+  } catch (error) {
+    console.error('Error obteniendo asignaciones:', error);
+    res.status(500).json({ success: false, error: 'Error obteniendo asignaciones' });
+  }
+});
+
+// Registrar impresión
+router.post('/track-impression', async (req, res) => {
+  try {
+    const { placementId } = req.body;
+    
+    if (!placementId) {
+      return res.status(400).json({ error: 'placementId es requerido' });
+    }
+
+    await pool.query(`
+      INSERT INTO ad_metrics (advertisement_id, event_type, event_date, placement_id)
+      SELECT ap.advertisement_id, 'impression', CURRENT_DATE, $1
+      FROM ad_placements ap
+      WHERE ap.id = $1
+    `, [placementId]);
+
+    console.log('📊 Impresión registrada para placement ID:', placementId);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error tracking impression:', error);
+    res.status(500).json({ error: 'Error tracking impression' });
+  }
+});
+
+// Registrar click
+router.post('/track-click', async (req, res) => {
+  try {
+    const { placementId } = req.body;
+    
+    if (!placementId) {
+      return res.status(400).json({ error: 'placementId es requerido' });
+    }
+
+    await pool.query(`
+      INSERT INTO ad_metrics (advertisement_id, event_type, event_date, placement_id)
+      SELECT ap.advertisement_id, 'click', CURRENT_DATE, $1
+      FROM ad_placements ap
+      WHERE ap.id = $1
+    `, [placementId]);
+
+    console.log('🖱️ Click registrado para placement ID:', placementId);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error tracking click:', error);
+    res.status(500).json({ error: 'Error tracking click' });
+  }
+});
+
 // Eliminar asignación
 router.delete('/assignments/:id', async (req, res) => {
   try {
