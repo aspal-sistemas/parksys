@@ -541,7 +541,7 @@ function ActivitiesPage() {
 
                 {/* Paginación */}
                 {totalPages > 1 && (
-                  <div className="flex items-center justify-center gap-2 mt-12">
+                  <div className="flex items-center justify-center gap-2 mt-12 mb-16">
                     <Button
                       variant="outline"
                       size="sm"
