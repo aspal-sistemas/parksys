@@ -36,6 +36,9 @@ const EventsList: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [parkFilter, setParkFilter] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [showViewDialog, setShowViewDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -81,6 +84,23 @@ const EventsList: React.FC = () => {
     }
   });
 
+  // Funciones para manejar las acciones
+  const handleViewEvent = (event: Event) => {
+    setSelectedEvent(event);
+    setShowViewDialog(true);
+  };
+
+  const handleEditEvent = (event: Event) => {
+    // Aquí podrías navegar a una página de edición o abrir un modal
+    window.location.href = `/admin/events/edit/${event.id}`;
+  };
+
+  const handleDeleteEvent = (eventId: number) => {
+    if (window.confirm('¿Estás seguro de que deseas eliminar este evento?')) {
+      deleteEventMutation.mutate(eventId);
+    }
+  };
+
   const events = Array.isArray(eventsData?.data) ? eventsData.data : Array.isArray(eventsData) ? eventsData : [];
   const parks = Array.isArray(parksData?.data) ? parksData.data : Array.isArray(parksData) ? parksData : [];
   const categories = Array.isArray(categoriesData?.data) ? categoriesData.data : Array.isArray(categoriesData) ? categoriesData : [];
@@ -123,12 +143,6 @@ const EventsList: React.FC = () => {
 
   const formatPrice = (price: number) => {
     return price === 0 ? 'Gratuito' : `$${price?.toLocaleString()} MXN`;
-  };
-
-  const handleDeleteEvent = (eventId: number) => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar este evento?')) {
-      deleteEventMutation.mutate(eventId);
-    }
   };
 
   if (isLoading) {
@@ -310,6 +324,7 @@ const EventsList: React.FC = () => {
                           size="sm" 
                           variant="outline"
                           className="flex-1"
+                          onClick={() => handleViewEvent(event)}
                         >
                           <Eye className="h-4 w-4 mr-1" />
                           Ver
@@ -318,6 +333,7 @@ const EventsList: React.FC = () => {
                           size="sm" 
                           variant="outline"
                           className="flex-1"
+                          onClick={() => handleEditEvent(event)}
                         >
                           <Edit className="h-4 w-4 mr-1" />
                           Editar
@@ -371,10 +387,18 @@ const EventsList: React.FC = () => {
                       </div>
                       
                       <div className="flex gap-2">
-                        <Button size="sm" variant="outline">
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => handleViewEvent(event)}
+                        >
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button size="sm" variant="outline">
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => handleEditEvent(event)}
+                        >
                           <Edit className="h-4 w-4" />
                         </Button>
                         <Button 
@@ -426,6 +450,150 @@ const EventsList: React.FC = () => {
           </Card>
         )}
       </div>
+
+      {/* Modal para ver detalles del evento */}
+      <Dialog open={showViewDialog} onOpenChange={setShowViewDialog}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-gray-900">
+              Detalles del Evento
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedEvent && (
+            <div className="space-y-6">
+              {/* Imagen del evento si existe */}
+              {selectedEvent.imageUrl && (
+                <div className="w-full h-64 overflow-hidden rounded-lg">
+                  <img 
+                    src={selectedEvent.imageUrl} 
+                    alt={selectedEvent.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+              
+              {/* Información principal */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Información General</h3>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-500">Título:</span>
+                        <span className="text-sm text-gray-900">{selectedEvent.title}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-500">Estado:</span>
+                        <Badge className={statusColors[selectedEvent.status]}>
+                          {statusLabels[selectedEvent.status]}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-500">Categoría:</span>
+                        <span className="text-sm text-gray-900">{selectedEvent.category}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-500">Organizador:</span>
+                        <span className="text-sm text-gray-900">{selectedEvent.organizer}</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Fecha y Ubicación</h3>
+                    <div className="space-y-2">
+                      <div className="flex items-center">
+                        <Calendar className="h-4 w-4 mr-2 text-gray-500" />
+                        <span className="text-sm text-gray-900">
+                          {formatDate(selectedEvent.date)} a las {selectedEvent.time}
+                        </span>
+                      </div>
+                      <div className="flex items-center">
+                        <MapPin className="h-4 w-4 mr-2 text-gray-500" />
+                        <span className="text-sm text-gray-900">{selectedEvent.location}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Capacidad y Participantes</h3>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-500">Capacidad total:</span>
+                        <span className="text-sm text-gray-900">{selectedEvent.capacity} personas</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-500">Registrados:</span>
+                        <span className="text-sm text-gray-900">{selectedEvent.registeredCount || 0} personas</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-500">Disponibles:</span>
+                        <span className="text-sm text-gray-900">
+                          {selectedEvent.capacity - (selectedEvent.registeredCount || 0)} personas
+                        </span>
+                      </div>
+                      {selectedEvent.price !== undefined && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-gray-500">Precio:</span>
+                          <span className="text-sm font-medium text-green-600">
+                            {formatPrice(selectedEvent.price)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Fechas del Sistema</h3>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-500">Creado:</span>
+                        <span className="text-sm text-gray-900">
+                          {new Date(selectedEvent.createdAt).toLocaleDateString('es-MX')}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-500">Actualizado:</span>
+                        <span className="text-sm text-gray-900">
+                          {new Date(selectedEvent.updatedAt).toLocaleDateString('es-MX')}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Descripción completa */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Descripción</h3>
+                <p className="text-sm text-gray-700 leading-relaxed">
+                  {selectedEvent.description}
+                </p>
+              </div>
+              
+              {/* Botones de acción */}
+              <div className="flex gap-3 pt-4 border-t">
+                <Button 
+                  onClick={() => handleEditEvent(selectedEvent)}
+                  className="bg-[#00a587] hover:bg-[#067f5f] text-white"
+                >
+                  <Edit className="h-4 w-4 mr-2" />
+                  Editar Evento
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => setShowViewDialog(false)}
+                >
+                  Cerrar
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 };
