@@ -42,7 +42,7 @@ const Header: React.FC = () => {
                         location === '/instructors';
 
   return (
-    <header className="bg-white shadow-sm">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm border-b border-gray-200">
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
@@ -58,16 +58,31 @@ const Header: React.FC = () => {
             </Link>
             
             {/* Desktop navigation */}
-            {!isAdmin && (
-              <nav className="hidden md:ml-8 md:flex md:space-x-6">
-                <Link href="/"
-                  className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium ${
-                    location === '/' 
-                      ? 'border-primary text-gray-900' 
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}>
-                  Inicio
-                </Link>
+            <nav className="hidden md:ml-8 md:flex md:space-x-6">
+                {isAdmin ? (
+                  <>
+                    <Link href="/admin"
+                      className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium ${
+                        location === '/admin' 
+                          ? 'border-primary text-gray-900' 
+                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      }`}>
+                      Dashboard
+                    </Link>
+                    <span className="border-b-2 border-transparent pt-1 pb-3 px-1 text-sm font-medium text-gray-400">
+                      Administración
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <Link href="/"
+                      className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium ${
+                        location === '/' 
+                          ? 'border-primary text-gray-900' 
+                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      }`}>
+                      Inicio
+                    </Link>
                 
                 <Link href="/parks"
                   className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium ${
@@ -169,8 +184,9 @@ const Header: React.FC = () => {
                 
                 {/* Enlace de registro de voluntarios removido */}
                 {/* Botón "Acerca de" removido del menú principal */}
+                  </>
+                )}
               </nav>
-            )}
           </div>
           
           <div className="flex items-center gap-3">

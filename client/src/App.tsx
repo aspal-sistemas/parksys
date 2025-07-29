@@ -37,13 +37,13 @@ import Header from "@/components/Header";
 
 function Router() {
   const [location] = useLocation();
-  const isAdminRoute = location.startsWith('/admin');
   const isVentasRoute = location === '/ventas' || location === '/landing' || location === '/sales';
   
   return (
     <div className="flex flex-col min-h-screen">
-      {!isAdminRoute && !isVentasRoute && <Header />}
-      <Switch>
+      {!isVentasRoute && <Header />}
+      <div className={!isVentasRoute ? "pt-16" : ""}>
+        <Switch>
         <Route path="/" component={Home} />
         <Route path="/home" component={Home} />
         <Route path="/ventas" component={Landing} />
@@ -1112,7 +1112,8 @@ function Router() {
         </Route>
         
         <Route component={NotFound} />
-      </Switch>
+        </Switch>
+      </div>
     </div>
   );
 }
