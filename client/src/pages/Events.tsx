@@ -12,16 +12,19 @@ interface Event {
   id: number;
   title: string;
   description: string;
-  date: string;
-  time: string;
+  startDate: string;
+  endDate: string;
+  startTime?: string;
+  endTime?: string;
   location: string;
   capacity: number;
-  registeredCount: number;
-  category: string;
-  status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
-  imageUrl?: string;
-  price?: number;
-  organizer: string;
+  registeredCount?: number;
+  eventType: string;
+  status: 'draft' | 'published' | 'cancelled';
+  featuredImageUrl?: string;
+  organizerName: string;
+  organizerEmail: string;
+  parks?: Array<{ id: number; name: string; address: string }>;
 }
 
 const Events: React.FC = () => {
@@ -31,137 +34,59 @@ const Events: React.FC = () => {
   const [parkFilter, setParkFilter] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-  // Obtener lista de parques para el filtro
-  const { data: parksData = [] } = useQuery({
-    queryKey: ['/api/parks'],
-    suspense: false,
+  // Obtener eventos desde el backend
+  const { data: eventsData = [], isLoading: eventsLoading } = useQuery({
+    queryKey: ['/api/events'],
     retry: 1
   });
 
-  // Simular datos de eventos por ahora
-  const mockEvents: Event[] = [
-    {
-      id: 1,
-      title: 'Festival de Primavera',
-      description: 'Celebración anual con música, arte y actividades familiares en el corazón del parque.',
-      date: '2025-03-15',
-      time: '10:00',
-      location: 'Bosque Los Colomos',
-      capacity: 500,
-      registeredCount: 245,
-      category: 'Festival',
-      status: 'upcoming',
-      imageUrl: 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-      price: 0,
-      organizer: 'Bosques Urbanos de Guadalajara'
-    },
-    {
-      id: 2,
-      title: 'Concierto de Jazz al Aire Libre',
-      description: 'Noche de jazz bajo las estrellas con artistas locales e internacionales.',
-      date: '2025-02-20',
-      time: '19:00',
-      location: 'Parque Agua Azul',
-      capacity: 300,
-      registeredCount: 180,
-      category: 'Música',
-      status: 'upcoming',
-      imageUrl: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-      price: 150,
-      organizer: 'Asociación Jazz Guadalajara'
-    },
-    {
-      id: 3,
-      title: 'Mercado de Productores Locales',
-      description: 'Mercado semanal con productos orgánicos, artesanías y comida local.',
-      date: '2025-02-08',
-      time: '08:00',
-      location: 'Bosque Urbano Tlaquepaque',
-      capacity: 200,
-      registeredCount: 120,
-      category: 'Mercado',
-      status: 'ongoing',
-      imageUrl: 'https://images.unsplash.com/photo-1488459716781-31db52582fe9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-      price: 0,
-      organizer: 'Cooperativa Local'
-    },
-    {
-      id: 4,
-      title: 'Torneo de Ajedrez Familiar',
-      description: 'Competencia de ajedrez para todas las edades con premios y reconocimientos.',
-      date: '2025-01-25',
-      time: '15:00',
-      location: 'Parque González Gallo',
-      capacity: 100,
-      registeredCount: 85,
-      category: 'Deportes',
-      status: 'completed',
-      imageUrl: 'https://images.unsplash.com/photo-1529699211952-734e80c4d42b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-      price: 50,
-      organizer: 'Club de Ajedrez Metropolitano'
-    },
-    {
-      id: 5,
-      title: 'Taller de Fotografía de Naturaleza',
-      description: 'Aprende técnicas de fotografía de flora y fauna en un entorno natural.',
-      date: '2025-02-15',
-      time: '09:00',
-      location: 'Bosque Los Colomos',
-      capacity: 25,
-      registeredCount: 22,
-      category: 'Taller',
-      status: 'upcoming',
-      imageUrl: 'https://images.unsplash.com/photo-1606983340126-99ab4feaa64a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-      price: 200,
-      organizer: 'Escuela de Fotografía Verde'
-    },
-    {
-      id: 6,
-      title: 'Carrera Ecológica 5K',
-      description: 'Carrera por senderos naturales promoviendo el cuidado del medio ambiente.',
-      date: '2025-03-01',
-      time: '07:00',
-      location: 'Parque Metropolitano',
-      capacity: 400,
-      registeredCount: 320,
-      category: 'Deportes',
-      status: 'upcoming',
-      imageUrl: 'https://images.unsplash.com/photo-1544717297-fa95b6ee9643?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-      price: 100,
-      organizer: 'RunGreen Guadalajara'
-    }
-  ];
-
-  const { data: events = mockEvents, isLoading } = useQuery<Event[]>({
-    queryKey: ['/api/events'],
-    enabled: false // Usar datos mock por ahora
+  // Obtener lista de parques para el filtro
+  const { data: parksData = [] } = useQuery({
+    queryKey: ['/api/parks'],
+    retry: 1
   });
 
-  const categories = ['Festival', 'Música', 'Mercado', 'Deportes', 'Taller'];
+  // Procesar datos del backend
+  const events = Array.isArray(eventsData?.data) ? eventsData.data : Array.isArray(eventsData) ? eventsData : [];
+  const parks = Array.isArray(parksData?.data) ? parksData.data : Array.isArray(parksData) ? parksData : [];
+  
+  // Obtener categorías únicas de los eventos
+  const categories = [...new Set(events.map((event: Event) => event.eventType))];
+
+  const filteredEvents = events.filter((event: Event) => {
+    const parkName = event.parks && event.parks.length > 0 ? event.parks[0].name : event.location;
+    
+    const matchesSearch = event.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         event.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         event.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         parkName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         event.organizerName?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = categoryFilter === 'all' || event.eventType === categoryFilter;
+    const matchesStatus = statusFilter === 'all' || event.status === statusFilter;
+    const matchesPark = parkFilter === 'all' || parkName === parkFilter;
+    
+    return matchesSearch && matchesCategory && matchesStatus && matchesPark;
+  });
+
   const statusLabels = {
-    upcoming: 'Próximo',
-    ongoing: 'En curso',
-    completed: 'Completado',
+    draft: 'Borrador',
+    published: 'Publicado',
     cancelled: 'Cancelado'
   };
 
   const statusColors = {
-    upcoming: 'bg-blue-100 text-blue-800',
-    ongoing: 'bg-green-100 text-green-800',
-    completed: 'bg-gray-100 text-gray-800',
+    draft: 'bg-yellow-100 text-yellow-800',
+    published: 'bg-green-100 text-green-800',
     cancelled: 'bg-red-100 text-red-800'
   };
 
-  const filteredEvents = events.filter((event: Event) => {
-    const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         event.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         event.location.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = categoryFilter === 'all' || event.category === categoryFilter;
-    const matchesStatus = statusFilter === 'all' || event.status === statusFilter;
-    const matchesPark = parkFilter === 'all' || event.location === parkFilter;
-    
-    return matchesSearch && matchesCategory && matchesStatus && matchesPark;
-  });
+  const eventTypeLabels = {
+    cultural: 'Cultural',
+    sports: 'Deportes',
+    environmental: 'Ambiental',
+    educational: 'Educativo',
+    social: 'Social'
+  };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -173,11 +98,12 @@ const Events: React.FC = () => {
     });
   };
 
-  const formatPrice = (price: number) => {
-    return price === 0 ? 'Gratuito' : `$${price.toLocaleString()} MXN`;
+  const formatTime = (timeString?: string) => {
+    if (!timeString) return 'Todo el día';
+    return timeString;
   };
 
-  if (isLoading) {
+  if (eventsLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -240,8 +166,10 @@ const Events: React.FC = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todas las categorías</SelectItem>
-                  {categories.map(category => (
-                    <SelectItem key={category} value={category}>{category}</SelectItem>
+                  {categories.map((category: string) => (
+                    <SelectItem key={category} value={category}>
+                      {eventTypeLabels[category as keyof typeof eventTypeLabels] || category}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -252,9 +180,9 @@ const Events: React.FC = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos los estados</SelectItem>
-                  <SelectItem value="upcoming">Próximos</SelectItem>
-                  <SelectItem value="ongoing">En curso</SelectItem>
-                  <SelectItem value="completed">Completados</SelectItem>
+                  <SelectItem value="draft">Borrador</SelectItem>
+                  <SelectItem value="published">Publicado</SelectItem>
+                  <SelectItem value="cancelled">Cancelado</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -264,11 +192,9 @@ const Events: React.FC = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos los parques</SelectItem>
-                  {Array.isArray(parksData?.data) ? parksData.data.map((park: any) => (
+                  {parks.map((park: any) => (
                     <SelectItem key={park.id} value={park.name}>{park.name}</SelectItem>
-                  )) : Array.isArray(parksData) ? parksData.map((park: any) => (
-                    <SelectItem key={park.id} value={park.name}>{park.name}</SelectItem>
-                  )) : null}
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -278,6 +204,7 @@ const Events: React.FC = () => {
                 variant={viewMode === 'grid' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setViewMode('grid')}
+                className="bg-[#00a587] hover:bg-[#067f5f] text-white"
               >
                 <Grid className="h-4 w-4" />
               </Button>
@@ -285,6 +212,7 @@ const Events: React.FC = () => {
                 variant={viewMode === 'list' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setViewMode('list')}
+                className="bg-[#00a587] hover:bg-[#067f5f] text-white"
               >
                 <List className="h-4 w-4" />
               </Button>
@@ -292,125 +220,108 @@ const Events: React.FC = () => {
           </div>
         </div>
 
-
-
         {/* Lista de eventos */}
         {filteredEvents.length === 0 ? (
-          <Card>
-            <CardContent className="p-12 text-center">
-              <Calendar className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">No se encontraron eventos</h3>
-              <p className="text-gray-600">
-                Intenta ajustar los filtros o buscar con otros términos.
-              </p>
-            </CardContent>
-          </Card>
+          <div className="bg-white rounded-lg shadow-sm p-12 text-center">
+            <Calendar className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">No se encontraron eventos</h3>
+            <p className="text-gray-600">
+              {events.length === 0 
+                ? "No hay eventos disponibles en este momento. ¡Vuelve pronto para descubrir nuevas actividades!"
+                : "Intenta ajustar los filtros o buscar con otros términos."
+              }
+            </p>
+          </div>
         ) : (
           <div className={viewMode === 'grid' 
-            ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' 
-            : 'space-y-6'
+            ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
+            : 'space-y-4'
           }>
-            {filteredEvents.map((event) => (
-              <Card key={event.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+            {filteredEvents.map((event: Event) => (
+              <Card key={event.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                 {viewMode === 'grid' ? (
                   <>
-                    {event.imageUrl && (
-                      <div className="aspect-video relative overflow-hidden rounded-t-lg">
+                    {event.featuredImageUrl && (
+                      <div className="h-48 overflow-hidden">
                         <img 
-                          src={event.imageUrl} 
+                          src={event.featuredImageUrl} 
                           alt={event.title}
-                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                          className="w-full h-full object-cover"
                         />
-                        <Badge className={`absolute top-3 right-3 ${statusColors[event.status]}`}>
+                      </div>
+                    )}
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between mb-3">
+                        <h3 className="text-lg font-semibold text-gray-900 flex-1 mr-2">
+                          {event.title}
+                        </h3>
+                        <Badge className={statusColors[event.status]}>
                           {statusLabels[event.status]}
                         </Badge>
                       </div>
-                    )}
-                    <CardHeader>
-                      <div className="flex items-center justify-between mb-2">
-                        <Badge variant="outline">{event.category}</Badge>
-                        <span className="text-lg font-bold text-green-600">
-                          {formatPrice(event.price)}
-                        </span>
-                      </div>
-                      <CardTitle className="text-xl">{event.title}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-gray-600 mb-4 line-clamp-2">{event.description}</p>
                       
-                      <div className="space-y-2 text-sm text-gray-500">
+                      <div className="mb-3">
+                        <Badge variant="outline" className="text-xs">
+                          {eventTypeLabels[event.eventType as keyof typeof eventTypeLabels] || event.eventType}
+                        </Badge>
+                      </div>
+                      
+                      <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                        {event.description}
+                      </p>
+                      
+                      <div className="space-y-2 text-sm text-gray-500 mb-4">
                         <div className="flex items-center">
                           <Calendar className="h-4 w-4 mr-2" />
-                          {formatDate(event.date)}
-                        </div>
-                        <div className="flex items-center">
-                          <Clock className="h-4 w-4 mr-2" />
-                          {event.time} hrs
+                          {formatDate(event.startDate)} {event.startTime && `a las ${formatTime(event.startTime)}`}
                         </div>
                         <div className="flex items-center">
                           <MapPin className="h-4 w-4 mr-2" />
-                          {event.location}
+                          {event.parks && event.parks.length > 0 ? event.parks[0].name : event.location}
                         </div>
                         <div className="flex items-center">
                           <Users className="h-4 w-4 mr-2" />
-                          {event.registeredCount}/{event.capacity} inscritos
+                          {event.registeredCount || 0} / {event.capacity} participantes
                         </div>
                       </div>
                       
-                      <div className="mt-4 pt-4 border-t">
-                        <p className="text-xs text-gray-500">Organiza: {event.organizer}</p>
+                      <div className="text-xs text-gray-400">
+                        Organiza: {event.organizerName}
                       </div>
                     </CardContent>
                   </>
                 ) : (
                   <CardContent className="p-6">
-                    <div className="flex gap-6">
-                      {event.imageUrl && (
-                        <div className="w-32 h-32 flex-shrink-0">
-                          <img 
-                            src={event.imageUrl} 
-                            alt={event.title}
-                            className="w-full h-full object-cover rounded-lg"
-                          />
-                        </div>
-                      )}
+                    <div className="flex items-center justify-between">
                       <div className="flex-1">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline">{event.category}</Badge>
-                            <Badge className={statusColors[event.status]}>
-                              {statusLabels[event.status]}
-                            </Badge>
-                          </div>
-                          <span className="text-lg font-bold text-green-600">
-                            {formatPrice(event.price)}
-                          </span>
+                        <div className="flex items-center gap-4 mb-2">
+                          <h3 className="text-lg font-semibold text-gray-900">
+                            {event.title}
+                          </h3>
+                          <Badge className={statusColors[event.status]}>
+                            {statusLabels[event.status]}
+                          </Badge>
+                          <Badge variant="outline" className="text-xs">
+                            {eventTypeLabels[event.eventType as keyof typeof eventTypeLabels] || event.eventType}
+                          </Badge>
                         </div>
                         
-                        <h3 className="text-xl font-bold mb-2">{event.title}</h3>
-                        <p className="text-gray-600 mb-3">{event.description}</p>
-                        
-                        <div className="grid grid-cols-2 gap-4 text-sm text-gray-500">
+                        <div className="flex items-center gap-6 text-sm text-gray-500">
                           <div className="flex items-center">
-                            <Calendar className="h-4 w-4 mr-2" />
-                            {formatDate(event.date)}
+                            <Calendar className="h-4 w-4 mr-1" />
+                            {formatDate(event.startDate)} {event.startTime && `- ${formatTime(event.startTime)}`}
                           </div>
                           <div className="flex items-center">
-                            <Clock className="h-4 w-4 mr-2" />
-                            {event.time} hrs
+                            <MapPin className="h-4 w-4 mr-1" />
+                            {event.parks && event.parks.length > 0 ? event.parks[0].name : event.location}
                           </div>
                           <div className="flex items-center">
-                            <MapPin className="h-4 w-4 mr-2" />
-                            {event.location}
+                            <Users className="h-4 w-4 mr-1" />
+                            {event.registeredCount || 0}/{event.capacity}
                           </div>
-                          <div className="flex items-center">
-                            <Users className="h-4 w-4 mr-2" />
-                            {event.registeredCount}/{event.capacity} inscritos
+                          <div className="text-xs text-gray-400">
+                            Organiza: {event.organizerName}
                           </div>
-                        </div>
-                        
-                        <div className="mt-3 pt-3 border-t">
-                          <p className="text-xs text-gray-500">Organiza: {event.organizer}</p>
                         </div>
                       </div>
                     </div>
@@ -422,136 +333,75 @@ const Events: React.FC = () => {
         )}
       </div>
 
-      {/* Footer institucional */}
-      <footer className="bg-gradient-to-b from-[#067f5f] to-[#00a587] text-white">
-        {/* Logo y descripción principal */}
-        <div className="container mx-auto px-4 py-12">
-          <div className="text-center mb-12">
-            <img 
-              src="/uploads/logos/logo-parques-mexico.png" 
-              alt="Agencia Metropolitana de Bosques Urbanos" 
-              className="h-16 w-auto mx-auto mb-6 filter brightness-0 invert"
-            />
-            <h2 className="text-2xl font-bold mb-4">Agencia Metropolitana de Bosques Urbanos</h2>
-            <p className="text-lg text-emerald-100 max-w-3xl mx-auto">
-              Fortalecemos el tejido social a través de espacios verdes que conectan comunidades, 
-              promueven la sostenibilidad y mejoran la calidad de vida en nuestra área metropolitana.
-            </p>
-          </div>
-
-          {/* Enlaces organizados en grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8 mb-12">
-            {/* Columna 1 */}
-            <div className="space-y-3">
-              <a href="/" className="block text-white hover:text-[#bcd256] transition-colors">
-                Inicio
-              </a>
-              <a href="/about" className="block text-white hover:text-[#bcd256] transition-colors">
-                Nosotros
-              </a>
-              <a href="/activities" className="block text-white hover:text-[#bcd256] transition-colors">
-                Eventos
-              </a>
+      {/* Footer Institucional */}
+      <footer className="bg-gradient-to-r from-green-800 to-green-900 text-white mt-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8">
+            {/* Logo y descripción */}
+            <div className="lg:col-span-2">
+              <div className="flex items-center mb-4">
+                <div className="bg-white p-2 rounded-lg mr-3">
+                  <div className="w-8 h-8 bg-green-600 rounded"></div>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold">Agencia Metropolitana</h3>
+                  <p className="text-sm text-green-100">de Bosques Urbanos</p>
+                </div>
+              </div>
+              <p className="text-green-100 text-sm leading-relaxed">
+                Promovemos el desarrollo sostenible y la conservación de los espacios verdes urbanos 
+                de Guadalajara, creando experiencias significativas para toda la comunidad.
+              </p>
             </div>
 
-            {/* Columna 2 */}
-            <div className="space-y-3">
-              <a href="/parks" className="block text-white hover:text-[#bcd256] transition-colors">
-                Bosques Urbanos
-              </a>
-              <a href="/education" className="block text-white hover:text-[#bcd256] transition-colors">
-                Educación Ambiental
-              </a>
-              <a href="/wildlife-rescue" className="block text-white hover:text-[#bcd256] transition-colors">
-                Rescate de Fauna
-              </a>
+            {/* Enlaces principales */}
+            <div>
+              <h4 className="text-white font-semibold mb-4">Enlaces</h4>
+              <ul className="space-y-2 text-sm">
+                <li><a href="/parks" className="text-green-100 hover:text-white transition-colors">Parques</a></li>
+                <li><a href="/activities" className="text-green-100 hover:text-white transition-colors">Actividades</a></li>
+                <li><a href="/events" className="text-green-100 hover:text-white transition-colors">Eventos</a></li>
+                <li><a href="/tree-species" className="text-green-100 hover:text-white transition-colors">Arbolado</a></li>
+              </ul>
             </div>
 
-            {/* Columna 3 */}
-            <div className="space-y-3">
-              <a href="/transparency" className="block text-white hover:text-[#bcd256] transition-colors">
-                Transparencia
-              </a>
-              <a href="/bids" className="block text-white hover:text-[#bcd256] transition-colors">
-                Licitaciones
-              </a>
-              <a href="/blog" className="block text-white hover:text-[#bcd256] transition-colors">
-                Blog
-              </a>
+            {/* Bosques urbanos */}
+            <div>
+              <h4 className="text-white font-semibold mb-4">Bosques Urbanos</h4>
+              <ul className="space-y-2 text-sm">
+                <li><a href="#" className="text-green-100 hover:text-white transition-colors">Los Colomos</a></li>
+                <li><a href="#" className="text-green-100 hover:text-white transition-colors">Agua Azul</a></li>
+                <li><a href="#" className="text-green-100 hover:text-white transition-colors">Metropolitano</a></li>
+                <li><a href="#" className="text-green-100 hover:text-white transition-colors">González Gallo</a></li>
+              </ul>
             </div>
 
-            {/* Columna 4 */}
-            <div className="space-y-3">
-              <a href="/faq" className="block text-white hover:text-[#bcd256] transition-colors">
-                Preguntas Frecuentes
-              </a>
-              <a href="/help" className="block text-white hover:text-[#bcd256] transition-colors">
-                Quiero Ayudar
-              </a>
-              <a href="/contact" className="block text-white hover:text-[#bcd256] transition-colors">
-                Contacto
-              </a>
+            {/* Transparencia */}
+            <div>
+              <h4 className="text-white font-semibold mb-4">Transparencia</h4>
+              <ul className="space-y-2 text-sm">
+                <li><a href="#" className="text-green-100 hover:text-white transition-colors">Portal de Transparencia</a></li>
+                <li><a href="#" className="text-green-100 hover:text-white transition-colors">Información Pública</a></li>
+                <li><a href="#" className="text-green-100 hover:text-white transition-colors">Presupuesto</a></li>
+                <li><a href="#" className="text-green-100 hover:text-white transition-colors">Rendición de Cuentas</a></li>
+              </ul>
             </div>
 
-            {/* Columna 5 - Servicios */}
-            <div className="space-y-3">
-              <h4 className="font-semibold text-[#bcd256] mb-2">Servicios</h4>
-              <a href="/instructors" className="block text-white hover:text-[#bcd256] transition-colors">
-                Instructores
-              </a>
-              <a href="/concessions" className="block text-white hover:text-[#bcd256] transition-colors">
-                Concesiones
-              </a>
-              <a href="/tree-species" className="block text-white hover:text-[#bcd256] transition-colors">
-                Especies Arbóreas
-              </a>
-            </div>
-
-            {/* Columna 6 - Participación */}
-            <div className="space-y-3">
-              <h4 className="font-semibold text-[#bcd256] mb-2">Participa</h4>
-              <a href="/volunteers" className="block text-white hover:text-[#bcd256] transition-colors">
-                Voluntariado
-              </a>
-              <a href="/reports" className="block text-white hover:text-[#bcd256] transition-colors">
-                Reportar Incidentes
-              </a>
-              <a href="/suggestions" className="block text-white hover:text-[#bcd256] transition-colors">
-                Sugerencias
-              </a>
+            {/* Contacto */}
+            <div>
+              <h4 className="text-white font-semibold mb-4">Contacto</h4>
+              <div className="space-y-2 text-sm text-green-100">
+                <p>Av. Miraflores 1234</p>
+                <p>Col. Miraflores, Guadalajara</p>
+                <p>Tel: (33) 1234-5678</p>
+                <p>contacto@bosquesurbanos.gob.mx</p>
+                <p className="text-xs mt-2">Lun-Vie: 8:00-16:00</p>
+              </div>
             </div>
           </div>
 
-          {/* Información de contacto */}
-          <div className="border-t border-emerald-500/30 pt-8 text-center">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-              <div>
-                <h4 className="font-semibold text-[#bcd256] mb-2">Dirección</h4>
-                <p className="text-emerald-100 text-sm">
-                  Av. Alcalde 1351, Miraflores<br/>
-                  44270 Guadalajara, Jalisco
-                </p>
-              </div>
-              <div>
-                <h4 className="font-semibold text-[#bcd256] mb-2">Contacto</h4>
-                <p className="text-emerald-100 text-sm">
-                  Tel: (33) 3837-4400<br/>
-                  bosques@guadalajara.gob.mx
-                </p>
-              </div>
-              <div>
-                <h4 className="font-semibold text-[#bcd256] mb-2">Horarios</h4>
-                <p className="text-emerald-100 text-sm">
-                  Lunes a Viernes: 8:00 - 15:00<br/>
-                  Fines de semana: Espacios abiertos
-                </p>
-              </div>
-            </div>
-            
-            <div className="text-sm text-emerald-200">
-              © {new Date().getFullYear()} Agencia Metropolitana de Bosques Urbanos de Guadalajara. 
-              Todos los derechos reservados.
-            </div>
+          <div className="border-t border-green-700 mt-8 pt-8 text-center text-sm text-green-100">
+            <p>&copy; 2025 Agencia Metropolitana de Bosques Urbanos. Todos los derechos reservados.</p>
           </div>
         </div>
       </footer>
