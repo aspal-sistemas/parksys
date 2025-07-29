@@ -453,6 +453,140 @@ const Events: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Footer institucional */}
+      <footer className="bg-gradient-to-b from-[#067f5f] to-[#00a587] text-white">
+        {/* Logo y descripción principal */}
+        <div className="container mx-auto px-4 py-12">
+          <div className="text-center mb-12">
+            <img 
+              src="/uploads/logos/logo-parques-mexico.png" 
+              alt="Agencia Metropolitana de Bosques Urbanos" 
+              className="h-16 w-auto mx-auto mb-6 filter brightness-0 invert"
+            />
+            <h2 className="text-2xl font-bold mb-4">Agencia Metropolitana de Bosques Urbanos</h2>
+            <p className="text-lg text-emerald-100 max-w-3xl mx-auto">
+              Fortalecemos el tejido social a través de espacios verdes que conectan comunidades, 
+              promueven la sostenibilidad y mejoran la calidad de vida en nuestra área metropolitana.
+            </p>
+          </div>
+
+          {/* Enlaces organizados en grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8 mb-12">
+            {/* Columna 1 */}
+            <div className="space-y-3">
+              <a href="/" className="block text-white hover:text-[#bcd256] transition-colors">
+                Inicio
+              </a>
+              <a href="/about" className="block text-white hover:text-[#bcd256] transition-colors">
+                Nosotros
+              </a>
+              <a href="/activities" className="block text-white hover:text-[#bcd256] transition-colors">
+                Eventos
+              </a>
+            </div>
+
+            {/* Columna 2 */}
+            <div className="space-y-3">
+              <a href="/parks" className="block text-white hover:text-[#bcd256] transition-colors">
+                Bosques Urbanos
+              </a>
+              <a href="/education" className="block text-white hover:text-[#bcd256] transition-colors">
+                Educación Ambiental
+              </a>
+              <a href="/wildlife-rescue" className="block text-white hover:text-[#bcd256] transition-colors">
+                Rescate de Fauna
+              </a>
+            </div>
+
+            {/* Columna 3 */}
+            <div className="space-y-3">
+              <a href="/transparency" className="block text-white hover:text-[#bcd256] transition-colors">
+                Transparencia
+              </a>
+              <a href="/bids" className="block text-white hover:text-[#bcd256] transition-colors">
+                Licitaciones
+              </a>
+              <a href="/blog" className="block text-white hover:text-[#bcd256] transition-colors">
+                Blog
+              </a>
+            </div>
+
+            {/* Columna 4 */}
+            <div className="space-y-3">
+              <a href="/faq" className="block text-white hover:text-[#bcd256] transition-colors">
+                Preguntas Frecuentes
+              </a>
+              <a href="/help" className="block text-white hover:text-[#bcd256] transition-colors">
+                Quiero Ayudar
+              </a>
+              <a href="/contact" className="block text-white hover:text-[#bcd256] transition-colors">
+                Contacto
+              </a>
+            </div>
+
+            {/* Columna 5 - Servicios */}
+            <div className="space-y-3">
+              <h4 className="font-semibold text-[#bcd256] mb-2">Servicios</h4>
+              <a href="/instructors" className="block text-white hover:text-[#bcd256] transition-colors">
+                Instructores
+              </a>
+              <a href="/concessions" className="block text-white hover:text-[#bcd256] transition-colors">
+                Concesiones
+              </a>
+              <a href="/tree-species" className="block text-white hover:text-[#bcd256] transition-colors">
+                Especies Arbóreas
+              </a>
+            </div>
+
+            {/* Columna 6 - Participación */}
+            <div className="space-y-3">
+              <h4 className="font-semibold text-[#bcd256] mb-2">Participa</h4>
+              <a href="/volunteers" className="block text-white hover:text-[#bcd256] transition-colors">
+                Voluntariado
+              </a>
+              <a href="/reports" className="block text-white hover:text-[#bcd256] transition-colors">
+                Reportar Incidentes
+              </a>
+              <a href="/suggestions" className="block text-white hover:text-[#bcd256] transition-colors">
+                Sugerencias
+              </a>
+            </div>
+          </div>
+
+          {/* Información de contacto */}
+          <div className="border-t border-emerald-500/30 pt-8 text-center">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              <div>
+                <h4 className="font-semibold text-[#bcd256] mb-2">Dirección</h4>
+                <p className="text-emerald-100 text-sm">
+                  Av. Alcalde 1351, Miraflores<br/>
+                  44270 Guadalajara, Jalisco
+                </p>
+              </div>
+              <div>
+                <h4 className="font-semibold text-[#bcd256] mb-2">Contacto</h4>
+                <p className="text-emerald-100 text-sm">
+                  Tel: (33) 3837-4400<br/>
+                  bosques@guadalajara.gob.mx
+                </p>
+              </div>
+              <div>
+                <h4 className="font-semibold text-[#bcd256] mb-2">Horarios</h4>
+                <p className="text-emerald-100 text-sm">
+                  Lunes a Viernes: 8:00 - 15:00<br/>
+                  Fines de semana: Espacios abiertos
+                </p>
+              </div>
+            </div>
+            
+            <div className="text-sm text-emerald-200">
+              © {new Date().getFullYear()} Agencia Metropolitana de Bosques Urbanos de Guadalajara. 
+              Todos los derechos reservados.
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
