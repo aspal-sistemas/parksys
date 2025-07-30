@@ -1666,11 +1666,38 @@ export default function VisitorCountPage() {
                       onClick={exportParkSummaryToExcel}
                       className="border-purple-200 text-purple-700 hover:bg-purple-50 p-2"
                     >
-                      <img 
-                        src="/attached_assets/4989 - Cloud Input_1753834875164.png" 
-                        alt="Exportar Excel" 
-                        className="h-4 w-4" 
-                      />
+                      <svg 
+                        width="16" 
+                        height="16" 
+                        viewBox="0 0 24 24" 
+                        fill="none" 
+                        className="h-4 w-4"
+                      >
+                        <path 
+                          d="M17 19H7C5.89543 19 5 18.1046 5 17V7C5 5.89543 5.89543 5 7 5H12L17 10V17C17 18.1046 16.1046 19 15 19H17Z" 
+                          stroke="#22c55e" 
+                          strokeWidth="2" 
+                          fill="none"
+                        />
+                        <path 
+                          d="M12 5V10H17" 
+                          stroke="#22c55e" 
+                          strokeWidth="2" 
+                          fill="none"
+                        />
+                        <path 
+                          d="M9 13L12 16L15 13" 
+                          stroke="#22c55e" 
+                          strokeWidth="2" 
+                          fill="none"
+                        />
+                        <path 
+                          d="M12 16V12" 
+                          stroke="#22c55e" 
+                          strokeWidth="2" 
+                          fill="none"
+                        />
+                      </svg>
                     </Button>
                   </div>
                   
