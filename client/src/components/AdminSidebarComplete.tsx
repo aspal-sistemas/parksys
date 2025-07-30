@@ -105,7 +105,7 @@ interface NavItemProps {
 }
 
 interface ModuleNavProps {
-  title: string;
+  title: string | React.ReactNode;
   icon: React.ReactNode;
   children: React.ReactNode;
   value: string;
@@ -696,7 +696,12 @@ const AdminSidebarComplete: React.FC = () => {
 
           {/* 3. O & M - OPERACIONES Y MANTENIMIENTO CON SUBMENÚS COLAPSABLES */}
           <ModuleNav 
-            title="O & M" 
+            title={
+              <div className="flex items-center gap-2">
+                <span>O & M</span>
+                <span className="px-1.5 py-0.5 text-xs font-semibold bg-orange-100 text-orange-800 rounded-full">BETA</span>
+              </div>
+            }
             icon={<Wrench className="h-5 w-5" />}
             value="operations"
             defaultOpen={location.startsWith('/admin/assets') || location.startsWith('/admin/incidents') || location.startsWith('/admin/volunteers')}
@@ -825,7 +830,12 @@ const AdminSidebarComplete: React.FC = () => {
 
           {/* 4. ADMIN & FINANZAS */}
           <ModuleNav 
-            title="Admin & Finanzas" 
+            title={
+              <div className="flex items-center gap-2">
+                <span>Admin & Finanzas</span>
+                <span className="px-1.5 py-0.5 text-xs font-semibold bg-orange-100 text-orange-800 rounded-full">BETA</span>
+              </div>
+            }
             icon={<DollarSign className="h-5 w-5" />}
             value="admin-finance"
             defaultOpen={location.startsWith('/admin/finance') || location.startsWith('/admin/accounting') || location.startsWith('/admin/concessions')}
@@ -1139,7 +1149,12 @@ const AdminSidebarComplete: React.FC = () => {
 
           {/* 6. RECURSOS HUMANOS */}
           <ModuleNav 
-            title="Recursos Humanos" 
+            title={
+              <div className="flex items-center gap-2">
+                <span>Recursos Humanos</span>
+                <span className="px-1.5 py-0.5 text-xs font-semibold bg-orange-100 text-orange-800 rounded-full">BETA</span>
+              </div>
+            }
             icon={<Users className="h-5 w-5" />}
             value="hr"
           >
