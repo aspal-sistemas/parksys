@@ -348,16 +348,21 @@ const AdminSidebarComplete: React.FC = () => {
   return (
     <div className="fixed inset-y-0 left-0 w-64 flex flex-col bg-white shadow-lg z-50" style={{ height: '100vh' }}>
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b">
+      <div className="flex items-center justify-between p-6 border-b bg-white" style={{ minHeight: '80px' }}>
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-            <Map className="h-5 w-5 text-white" />
+          <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+            <Map className="h-6 w-6 text-white" />
           </div>
           <div>
-            <h1 className="text-sm font-semibold text-gray-900">ParkSys</h1>
-            <p className="text-xs text-gray-500">Sistema de Parques</p>
+            <h1 className="text-lg font-bold text-gray-900">Dashboard</h1>
+            <p className="text-sm text-gray-600">Administración</p>
           </div>
         </div>
+        <Link href="/">
+          <Button variant="outline" size="sm" className="text-xs">
+            Ver Sitio Público
+          </Button>
+        </Link>
       </div>
 
       {/* Navigation */}
