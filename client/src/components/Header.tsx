@@ -247,6 +247,101 @@ const Header: React.FC = () => {
                 </div>
               </div>
             )}
+
+            {/* Menú Admin & Finanzas - Solo para administradores */}
+            {isAdmin && location !== '/admin/login' && (
+              <div className="relative group">
+                <button
+                  className="border-b-2 pt-1 pb-3 px-3 text-sm font-medium flex items-center border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300">
+                  Admin & Finanzas
+                  <ChevronDown className="ml-1 h-3 w-3" />
+                </button>
+                
+                {/* Dropdown menu */}
+                <div className="absolute right-0 top-full mt-1 w-56 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                  <div className="py-1">
+                    <Link href="/admin/finance"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
+                      Dashboard Financiero
+                    </Link>
+                    <Link href="/admin/users"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
+                      Usuarios
+                    </Link>
+                    <Link href="/admin/concessions"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
+                      Concesiones
+                    </Link>
+                    <Link href="/admin/configuration"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
+                      Configuración
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Menú Mkt y Comm - Solo para administradores */}
+            {isAdmin && location !== '/admin/login' && (
+              <div className="relative group">
+                <button
+                  className="border-b-2 pt-1 pb-3 px-3 text-sm font-medium flex items-center border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300">
+                  Mkt y Comm
+                  <ChevronDown className="ml-1 h-3 w-3" />
+                </button>
+                
+                {/* Dropdown menu */}
+                <div className="absolute right-0 top-full mt-1 w-56 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                  <div className="py-1">
+                    <Link href="/admin/marketing"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
+                      Marketing
+                    </Link>
+                    <Link href="/admin/advertising"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
+                      Publicidad
+                    </Link>
+                    <Link href="/admin/communications"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
+                      Comunicaciones
+                    </Link>
+                    <Link href="/admin/eventos-ambu"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
+                      Eventos AMBU
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Menú Recursos Humanos - Solo para administradores */}
+            {isAdmin && location !== '/admin/login' && (
+              <div className="relative group">
+                <button
+                  className="border-b-2 pt-1 pb-3 px-3 text-sm font-medium flex items-center border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300">
+                  Recursos Humanos
+                  <ChevronDown className="ml-1 h-3 w-3" />
+                </button>
+                
+                {/* Dropdown menu */}
+                <div className="absolute right-0 top-full mt-1 w-56 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                  <div className="py-1">
+                    <Link href="/admin/hr/employees"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
+                      Gestión de Personal
+                    </Link>
+                    <Link href="/admin/instructors"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
+                      Instructores
+                    </Link>
+                    <Link href="/admin/security"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
+                      Seguridad
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            )}
             
             {isAdmin ? (
               location !== '/admin/login' && (
