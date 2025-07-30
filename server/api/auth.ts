@@ -1,16 +1,17 @@
 import { Request, Response } from "express";
 import { db } from "../db";
 import { sql } from "drizzle-orm";
+import bcrypt from "bcryptjs";
 
 export async function handleLogin(req: Request, res: Response) {
   try {
     const { username, password } = req.body;
     
-    // Consulta SQL directa en lugar de usar ORM para evitar problemas de mapeo
+    // Primero buscar el usuario por nombre de usuario o email
     const result = await db.execute(sql`
-      SELECT id, username, email, full_name, role, municipality_id 
+      SELECT id, username, email, full_name, role, municipality_id, password 
       FROM users 
-      WHERE username = ${username} AND password = ${password}
+      WHERE username = ${username} OR email = ${username}
     `);
     
     if (result.rows.length === 0) {
@@ -18,6 +19,12 @@ export async function handleLogin(req: Request, res: Response) {
     }
     
     const userData = result.rows[0];
+    
+    // Verificar la contraseña usando bcrypt
+    const passwordMatch = await bcrypt.compare(password, userData.password);
+    if (!passwordMatch) {
+      return res.status(401).json({ message: "Credenciales inválidas" });
+    }
     
     // Si el usuario pertenece a un municipio, incluimos su información
     let municipalityData = null;
