@@ -1559,8 +1559,9 @@ export default function VisitorCountPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {/* Botones de rango rápido */}
+                {/* Botones de rango rápido y botones de acción al mismo nivel */}
                 <div className="flex flex-wrap items-center gap-3 mb-4">
+                  {/* Botones de período */}
                   <Button
                     variant={quickDateRange === 'week' ? 'default' : 'outline'}
                     size="lg"
@@ -1596,6 +1597,83 @@ export default function VisitorCountPage() {
                   >
                     <Calendar className="h-5 w-5" />
                     Personalizado
+                  </Button>
+
+                  {/* Separador visual */}
+                  <div className="h-6 w-px bg-gray-300 mx-2"></div>
+
+                  {/* Botones de acción movidos al mismo nivel */}
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    onClick={handleImportCSV}
+                    className="border-blue-200 text-blue-700 hover:bg-blue-50 flex items-center gap-2"
+                  >
+                    <Upload className="h-5 w-5" />
+                    Importar CSV
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    onClick={exportParkSummaryToCSV}
+                    className="border-green-200 text-green-700 hover:bg-green-50 flex items-center gap-2"
+                  >
+                    <Download className="h-5 w-5" />
+                    Exportar CSV
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    onClick={exportParkSummaryToExcel}
+                    className="border-purple-200 text-purple-700 hover:bg-purple-50 flex items-center gap-2"
+                  >
+                    <svg 
+                      width="20" 
+                      height="20" 
+                      viewBox="0 0 48 48" 
+                      fill="none" 
+                      className="h-5 w-5"
+                    >
+                      {/* Nube */}
+                      <path 
+                        d="M36 20C36 16.6863 33.3137 14 30 14C29.2187 14 28.4863 14.1562 27.8125 14.4375C26.6875 11.0625 23.5625 8.5 20 8.5C15.3125 8.5 11.5 12.3125 11.5 17C11.5 17.5 11.5312 18 11.625 18.4687C9.0625 19.4375 7.25 21.9687 7.25 25C7.25 28.8750 10.375 32 14.25 32H35.5C39.6406 32 43 28.6406 43 24.5C43 21.0625 40.1875 18.3125 36.6875 17.875C36.4375 18.9375 36.2188 19.9688 36 20Z" 
+                        stroke="#22c55e" 
+                        strokeWidth="2.5" 
+                        fill="none"
+                      />
+                      {/* Flechas hacia arriba */}
+                      <g stroke="#22c55e" strokeWidth="2.5" fill="none">
+                        {/* Flecha izquierda */}
+                        <path d="M18 38L18 34L16 36M18 34L20 36" />
+                        <path d="M18 38L18 34" />
+                        
+                        {/* Flecha centro */}
+                        <path d="M24 40L24 36L22 38M24 36L26 38" />
+                        <path d="M24 40L24 36" />
+                        
+                        {/* Flecha derecha */}
+                        <path d="M30 38L30 34L28 36M30 34L32 36" />
+                        <path d="M30 38L30 34" />
+                      </g>
+                    </svg>
+                    Excel
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      // Invalidar cache para actualizar datos
+                      queryClient.invalidateQueries({ 
+                        queryKey: ['/api/visitor-counts/park-summary'] 
+                      });
+                      toast({
+                        title: "Actualizando datos",
+                        description: "Se están actualizando los datos del resumen por parques"
+                      });
+                    }}
+                    size="lg"
+                    className="bg-emerald-600 hover:bg-emerald-700 flex items-center gap-2"
+                  >
+                    <Activity className="h-5 w-5" />
+                    Actualizar
                   </Button>
                 </div>
 
@@ -1635,87 +1713,6 @@ export default function VisitorCountPage() {
                         })()
                       }
                     </span>
-                  </div>
-                </div>
-                
-                {/* Botones de acción */}
-                <div className="space-y-3">
-                  {/* Botones de importar y exportar */}
-                  <div className="flex flex-wrap gap-2 justify-center">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleImportCSV}
-                      className="border-blue-200 text-blue-700 hover:bg-blue-50"
-                    >
-                      <Upload className="h-4 w-4 mr-2" />
-                      Importar CSV
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={exportParkSummaryToCSV}
-                      className="border-green-200 text-green-700 hover:bg-green-50"
-                    >
-                      <Download className="h-4 w-4 mr-2" />
-                      Exportar CSV
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={exportParkSummaryToExcel}
-                      className="border-purple-200 text-purple-700 hover:bg-purple-50 p-3"
-                    >
-                      <svg 
-                        width="24" 
-                        height="24" 
-                        viewBox="0 0 48 48" 
-                        fill="none" 
-                        className="h-6 w-6"
-                      >
-                        {/* Nube */}
-                        <path 
-                          d="M36 20C36 16.6863 33.3137 14 30 14C29.2187 14 28.4863 14.1562 27.8125 14.4375C26.6875 11.0625 23.5625 8.5 20 8.5C15.3125 8.5 11.5 12.3125 11.5 17C11.5 17.5 11.5312 18 11.625 18.4687C9.0625 19.4375 7.25 21.9687 7.25 25C7.25 28.8750 10.375 32 14.25 32H35.5C39.6406 32 43 28.6406 43 24.5C43 21.0625 40.1875 18.3125 36.6875 17.875C36.4375 18.9375 36.2188 19.9688 36 20Z" 
-                          stroke="#22c55e" 
-                          strokeWidth="2.5" 
-                          fill="none"
-                        />
-                        {/* Flechas hacia arriba */}
-                        <g stroke="#22c55e" strokeWidth="2.5" fill="none">
-                          {/* Flecha izquierda */}
-                          <path d="M18 38L18 34L16 36M18 34L20 36" />
-                          <path d="M18 38L18 34" />
-                          
-                          {/* Flecha centro */}
-                          <path d="M24 40L24 36L22 38M24 36L26 38" />
-                          <path d="M24 40L24 36" />
-                          
-                          {/* Flecha derecha */}
-                          <path d="M30 38L30 34L28 36M30 34L32 36" />
-                          <path d="M30 38L30 34" />
-                        </g>
-                      </svg>
-                    </Button>
-                  </div>
-                  
-                  {/* Botón para actualizar datos */}
-                  <div className="flex justify-center">
-                    <Button
-                      onClick={() => {
-                        // Invalidar cache para actualizar datos
-                        queryClient.invalidateQueries({ 
-                          queryKey: ['/api/visitor-counts/park-summary'] 
-                        });
-                        toast({
-                          title: "Actualizando datos",
-                          description: "Se están actualizando los datos del resumen por parques"
-                        });
-                      }}
-                      className="bg-emerald-600 hover:bg-emerald-700"
-                    >
-                      <Activity className="h-4 w-4 mr-2" />
-                      Actualizar Resumen
-                    </Button>
                   </div>
                 </div>
               </CardContent>
