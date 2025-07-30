@@ -14,25 +14,39 @@ declare global {
 // Middleware para verificar si el usuario está autenticado
 export const isAuthenticated = async (req: Request, res: Response, next: NextFunction) => {
   console.log('🔐 Verificando autenticación...');
-  console.log('Session:', req.session);
-  console.log('Headers:', req.headers);
   
-  // Para desarrollo, permitir acceso directo con usuario admin por defecto
-  // En producción esto se reemplazaría con verificación de sesión real
-  if (!req.user) {
-    req.user = {
-      id: 1,
-      username: 'admin',
-      email: 'admin@parquesmx.com',
-      role: 'super_admin',
-      fullName: 'Admin System',
-      municipalityId: 2
-    };
-    console.log('✅ Usuario super_admin asignado para desarrollo');
+  try {
+    // Verificar si hay un token de autorización
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.substring(7);
+      
+      // Para tokens de desarrollo directo, extraemos el ID del usuario
+      if (token.startsWith('direct-token-')) {
+        // Verificar si el usuario ya está en los headers personalizados de Replit
+        const userId = req.headers['x-user-id'];
+        const userRole = req.headers['x-user-role'];
+        
+        if (userId && userRole) {
+          // Buscar el usuario real en la base de datos
+          const user = await storage.getUser(Number(userId));
+          if (user) {
+            req.user = user;
+            console.log('✅ Usuario autenticado desde token:', { id: user.id, username: user.username, role: user.role });
+            return next();
+          }
+        }
+      }
+    }
+    
+    // Si no hay token o usuario válido, denegar acceso
+    console.log('❌ No se encontró usuario válido');
+    return res.status(401).json({ message: 'No autorizado - Token requerido' });
+    
+  } catch (error) {
+    console.error('Error en autenticación:', error);
+    return res.status(401).json({ message: 'Error de autenticación' });
   }
-  
-  console.log('👤 Usuario autenticado:', req.user);
-  next();
 };
 
 // Middleware para verificar si el usuario tiene acceso a un municipio específico
