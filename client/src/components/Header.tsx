@@ -268,7 +268,7 @@ const Header: React.FC = () => {
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
                       Contabilidad
                     </Link>
-                    <Link href="/admin/concessions"
+                    <Link href="/admin/concessions/reports"
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
                       Concesiones
                     </Link>
