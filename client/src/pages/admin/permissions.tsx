@@ -130,7 +130,43 @@ const AdminPermissions = () => {
     }
   });
 
+  // Función para verificar si el rol actual está bloqueado (admin/super_admin)
+  const isRoleBlocked = () => {
+    return selectedRole === 'admin' || selectedRole === 'super_admin';
+  };
+
+  // Función para obtener todos los permisos para roles bloqueados
+  const getAllPermissions = () => {
+    const allPermissions: Record<string, boolean> = {};
+    
+    Object.entries(SYSTEM_MODULES).forEach(([moduleKey, module]) => {
+      // Permisos del módulo principal
+      allPermissions[`${moduleKey}.view`] = true;
+      allPermissions[`${moduleKey}.edit`] = true;
+      
+      // Permisos de submódulos
+      if (module.children) {
+        Object.keys(module.children).forEach((subKey) => {
+          allPermissions[`${moduleKey}.${subKey}.view`] = true;
+          allPermissions[`${moduleKey}.${subKey}.edit`] = true;
+        });
+      }
+    });
+    
+    return allPermissions;
+  };
+
   const togglePermission = (module: string, level: 'view' | 'edit', submodule?: string) => {
+    // No permitir cambios en roles bloqueados
+    if (isRoleBlocked()) {
+      toast({ 
+        title: 'Permisos bloqueados', 
+        description: `Los roles ${selectedRole === 'super_admin' ? 'Super Administrador' : 'Administrador'} tienen todos los permisos activos y no se pueden modificar.`,
+        variant: 'destructive' 
+      });
+      return;
+    }
+
     const permissionKey = submodule ? `${module}.${submodule}` : module;
     
     setPermissions(prev => ({
@@ -144,6 +180,11 @@ const AdminPermissions = () => {
   };
 
   const hasPermission = (module: string, level: 'view' | 'edit', submodule?: string) => {
+    // Roles bloqueados siempre tienen todos los permisos
+    if (isRoleBlocked()) {
+      return true;
+    }
+    
     const permissionKey = submodule ? `${module}.${submodule}` : module;
     return permissions[selectedRole]?.[`${permissionKey}.${level}`] || false;
   };
@@ -160,6 +201,14 @@ const AdminPermissions = () => {
   };
 
   const savePermissions = () => {
+    if (isRoleBlocked()) {
+      toast({ 
+        title: 'Permisos bloqueados', 
+        description: `Los permisos para ${selectedRole === 'super_admin' ? 'Super Administrador' : 'Administrador'} no se pueden modificar.`,
+        variant: 'destructive' 
+      });
+      return;
+    }
     savePermissionsMutation.mutate(permissions);
   };
 
@@ -221,6 +270,21 @@ const AdminPermissions = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {isRoleBlocked() && (
+            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-center gap-3">
+                <Shield className="w-5 h-5 text-green-600" />
+                <div>
+                  <h4 className="font-semibold text-green-800">
+                    Permisos Completos - Rol Protegido
+                  </h4>
+                  <p className="text-sm text-green-700 mt-1">
+                    Este rol tiene todos los permisos activos de forma permanente y no se pueden modificar por razones de seguridad.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
           <ScrollArea className="h-[600px] pr-4">
             <div className="space-y-6">
               {Object.entries(SYSTEM_MODULES).map(([moduleKey, module]) => {
@@ -244,22 +308,38 @@ const AdminPermissions = () => {
                             <Checkbox
                               checked={hasPermission(moduleKey, 'view')}
                               onCheckedChange={() => togglePermission(moduleKey, 'view')}
-                              className="h-4 w-4"
+                              disabled={isRoleBlocked()}
+                              className={cn(
+                                "h-4 w-4",
+                                isRoleBlocked() && "opacity-60 cursor-not-allowed"
+                              )}
                             />
-                            <div className="flex items-center gap-1 text-sm text-gray-600">
+                            <div className={cn(
+                              "flex items-center gap-1 text-sm",
+                              isRoleBlocked() ? "text-green-600 font-medium" : "text-gray-600"
+                            )}>
                               <Eye className="w-3 h-3" />
                               <span>Ver</span>
+                              {isRoleBlocked() && <span className="text-xs">(Bloqueado)</span>}
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
                             <Checkbox
                               checked={hasPermission(moduleKey, 'edit')}
                               onCheckedChange={() => togglePermission(moduleKey, 'edit')}
-                              className="h-4 w-4"
+                              disabled={isRoleBlocked()}
+                              className={cn(
+                                "h-4 w-4",
+                                isRoleBlocked() && "opacity-60 cursor-not-allowed"
+                              )}
                             />
-                            <div className="flex items-center gap-1 text-sm text-gray-600">
+                            <div className={cn(
+                              "flex items-center gap-1 text-sm",
+                              isRoleBlocked() ? "text-green-600 font-medium" : "text-gray-600"
+                            )}>
                               <Edit className="w-3 h-3" />
                               <span>Editar</span>
+                              {isRoleBlocked() && <span className="text-xs">(Bloqueado)</span>}
                             </div>
                           </div>
                         </div>
@@ -284,22 +364,38 @@ const AdminPermissions = () => {
                                   <Checkbox
                                     checked={hasPermission(moduleKey, 'view', subKey)}
                                     onCheckedChange={() => togglePermission(moduleKey, 'view', subKey)}
-                                    className="h-4 w-4"
+                                    disabled={isRoleBlocked()}
+                                    className={cn(
+                                      "h-4 w-4",
+                                      isRoleBlocked() && "opacity-60 cursor-not-allowed"
+                                    )}
                                   />
-                                  <div className="flex items-center gap-1 text-xs text-gray-600">
+                                  <div className={cn(
+                                    "flex items-center gap-1 text-xs",
+                                    isRoleBlocked() ? "text-green-600 font-medium" : "text-gray-600"
+                                  )}>
                                     <Eye className="w-3 h-3" />
                                     <span>Ver</span>
+                                    {isRoleBlocked() && <span className="text-[10px]">(Bloqueado)</span>}
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-2">
                                   <Checkbox
                                     checked={hasPermission(moduleKey, 'edit', subKey)}
                                     onCheckedChange={() => togglePermission(moduleKey, 'edit', subKey)}
-                                    className="h-4 w-4"
+                                    disabled={isRoleBlocked()}
+                                    className={cn(
+                                      "h-4 w-4",
+                                      isRoleBlocked() && "opacity-60 cursor-not-allowed"
+                                    )}
                                   />
-                                  <div className="flex items-center gap-1 text-xs text-gray-600">
+                                  <div className={cn(
+                                    "flex items-center gap-1 text-xs",
+                                    isRoleBlocked() ? "text-green-600 font-medium" : "text-gray-600"
+                                  )}>
                                     <Edit className="w-3 h-3" />
                                     <span>Editar</span>
+                                    {isRoleBlocked() && <span className="text-[10px]">(Bloqueado)</span>}
                                   </div>
                                 </div>
                               </div>
@@ -344,7 +440,7 @@ const AdminPermissions = () => {
               </div>
             </div>
             
-            {hasChanges && (
+            {hasChanges && !isRoleBlocked() && (
               <div className="flex gap-2">
                 <Button 
                   variant="outline" 
@@ -373,7 +469,7 @@ const AdminPermissions = () => {
         {/* Panel de configuración de permisos */}
         {renderPermissionsPanel()}
 
-        {hasChanges && (
+        {hasChanges && !isRoleBlocked() && (
           <Card className="border-yellow-200 bg-yellow-50">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
