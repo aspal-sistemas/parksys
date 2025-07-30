@@ -151,7 +151,7 @@ const UserDetail: React.FC<{
 }> = ({ user, isNew, onClose, onSave, isSaving, editingUserId }) => {
   const [userData, setUserData] = useState<UserFormData>({
     // Elegir rol es el primer paso
-    role: user?.role || 'user',
+    role: user?.role || 'admin',
     
     // Información básica de la cuenta
     username: user?.username || '',
@@ -392,16 +392,9 @@ const UserDetail: React.FC<{
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="admin">Administrador</SelectItem>
-                  <SelectItem value="director">Director</SelectItem>
-                  <SelectItem value="manager">Gestor</SelectItem>
-                  <SelectItem value="supervisor">Supervisor</SelectItem>
-                  <SelectItem value="ciudadano">Ciudadano</SelectItem>
-                  <SelectItem value="voluntario">Voluntario</SelectItem>
-                  <SelectItem value="instructor">Instructor</SelectItem>
-                  <SelectItem value="guardaparques">Guardaparques</SelectItem>
-                  <SelectItem value="guardia">Guardia</SelectItem>
-                  <SelectItem value="concesionario">Concesionario</SelectItem>
-                  <SelectItem value="user">Usuario</SelectItem>
+                  <SelectItem value="super_admin">Super Administrador</SelectItem>
+                  <SelectItem value="moderator">Moderador</SelectItem>
+                  <SelectItem value="operator">Operador</SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground mt-1">
@@ -1127,16 +1120,9 @@ const AdminUsers = () => {
                   <SelectContent>
                     <SelectItem value="all">Todos los roles</SelectItem>
                     <SelectItem value="admin">Administrador</SelectItem>
-                    <SelectItem value="director">Director</SelectItem>
-                    <SelectItem value="manager">Gestor</SelectItem>
-                    <SelectItem value="supervisor">Supervisor</SelectItem>
-                    <SelectItem value="ciudadano">Ciudadano</SelectItem>
-                    <SelectItem value="voluntario">Voluntario</SelectItem>
-                    <SelectItem value="instructor">Instructor</SelectItem>
-                    <SelectItem value="guardaparques">Guardaparques</SelectItem>
-                    <SelectItem value="guardia">Guardia</SelectItem>
-                    <SelectItem value="concesionario">Concesionario</SelectItem>
-                    <SelectItem value="user">Usuario</SelectItem>
+                    <SelectItem value="super_admin">Super Administrador</SelectItem>
+                    <SelectItem value="moderator">Moderador</SelectItem>
+                    <SelectItem value="operator">Operador</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
