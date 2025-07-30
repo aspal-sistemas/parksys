@@ -337,8 +337,8 @@ export function registerUserRoutes(app: any, apiRouter: Router) {
           return res.status(400).json({ message: 'El email ya está en uso' });
         }
         
-        // En este caso, no hasheamos la contraseña para facilitar las pruebas
-        const hashedPassword = userData.password;
+        // Hashear la contraseña antes de guardarla
+        const hashedPassword = await bcrypt.hash(userData.password, 10);
         
         // Crear el usuario con logging detallado
         console.log("Datos que se enviarán a createUser:", {
