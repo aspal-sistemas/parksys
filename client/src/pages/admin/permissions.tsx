@@ -28,7 +28,8 @@ import {
   User,
   Check,
   Eye,
-  Edit
+  Edit,
+  Lock
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
@@ -276,7 +277,7 @@ const AdminPermissions = () => {
                 <Shield className="w-5 h-5 text-green-600" />
                 <div>
                   <h4 className="font-semibold text-green-800">
-                    Permisos Completos - Rol Protegido
+                    Rol Protegido
                   </h4>
                   <p className="text-sm text-green-700 mt-1">
                     Este rol tiene todos los permisos activos de forma permanente y no se pueden modificar por razones de seguridad.
@@ -316,11 +317,11 @@ const AdminPermissions = () => {
                             />
                             <div className={cn(
                               "flex items-center gap-1 text-sm",
-                              isRoleBlocked() ? "text-green-600 font-medium" : "text-gray-600"
+                              isRoleBlocked() ? "text-gray-600" : "text-gray-600"
                             )}>
                               <Eye className="w-3 h-3" />
                               <span>Ver</span>
-                              {isRoleBlocked() && <span className="text-xs">(Bloqueado)</span>}
+                              {isRoleBlocked() && <Lock className="w-3 h-3 text-gray-500" />}
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
@@ -335,11 +336,11 @@ const AdminPermissions = () => {
                             />
                             <div className={cn(
                               "flex items-center gap-1 text-sm",
-                              isRoleBlocked() ? "text-green-600 font-medium" : "text-gray-600"
+                              isRoleBlocked() ? "text-gray-600" : "text-gray-600"
                             )}>
                               <Edit className="w-3 h-3" />
                               <span>Editar</span>
-                              {isRoleBlocked() && <span className="text-xs">(Bloqueado)</span>}
+                              {isRoleBlocked() && <Lock className="w-3 h-3 text-gray-500" />}
                             </div>
                           </div>
                         </div>
@@ -372,11 +373,11 @@ const AdminPermissions = () => {
                                   />
                                   <div className={cn(
                                     "flex items-center gap-1 text-xs",
-                                    isRoleBlocked() ? "text-green-600 font-medium" : "text-gray-600"
+                                    isRoleBlocked() ? "text-gray-600" : "text-gray-600"
                                   )}>
                                     <Eye className="w-3 h-3" />
                                     <span>Ver</span>
-                                    {isRoleBlocked() && <span className="text-[10px]">(Bloqueado)</span>}
+                                    {isRoleBlocked() && <Lock className="w-3 h-3 text-gray-500" />}
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-2">
@@ -391,11 +392,11 @@ const AdminPermissions = () => {
                                   />
                                   <div className={cn(
                                     "flex items-center gap-1 text-xs",
-                                    isRoleBlocked() ? "text-green-600 font-medium" : "text-gray-600"
+                                    isRoleBlocked() ? "text-gray-600" : "text-gray-600"
                                   )}>
                                     <Edit className="w-3 h-3" />
                                     <span>Editar</span>
-                                    {isRoleBlocked() && <span className="text-[10px]">(Bloqueado)</span>}
+                                    {isRoleBlocked() && <Lock className="w-3 h-3 text-gray-500" />}
                                   </div>
                                 </div>
                               </div>
