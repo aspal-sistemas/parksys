@@ -178,12 +178,10 @@ const Header: React.FC = () => {
             )}
           </div>
           
-          <div className="flex items-center gap-3">
-            {/* Búsqueda Global - Solo en sitio público */}
-            {!isAdmin && <GlobalSearch />}
-            
-            {/* Panel de Control - Solo para administradores */}
-            {isAdmin && location !== '/admin/login' && (
+          {/* Navegación izquierda para administradores */}
+          {isAdmin && location !== '/admin/login' && (
+            <div className="flex items-center gap-3">
+              {/* Panel de Control */}
               <Link href="/admin">
                 <button
                   className={`border-b-2 py-2 px-3 text-sm font-medium flex items-center ${
@@ -195,10 +193,8 @@ const Header: React.FC = () => {
                   Panel de Control
                 </button>
               </Link>
-            )}
 
-            {/* Menú de Gestión - Solo para administradores */}
-            {isAdmin && location !== '/admin/login' && (
+              {/* Menú de Gestión */}
               <div className="relative group">
                 <button
                   className="border-b-2 py-2 px-3 text-sm font-medium flex items-center border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300">
@@ -207,7 +203,7 @@ const Header: React.FC = () => {
                 </button>
                 
                 {/* Dropdown menu */}
-                <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                <div className="absolute left-0 top-full mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                   <div className="py-1">
                     <Link href="/admin/visitors/dashboard"
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
@@ -232,10 +228,8 @@ const Header: React.FC = () => {
                   </div>
                 </div>
               </div>
-            )}
 
-            {/* Menú O & M - Solo para administradores */}
-            {isAdmin && location !== '/admin/login' && (
+              {/* Menú O & M */}
               <div className="relative group">
                 <button
                   className="border-b-2 py-2 px-3 text-sm font-medium flex items-center border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300">
@@ -244,7 +238,7 @@ const Header: React.FC = () => {
                 </button>
                 
                 {/* Dropdown menu */}
-                <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                <div className="absolute left-0 top-full mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                   <div className="py-1">
                     <Link href="/admin/assets/dashboard"
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
@@ -261,10 +255,8 @@ const Header: React.FC = () => {
                   </div>
                 </div>
               </div>
-            )}
 
-            {/* Menú Admin & Finanzas - Solo para administradores */}
-            {isAdmin && location !== '/admin/login' && (
+              {/* Menú Admin & Finanzas */}
               <div className="relative group">
                 <button
                   className="border-b-2 py-2 px-3 text-sm font-medium flex items-center border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300">
@@ -273,7 +265,7 @@ const Header: React.FC = () => {
                 </button>
                 
                 {/* Dropdown menu */}
-                <div className="absolute right-0 top-full mt-1 w-56 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                <div className="absolute left-0 top-full mt-1 w-56 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                   <div className="py-1">
                     <Link href="/admin/finance"
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
@@ -290,10 +282,8 @@ const Header: React.FC = () => {
                   </div>
                 </div>
               </div>
-            )}
 
-            {/* Menú Mkt y Comm - Solo para administradores */}
-            {isAdmin && location !== '/admin/login' && (
+              {/* Menú Mkt y Comm */}
               <div className="relative group">
                 <button
                   className="border-b-2 py-2 px-3 text-sm font-medium flex items-center border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300">
@@ -302,7 +292,7 @@ const Header: React.FC = () => {
                 </button>
                 
                 {/* Dropdown menu */}
-                <div className="absolute right-0 top-full mt-1 w-56 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                <div className="absolute left-0 top-full mt-1 w-56 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                   <div className="py-1">
                     <Link href="/admin/marketing"
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
@@ -319,17 +309,21 @@ const Header: React.FC = () => {
                   </div>
                 </div>
               </div>
-            )}
 
-            {/* Menú RH - Solo para administradores */}
-            {isAdmin && location !== '/admin/login' && (
+              {/* Menú RH */}
               <Link href="/admin/hr/employees">
                 <button
                   className="border-b-2 py-2 px-3 text-sm font-medium border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300">
                   RH
                 </button>
               </Link>
-            )}
+            </div>
+          )}
+
+          {/* Búsqueda Global y Ver Sitio Público - lado derecho */}
+          <div className="flex items-center gap-3">
+            {/* Búsqueda Global - Solo en sitio público */}
+            {!isAdmin && <GlobalSearch />}
             
             {isAdmin ? (
               location !== '/admin/login' && (
