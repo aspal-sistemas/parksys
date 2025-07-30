@@ -13,12 +13,15 @@ export async function authenticateUser(username: string, password: string) {
     console.log("Buscando usuario en la base de datos...");
     
     // Intentar buscar por nombre de usuario
+    console.log(`Buscando usuario por username: "${username}"`);
     let dbUser = await storage.getUserByUsername(username);
+    console.log("Resultado búsqueda por username:", dbUser ? `Usuario encontrado: ${dbUser.username}` : "No encontrado");
     
     // Si no se encuentra por nombre de usuario, intentar buscar por email
     if (!dbUser) {
       console.log("Usuario no encontrado por username, intentando con email...");
       dbUser = await storage.getUserByEmail(username);
+      console.log("Resultado búsqueda por email:", dbUser ? `Usuario encontrado: ${dbUser.email}` : "No encontrado");
     }
     
     let user = null;
