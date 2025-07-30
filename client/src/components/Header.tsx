@@ -57,32 +57,17 @@ const Header: React.FC = () => {
               </div>
             </Link>
             
-            {/* Desktop navigation */}
-            <nav className="hidden md:ml-8 md:flex md:space-x-6">
-                {isAdmin ? (
-                  <>
-                    <Link href="/admin"
-                      className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium ${
-                        location === '/admin' 
-                          ? 'border-primary text-gray-900' 
-                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                      }`}>
-                      Dashboard
-                    </Link>
-                    <span className="border-b-2 border-transparent pt-1 pb-3 px-1 text-sm font-medium text-gray-400">
-                      Administración
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <Link href="/"
-                      className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium ${
-                        location === '/' 
-                          ? 'border-primary text-gray-900' 
-                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                      }`}>
-                      Inicio
-                    </Link>
+            {/* Desktop navigation - Solo mostrar para páginas públicas */}
+            {!isAdmin && (
+              <nav className="hidden md:ml-8 md:flex md:space-x-6">
+                <Link href="/"
+                  className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium ${
+                    location === '/' 
+                      ? 'border-primary text-gray-900' 
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}>
+                  Inicio
+                </Link>
                 
                 <Link href="/parks"
                   className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium ${
@@ -184,9 +169,8 @@ const Header: React.FC = () => {
                 
                 {/* Enlace de registro de voluntarios removido */}
                 {/* Botón "Acerca de" removido del menú principal */}
-                  </>
-                )}
               </nav>
+            )}
           </div>
           
           <div className="flex items-center gap-3">
