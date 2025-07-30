@@ -55,7 +55,8 @@ import {
   MapPin,
   Grid,
   LogOut,
-  ChevronRight
+  ChevronRight,
+  Lock
 } from 'lucide-react';
 
 interface NavItemProps {
@@ -72,6 +73,15 @@ interface ModuleNavProps {
   children: React.ReactNode;
   value: string;
   defaultOpen?: boolean;
+}
+
+interface CollapsibleSubmenuProps {
+  id: string;
+  title: string;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+  isExpanded: boolean;
+  onToggle: (id: string) => void;
 }
 
 const NavItem: React.FC<NavItemProps> = ({ href, icon, children, active, moduleColor }) => {
@@ -92,6 +102,38 @@ const NavItem: React.FC<NavItemProps> = ({ href, icon, children, active, moduleC
         <span className="ml-2">{children}</span>
       </Button>
     </Link>
+  );
+};
+
+const CollapsibleSubmenu: React.FC<CollapsibleSubmenuProps> = ({
+  id,
+  title,
+  icon,
+  children,
+  isExpanded,
+  onToggle
+}) => {
+  return (
+    <div className="ml-4">
+      <Button
+        variant="ghost"
+        className="w-full justify-start text-sm font-normal h-8 mb-1 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+        onClick={() => onToggle(id)}
+      >
+        <div className="flex items-center w-full">
+          {icon}
+          <span className="ml-2 flex-1 text-left">{title}</span>
+          <ChevronRight 
+            className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+          />
+        </div>
+      </Button>
+      {isExpanded && (
+        <div className="ml-6 space-y-1">
+          {children}
+        </div>
+      )}
+    </div>
   );
 };
 
@@ -188,6 +230,15 @@ const AdminSidebarPermissions: React.FC = () => {
   const { user, logout } = useAuth();
   const { t } = useTranslation('common');
   const { hasPermission, isLoading } = usePermissions();
+  const [expandedSubmenus, setExpandedSubmenus] = useState<string[]>([]);
+
+  const toggleSubmenu = (submenuId: string) => {
+    setExpandedSubmenus(prev => 
+      prev.includes(submenuId) 
+        ? prev.filter(id => id !== submenuId)
+        : [...prev, submenuId]
+    );
+  };
   
   // Determinar qué módulo debe estar abierto basado en la ruta actual
   const getActiveModule = () => {
@@ -327,33 +378,294 @@ const AdminSidebarPermissions: React.FC = () => {
               icon={<FolderOpen className="h-5 w-5" />}
               value="gestion"
             >
-              {hasPermission('operations.parks.view') && (
+              {/* VISITANTES */}
+              <CollapsibleSubmenu
+                id="visitantes"
+                title="Visitantes"
+                icon={<Users className="h-4 w-4" />}
+                isExpanded={expandedSubmenus.includes('visitantes')}
+                onToggle={toggleSubmenu}
+              >
+                <NavItem 
+                  href="/admin/visitors/dashboard" 
+                  icon={<BarChart className="h-4 w-4" />}
+                  active={location === '/admin/visitors/dashboard'}
+                >
+                  Dashboard
+                </NavItem>
+                <NavItem 
+                  href="/admin/visitors/count" 
+                  icon={<Users className="h-4 w-4" />}
+                  active={location === '/admin/visitors/count'}
+                >
+                  Conteo
+                </NavItem>
+                <NavItem 
+                  href="/admin/visitors/evaluations" 
+                  icon={<Star className="h-4 w-4" />}
+                  active={location === '/admin/visitors/evaluations'}
+                >
+                  Evaluaciones
+                </NavItem>
+                <NavItem 
+                  href="/admin/visitors/criteria" 
+                  icon={<Settings className="h-4 w-4" />}
+                  active={location === '/admin/visitors/criteria'}
+                >
+                  Criterios
+                </NavItem>
+                <NavItem 
+                  href="/admin/visitors/feedback" 
+                  icon={<MessageSquare className="h-4 w-4" />}
+                  active={location === '/admin/visitors/feedback'}
+                >
+                  Retroalimentación
+                </NavItem>
+              </CollapsibleSubmenu>
+
+              {/* PARQUES */}
+              <CollapsibleSubmenu
+                id="parques"
+                title="Parques"
+                icon={<Map className="h-4 w-4" />}
+                isExpanded={expandedSubmenus.includes('parques')}
+                onToggle={toggleSubmenu}
+              >
+                <NavItem 
+                  href="/admin/parks/dashboard" 
+                  icon={<BarChart className="h-4 w-4" />}
+                  active={location === '/admin/parks/dashboard'}
+                >
+                  {t('navigation.operativeSummary')}
+                </NavItem>
                 <NavItem 
                   href="/admin/parks" 
                   icon={<Map className="h-4 w-4" />}
-                  active={location.startsWith('/admin/parks')}
+                  active={location === '/admin/parks' && !location.includes('/dashboard')}
                 >
-                  Parques
+                  {t('navigation.management')}
                 </NavItem>
-              )}
-              {hasPermission('trees.view') && (
+              </CollapsibleSubmenu>
+
+              {/* ARBOLADO */}
+              <CollapsibleSubmenu
+                id="arbolado"
+                title="Arbolado"
+                icon={<TreePine className="h-4 w-4" />}
+                isExpanded={expandedSubmenus.includes('arbolado')}
+                onToggle={toggleSubmenu}
+              >
+                <NavItem 
+                  href="/admin/trees/dashboard" 
+                  icon={<BarChart className="h-4 w-4" />}
+                  active={location === '/admin/trees/dashboard'}
+                >
+                  Dashboard
+                </NavItem>
                 <NavItem 
                   href="/admin/trees/inventory" 
-                  icon={<TreePine className="h-4 w-4" />}
-                  active={location.startsWith('/admin/trees')}
+                  icon={<Archive className="h-4 w-4" />}
+                  active={location.startsWith('/admin/trees/inventory')}
                 >
-                  Arbolado
+                  {t('navigation.inventory')}
                 </NavItem>
-              )}
-              {hasPermission('activities.view') && (
+                <NavItem 
+                  href="/admin/trees/species" 
+                  icon={<Leaf className="h-4 w-4" />}
+                  active={location.startsWith('/admin/trees/species')}
+                >
+                  {t('navigation.species')}
+                </NavItem>
+                <NavItem 
+                  href="/admin/trees/maintenance" 
+                  icon={<Scissors className="h-4 w-4" />}
+                  active={location.startsWith('/admin/trees/maintenance')}
+                >
+                  {t('navigation.maintenance')}
+                </NavItem>
+              </CollapsibleSubmenu>
+
+              {/* ORGANIZADOR */}
+              <CollapsibleSubmenu
+                id="organizador"
+                title="Organizador"
+                icon={<BarChart className="h-4 w-4" />}
+                isExpanded={expandedSubmenus.includes('organizador')}
+                onToggle={toggleSubmenu}
+              >
+                <NavItem 
+                  href="/admin/organizador" 
+                  icon={<BarChart className="h-4 w-4" />}
+                  active={location === '/admin/organizador'}
+                >
+                  Dashboard
+                </NavItem>
+                <NavItem 
+                  href="/admin/organizador/catalogo" 
+                  icon={<FolderOpen className="h-4 w-4" />}
+                  active={location.startsWith('/admin/organizador/catalogo')}
+                >
+                  Catálogo
+                </NavItem>
+              </CollapsibleSubmenu>
+
+              {/* ACTIVIDADES */}
+              <CollapsibleSubmenu
+                id="actividades"
+                title="Actividades"
+                icon={<Calendar className="h-4 w-4" />}
+                isExpanded={expandedSubmenus.includes('actividades')}
+                onToggle={toggleSubmenu}
+              >
                 <NavItem 
                   href="/admin/activities" 
                   icon={<Calendar className="h-4 w-4" />}
-                  active={location.startsWith('/admin/activities')}
+                  active={location === '/admin/activities'}
                 >
-                  Actividades
+                  {t('navigation.listing')}
                 </NavItem>
-              )}
+                <NavItem 
+                  href="/admin/activities/categories" 
+                  icon={<BarChart className="h-4 w-4" />}
+                  active={location === '/admin/activities/categories'}
+                >
+                  Categorías
+                </NavItem>
+                <NavItem 
+                  href="/admin/activities/calendar" 
+                  icon={<CalendarDays className="h-4 w-4" />}
+                  active={location === '/admin/activities/calendar'}
+                >
+                  Calendario
+                </NavItem>
+              </CollapsibleSubmenu>
+
+              {/* INSTRUCTORES */}
+              <CollapsibleSubmenu
+                id="instructores"
+                title="Instructores"
+                icon={<GraduationCap className="h-4 w-4" />}
+                isExpanded={expandedSubmenus.includes('instructores')}
+                onToggle={toggleSubmenu}
+              >
+                <NavItem 
+                  href="/admin/instructors" 
+                  icon={<GraduationCap className="h-4 w-4" />}
+                  active={location === '/admin/instructors'}
+                >
+                  {t('navigation.listing')}
+                </NavItem>
+                <NavItem 
+                  href="/admin/instructors/assignments" 
+                  icon={<ClipboardList className="h-4 w-4" />}
+                  active={location === '/admin/instructors/assignments'}
+                >
+                  {t('navigation.assignments')}
+                </NavItem>
+                <NavItem 
+                  href="/admin/instructors/evaluations" 
+                  icon={<Star className="h-4 w-4" />}
+                  active={location === '/admin/instructors/evaluations'}
+                >
+                  Evaluaciones
+                </NavItem>
+              </CollapsibleSubmenu>
+
+              {/* EVENTOS */}
+              <CollapsibleSubmenu
+                id="eventos"
+                title="Eventos"
+                icon={<Calendar className="h-4 w-4" />}
+                isExpanded={expandedSubmenus.includes('eventos')}
+                onToggle={toggleSubmenu}
+              >
+                <NavItem 
+                  href="/admin/events/categories" 
+                  icon={<Tag className="h-4 w-4" />}
+                  active={location === '/admin/events/categories'}
+                >
+                  Categorías
+                </NavItem>
+                <NavItem 
+                  href="/admin/events/list" 
+                  icon={<ClipboardList className="h-4 w-4" />}
+                  active={location === '/admin/events/list'}
+                >
+                  Listado
+                </NavItem>
+              </CollapsibleSubmenu>
+
+              {/* EVENTOS AMBU */}
+              <CollapsibleSubmenu
+                id="eventos-ambu"
+                title="Eventos AMBU"
+                icon={<Calendar className="h-4 w-4" />}
+                isExpanded={expandedSubmenus.includes('eventos-ambu')}
+                onToggle={toggleSubmenu}
+              >
+                <NavItem 
+                  href="/admin/eventos-ambu/calendar" 
+                  icon={<Calendar className="h-4 w-4" />}
+                  active={location === '/admin/eventos-ambu/calendar'}
+                >
+                  Calendario
+                </NavItem>
+              </CollapsibleSubmenu>
+
+              {/* RESERVAS DE ESPACIOS */}
+              <CollapsibleSubmenu
+                id="reservas"
+                title="Reservas de Espacios"
+                icon={<MapPin className="h-4 w-4" />}
+                isExpanded={expandedSubmenus.includes('reservas')}
+                onToggle={toggleSubmenu}
+              >
+                <NavItem 
+                  href="/admin/space-reservations/spaces" 
+                  icon={<MapPin className="h-4 w-4" />}
+                  active={location.startsWith('/admin/space-reservations/spaces')}
+                >
+                  Espacios
+                </NavItem>
+                <NavItem 
+                  href="/admin/space-reservations/new" 
+                  icon={<Plus className="h-4 w-4" />}
+                  active={location.startsWith('/admin/space-reservations/new')}
+                >
+                  Nueva Reserva
+                </NavItem>
+                <NavItem 
+                  href="/admin/space-reservations/calendar" 
+                  icon={<CalendarDays className="h-4 w-4" />}
+                  active={location.startsWith('/admin/space-reservations/calendar')}
+                >
+                  Cal. Reservas
+                </NavItem>
+              </CollapsibleSubmenu>
+
+              {/* AMENIDADES */}
+              <CollapsibleSubmenu
+                id="amenidades"
+                title="Amenidades"
+                icon={<Package className="h-4 w-4" />}
+                isExpanded={expandedSubmenus.includes('amenidades')}
+                onToggle={toggleSubmenu}
+              >
+                <NavItem 
+                  href="/admin/amenities-dashboard" 
+                  icon={<BarChart className="h-4 w-4" />}
+                  active={location === '/admin/amenities-dashboard'}
+                >
+                  {t('navigation.operativeSummary')}
+                </NavItem>
+                <NavItem 
+                  href="/admin/amenities" 
+                  icon={<Package className="h-4 w-4" />}
+                  active={location === '/admin/amenities'}
+                >
+                  {t('navigation.management')}
+                </NavItem>
+              </CollapsibleSubmenu>
             </ModuleNav>
           )}
 
@@ -364,33 +676,112 @@ const AdminSidebarPermissions: React.FC = () => {
               icon={<Wrench className="h-5 w-5" />}
               value="operations"
             >
-              {hasPermission('operations.assets.view') && (
+              {/* ACTIVOS */}
+              <CollapsibleSubmenu
+                id="activos"
+                title="Activos"
+                icon={<Package className="h-4 w-4" />}
+                isExpanded={expandedSubmenus.includes('activos')}
+                onToggle={toggleSubmenu}
+              >
                 <NavItem 
                   href="/admin/assets" 
-                  icon={<Package className="h-4 w-4" />}
-                  active={location.startsWith('/admin/assets')}
+                  icon={<BarChart className="h-4 w-4" />}
+                  active={location === '/admin/assets'}
                 >
-                  Activos
+                  Dashboard
                 </NavItem>
-              )}
-              {hasPermission('operations.incidents.view') && (
+                <NavItem 
+                  href="/admin/assets/categories" 
+                  icon={<Tag className="h-4 w-4" />}
+                  active={location.startsWith('/admin/assets/categories')}
+                >
+                  Categorías
+                </NavItem>
+                <NavItem 
+                  href="/admin/assets/inventory" 
+                  icon={<Archive className="h-4 w-4" />}
+                  active={location.startsWith('/admin/assets/inventory')}
+                >
+                  {t('navigation.inventory')}
+                </NavItem>
+                <NavItem 
+                  href="/admin/assets/map" 
+                  icon={<MapPin className="h-4 w-4" />}
+                  active={location.startsWith('/admin/assets/map')}
+                >
+                  {t('navigation.map')}
+                </NavItem>
+                <NavItem 
+                  href="/admin/assets/maintenance" 
+                  icon={<Wrench className="h-4 w-4" />}
+                  active={location.startsWith('/admin/assets/maintenance')}
+                >
+                  Mantenimiento
+                </NavItem>
+              </CollapsibleSubmenu>
+
+              {/* INCIDENCIAS */}
+              <CollapsibleSubmenu
+                id="incidencias"
+                title="Incidencias"
+                icon={<AlertTriangle className="h-4 w-4" />}
+                isExpanded={expandedSubmenus.includes('incidencias')}
+                onToggle={toggleSubmenu}
+              >
                 <NavItem 
                   href="/admin/incidents" 
                   icon={<AlertTriangle className="h-4 w-4" />}
-                  active={location.startsWith('/admin/incidents')}
+                  active={location === '/admin/incidents'}
                 >
-                  Incidencias
+                  {t('navigation.listing')}
                 </NavItem>
-              )}
-              {hasPermission('operations.volunteers.view') && (
+                <NavItem 
+                  href="/admin/incidents/categories" 
+                  icon={<Tag className="h-4 w-4" />}
+                  active={location === '/admin/incidents/categories'}
+                >
+                  {t('navigation.categories')}
+                </NavItem>
+              </CollapsibleSubmenu>
+
+              {/* VOLUNTARIOS */}
+              <CollapsibleSubmenu
+                id="voluntarios-ops"
+                title="Voluntarios"
+                icon={<HeartHandshake className="h-4 w-4" />}
+                isExpanded={expandedSubmenus.includes('voluntarios-ops')}
+                onToggle={toggleSubmenu}
+              >
                 <NavItem 
                   href="/admin/volunteers" 
-                  icon={<HeartHandshake className="h-4 w-4" />}
-                  active={location.startsWith('/admin/volunteers')}
+                  icon={<Users className="h-4 w-4" />}
+                  active={location === '/admin/volunteers'}
                 >
-                  Voluntarios
+                  {t('navigation.listing')}
                 </NavItem>
-              )}
+                <NavItem 
+                  href="/admin/volunteers/register" 
+                  icon={<Plus className="h-4 w-4" />}
+                  active={location === '/admin/volunteers/register'}
+                >
+                  Registro
+                </NavItem>
+                <NavItem 
+                  href="/admin/volunteers/evaluations" 
+                  icon={<Star className="h-4 w-4" />}
+                  active={location === '/admin/volunteers/evaluations'}
+                >
+                  Evaluaciones
+                </NavItem>
+                <NavItem 
+                  href="/admin/volunteers/recognition" 
+                  icon={<Award className="h-4 w-4" />}
+                  active={location === '/admin/volunteers/recognition'}
+                >
+                  Reconocimientos
+                </NavItem>
+              </CollapsibleSubmenu>
             </ModuleNav>
           )}
 
@@ -401,26 +792,377 @@ const AdminSidebarPermissions: React.FC = () => {
               icon={<DollarSign className="h-5 w-5" />}
               value="admin-finance"
             >
-              {hasPermission('finance.budget.view') && (
+              {/* FINANZAS */}
+              <CollapsibleSubmenu
+                id="finanzas"
+                title="Finanzas"
+                icon={<Target className="h-4 w-4" />}
+                isExpanded={expandedSubmenus.includes('finanzas')}
+                onToggle={toggleSubmenu}
+              >
                 <NavItem 
                   href="/admin/finance/reports" 
                   icon={<FileText className="h-4 w-4" />}
-                  active={location.startsWith('/admin/finance')}
+                  active={location === '/admin/finance/reports'}
                 >
-                  Finanzas
+                  Dashboard
                 </NavItem>
-              )}
-              {(hasPermission('finance.catalog.view') || hasPermission('finance.income.view') || hasPermission('finance.expense.view')) && (
+                <NavItem 
+                  href="/admin/finance/budget-planning" 
+                  icon={<Target className="h-4 w-4" />}
+                  active={location === '/admin/finance/budget-planning'}
+                >
+                  Presupuestos
+                </NavItem>
+                <NavItem 
+                  href="/admin/finance/catalog" 
+                  icon={<FolderOpen className="h-4 w-4" />}
+                  active={location === '/admin/finance/catalog'}
+                >
+                  Catálogo
+                </NavItem>
+                <NavItem 
+                  href="/admin/finance/income" 
+                  icon={<LayoutGrid className="h-4 w-4" />}
+                  active={location === '/admin/finance/income'}
+                >
+                  Ingresos
+                </NavItem>
+                <NavItem 
+                  href="/admin/finance/expense" 
+                  icon={<Calculator className="h-4 w-4" />}
+                  active={location === '/admin/finance/expense'}
+                >
+                  Gastos
+                </NavItem>
+              </CollapsibleSubmenu>
+
+              {/* CONTABILIDAD */}
+              <CollapsibleSubmenu
+                id="contabilidad"
+                title="Contabilidad"
+                icon={<BookOpen className="h-4 w-4" />}
+                isExpanded={expandedSubmenus.includes('contabilidad')}
+                onToggle={toggleSubmenu}
+              >
                 <NavItem 
                   href="/admin/accounting/categories" 
-                  icon={<BookOpen className="h-4 w-4" />}
-                  active={location.startsWith('/admin/accounting')}
+                  icon={<FolderTree className="h-4 w-4" />}
+                  active={location === '/admin/accounting/categories'}
                 >
-                  Contabilidad
+                  {t('navigation.categories')}
                 </NavItem>
-              )}
+                <NavItem 
+                  href="/admin/accounting/transactions" 
+                  icon={<Receipt className="h-4 w-4" />}
+                  active={location === '/admin/accounting/transactions'}
+                >
+                  Transacciones
+                </NavItem>
+                <NavItem 
+                  href="/admin/accounting/balance" 
+                  icon={<Scale className="h-4 w-4" />}
+                  active={location === '/admin/accounting/balance'}
+                >
+                  Balance
+                </NavItem>
+                <NavItem 
+                  href="/admin/accounting/reports" 
+                  icon={<FileText className="h-4 w-4" />}
+                  active={location === '/admin/accounting/reports'}
+                >
+                  {t('navigation.reports')}
+                </NavItem>
+                <NavItem 
+                  href="/admin/accounting/cashflow" 
+                  icon={<Target className="h-4 w-4" />}
+                  active={location === '/admin/accounting/cashflow'}
+                >
+                  {t('navigation.cashFlow')}
+                </NavItem>
+              </CollapsibleSubmenu>
+
+              {/* CONCESIONES */}
+              <CollapsibleSubmenu
+                id="concesiones"
+                title="Concesiones"
+                icon={<Building className="h-4 w-4" />}
+                isExpanded={expandedSubmenus.includes('concesiones')}
+                onToggle={toggleSubmenu}
+              >
+                <NavItem 
+                  href="/admin/concessions" 
+                  icon={<BarChart className="h-4 w-4" />}
+                  active={location === '/admin/concessions'}
+                >
+                  Dashboard
+                </NavItem>
+                <NavItem 
+                  href="/admin/concessions/catalog" 
+                  icon={<ListChecks className="h-4 w-4" />}
+                  active={location.startsWith('/admin/concessions/catalog')}
+                >
+                  Catálogo
+                </NavItem>
+                <NavItem 
+                  href="/admin/concessions/concessionaires" 
+                  icon={<Building className="h-4 w-4" />}
+                  active={location.startsWith('/admin/concessions/concessionaires')}
+                >
+                  Concesionarios
+                </NavItem>
+                <NavItem 
+                  href="/admin/concessions/contracts" 
+                  icon={<FileText className="h-4 w-4" />}
+                  active={location.startsWith('/admin/concessions/contracts')}
+                >
+                  {t('navigation.contracts')}
+                </NavItem>
+                <NavItem 
+                  href="/admin/concessions/active" 
+                  icon={<Handshake className="h-4 w-4" />}
+                  active={location.startsWith('/admin/concessions/active')}
+                >
+                  C. Activas
+                </NavItem>
+              </CollapsibleSubmenu>
             </ModuleNav>
           )}
+
+          {/* 5. MKT & COMM */}
+          <ModuleNav 
+            title="Mkt & Comm" 
+            icon={<Megaphone className="h-5 w-5" />}
+            value="mkt-comm"
+          >
+            {/* MARKETING */}
+            <CollapsibleSubmenu
+              id="marketing"
+              title="Marketing"
+              icon={<Megaphone className="h-4 w-4" />}
+              isExpanded={expandedSubmenus.includes('marketing')}
+              onToggle={toggleSubmenu}
+            >
+              <NavItem 
+                href="/admin/marketing" 
+                icon={<BarChart className="h-4 w-4" />}
+                active={location === '/admin/marketing'}
+              >
+                Dashboard
+              </NavItem>
+              <NavItem 
+                href="/admin/marketing/sponsors" 
+                icon={<Building className="h-4 w-4" />}
+                active={location.startsWith('/admin/marketing/sponsors')}
+              >
+                Patrocinadores
+              </NavItem>
+              <NavItem 
+                href="/admin/marketing/contracts" 
+                icon={<FileText className="h-4 w-4" />}
+                active={location.startsWith('/admin/marketing/contracts')}
+              >
+                Contratos
+              </NavItem>
+              <NavItem 
+                href="/admin/marketing/events" 
+                icon={<Calendar className="h-4 w-4" />}
+                active={location.startsWith('/admin/marketing/events')}
+              >
+                Eventos
+              </NavItem>
+              <NavItem 
+                href="/admin/marketing/assets" 
+                icon={<Image className="h-4 w-4" />}
+                active={location.startsWith('/admin/marketing/assets')}
+              >
+                Activos
+              </NavItem>
+              <NavItem 
+                href="/admin/marketing/evaluations" 
+                icon={<Star className="h-4 w-4" />}
+                active={location.startsWith('/admin/marketing/evaluations')}
+              >
+                Evaluaciones
+              </NavItem>
+            </CollapsibleSubmenu>
+
+            {/* PUBLICIDAD DIGITAL */}
+            <CollapsibleSubmenu
+              id="advertising"
+              title="Publicidad Digital"
+              icon={<Monitor className="h-4 w-4" />}
+              isExpanded={expandedSubmenus.includes('advertising')}
+              onToggle={toggleSubmenu}
+            >
+              <NavItem 
+                href="/admin/advertising" 
+                icon={<BarChart className="h-4 w-4" />}
+                active={location === '/admin/advertising'}
+              >
+                Dashboard
+              </NavItem>
+              <NavItem 
+                href="/admin/advertising/spaces" 
+                icon={<LayoutGrid className="h-4 w-4" />}
+                active={location.startsWith('/admin/advertising/spaces')}
+              >
+                Espacios Publicitarios
+              </NavItem>
+              <NavItem 
+                href="/admin/advertising/advertisements" 
+                icon={<Image className="h-4 w-4" />}
+                active={location.startsWith('/admin/advertising/advertisements')}
+              >
+                Anuncios
+              </NavItem>
+              <NavItem 
+                href="/admin/advertising/campaigns" 
+                icon={<Target className="h-4 w-4" />}
+                active={location.startsWith('/admin/advertising/campaigns')}
+              >
+                Campañas
+              </NavItem>
+              <NavItem 
+                href="/admin/advertising/assignments" 
+                icon={<MapPin className="h-4 w-4" />}
+                active={location.startsWith('/admin/advertising/assignments')}
+              >
+                Asignaciones
+              </NavItem>
+              <NavItem 
+                href="/admin/advertising/space-mappings" 
+                icon={<Grid className="h-4 w-4" />}
+                active={location.startsWith('/admin/advertising/space-mappings')}
+              >
+                Mapeo de Espacios
+              </NavItem>
+            </CollapsibleSubmenu>
+
+            {/* COMUNICACIÓN */}
+            <CollapsibleSubmenu
+              id="comunicacion"
+              title="Comunicación"
+              icon={<MessageSquare className="h-4 w-4" />}
+              isExpanded={expandedSubmenus.includes('comunicacion')}
+              onToggle={toggleSubmenu}
+            >
+              <NavItem 
+                href="/admin/communications" 
+                icon={<BarChart className="h-4 w-4" />}
+                active={location === '/admin/communications'}
+              >
+                Dashboard
+              </NavItem>
+              <NavItem 
+                href="/admin/communications/templates" 
+                icon={<FileText className="h-4 w-4" />}
+                active={location === '/admin/communications/templates'}
+              >
+                Plantillas
+              </NavItem>
+              <NavItem 
+                href="/admin/communications/queue" 
+                icon={<ClipboardList className="h-4 w-4" />}
+                active={location === '/admin/communications/queue'}
+              >
+                Cola de Emails
+              </NavItem>
+              <NavItem 
+                href="/admin/communications/campaigns" 
+                icon={<Megaphone className="h-4 w-4" />}
+                active={location === '/admin/communications/campaigns'}
+              >
+                Campañas de Email
+              </NavItem>
+              <NavItem 
+                href="/admin/communications/bulk" 
+                icon={<Users className="h-4 w-4" />}
+                active={location === '/admin/communications/bulk'}
+              >
+                Envío Masivo
+              </NavItem>
+              <NavItem 
+                href="/admin/communications/analytics" 
+                icon={<BarChart className="h-4 w-4" />}
+                active={location === '/admin/communications/analytics'}
+              >
+                Análisis
+              </NavItem>
+            </CollapsibleSubmenu>
+          </ModuleNav>
+
+          {/* 6. HR - RECURSOS HUMANOS */}
+          <ModuleNav 
+            title="HR" 
+            icon={<Users className="h-5 w-5" />}
+            value="hr"
+          >
+            <NavItem 
+              href="/admin/hr/employees" 
+              icon={<Users className="h-4 w-4" />}
+              active={location.startsWith('/admin/hr/employees')}
+            >
+              Empleados
+            </NavItem>
+            <NavItem 
+              href="/admin/hr/departments" 
+              icon={<Building className="h-4 w-4" />}
+              active={location.startsWith('/admin/hr/departments')}
+            >
+              Departamentos
+            </NavItem>
+            <NavItem 
+              href="/admin/hr/evaluations" 
+              icon={<Star className="h-4 w-4" />}
+              active={location.startsWith('/admin/hr/evaluations')}
+            >
+              Evaluaciones
+            </NavItem>
+            <NavItem 
+              href="/admin/hr/vacation" 
+              icon={<Calendar className="h-4 w-4" />}
+              active={location.startsWith('/admin/hr/vacation')}
+            >
+              Vacaciones
+            </NavItem>
+          </ModuleNav>
+
+          {/* 7. SEGURIDAD */}
+          <ModuleNav 
+            title="Seguridad" 
+            icon={<Shield className="h-5 w-5" />}
+            value="security"
+          >
+            <NavItem 
+              href="/admin/security" 
+              icon={<Shield className="h-5 w-5" />}
+              active={location === '/admin/security'}
+            >
+              Dashboard
+            </NavItem>
+            <NavItem 
+              href="/admin/security/password" 
+              icon={<Lock className="h-5 w-5" />}
+              active={location === '/admin/security/password'}
+            >
+              Cambiar Contraseña
+            </NavItem>
+            <NavItem 
+              href="/admin/security/audit" 
+              icon={<ClipboardList className="h-5 w-5" />}
+              active={location === '/admin/security/audit'}
+            >
+              Auditoría
+            </NavItem>
+            <NavItem 
+              href="/admin/security/settings" 
+              icon={<Settings className="h-5 w-5" />}
+              active={location === '/admin/security/settings'}
+            >
+              Configuración
+            </NavItem>
+          </ModuleNav>
 
         </Accordion>
       </ScrollArea>
