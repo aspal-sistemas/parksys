@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import UserProfileImage from '@/components/UserProfileImage';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { useTranslation } from 'react-i18next';
+import { SidebarSearch } from './SidebarSearch';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -360,6 +361,9 @@ const AdminSidebarComplete: React.FC = () => {
         </div>
       </div>
 
+      {/* Buscador del sistema */}
+      <SidebarSearch />
+
       {/* Navigation */}
       <ScrollArea className="flex-1 px-3 py-2 w-full">
         <Accordion
@@ -367,7 +371,6 @@ const AdminSidebarComplete: React.FC = () => {
           defaultValue={defaultAccordion}
           className="space-y-1"
         >
-
 
           {/* 1. CONFIGURACIÓN */}
           <ModuleNav 
