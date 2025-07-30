@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import AdminSidebarComplete from './AdminSidebarComplete';
+import DynamicAdminSidebar from './DynamicAdminSidebar';
 import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -14,8 +14,10 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ title, subtitle, children }) 
   
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Sidebar fijo global - siempre visible */}
-      <AdminSidebarComplete />
+      {/* Sidebar dinámico basado en permisos */}
+      <div className="fixed left-0 top-0 h-full z-30">
+        <DynamicAdminSidebar />
+      </div>
       
       {/* Mobile sidebar overlay */}
       {mobileSidebarOpen && (

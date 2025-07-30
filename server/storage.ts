@@ -1,6 +1,8 @@
 import { db, pool } from './db';
 import { eq, sql, desc } from "drizzle-orm";
 import * as schema from "@shared/schema";
+import * as fs from 'fs';
+import * as path from 'path';
 
 const {
   users,
@@ -90,6 +92,7 @@ export interface IStorage {
   getIncident(id: number): Promise<any>;
   updateIncidentStatus(id: number, status: string): Promise<any>;
   getParkIncidents(parkId: number): Promise<any[]>;
+  getRolePermissions(): Promise<any>;
 }
 
 // Implementación simplificada
@@ -1710,4 +1713,71 @@ DatabaseStorage.prototype.updateIncidentStatus = async function(id: number, stat
 
 DatabaseStorage.prototype.getParkIncidents = async function(parkId: number): Promise<any[]> {
   return [];
+};
+
+DatabaseStorage.prototype.getRolePermissions = async function(): Promise<any> {
+  try {
+    // Esta función obtiene los permisos de todos los roles desde el archivo JSON o base de datos
+    // Por ahora devolvemos los permisos hardcodeados que ya funcionan
+    const permissionsPath = path.join(process.cwd(), 'server', 'permissions.json');
+    
+    let permissions = {};
+    
+    try {
+      if (fs.existsSync(permissionsPath)) {
+        const permissionsData = fs.readFileSync(permissionsPath, 'utf8');
+        permissions = JSON.parse(permissionsData);
+      }
+    } catch (fileError) {
+      console.log('No se encontró archivo de permisos, usando permisos por defecto');
+    }
+    
+    // Si no hay permisos en archivo, usar estructura por defecto
+    if (Object.keys(permissions).length === 0) {
+      permissions = {
+        admin: {},
+        director: {},
+        manager: {},
+        supervisor: {},
+        user: {},
+        guardaparques: {},
+        voluntario: {},
+        instructor: {},
+        concesionario: {},
+        moderator: {
+          'dashboard.view': true,
+          'operations.parks.view': true,
+          'operations.assets.view': true,
+          'operations.incidents.view': true,
+          'finance.catalog.view': true,
+          'finance.incomes.view': true,
+          'finance.expenses.view': true,
+          'activities.list.view': true,
+          'activities.calendar.view': true,
+          'activities.instructors.view': true,
+          'users.view': true,
+          'settings.view': true
+        },
+        operator: {
+          'dashboard.view': true,
+          'operations.parks.view': true,
+          'operations.assets.view': true,
+          'operations.incidents.view': true,
+          'finance.catalog.view': true,
+          'finance.incomes.view': true,
+          'finance.expenses.view': true,
+          'activities.list.view': true,
+          'activities.calendar.view': true,
+          'activities.instructors.view': true,
+          'users.view': true,
+          'settings.view': true
+        }
+      };
+    }
+    
+    return permissions;
+  } catch (error) {
+    console.error('Error al obtener permisos de roles:', error);
+    return {};
+  }
 };

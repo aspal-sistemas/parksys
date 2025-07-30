@@ -1276,6 +1276,15 @@ async function initializeDatabaseAsync() {
 
   const routeServer = await registerRoutes(app);
 
+  // Registrar rutas de permisos de usuario
+  try {
+    const userPermissionsRouter = await import('./routes/userPermissions');
+    app.use('/api', userPermissionsRouter.default);
+    console.log("✅ Rutas de permisos de usuario registradas correctamente");
+  } catch (error) {
+    console.error("❌ Error al registrar rutas de permisos:", error);
+  }
+
   // Inicializar tablas de patrocinios
   try {
     const { createSponsorshipTables } = await import("./create-sponsorship-tables");
