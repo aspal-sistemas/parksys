@@ -260,7 +260,9 @@ export const DynamicAdminSidebar: React.FC<DynamicAdminSidebarProps> = ({ classN
       }
       
       // Verificar el permiso específico del elemento
-      return hasPermission(item.permission) || hasAnyPermission(item.permission);
+      const hasAccess = hasPermission(item.permission);
+      console.log(`🔍 Verificando permiso "${item.permission}" para "${item.title}":`, hasAccess);
+      return hasAccess;
     });
   };
 
