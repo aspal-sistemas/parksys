@@ -178,7 +178,8 @@ export const requireAdmin = async (req: Request, res: Response, next: NextFuncti
     return res.status(401).json({ message: 'No autorizado' });
   }
 
-  if (req.user.role !== 'admin') {
+  // Permitir tanto admin como super_admin para operaciones administrativas
+  if (req.user.role !== 'admin' && req.user.role !== 'super_admin') {
     return res.status(403).json({ 
       message: 'Acceso denegado. Se requieren permisos de administrador.' 
     });
