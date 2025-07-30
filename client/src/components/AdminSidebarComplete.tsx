@@ -358,11 +358,6 @@ const AdminSidebarComplete: React.FC = () => {
             <p className="text-sm text-gray-600">Sistema de Parques</p>
           </div>
         </div>
-        <Link href="/">
-          <Button variant="outline" size="sm" className="text-xs">
-            Ver Sitio Público
-          </Button>
-        </Link>
       </div>
 
       {/* Navigation */}
