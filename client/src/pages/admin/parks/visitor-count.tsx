@@ -1628,11 +1628,11 @@ export default function VisitorCountPage() {
                     className="border-purple-200 text-purple-700 hover:bg-purple-50 flex items-center gap-2"
                   >
                     <svg 
-                      width="36" 
-                      height="36" 
+                      width="48" 
+                      height="48" 
                       viewBox="0 0 48 48" 
                       fill="none" 
-                      className="h-9 w-9"
+                      style={{ width: '24px', height: '24px', minWidth: '24px', minHeight: '24px' }}
                     >
                       {/* Nube */}
                       <path 
