@@ -354,8 +354,8 @@ const AdminSidebarComplete: React.FC = () => {
             <Map className="h-6 w-6 text-white" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-gray-900">Dashboard</h1>
-            <p className="text-sm text-gray-600">Administración</p>
+            <h1 className="text-lg font-bold text-gray-900">ParkSys</h1>
+            <p className="text-sm text-gray-600">Sistema de Parques</p>
           </div>
         </div>
         <Link href="/">
