@@ -206,7 +206,7 @@ const Header: React.FC = () => {
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
                       Arbolado
                     </Link>
-                    <Link href="/admin/activities"
+                    <Link href="/admin/organizador"
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
                       Actividades
                     </Link>
