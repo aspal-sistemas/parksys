@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'wouter';
-import { Menu, X, ChevronDown, LogIn } from 'lucide-react';
+import { Menu, X, ChevronDown, LogIn, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import GlobalSearch from '@/components/GlobalSearch';
 import logoImage from '@assets/logo_1751306368691.png';
@@ -182,6 +182,21 @@ const Header: React.FC = () => {
             {/* Búsqueda Global - Solo en sitio público */}
             {!isAdmin && <GlobalSearch />}
             
+            {/* Panel de Control - Solo para administradores */}
+            {isAdmin && location !== '/admin/login' && (
+              <Link href="/admin">
+                <button
+                  className={`border-b-2 py-2 px-3 text-sm font-medium flex items-center ${
+                    location === '/admin' 
+                      ? 'border-primary text-gray-900' 
+                      : 'border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300'
+                  }`}>
+                  <Home className="mr-2 h-4 w-4" />
+                  Panel de Control
+                </button>
+              </Link>
+            )}
+
             {/* Menú de Gestión - Solo para administradores */}
             {isAdmin && location !== '/admin/login' && (
               <div className="relative group">

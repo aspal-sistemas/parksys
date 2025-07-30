@@ -367,13 +367,7 @@ const AdminSidebarComplete: React.FC = () => {
           defaultValue={defaultAccordion}
           className="space-y-1"
         >
-          <NavItem 
-            href="/admin" 
-            icon={<Home className="h-5 w-5" />}
-            active={location === '/admin'}
-          >
-            {t('navigation.dashboard')}
-          </NavItem>
+
 
           {/* 1. CONFIGURACIÓN */}
           <ModuleNav 
