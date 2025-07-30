@@ -84,22 +84,15 @@ const SYSTEM_MODULES = {
 };
 
 const ROLES = [
-  { id: 'admin', name: 'Administrador', color: 'bg-red-100 text-red-800', icon: Shield },
-  { id: 'director', name: 'Director', color: 'bg-purple-100 text-purple-800', icon: User },
-  { id: 'manager', name: 'Manager', color: 'bg-blue-100 text-blue-800', icon: Users },
-  { id: 'instructor', name: 'Instructor', color: 'bg-green-100 text-green-800', icon: GraduationCap },
-  { id: 'supervisor', name: 'Supervisor', color: 'bg-yellow-100 text-yellow-800', icon: Activity },
-  { id: 'user', name: 'Usuario', color: 'bg-gray-100 text-gray-800', icon: User },
-  { id: 'ciudadano', name: 'Ciudadano', color: 'bg-indigo-100 text-indigo-800', icon: User },
-  { id: 'voluntario', name: 'Voluntario', color: 'bg-teal-100 text-teal-800', icon: User },
-  { id: 'guardaparques', name: 'Guardaparques', color: 'bg-emerald-100 text-emerald-800', icon: Shield },
-  { id: 'guardia', name: 'Guardia', color: 'bg-orange-100 text-orange-800', icon: Shield },
-  { id: 'concesionario', name: 'Concesionario', color: 'bg-pink-100 text-pink-800', icon: User }
+  { id: 'super_admin', name: 'Super Administrador', color: 'bg-red-100 text-red-800', icon: Shield },
+  { id: 'admin', name: 'Administrador', color: 'bg-orange-100 text-orange-800', icon: Shield },
+  { id: 'moderator', name: 'Moderador', color: 'bg-blue-100 text-blue-800', icon: Users },
+  { id: 'operator', name: 'Operador', color: 'bg-green-100 text-green-800', icon: User }
 ];
 
 const AdminPermissions = () => {
   const [permissions, setPermissions] = useState<Record<string, Record<string, boolean>>>({});
-  const [selectedRole, setSelectedRole] = useState<string>('admin');
+  const [selectedRole, setSelectedRole] = useState<string>('super_admin');
   const [hasChanges, setHasChanges] = useState(false);
   const queryClient = useQueryClient();
 
