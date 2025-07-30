@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { 
   UserRound, 
   Search,
-  PlusCircle, 
+  Plus, 
   Edit, 
   Trash2, 
   Loader,
@@ -1066,13 +1066,19 @@ const AdminUsers = () => {
     <AdminLayout>
       <div className="space-y-6">
         {/* Header con título */}
-        <Card className="p-4 bg-gray-50">
-          <div className="flex items-center gap-2">
-            <Users className="w-8 h-8 text-gray-900" />
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">{tUsers('title')}</h1>
-              <p className="text-gray-600 mt-2">{tUsers('subtitle')}</p>
+        <Card className="p-6 bg-gray-50">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Users className="w-8 h-8 text-gray-900" />
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">{tUsers('title')}</h1>
+                <p className="text-gray-600 mt-2">{tUsers('subtitle')}</p>
+              </div>
             </div>
+            <Button onClick={handleCreateUser} className="bg-[#00a587] hover:bg-[#067f5f]">
+              <Plus className="h-4 w-4 mr-2" />
+              {tUsers('newUser')}
+            </Button>
           </div>
         </Card>
         
@@ -1089,20 +1095,14 @@ const AdminUsers = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2"
-            >
-              <Filter className="h-4 w-4" />
-              {t('actions.filter')}
-            </Button>
-            <Button onClick={handleCreateUser}>
-              <PlusCircle className="h-4 w-4 mr-2" />
-              {tUsers('newUser')}
-            </Button>
-          </div>
+          <Button 
+            variant="outline" 
+            onClick={() => setShowFilters(!showFilters)}
+            className="flex items-center gap-2"
+          >
+            <Filter className="h-4 w-4" />
+            {t('actions.filter')}
+          </Button>
         </div>
 
         {/* Filtros expandibles */}
