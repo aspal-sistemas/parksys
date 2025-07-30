@@ -262,19 +262,15 @@ const Header: React.FC = () => {
                   <div className="py-1">
                     <Link href="/admin/finance"
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
-                      Dashboard Financiero
+                      Finanzas
                     </Link>
-                    <Link href="/admin/users"
+                    <Link href="/admin/accounting"
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
-                      Usuarios
+                      Contabilidad
                     </Link>
                     <Link href="/admin/concessions"
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
                       Concesiones
-                    </Link>
-                    <Link href="/admin/configuration"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
-                      Configuración
                     </Link>
                   </div>
                 </div>
@@ -305,42 +301,19 @@ const Header: React.FC = () => {
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
                       Comunicaciones
                     </Link>
-                    <Link href="/admin/eventos-ambu"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
-                      Eventos AMBU
-                    </Link>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Menú Recursos Humanos - Solo para administradores */}
+            {/* Menú RH - Solo para administradores */}
             {isAdmin && location !== '/admin/login' && (
-              <div className="relative group">
+              <Link href="/admin/hr/employees">
                 <button
-                  className="border-b-2 pt-1 pb-3 px-3 text-sm font-medium flex items-center border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300">
-                  Recursos Humanos
-                  <ChevronDown className="ml-1 h-3 w-3" />
+                  className="border-b-2 pt-1 pb-3 px-3 text-sm font-medium border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300">
+                  RH
                 </button>
-                
-                {/* Dropdown menu */}
-                <div className="absolute right-0 top-full mt-1 w-56 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                  <div className="py-1">
-                    <Link href="/admin/hr/employees"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
-                      Gestión de Personal
-                    </Link>
-                    <Link href="/admin/instructors"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
-                      Instructores
-                    </Link>
-                    <Link href="/admin/security"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
-                      Seguridad
-                    </Link>
-                  </div>
-                </div>
-              </div>
+              </Link>
             )}
             
             {isAdmin ? (
