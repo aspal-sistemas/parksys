@@ -218,6 +218,35 @@ const Header: React.FC = () => {
                 </div>
               </div>
             )}
+
+            {/* Menú O & M - Solo para administradores */}
+            {isAdmin && location !== '/admin/login' && (
+              <div className="relative group">
+                <button
+                  className="border-b-2 pt-1 pb-3 px-3 text-sm font-medium flex items-center border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300">
+                  O & M
+                  <ChevronDown className="ml-1 h-3 w-3" />
+                </button>
+                
+                {/* Dropdown menu */}
+                <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                  <div className="py-1">
+                    <Link href="/admin/assets/dashboard"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
+                      Activos
+                    </Link>
+                    <Link href="/admin/incidents"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
+                      Incidencias
+                    </Link>
+                    <Link href="/admin/volunteers"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
+                      Voluntarios
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            )}
             
             {isAdmin ? (
               location !== '/admin/login' && (
