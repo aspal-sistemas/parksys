@@ -1568,7 +1568,7 @@ export default function VisitorCountPage() {
                     className="flex items-center gap-2"
                   >
                     <Clock className="h-5 w-5" />
-                    Esta Semana
+                    Semana
                   </Button>
                   <Button
                     variant={quickDateRange === 'month' ? 'default' : 'outline'}
@@ -1577,7 +1577,7 @@ export default function VisitorCountPage() {
                     className="flex items-center gap-2"
                   >
                     <Calendar className="h-5 w-5" />
-                    Este Mes
+                    Mes
                   </Button>
                   <Button
                     variant={quickDateRange === 'quarter' ? 'default' : 'outline'}
@@ -1586,7 +1586,7 @@ export default function VisitorCountPage() {
                     className="flex items-center gap-2"
                   >
                     <TrendingUp className="h-5 w-5" />
-                    Este Trimestre
+                    Trimestre
                   </Button>
                   <Button
                     variant={quickDateRange === 'custom' ? 'default' : 'outline'}
