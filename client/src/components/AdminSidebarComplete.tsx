@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
 import { useAuth } from '@/hooks/useAuth';
+import { usePermissions } from '@/hooks/usePermissions';
 import UserProfileImage from '@/components/UserProfileImage';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { useTranslation } from 'react-i18next';
@@ -263,6 +264,7 @@ const AdminSidebarComplete: React.FC = () => {
   const [location] = useLocation();
   const { user, logout } = useAuth();
   const { t } = useTranslation('common');
+  const { hasPermission, isLoading } = usePermissions();
   
   // Estados para controlar los submenús colapsables dentro de "Gestión"
   const [expandedSubmenus, setExpandedSubmenus] = useState<string[]>([]);
@@ -367,57 +369,69 @@ const AdminSidebarComplete: React.FC = () => {
           defaultValue={defaultAccordion}
           className="space-y-1"
         >
-          <NavItem 
-            href="/admin" 
-            icon={<Home className="h-5 w-5" />}
-            active={location === '/admin'}
-          >
-            {t('navigation.dashboard')}
-          </NavItem>
+          {/* Dashboard - siempre visible para usuarios autenticados */}
+          {hasPermission('dashboard.view') && (
+            <NavItem 
+              href="/admin" 
+              icon={<Home className="h-5 w-5" />}
+              active={location === '/admin'}
+            >
+              {t('navigation.dashboard')}
+            </NavItem>
+          )}
 
           {/* 1. CONFIGURACIÓN */}
-          <ModuleNav 
-            title={t('navigation.settings')} 
-            icon={<Settings className="h-5 w-5" />}
-            value="system"
-          >
-            <NavItem 
-              href="/admin/settings" 
+          {(hasPermission('settings.view') || hasPermission('users.view') || hasPermission('permissions.view')) && (
+            <ModuleNav 
+              title={t('navigation.settings')} 
               icon={<Settings className="h-5 w-5" />}
-              active={location === '/admin/settings'}
+              value="system"
             >
-              {t('navigation.settings')}
-            </NavItem>
-            <NavItem 
-              href="/admin/users" 
-              icon={<UserCheck className="h-5 w-5" />}
-              active={location === '/admin/users'}
-            >
-              {t('navigation.users')}
-            </NavItem>
-            <NavItem 
-              href="/admin/permissions" 
-              icon={<Shield className="h-5 w-5" />}
-              active={location === '/admin/permissions'}
-            >
-              {t('navigation.permissions')}
-            </NavItem>
-            <NavItem 
-              href="/admin/users/notifications" 
-              icon={<Bell className="h-5 w-5" />}
-              active={location === '/admin/users/notifications'}
-            >
-              Notificaciones
-            </NavItem>
-          </ModuleNav>
+              {hasPermission('settings.view') && (
+                <NavItem 
+                  href="/admin/settings" 
+                  icon={<Settings className="h-5 w-5" />}
+                  active={location === '/admin/settings'}
+                >
+                  {t('navigation.settings')}
+                </NavItem>
+              )}
+              {hasPermission('users.view') && (
+                <NavItem 
+                  href="/admin/users" 
+                  icon={<UserCheck className="h-5 w-5" />}
+                  active={location === '/admin/users'}
+                >
+                  {t('navigation.users')}
+                </NavItem>
+              )}
+              {hasPermission('permissions.view') && (
+                <NavItem 
+                  href="/admin/permissions" 
+                  icon={<Shield className="h-5 w-5" />}
+                  active={location === '/admin/permissions'}
+                >
+                  {t('navigation.permissions')}
+                </NavItem>
+              )}
+              <NavItem 
+                href="/admin/users/notifications" 
+                icon={<Bell className="h-5 w-5" />}
+                active={location === '/admin/users/notifications'}
+              >
+                Notificaciones
+              </NavItem>
+            </ModuleNav>
+          )}
 
           {/* 2. GESTIÓN - MENÚ PRINCIPAL CON SUBMENÚS COLAPSABLES */}
-          <ModuleNav 
-            title="Gestión" 
-            icon={<FolderOpen className="h-5 w-5" />}
-            value="gestion"
-            defaultOpen={location.startsWith('/admin/visitors') || location.startsWith('/admin/parks') || location.startsWith('/admin/trees') || location.startsWith('/admin/organizador') || location.startsWith('/admin/activities') || location.startsWith('/admin/events') || location.startsWith('/admin/space-reservations')}
-          >
+          {(hasPermission('operations.parks.view') || hasPermission('trees.view') || hasPermission('activities.view')) && (
+            <ModuleNav 
+              title="Gestión" 
+              icon={<FolderOpen className="h-5 w-5" />}
+              value="gestion"
+              defaultOpen={location.startsWith('/admin/visitors') || location.startsWith('/admin/parks') || location.startsWith('/admin/trees') || location.startsWith('/admin/organizador') || location.startsWith('/admin/activities') || location.startsWith('/admin/events') || location.startsWith('/admin/space-reservations')}
+            >
             {/* VISITANTES */}
             <CollapsibleSubmenu
               id="visitantes"
@@ -690,17 +704,17 @@ const AdminSidebarComplete: React.FC = () => {
                 {t('navigation.management')}
               </NavItem>
             </CollapsibleSubmenu>
-          </ModuleNav>
-
-
+            </ModuleNav>
+          )}
 
           {/* 3. O & M - OPERACIONES Y MANTENIMIENTO CON SUBMENÚS COLAPSABLES */}
-          <ModuleNav 
-            title="O & M" 
-            icon={<Wrench className="h-5 w-5" />}
-            value="operations"
-            defaultOpen={location.startsWith('/admin/assets') || location.startsWith('/admin/incidents') || location.startsWith('/admin/volunteers')}
-          >
+          {(hasPermission('operations.assets.view') || hasPermission('operations.incidents.view') || hasPermission('operations.volunteers.view')) && (
+            <ModuleNav 
+              title="O & M" 
+              icon={<Wrench className="h-5 w-5" />}
+              value="operations"
+              defaultOpen={location.startsWith('/admin/assets') || location.startsWith('/admin/incidents') || location.startsWith('/admin/volunteers')}
+            >
             {/* ACTIVOS */}
             <CollapsibleSubmenu
               id="activos"
@@ -821,15 +835,17 @@ const AdminSidebarComplete: React.FC = () => {
                 Reconocimientos
               </NavItem>
             </CollapsibleSubmenu>
-          </ModuleNav>
+            </ModuleNav>
+          )}
 
           {/* 4. ADMIN & FINANZAS */}
-          <ModuleNav 
-            title="Admin & Finanzas" 
-            icon={<DollarSign className="h-5 w-5" />}
-            value="admin-finance"
-            defaultOpen={location.startsWith('/admin/finance') || location.startsWith('/admin/accounting') || location.startsWith('/admin/concessions')}
-          >
+          {(hasPermission('finance.budget.view') || hasPermission('finance.catalog.view') || hasPermission('finance.income.view') || hasPermission('finance.expense.view')) && (
+            <ModuleNav 
+              title="Admin & Finanzas" 
+              icon={<DollarSign className="h-5 w-5" />}
+              value="admin-finance"
+              defaultOpen={location.startsWith('/admin/finance') || location.startsWith('/admin/accounting') || location.startsWith('/admin/concessions')}
+            >
             {/* FINANZAS */}
             <CollapsibleSubmenu
               id="finanzas"
@@ -971,7 +987,8 @@ const AdminSidebarComplete: React.FC = () => {
                 C. Activas
               </NavItem>
             </CollapsibleSubmenu>
-          </ModuleNav>
+            </ModuleNav>
+          )}
 
           {/* 5. MKT & COMM */}
           <ModuleNav 

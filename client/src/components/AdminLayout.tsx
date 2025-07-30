@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import DynamicAdminSidebar from './DynamicAdminSidebar';
+import AdminSidebarPermissions from './AdminSidebarPermissions';
 import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -14,9 +14,9 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ title, subtitle, children }) 
   
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Sidebar dinámico basado en permisos */}
+      {/* Sidebar con sistema de permisos integrado */}
       <div className="fixed left-0 top-0 h-full z-30">
-        <DynamicAdminSidebar />
+        <AdminSidebarPermissions />
       </div>
       
       {/* Mobile sidebar overlay */}
