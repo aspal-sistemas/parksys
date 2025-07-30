@@ -369,9 +369,9 @@ const AdminSidebarPermissions: React.FC = () => {
                 </NavItem>
               )}
               <NavItem 
-                href="/admin/notifications" 
+                href="/admin/settings/notifications" 
                 icon={<Bell className="h-4 w-4" />}
-                active={location.startsWith('/admin/notifications')}
+                active={location.startsWith('/admin/settings/notifications')}
               >
                 {t('navigation.notifications')}
               </NavItem>
