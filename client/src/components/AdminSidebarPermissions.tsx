@@ -1157,40 +1157,13 @@ const AdminSidebarPermissions: React.FC = () => {
           </ModuleNav>
 
           {/* 7. SEGURIDAD */}
-          <ModuleNav 
-            title="Seguridad" 
+          <NavItem 
+            href="/admin/security" 
             icon={<Shield className="h-5 w-5" />}
-            value="security"
+            active={location === '/admin/security'}
           >
-            <NavItem 
-              href="/admin/security" 
-              icon={<Shield className="h-5 w-5" />}
-              active={location === '/admin/security'}
-            >
-              Dashboard
-            </NavItem>
-            <NavItem 
-              href="/admin/security/password" 
-              icon={<Lock className="h-5 w-5" />}
-              active={location === '/admin/security/password'}
-            >
-              Cambiar Contraseña
-            </NavItem>
-            <NavItem 
-              href="/admin/security/audit" 
-              icon={<ClipboardList className="h-5 w-5" />}
-              active={location === '/admin/security/audit'}
-            >
-              Auditoría
-            </NavItem>
-            <NavItem 
-              href="/admin/security/settings" 
-              icon={<Settings className="h-5 w-5" />}
-              active={location === '/admin/security/settings'}
-            >
-              Configuración
-            </NavItem>
-          </ModuleNav>
+            Seguridad
+          </NavItem>
 
         </Accordion>
       </ScrollArea>
