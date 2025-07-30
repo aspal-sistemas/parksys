@@ -68,7 +68,7 @@ interface NavItemProps {
 }
 
 interface ModuleNavProps {
-  title: string;
+  title: React.ReactNode;
   icon: React.ReactNode;
   children: React.ReactNode;
   value: string;
@@ -679,7 +679,14 @@ const AdminSidebarPermissions: React.FC = () => {
           {/* 3. O & M - OPERACIONES Y MANTENIMIENTO */}
           {(hasPermission('operations.assets.view') || hasPermission('operations.incidents.view') || hasPermission('operations.volunteers.view')) && (
             <ModuleNav 
-              title="O & M" 
+              title={
+                <div className="flex items-center gap-2">
+                  O & M
+                  <span className="text-xs bg-orange-100 text-orange-800 px-1.5 py-0.5 rounded font-medium">
+                    BETA
+                  </span>
+                </div>
+              } 
               icon={<Wrench className="h-5 w-5" />}
               value="operations"
             >
@@ -795,7 +802,14 @@ const AdminSidebarPermissions: React.FC = () => {
           {/* 4. ADMIN & FINANZAS */}
           {(hasPermission('finance.budget.view') || hasPermission('finance.catalog.view') || hasPermission('finance.income.view') || hasPermission('finance.expense.view')) && (
             <ModuleNav 
-              title="Admin & Finanzas" 
+              title={
+                <div className="flex items-center gap-2">
+                  Admin & Finanzas
+                  <span className="text-xs bg-orange-100 text-orange-800 px-1.5 py-0.5 rounded font-medium">
+                    BETA
+                  </span>
+                </div>
+              } 
               icon={<DollarSign className="h-5 w-5" />}
               value="admin-finance"
             >
@@ -1101,7 +1115,14 @@ const AdminSidebarPermissions: React.FC = () => {
 
           {/* 6. HR - RECURSOS HUMANOS */}
           <ModuleNav 
-            title="HR" 
+            title={
+              <div className="flex items-center gap-2">
+                HR
+                <span className="text-xs bg-orange-100 text-orange-800 px-1.5 py-0.5 rounded font-medium">
+                  BETA
+                </span>
+              </div>
+            } 
             icon={<Users className="h-5 w-5" />}
             value="hr"
           >
