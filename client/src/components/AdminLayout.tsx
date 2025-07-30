@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import AdminSidebarPermissions from './AdminSidebarPermissions';
+import AdminSidebarComplete from './AdminSidebarComplete';
 import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -14,10 +14,8 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ title, subtitle, children }) 
   
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Sidebar con sistema de permisos integrado */}
-      <div className="fixed left-0 top-0 h-full z-50 w-64">
-        <AdminSidebarPermissions />
-      </div>
+      {/* Sidebar fijo global - siempre visible */}
+      <AdminSidebarComplete />
       
       {/* Mobile sidebar overlay */}
       {mobileSidebarOpen && (
@@ -29,7 +27,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ title, subtitle, children }) 
       
       {/* Main Content con margen izquierdo para el sidebar */}
       <div className="ml-64 flex flex-col min-h-screen">
-        <main className="flex-1 overflow-y-auto p-6 pt-4">
+        <main className="flex-1 overflow-y-auto p-6">
           {children}
         </main>
       </div>

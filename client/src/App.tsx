@@ -351,11 +351,6 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/settings/NotificationPreferences')))}
           </Suspense>
         </Route>
-        <Route path="/admin/settings/notifications">
-          <Suspense fallback={<div className="p-8 text-center">Cargando preferencias de notificaciones...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/settings/NotificationPreferences')))}
-          </Suspense>
-        </Route>
         <Route path="/admin/login" component={AdminLogin} />
         <Route path="/test-access" component={TestAccess} />
         <Route path="/admin/permissions">
