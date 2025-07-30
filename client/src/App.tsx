@@ -42,7 +42,7 @@ function Router() {
   return (
     <div className="flex flex-col min-h-screen">
       {!isVentasRoute && <Header />}
-      <div className={!isVentasRoute ? "pt-16" : ""}>
+      <div className={!isVentasRoute ? "pt-20" : ""}>
         <Switch>
         <Route path="/" component={Home} />
         <Route path="/home" component={Home} />

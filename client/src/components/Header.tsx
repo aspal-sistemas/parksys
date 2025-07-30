@@ -49,7 +49,7 @@ const Header: React.FC = () => {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm border-b border-gray-200">
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between items-center h-20">
           <div className="flex items-center">
             {/* Logo */}
             <Link href="/">
@@ -186,7 +186,7 @@ const Header: React.FC = () => {
             {isAdmin && location !== '/admin/login' && (
               <div className="relative group">
                 <button
-                  className="border-b-2 pt-1 pb-3 px-3 text-sm font-medium flex items-center border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300">
+                  className="border-b-2 py-2 px-3 text-sm font-medium flex items-center border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300">
                   Gestión
                   <ChevronDown className="ml-1 h-3 w-3" />
                 </button>
@@ -223,7 +223,7 @@ const Header: React.FC = () => {
             {isAdmin && location !== '/admin/login' && (
               <div className="relative group">
                 <button
-                  className="border-b-2 pt-1 pb-3 px-3 text-sm font-medium flex items-center border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300">
+                  className="border-b-2 py-2 px-3 text-sm font-medium flex items-center border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300">
                   O & M
                   <ChevronDown className="ml-1 h-3 w-3" />
                 </button>
@@ -252,7 +252,7 @@ const Header: React.FC = () => {
             {isAdmin && location !== '/admin/login' && (
               <div className="relative group">
                 <button
-                  className="border-b-2 pt-1 pb-3 px-3 text-sm font-medium flex items-center border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300">
+                  className="border-b-2 py-2 px-3 text-sm font-medium flex items-center border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300">
                   Admin & Finanzas
                   <ChevronDown className="ml-1 h-3 w-3" />
                 </button>
@@ -281,7 +281,7 @@ const Header: React.FC = () => {
             {isAdmin && location !== '/admin/login' && (
               <div className="relative group">
                 <button
-                  className="border-b-2 pt-1 pb-3 px-3 text-sm font-medium flex items-center border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300">
+                  className="border-b-2 py-2 px-3 text-sm font-medium flex items-center border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300">
                   Mkt y Comm
                   <ChevronDown className="ml-1 h-3 w-3" />
                 </button>
@@ -310,7 +310,7 @@ const Header: React.FC = () => {
             {isAdmin && location !== '/admin/login' && (
               <Link href="/admin/hr/employees">
                 <button
-                  className="border-b-2 pt-1 pb-3 px-3 text-sm font-medium border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300">
+                  className="border-b-2 py-2 px-3 text-sm font-medium border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300">
                   RH
                 </button>
               </Link>
