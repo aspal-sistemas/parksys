@@ -20,7 +20,7 @@ import { useState } from "react";
 
 const FinanceDashboard = () => {
   const [selectedYear, setSelectedYear] = useState(2025);
-  const [viewMode, setViewMode] = useState('monthly'); // monthly, quarterly, yearly
+  const [viewMode, setViewMode] = useState('monthly');
   
   const { data: dashboardData, isLoading } = useQuery({
     queryKey: ["/api/financial-dashboard/3"],
@@ -64,7 +64,55 @@ const FinanceDashboard = () => {
     }).format(amount);
   };
 
-  // Preparar datos para gráficas
+  // Mock data for demonstration
+  const mockData = {
+    totalIncome: 2450000,
+    totalExpenses: 1890000,
+    netBalance: 560000,
+    budgetExecuted: 78.5
+  };
+
+  // KPIs data
+  const kpiData = [
+    {
+      title: "Ingresos Totales",
+      value: formatCurrency(mockData.totalIncome),
+      change: "+12.5%",
+      trend: "up",
+      icon: DollarSign,
+      color: "text-green-600",
+      bgColor: "bg-green-100"
+    },
+    {
+      title: "Egresos Totales", 
+      value: formatCurrency(mockData.totalExpenses),
+      change: "+8.2%",
+      trend: "up",
+      icon: TrendingDown,
+      color: "text-red-600",
+      bgColor: "bg-red-100"
+    },
+    {
+      title: "Balance Neto",
+      value: formatCurrency(mockData.netBalance),
+      change: "+18.7%",
+      trend: "up", 
+      icon: TrendingUp,
+      color: "text-blue-600",
+      bgColor: "bg-blue-100"
+    },
+    {
+      title: "Presupuesto Ejecutado",
+      value: `${mockData.budgetExecuted}%`,
+      change: "+5.2%",
+      trend: "up",
+      icon: BarChart3,
+      color: "text-purple-600",
+      bgColor: "bg-purple-100"
+    }
+  ];
+
+  // Monthly trend data
   const monthlyTrendData = [
     { month: 'Ene', ingresos: 145000, egresos: 98000, anterior: 120000 },
     { month: 'Feb', ingresos: 167000, egresos: 112000, anterior: 135000 },
@@ -75,125 +123,73 @@ const FinanceDashboard = () => {
   ];
 
   const incomeDistributionData = [
-    { name: 'Actividades', value: 45, amount: 112000, color: '#3B82F6' },
-    { name: 'Concesiones', value: 30, amount: 75000, color: '#10B981' },
-    { name: 'Patrocinios', value: 15, amount: 37500, color: '#F59E0B' },
-    { name: 'Estacionamiento', value: 7, amount: 17500, color: '#8B5CF6' },
-    { name: 'Otros', value: 3, amount: 7500, color: '#EF4444' }
+    { name: 'Cuotas', value: 35, amount: 857500 },
+    { name: 'Eventos', value: 25, amount: 612500 },
+    { name: 'Concesiones', value: 20, amount: 490000 },
+    { name: 'Donaciones', value: 15, amount: 367500 },
+    { name: 'Otros', value: 5, amount: 122500 }
   ];
 
-  const expenseDistributionData = [
-    { name: 'Personal', value: 50, amount: 78000, color: '#EF4444' },
-    { name: 'Mantenimiento', value: 25, amount: 39000, color: '#F97316' },
-    { name: 'Seguridad', value: 15, amount: 23400, color: '#6366F1' },
-    { name: 'Operativos', value: 10, amount: 15600, color: '#EC4899' }
-  ];
-
-  const kpiData = [
-    {
-      title: 'Ingresos Totales',
-      value: formatCurrency(dashboardData?.totalIncome || 250000),
-      change: '+12.5%',
-      trend: 'up',
-      icon: TrendingUp,
-      color: 'text-green-600',
-      bgColor: 'bg-green-100'
-    },
-    {
-      title: 'Egresos Totales', 
-      value: formatCurrency(dashboardData?.totalExpenses || 156000),
-      change: '+5.2%',
-      trend: 'up',
-      icon: TrendingDown,
-      color: 'text-red-600',
-      bgColor: 'bg-red-100'
-    },
-    {
-      title: 'Utilidad Neta',
-      value: formatCurrency((dashboardData?.totalIncome || 250000) - (dashboardData?.totalExpenses || 156000)),
-      change: '+23.1%',
-      trend: 'up',
-      icon: DollarSign,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-100'
-    },
-    {
-      title: 'Margen Operativo',
-      value: `${(((dashboardData?.totalIncome || 250000) - (dashboardData?.totalExpenses || 156000)) / (dashboardData?.totalIncome || 250000) * 100).toFixed(1)}%`,
-      change: '+8.7%',
-      trend: 'up',
-      icon: Activity,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-100'
-    }
-  ];
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
   return (
     <AdminLayout>
       <div className="space-y-6">
-        {/* Header con título */}
-        <Card className="p-4 bg-gray-50">
-          <div className="flex items-center gap-2">
-            <BarChart3 className="w-8 h-8 text-gray-900" />
-            <h1 className="text-3xl font-bold text-gray-900">Dashboard Financiero</h1>
-          </div>
-          <p className="text-gray-600 mt-2">Analytics avanzado y resumen ejecutivo</p>
-        </Card>
+        {/* Header with controls */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-green-100 rounded-lg">
+              <DollarSign className="h-6 w-6 text-green-600" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Dashboard Financiero
+              </h1>
+              <p className="text-gray-600">
+                Gestión integral de finanzas del parque
+              </p>
             </div>
           </div>
           
           <div className="flex items-center gap-4">
-            <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(Number(value))}>
+            <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(parseInt(value))}>
               <SelectTrigger className="w-32">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="2023">2023</SelectItem>
                 <SelectItem value="2024">2024</SelectItem>
                 <SelectItem value="2025">2025</SelectItem>
-                <SelectItem value="2026">2026</SelectItem>
-              </SelectContent>
-            </Select>
-            
-            <Select value={viewMode} onValueChange={setViewMode}>
-              <SelectTrigger className="w-32">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="monthly">Mensual</SelectItem>
-                <SelectItem value="quarterly">Trimestral</SelectItem>
-                <SelectItem value="yearly">Anual</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </div>
 
-        {/* KPIs principales con mejor diseño */}
+        {/* KPIs Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {kpiData.map((kpi, index) => {
-            const Icon = kpi.icon;
+            const IconComponent = kpi.icon;
             return (
-              <Card key={index} className="hover:shadow-lg transition-shadow">
+              <Card key={index} className="relative overflow-hidden">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-gray-600">{kpi.title}</p>
+                      <p className="text-2xl font-bold text-gray-900">{kpi.value}</p>
+                      <div className="flex items-center space-x-1">
+                        {kpi.trend === 'up' ? (
+                          <ArrowUpRight className="h-4 w-4 text-green-500" />
+                        ) : (
+                          <ArrowDownRight className="h-4 w-4 text-red-500" />
+                        )}
+                        <span className={`text-sm font-medium ${kpi.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
+                          {kpi.change}
+                        </span>
+                      </div>
+                    </div>
                     <div className={`p-3 rounded-lg ${kpi.bgColor}`}>
-                      <Icon className={`h-6 w-6 ${kpi.color}`} />
+                      <IconComponent className={`h-6 w-6 ${kpi.color}`} />
                     </div>
-                    <div className="flex items-center gap-1">
-                      {kpi.trend === 'up' ? (
-                        <ArrowUpRight className="h-4 w-4 text-green-600" />
-                      ) : (
-                        <ArrowDownRight className="h-4 w-4 text-red-600" />
-                      )}
-                      <span className={`text-sm font-medium ${
-                        kpi.trend === 'up' ? 'text-green-600' : 'text-red-600'
-                      }`}>
-                        {kpi.change}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="mt-4">
-                    <h3 className="text-sm font-medium text-gray-600">{kpi.title}</h3>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">{kpi.value}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -201,271 +197,149 @@ const FinanceDashboard = () => {
           })}
         </div>
 
-        {/* Gráfica de tendencias principales */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Tendencia de Ingresos vs Egresos</CardTitle>
-            <CardDescription>
-              Comparativo mensual con año anterior
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={monthlyTrendData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
-                <Tooltip 
-                  formatter={(value, name) => [formatCurrency(Number(value)), name === 'ingresos' ? 'Ingresos' : name === 'egresos' ? 'Egresos' : 'Año Anterior']}
-                />
-                <Legend />
-                <Area 
-                  type="monotone" 
-                  dataKey="ingresos" 
-                  stackId="1" 
-                  stroke="#10B981" 
-                  fill="#10B981" 
-                  fillOpacity={0.3}
-                  name="Ingresos 2025"
-                />
-                <Area 
-                  type="monotone" 
-                  dataKey="egresos" 
-                  stackId="2" 
-                  stroke="#EF4444" 
-                  fill="#EF4444" 
-                  fillOpacity={0.3}
-                  name="Egresos 2025"
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="anterior" 
-                  stroke="#6B7280" 
-                  strokeDasharray="5 5"
-                  name="Ingresos 2024"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* Distribución de ingresos y egresos */}
+        {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Monthly Trend Chart */}
           <Card>
             <CardHeader>
-              <CardTitle>Distribución de Ingresos</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Activity className="h-5 w-5" />
+                Tendencia Mensual
+              </CardTitle>
               <CardDescription>
-                Fuentes principales de ingresos del mes
+                Comparación de ingresos vs egresos por mes
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <ResponsiveContainer width="100%" height={200}>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={monthlyTrendData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis tickFormatter={(value) => formatCurrency(value)} />
+                    <Tooltip 
+                      labelStyle={{ color: '#374151' }}
+                      formatter={(value: number) => [formatCurrency(value), '']}
+                    />
+                    <Legend />
+                    <Line 
+                      type="monotone" 
+                      dataKey="ingresos" 
+                      stroke="#10B981" 
+                      strokeWidth={3}
+                      name="Ingresos"
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="egresos" 
+                      stroke="#EF4444" 
+                      strokeWidth={3}
+                      name="Egresos"
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Income Distribution */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart3 className="h-5 w-5" />
+                Distribución de Ingresos
+              </CardTitle>
+              <CardDescription>
+                Participación por categoría de ingresos
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
                       data={incomeDistributionData}
                       cx="50%"
                       cy="50%"
-                      outerRadius={80}
-                      dataKey="value"
+                      labelLine={false}
                       label={({ name, value }) => `${name}: ${value}%`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
                     >
                       {incomeDistributionData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value, name) => [`${value}%`, name]} />
+                    <Tooltip 
+                      formatter={(value: number, name, props: any) => [
+                        `${value}% (${formatCurrency(props.payload.amount)})`,
+                        name
+                      ]}
+                    />
                   </PieChart>
                 </ResponsiveContainer>
-                
-                <div className="space-y-3">
-                  {incomeDistributionData.map((item, index) => (
-                    <div key={index} className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div 
-                          className="w-3 h-3 rounded-full" 
-                          style={{ backgroundColor: item.color }}
-                        ></div>
-                        <span className="text-sm font-medium">{item.name}</span>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm font-bold">{formatCurrency(item.amount)}</div>
-                        <div className="text-xs text-gray-500">{item.value}%</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
               </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Distribución de Egresos</CardTitle>
-              <CardDescription>
-                Principales categorías de gastos del mes
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Actividades</span>
-                  <div className="flex items-center gap-2">
-                    <div className="w-20 bg-gray-200 rounded-full h-2">
-                      <div className="bg-blue-500 h-2 rounded-full" style={{ width: '45%' }}></div>
+              <div className="mt-4 space-y-2">
+                {incomeDistributionData.map((item, index) => (
+                  <div key={index} className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2">
+                      <div 
+                        className="w-3 h-3 rounded-full" 
+                        style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                      />
+                      <span className="text-gray-600">{item.name}</span>
                     </div>
-                    <span className="text-sm text-gray-600">45%</span>
+                    <span className="font-medium">{formatCurrency(item.amount)}</span>
                   </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Concesiones</span>
-                  <div className="flex items-center gap-2">
-                    <div className="w-20 bg-gray-200 rounded-full h-2">
-                      <div className="bg-green-500 h-2 rounded-full" style={{ width: '30%' }}></div>
-                    </div>
-                    <span className="text-sm text-gray-600">30%</span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Patrocinios</span>
-                  <div className="flex items-center gap-2">
-                    <div className="w-20 bg-gray-200 rounded-full h-2">
-                      <div className="bg-yellow-500 h-2 rounded-full" style={{ width: '15%' }}></div>
-                    </div>
-                    <span className="text-sm text-gray-600">15%</span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Otros</span>
-                  <div className="flex items-center gap-2">
-                    <div className="w-20 bg-gray-200 rounded-full h-2">
-                      <div className="bg-purple-500 h-2 rounded-full" style={{ width: '10%' }}></div>
-                    </div>
-                    <span className="text-sm text-gray-600">10%</span>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Distribución de Egresos</CardTitle>
-              <CardDescription>
-                Principales categorías de gastos
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Personal y Nómina</span>
-                  <div className="flex items-center gap-2">
-                    <div className="w-20 bg-gray-200 rounded-full h-2">
-                      <div className="bg-red-500 h-2 rounded-full" style={{ width: '50%' }}></div>
-                    </div>
-                    <span className="text-sm text-gray-600">50%</span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Mantenimiento</span>
-                  <div className="flex items-center gap-2">
-                    <div className="w-20 bg-gray-200 rounded-full h-2">
-                      <div className="bg-orange-500 h-2 rounded-full" style={{ width: '25%' }}></div>
-                    </div>
-                    <span className="text-sm text-gray-600">25%</span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Seguridad</span>
-                  <div className="flex items-center gap-2">
-                    <div className="w-20 bg-gray-200 rounded-full h-2">
-                      <div className="bg-indigo-500 h-2 rounded-full" style={{ width: '15%' }}></div>
-                    </div>
-                    <span className="text-sm text-gray-600">15%</span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Gastos Operativos</span>
-                  <div className="flex items-center gap-2">
-                    <div className="w-20 bg-gray-200 rounded-full h-2">
-                      <div className="bg-pink-500 h-2 rounded-full" style={{ width: '10%' }}></div>
-                    </div>
-                    <span className="text-sm text-gray-600">10%</span>
-                  </div>
-                </div>
+                ))}
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Alertas y estado financiero */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-green-600" />
-                Estado Financiero
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Liquidez</span>
-                  <Badge variant="default" className="bg-green-100 text-green-800">Buena</Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Rentabilidad</span>
-                  <Badge variant="default" className="bg-blue-100 text-blue-800">Estable</Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Crecimiento</span>
-                  <Badge variant="default" className="bg-green-100 text-green-800">Positivo</Badge>
+        {/* Quick Actions */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Acciones Rápidas</CardTitle>
+            <CardDescription>
+              Funciones principales del módulo financiero
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+                <div className="flex items-center gap-3">
+                  <DollarSign className="h-8 w-8 text-green-600" />
+                  <div>
+                    <p className="font-medium">Gestionar Ingresos</p>
+                    <p className="text-sm text-gray-600">Registrar nuevos ingresos</p>
+                  </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-yellow-600" />
-                Alertas
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2 text-sm">
-                <div className="p-2 bg-yellow-50 border border-yellow-200 rounded">
-                  <p className="text-yellow-800">Presupuesto de mantenimiento al 85%</p>
-                </div>
-                <div className="p-2 bg-blue-50 border border-blue-200 rounded">
-                  <p className="text-blue-800">Ingresos por concesiones en crecimiento</p>
+              
+              <div className="p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+                <div className="flex items-center gap-3">
+                  <TrendingDown className="h-8 w-8 text-red-600" />
+                  <div>
+                    <p className="font-medium">Gestionar Egresos</p>
+                    <p className="text-sm text-gray-600">Registrar nuevos gastos</p>
+                  </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Acciones Rápidas</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <button className="w-full text-left p-2 text-sm bg-gray-50 hover:bg-gray-100 rounded transition-colors">
-                  📊 Ver reporte mensual
-                </button>
-                <button className="w-full text-left p-2 text-sm bg-gray-50 hover:bg-gray-100 rounded transition-colors">
-                  💰 Registrar nuevo ingreso
-                </button>
-                <button className="w-full text-left p-2 text-sm bg-gray-50 hover:bg-gray-100 rounded transition-colors">
-                  📋 Revisar presupuesto
-                </button>
-                <button className="w-full text-left p-2 text-sm bg-gray-50 hover:bg-gray-100 rounded transition-colors">
-                  🧮 Usar calculadora
-                </button>
+              
+              <div className="p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+                <div className="flex items-center gap-3">
+                  <BarChart3 className="h-8 w-8 text-blue-600" />
+                  <div>
+                    <p className="font-medium">Flujo de Efectivo</p>
+                    <p className="text-sm text-gray-600">Ver análisis detallado</p>
+                  </div>
+                </div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </AdminLayout>
   );

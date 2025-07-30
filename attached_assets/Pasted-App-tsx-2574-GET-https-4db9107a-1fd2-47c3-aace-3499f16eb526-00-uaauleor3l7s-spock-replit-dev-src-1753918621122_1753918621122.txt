@@ -1,0 +1,26 @@
+App.tsx:2574 
+ GET https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/src/pages/admin/finance/dashboard.tsx net::ERR_ABORTED 502 (Bad Gateway)
+
+2
+chunk-XDVZA6Z7.js:903 Uncaught TypeError: Failed to fetch dynamically imported module: https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/src/pages/admin/finance/dashboard.tsx
+eruda.js:2 The above error occurred in the <Offscreen> component:
+
+    at Suspense
+    at Route (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=2a2b1869:338:16)
+    at Switch (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=2a2b1869:394:17)
+    at div
+    at div
+    at Router (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/src/App.tsx?v=ozkzNzhp9ECoe-54uwF5I:52:22)
+    at Provider (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…unner/workspace/node_modules/.vite/deps/chunk-GBY3YEWR.js?v=2a2b1869:38:15)
+    at TooltipProvider (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…rkspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=2a2b1869:64:5)
+    at ProfileCompletionProvider (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/src/components/ProfileCompletionContext.tsx:169:45)
+    at QueryClientProvider (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…rkspace/node_modules/.vite/deps/@tanstack_react-query.js?v=2a2b1869:2881:3)
+    at App
+    at V (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…e/runner/workspace/node_modules/.vite/deps/next-themes.js?v=2a2b1869:44:25)
+    at J (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.d…e/runner/workspace/node_modules/.vite/deps/next-themes.js?v=2a2b1869:42:18)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+chunk-SKRUXVEK.js:19413 Uncaught TypeError: Failed to fetch dynamically imported module: https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/src/pages/admin/finance/dashboard.tsx
+﻿
+
