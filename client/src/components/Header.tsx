@@ -11,6 +11,7 @@ const Header: React.FC = () => {
   const [contentMenuOpen, setContentMenuOpen] = useState(false);
   const [biodiversityMenuOpen, setBiodiversityMenuOpen] = useState(false);
   const [usersMenuOpen, setUsersMenuOpen] = useState(false);
+  const [gestionMenuOpen, setGestionMenuOpen] = useState(false);
   
   const isAdmin = location.startsWith('/admin');
   
@@ -28,6 +29,10 @@ const Header: React.FC = () => {
 
   const toggleUsersMenu = () => {
     setUsersMenuOpen(prev => !prev);
+  };
+
+  const toggleGestionMenu = () => {
+    setGestionMenuOpen(prev => !prev);
   };
 
   const isContentActive = location === '/activities' || 
@@ -176,6 +181,43 @@ const Header: React.FC = () => {
           <div className="flex items-center gap-3">
             {/* Búsqueda Global - Solo en sitio público */}
             {!isAdmin && <GlobalSearch />}
+            
+            {/* Menú de Gestión - Solo para administradores */}
+            {isAdmin && location !== '/admin/login' && (
+              <div className="relative group">
+                <button
+                  className="border-b-2 pt-1 pb-3 px-3 text-sm font-medium flex items-center border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300">
+                  Gestión
+                  <ChevronDown className="ml-1 h-3 w-3" />
+                </button>
+                
+                {/* Dropdown menu */}
+                <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                  <div className="py-1">
+                    <Link href="/admin/visitors/dashboard"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
+                      Visitantes
+                    </Link>
+                    <Link href="/admin/parks/dashboard"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
+                      Parques
+                    </Link>
+                    <Link href="/admin/trees/dashboard"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
+                      Arbolado
+                    </Link>
+                    <Link href="/admin/activities"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
+                      Actividades
+                    </Link>
+                    <Link href="/admin/amenities-dashboard"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
+                      Amenidades
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            )}
             
             {isAdmin ? (
               location !== '/admin/login' && (
