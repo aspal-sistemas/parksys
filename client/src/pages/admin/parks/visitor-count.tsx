@@ -1664,10 +1664,13 @@ export default function VisitorCountPage() {
                       variant="outline"
                       size="sm"
                       onClick={exportParkSummaryToExcel}
-                      className="border-purple-200 text-purple-700 hover:bg-purple-50"
+                      className="border-purple-200 text-purple-700 hover:bg-purple-50 p-2"
                     >
-                      <FileSpreadsheet className="h-4 w-4 mr-2" />
-                      Exportar Excel
+                      <img 
+                        src="/attached_assets/4989 - Cloud Input_1753834875164.png" 
+                        alt="Exportar Excel" 
+                        className="h-4 w-4" 
+                      />
                     </Button>
                   </div>
                   
