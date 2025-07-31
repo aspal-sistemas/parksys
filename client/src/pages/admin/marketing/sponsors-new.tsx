@@ -226,7 +226,7 @@ const SponsorsManagement = () => {
   
   useEffect(() => {
     if (watchedPackageCategory && packages.length > 0) {
-      const selectedPackage = packages.find(pkg => pkg.category === watchedPackageCategory);
+      const selectedPackage = packages.find((pkg: any) => pkg.category === watchedPackageCategory);
       
       if (selectedPackage) {
         sponsorForm.setValue('contractValue', parseFloat(selectedPackage.price));
@@ -250,7 +250,7 @@ const SponsorsManagement = () => {
   
   useEffect(() => {
     if (watchedEditPackageCategory && packages.length > 0) {
-      const selectedPackage = packages.find(pkg => pkg.category === watchedEditPackageCategory);
+      const selectedPackage = packages.find((pkg: any) => pkg.category === watchedEditPackageCategory);
       
       if (selectedPackage) {
         editSponsorForm.setValue('contractValue', parseFloat(selectedPackage.price));
@@ -375,7 +375,7 @@ const SponsorsManagement = () => {
       const formattedData = {
         ...data,
         logo: logoUrl,
-        contractValue: data.contractValue.toString(),
+        contractValue: data.contractValue || 0,
         eventsSponsored: data.eventsSponsored || 0
       };
       
@@ -408,9 +408,9 @@ const SponsorsManagement = () => {
       renewalProbability: sponsor.renewalProbability,
       websiteUrl: sponsor.websiteUrl || '',
       notes: sponsor.notes || '',
-      contractValue: parseFloat(sponsor.contractValue),
-      contractEnd: sponsor.contractEnd,
-      eventsSponsored: sponsor.eventsSponsored
+      contractValue: parseFloat(sponsor.contractValue as string),
+      contractEnd: sponsor.contractEnd || '',
+      eventsSponsored: sponsor.eventsSponsored || 0
     });
     
     if (sponsor.logo) {
@@ -455,7 +455,7 @@ const SponsorsManagement = () => {
       const formattedData = {
         ...data,
         logo: logoUrl,
-        contractValue: data.contractValue.toString(),
+        contractValue: data.contractValue || 0,
         eventsSponsored: data.eventsSponsored || 0
       };
       
@@ -472,7 +472,7 @@ const SponsorsManagement = () => {
   };
 
   // Funciones de filtrado
-  const filteredSponsors = sponsors.filter(sponsor => {
+  const filteredSponsors = sponsors.filter((sponsor: any) => {
     const matchesSearch = sponsor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          sponsor.representative.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = categoryFilter === "all" || sponsor.category === categoryFilter;

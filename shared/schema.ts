@@ -713,8 +713,7 @@ export type InsertParkImage = typeof parkImages.$inferInsert;
 
 export const insertParkImageSchema = createInsertSchema(parkImages).omit({ 
   id: true,
-  createdAt: true,
-  updatedAt: true
+  createdAt: true
 });
 
 export type Amenity = typeof amenities.$inferSelect;
@@ -753,8 +752,7 @@ export type InsertActivity = typeof activities.$inferInsert;
 
 export const insertActivitySchema = createInsertSchema(activities).omit({ 
   id: true,
-  createdAt: true,
-  updatedAt: true
+  createdAt: true
 });
 
 export type ActivityImage = typeof activityImages.$inferSelect;
@@ -841,17 +839,14 @@ export type InsertVolunteerEvaluation = typeof volunteerEvaluations.$inferInsert
 
 export const insertVolunteerEvaluationSchema = createInsertSchema(volunteerEvaluations).omit({ 
   id: true,
-  createdAt: true,
-  updatedAt: true
+  createdAt: true
 });
 
 export type VolunteerRecognition = typeof volunteerRecognitions.$inferSelect;
 export type InsertVolunteerRecognition = typeof volunteerRecognitions.$inferInsert;
 
 export const insertVolunteerRecognitionSchema = createInsertSchema(volunteerRecognitions).omit({ 
-  id: true,
-  createdAt: true,
-  updatedAt: true
+  id: true
 });
 
 // Perfiles de concesionarios
