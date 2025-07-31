@@ -329,7 +329,7 @@ const Header: React.FC = () => {
               location !== '/admin/login' && (
                 <Link href="/">
                   <Button variant="outline" size="sm" className="mr-2">
-                    Ver sitio público
+                    Sitio
                   </Button>
                 </Link>
               )
