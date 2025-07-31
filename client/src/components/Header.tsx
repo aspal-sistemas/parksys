@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'wouter';
-import { Menu, X, ChevronDown, LogIn, Home } from 'lucide-react';
+import { Menu, X, ChevronDown, LogIn, Home, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import GlobalSearch from '@/components/GlobalSearch';
 import logoImage from '@assets/logo_1751306368691.png';
@@ -327,11 +327,16 @@ const Header: React.FC = () => {
             
             {isAdmin ? (
               location !== '/admin/login' && (
-                <Link href="/">
-                  <Button variant="outline" size="sm" className="mr-2">
-                    Sitio
+                <div className="flex items-center gap-2 mr-2">
+                  <Link href="/">
+                    <Button variant="outline" size="sm">
+                      Sitio
+                    </Button>
+                  </Link>
+                  <Button variant="outline" size="sm" className="w-9 h-9 p-0" disabled>
+                    <HelpCircle className="h-4 w-4" />
                   </Button>
-                </Link>
+                </div>
               )
             ) : (
               <Link href="/admin/login">
