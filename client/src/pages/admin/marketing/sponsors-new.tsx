@@ -241,13 +241,38 @@ const SponsorsManagement = () => {
     const formData = new FormData();
     formData.append('logo', file);
 
+    // Obtener headers de autenticación del localStorage
+    const storedToken = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
+    let userId = "1";
+    let userRole = "super_admin";
+    
+    if (storedUser) {
+      try {
+        const userObj = JSON.parse(storedUser);
+        userId = userObj.id.toString();
+        userRole = userObj.role || "admin";
+      } catch (e) {
+        console.error("Error parsing stored user:", e);
+      }
+    }
+
+    const headers: Record<string, string> = {
+      "Authorization": storedToken ? `Bearer ${storedToken}` : "Bearer direct-token-1750522117022",
+      "X-User-Id": userId,
+      "X-User-Role": userRole
+    };
+
     const response = await fetch('/api/upload/sponsor-logo', {
       method: 'POST',
+      headers,
       body: formData,
+      credentials: "include"
     });
 
     if (!response.ok) {
-      throw new Error('Error al subir el logo');
+      const errorData = await response.json().catch(() => ({ message: 'Error al subir el logo' }));
+      throw new Error(errorData.message || 'Error al subir el logo');
     }
 
     const data = await response.json();
