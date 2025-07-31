@@ -776,10 +776,16 @@ const SponsorsManagement = () => {
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  <SelectItem value="bronce">Bronce</SelectItem>
-                                  <SelectItem value="plata">Plata</SelectItem>
-                                  <SelectItem value="oro">Oro</SelectItem>
-                                  <SelectItem value="platino">Platino</SelectItem>
+                                  <SelectItem value="colomo">Colomo</SelectItem>
+                                  <SelectItem value="sauce">Sauce</SelectItem>
+                                  <SelectItem value="encino">Encino</SelectItem>
+                                  <SelectItem value="pino">Pino</SelectItem>
+                                  <SelectItem value="ahuehuete">Ahuehuete</SelectItem>
+                                  <SelectItem value="ceiba">Ceiba</SelectItem>
+                                  <SelectItem value="ardilla">Ardilla</SelectItem>
+                                  <SelectItem value="guacmaya">Guacmaya</SelectItem>
+                                  <SelectItem value="pato-real-mexicano">Pato Real Mexicano</SelectItem>
+                                  <SelectItem value="halcon">Halcón</SelectItem>
                                 </SelectContent>
                               </Select>
                               <FormMessage />
@@ -1012,10 +1018,16 @@ const SponsorsManagement = () => {
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  <SelectItem value="bronce">Bronce</SelectItem>
-                                  <SelectItem value="plata">Plata</SelectItem>
-                                  <SelectItem value="oro">Oro</SelectItem>
-                                  <SelectItem value="platino">Platino</SelectItem>
+                                  <SelectItem value="colomo">Colomo</SelectItem>
+                                  <SelectItem value="sauce">Sauce</SelectItem>
+                                  <SelectItem value="encino">Encino</SelectItem>
+                                  <SelectItem value="pino">Pino</SelectItem>
+                                  <SelectItem value="ahuehuete">Ahuehuete</SelectItem>
+                                  <SelectItem value="ceiba">Ceiba</SelectItem>
+                                  <SelectItem value="ardilla">Ardilla</SelectItem>
+                                  <SelectItem value="guacmaya">Guacmaya</SelectItem>
+                                  <SelectItem value="pato-real-mexicano">Pato Real Mexicano</SelectItem>
+                                  <SelectItem value="halcon">Halcón</SelectItem>
                                 </SelectContent>
                               </Select>
                               <FormMessage />
@@ -1576,10 +1588,16 @@ const SponsorsManagement = () => {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="bronce">Bronce</SelectItem>
-                            <SelectItem value="plata">Plata</SelectItem>
-                            <SelectItem value="oro">Oro</SelectItem>
-                            <SelectItem value="platino">Platino</SelectItem>
+                            <SelectItem value="colomo">Colomo</SelectItem>
+                            <SelectItem value="sauce">Sauce</SelectItem>
+                            <SelectItem value="encino">Encino</SelectItem>
+                            <SelectItem value="pino">Pino</SelectItem>
+                            <SelectItem value="ahuehuete">Ahuehuete</SelectItem>
+                            <SelectItem value="ceiba">Ceiba</SelectItem>
+                            <SelectItem value="ardilla">Ardilla</SelectItem>
+                            <SelectItem value="guacmaya">Guacmaya</SelectItem>
+                            <SelectItem value="pato-real-mexicano">Pato Real Mexicano</SelectItem>
+                            <SelectItem value="halcon">Halcón</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
