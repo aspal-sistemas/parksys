@@ -46,13 +46,14 @@ import { useToast } from '@/hooks/use-toast';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Switch } from '@/components/ui/switch';
 
 // Esquemas para formularios actualizados con la nueva estructura
 const packageSchema = z.object({
   name: z.string().min(1, "El nombre es requerido"),
   category: z.string().min(1, "La categoría es requerida"),
-  price: z.number().min(1, "El precio es requerido"),
+  price: z.string().min(1, "El precio es requerido"),
   duration: z.number().min(1, "La duración es requerida"),
   benefits: z.array(z.string()).min(1, "Al menos un beneficio es requerido"),
   isActive: z.boolean().default(true)
@@ -168,7 +169,7 @@ const SponsorsManagement = () => {
     defaultValues: {
       name: '',
       category: '',
-      price: 0,
+      price: '',
       duration: 12,
       benefits: [],
       isActive: true
@@ -1035,7 +1036,7 @@ const SponsorsManagement = () => {
                                   type="number" 
                                   placeholder="50000" 
                                   {...field} 
-                                  onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                                  onChange={(e) => field.onChange(e.target.value)}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -1061,6 +1062,48 @@ const SponsorsManagement = () => {
                           )}
                         />
                       </div>
+
+                      <FormField
+                        control={packageForm.control}
+                        name="benefits"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Beneficios (separados por comas)</FormLabel>
+                            <FormControl>
+                              <Textarea 
+                                placeholder="Logo en eventos, Stand exclusivo, Menciones en redes sociales"
+                                value={Array.isArray(field.value) ? field.value.join(', ') : field.value || ''}
+                                onChange={(e) => {
+                                  const benefitsArray = e.target.value.split(',').map(b => b.trim()).filter(b => b);
+                                  field.onChange(benefitsArray);
+                                }}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={packageForm.control}
+                        name="isActive"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                            <div className="space-y-0.5">
+                              <FormLabel className="text-base">Paquete Activo</FormLabel>
+                              <FormDescription>
+                                El paquete estará disponible para los patrocinadores
+                              </FormDescription>
+                            </div>
+                            <FormControl>
+                              <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
 
                       <div className="flex justify-end space-x-2 pt-4">
                         <Button 
