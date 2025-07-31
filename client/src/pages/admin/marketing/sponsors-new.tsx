@@ -988,11 +988,31 @@ const SponsorsManagement = () => {
                 <Card key={sponsor.id} className="hover:shadow-md transition-shadow">
                   <CardHeader className="pb-3">
                     <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle className="text-lg">{sponsor.name}</CardTitle>
-                        <CardDescription className="text-sm text-gray-500">
-                          {sponsor.representative}
-                        </CardDescription>
+                      <div className="flex items-start space-x-3">
+                        {/* Logo pequeño en la tarjeta */}
+                        {sponsor.logo ? (
+                          <img 
+                            src={sponsor.logo} 
+                            alt={`Logo de ${sponsor.name}`}
+                            className="w-12 h-12 object-contain border border-gray-200 rounded-lg p-1 bg-white shadow-sm flex-shrink-0"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                              e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                            }}
+                          />
+                        ) : null}
+                        {sponsor.logo && (
+                          <div className="hidden w-12 h-12 bg-gray-100 border border-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <Building className="w-6 h-6 text-gray-400" />
+                          </div>
+                        )}
+                        
+                        <div>
+                          <CardTitle className="text-lg">{sponsor.name}</CardTitle>
+                          <CardDescription className="text-sm text-gray-500">
+                            {sponsor.representative}
+                          </CardDescription>
+                        </div>
                       </div>
                       <div className="flex flex-col space-y-1">
                         <Badge className={getLevelColor(sponsor.level)}>
@@ -1207,7 +1227,8 @@ const SponsorsManagement = () => {
             </DialogHeader>
             {selectedSponsor && (
               <div className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
+                {/* Sección superior con logo, información básica y contrato */}
+                <div className="grid grid-cols-3 gap-4">
                   <div>
                     <h3 className="font-semibold text-lg">{selectedSponsor.name}</h3>
                     <p className="text-gray-600">{selectedSponsor.category}</p>
@@ -1220,6 +1241,37 @@ const SponsorsManagement = () => {
                       </Badge>
                     </div>
                   </div>
+                  
+                  {/* Logo del patrocinador */}
+                  <div className="flex justify-center items-start">
+                    {selectedSponsor.logo ? (
+                      <div className="text-center">
+                        <img 
+                          src={selectedSponsor.logo} 
+                          alt={`Logo de ${selectedSponsor.name}`}
+                          className="w-24 h-24 object-contain border border-gray-200 rounded-lg p-2 bg-white shadow-sm"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                          }}
+                        />
+                        <div className="hidden text-center p-4">
+                          <div className="w-24 h-24 bg-gray-100 border border-gray-200 rounded-lg flex items-center justify-center">
+                            <Building className="w-8 h-8 text-gray-400" />
+                          </div>
+                          <p className="text-xs text-gray-500 mt-2">Logo no disponible</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center">
+                        <div className="w-24 h-24 bg-gray-100 border border-gray-200 rounded-lg flex items-center justify-center">
+                          <Building className="w-8 h-8 text-gray-400" />
+                        </div>
+                        <p className="text-xs text-gray-500 mt-2">Sin logo</p>
+                      </div>
+                    )}
+                  </div>
+                  
                   <div className="text-right">
                     <div className="text-2xl font-bold text-[#00a587]">
                       ${parseFloat(selectedSponsor.contractValue).toLocaleString()}
