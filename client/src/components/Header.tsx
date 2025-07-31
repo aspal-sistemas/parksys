@@ -317,6 +317,14 @@ const Header: React.FC = () => {
                   RH
                 </button>
               </Link>
+
+              {/* Menú Seguridad */}
+              <Link href="/admin/security">
+                <button
+                  className="border-b-2 py-2 px-3 text-sm font-medium border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300">
+                  Seguridad
+                </button>
+              </Link>
             </div>
           )}
 
