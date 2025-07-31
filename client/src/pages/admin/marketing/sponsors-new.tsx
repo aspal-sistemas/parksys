@@ -94,8 +94,11 @@ const SponsorsManagement = () => {
   const [selectedSponsor, setSelectedSponsor] = useState<Sponsor | null>(null);
   const [isViewSponsorOpen, setIsViewSponsorOpen] = useState(false);
   const [isEditSponsorOpen, setIsEditSponsorOpen] = useState(false);
+  // Estados separados para cada modal
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string>("");
+  const [editLogoFile, setEditLogoFile] = useState<File | null>(null);
+  const [editLogoPreview, setEditLogoPreview] = useState<string>("");
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   
   const { toast } = useToast();
@@ -163,10 +166,10 @@ const SponsorsManagement = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/sponsors'] });
       toast({ title: "Éxito", description: "Patrocinador actualizado exitosamente" });
-      // Limpiar el formulario y estados
+      // Limpiar el formulario y estados de edición
       editSponsorForm.reset();
-      setLogoFile(null);
-      setLogoPreview('');
+      setEditLogoFile(null);
+      setEditLogoPreview('');
       setIsEditSponsorOpen(false);
       setSelectedSponsor(null);
     },
@@ -293,7 +296,7 @@ const SponsorsManagement = () => {
     createPackageMutation.mutate(formattedData);
   };
 
-  // Función para manejar la selección de archivo de logo
+  // Función para manejar la selección de archivo de logo (nuevo patrocinador)
   const handleLogoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -326,6 +329,43 @@ const SponsorsManagement = () => {
     const reader = new FileReader();
     reader.onload = (e) => {
       setLogoPreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Función para manejar la selección de archivo de logo (edición)
+  const handleEditLogoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validar tipo de archivo
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+    if (!allowedTypes.includes(file.type)) {
+      toast({
+        title: "Error",
+        description: "Solo se permiten archivos PNG y JPG",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Validar tamaño de archivo (5MB)
+    const maxSize = 5 * 1024 * 1024; // 5MB en bytes
+    if (file.size > maxSize) {
+      toast({
+        title: "Error",
+        description: "El archivo no puede superar los 5MB",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setEditLogoFile(file);
+    
+    // Crear preview del archivo
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setEditLogoPreview(e.target?.result as string);
     };
     reader.readAsDataURL(file);
   };
@@ -445,13 +485,13 @@ const SponsorsManagement = () => {
       eventsSponsored: sponsor.eventsSponsored
     });
     
-    // Si hay logo, establecer el preview
+    // Si hay logo, establecer el preview del modal de edición
     if (sponsor.logo) {
-      setLogoPreview(sponsor.logo);
+      setEditLogoPreview(sponsor.logo);
     } else {
-      setLogoPreview('');
+      setEditLogoPreview('');
     }
-    setLogoFile(null);
+    setEditLogoFile(null);
     
     setIsEditSponsorOpen(true);
   };
@@ -465,8 +505,8 @@ const SponsorsManagement = () => {
       let logoUrl = data.logo || '';
 
       // Si hay un archivo de logo nuevo, subirlo
-      if (logoFile) {
-        logoUrl = await uploadLogo(logoFile);
+      if (editLogoFile) {
+        logoUrl = await uploadLogo(editLogoFile);
       }
 
       // Validar que se haya seleccionado un nivel y calculado los valores
@@ -1506,27 +1546,40 @@ const SponsorsManagement = () => {
               <Form {...editSponsorForm}>
                 <form onSubmit={editSponsorForm.handleSubmit(onSubmitEditSponsor)} className="space-y-6">
                   {/* Logo Upload */}
-                  <div className="space-y-4">
-                    <Label>Logo del Patrocinador</Label>
-                    <div className="flex items-center space-x-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-logo">Logo de la Empresa</Label>
+                    <div className="flex items-center gap-4">
                       <div className="flex-1">
                         <Input
+                          id="edit-logo"
                           type="file"
-                          accept="image/png,image/jpeg,image/jpg"
-                          onChange={handleLogoChange}
-                          className="cursor-pointer"
+                          accept=".png,.jpg,.jpeg"
+                          onChange={handleEditLogoChange}
+                          className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
                         />
                         <p className="text-sm text-gray-500 mt-1">
-                          Formatos permitidos: PNG, JPG. Tamaño máximo: 5MB
+                          Formatos: PNG, JPG. Tamaño máximo: 5MB
                         </p>
                       </div>
-                      {logoPreview && (
-                        <div className="w-20 h-20 border border-gray-200 rounded-lg overflow-hidden bg-white">
+                      {editLogoPreview && (
+                        <div className="relative">
                           <img
-                            src={logoPreview}
-                            alt="Preview del logo"
-                            className="w-full h-full object-contain p-1"
+                            src={editLogoPreview}
+                            alt="Preview"
+                            className="w-16 h-16 object-cover rounded-lg border"
                           />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="absolute -top-2 -right-2 w-6 h-6 rounded-full p-0"
+                            onClick={() => {
+                              setEditLogoFile(null);
+                              setEditLogoPreview('');
+                            }}
+                          >
+                            <X className="w-3 h-3" />
+                          </Button>
                         </div>
                       )}
                     </div>
@@ -1814,7 +1867,7 @@ const SponsorsManagement = () => {
                           {isUploadingLogo ? "Subiendo logo..." : "Actualizando..."}
                         </>
                       ) : (
-                        "Actualizar Patrocinador"
+                        "Guardar cambios"
                       )}
                     </Button>
                   </div>
