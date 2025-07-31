@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
+import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 import { 
   ChevronLeft, 
   Search, 
@@ -31,6 +33,20 @@ interface DocSection {
   level: number;
   content: string;
 }
+
+// Function to safely render Markdown content
+const renderMarkdown = (content: string): string => {
+  try {
+    const htmlContent = marked(content, {
+      breaks: true,
+      gfm: true
+    });
+    return DOMPurify.sanitize(htmlContent as string);
+  } catch (error) {
+    console.error('Error rendering markdown:', error);
+    return content;
+  }
+};
 
 // Mock documentation content - En producción esto vendría del servidor
 const documentationContent: Record<string, { title: string; icon: React.ReactNode; sections: DocSection[] }> = {
@@ -375,7 +391,7 @@ export function DocumentationViewer({ documentId, onBack }: DocumentationViewerP
                 <div className="prose prose-gray max-w-none">
                   <div 
                     dangerouslySetInnerHTML={{ 
-                      __html: currentSection?.content.replace(/\n/g, '<br/>') || '' 
+                      __html: renderMarkdown(currentSection?.content || '') 
                     }} 
                   />
                 </div>
