@@ -106,7 +106,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       destination: function (req, file, cb) {
         const uploadDir = 'public/uploads/sponsor-logos/';
         // Crear directorio si no existe
-        const fs = require('fs');
         if (!fs.existsSync(uploadDir)) {
           fs.mkdirSync(uploadDir, { recursive: true });
         }
