@@ -99,6 +99,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
       fileSize: 2 * 1024 * 1024 // 2MB
     }
   });
+
+  // Configure multer specifically for sponsor logo uploads
+  const sponsorLogoUpload = multer({
+    storage: multer.diskStorage({
+      destination: function (req, file, cb) {
+        const uploadDir = 'public/uploads/sponsor-logos/';
+        // Crear directorio si no existe
+        const fs = require('fs');
+        if (!fs.existsSync(uploadDir)) {
+          fs.mkdirSync(uploadDir, { recursive: true });
+        }
+        cb(null, uploadDir);
+      },
+      filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const extension = file.originalname.split('.').pop();
+        cb(null, `sponsor-logo-${uniqueSuffix}.${extension}`);
+      }
+    }),
+    fileFilter: (req, file, cb) => {
+      const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+      if (allowedTypes.includes(file.mimetype)) {
+        cb(null, true);
+      } else {
+        cb(new Error('Formato de archivo no válido. Solo se permiten PNG y JPG'));
+      }
+    },
+    limits: {
+      fileSize: 5 * 1024 * 1024 // 5MB
+    }
+  });
   
   // Template download routes (must be defined before conflicting routes)
   app.get('/api/template/parks-import', generateImportTemplate);
@@ -478,6 +509,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Endpoint para cargar imágenes de perfil
   app.post('/api/upload/profile-image', isAuthenticated, handleProfileImageUpload);
+  
+  // Endpoint para cargar logos de patrocinadores
+  app.post('/api/upload/sponsor-logo', isAuthenticated, sponsorLogoUpload.single('logo'), (req: Request, res: Response) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          error: 'No se ha proporcionado ningún archivo'
+        });
+      }
+
+      // La ruta del archivo se construye relativa al directorio public
+      const filePath = `/uploads/sponsor-logos/${req.file.filename}`;
+      
+      console.log(`Logo de sponsor subido: ${filePath}`);
+      
+      res.json({
+        success: true,
+        message: 'Logo subido exitosamente',
+        filePath: filePath
+      });
+    } catch (error) {
+      console.error('Error al subir logo de sponsor:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Error interno del servidor al subir el archivo'
+      });
+    }
+  });
   
   // Endpoint para subir archivos de publicidad con manejo de errores
   app.post('/api/advertising/upload', isAuthenticated, (req: Request, res: Response) => {

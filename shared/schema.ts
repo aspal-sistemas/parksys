@@ -2728,6 +2728,7 @@ export const sponsors = pgTable("sponsors", {
   email: varchar("email", { length: 255 }),
   phone: varchar("phone", { length: 50 }),
   address: text("address"),
+  websiteUrl: varchar("website_url", { length: 255 }),
   
   // Estado del patrocinador
   status: varchar("status", { length: 50 }).default("potencial"), // activo, potencial, inactivo, renovacion

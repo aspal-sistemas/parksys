@@ -33,7 +33,10 @@ import {
   BarChart3,
   PieChart,
   Handshake,
-  Gift
+  Gift,
+  Upload,
+  Image,
+  X
 } from "lucide-react";
 // Eliminadas importaciones de gráficas ya no necesarias
 import AdminLayout from "@/components/AdminLayout";
@@ -73,6 +76,7 @@ const sponsorSchema = z.object({
   contractEnd: z.string().min(1, "La fecha de fin es requerida"),
   eventsSponsored: z.number().min(0, "Los eventos patrocinados no pueden ser negativos"),
   renewalProbability: z.number().min(0).max(100, "La probabilidad debe estar entre 0 y 100"),
+  websiteUrl: z.string().url("URL inválida").optional().or(z.literal("")),
   notes: z.string().optional()
 });
 
@@ -88,6 +92,9 @@ const SponsorsManagement = () => {
   const [isNewPackageOpen, setIsNewPackageOpen] = useState(false);
   const [selectedSponsor, setSelectedSponsor] = useState<Sponsor | null>(null);
   const [isViewSponsorOpen, setIsViewSponsorOpen] = useState(false);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string>("");
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -135,6 +142,10 @@ const SponsorsManagement = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/sponsors'] });
       toast({ title: "Éxito", description: "Patrocinador creado exitosamente" });
+      // Limpiar el formulario y estados
+      sponsorForm.reset();
+      setLogoFile(null);
+      setLogoPreview('');
       setIsNewSponsorOpen(false);
     },
     onError: () => {
@@ -174,6 +185,7 @@ const SponsorsManagement = () => {
       contractEnd: '',
       eventsSponsored: 0,
       renewalProbability: 0,
+      websiteUrl: '',
       notes: ''
     }
   });
@@ -187,12 +199,87 @@ const SponsorsManagement = () => {
     createPackageMutation.mutate(formattedData);
   };
 
-  const onSubmitSponsor = (data: SponsorFormData) => {
-    const formattedData = {
-      ...data,
-      contractValue: data.contractValue // Ya es número por el esquema
+  // Función para manejar la selección de archivo de logo
+  const handleLogoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validar tipo de archivo
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+    if (!allowedTypes.includes(file.type)) {
+      toast({
+        title: "Error",
+        description: "Solo se permiten archivos PNG y JPG",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Validar tamaño de archivo (5MB)
+    const maxSize = 5 * 1024 * 1024; // 5MB en bytes
+    if (file.size > maxSize) {
+      toast({
+        title: "Error",
+        description: "El archivo no puede superar los 5MB",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setLogoFile(file);
+    
+    // Crear preview del archivo
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setLogoPreview(e.target?.result as string);
     };
-    createSponsorMutation.mutate(formattedData);
+    reader.readAsDataURL(file);
+  };
+
+  // Función para subir el logo al servidor
+  const uploadLogo = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('logo', file);
+
+    const response = await fetch('/api/upload/sponsor-logo', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error('Error al subir el logo');
+    }
+
+    const data = await response.json();
+    return data.filePath;
+  };
+
+  const onSubmitSponsor = async (data: SponsorFormData) => {
+    try {
+      setIsUploadingLogo(true);
+      let logoUrl = '';
+
+      // Si hay un archivo de logo, subirlo primero
+      if (logoFile) {
+        logoUrl = await uploadLogo(logoFile);
+      }
+
+      const formattedData = {
+        ...data,
+        logo: logoUrl,
+        contractValue: data.contractValue // Ya es número por el esquema
+      };
+      
+      createSponsorMutation.mutate(formattedData);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Error al procesar el logo",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUploadingLogo(false);
+    }
   };
 
   // Filtros - Asegurar que sponsors sea un array
@@ -310,6 +397,62 @@ const SponsorsManagement = () => {
                           )}
                         />
                       </div>
+                      
+                      {/* Campo de Logo */}
+                      <div className="space-y-2">
+                        <Label htmlFor="logo">Logo de la Empresa</Label>
+                        <div className="flex items-center gap-4">
+                          <div className="flex-1">
+                            <Input
+                              id="logo"
+                              type="file"
+                              accept=".png,.jpg,.jpeg"
+                              onChange={handleLogoChange}
+                              className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+                            />
+                            <p className="text-sm text-gray-500 mt-1">
+                              Formatos: PNG, JPG. Tamaño máximo: 5MB
+                            </p>
+                          </div>
+                          {logoPreview && (
+                            <div className="relative">
+                              <img
+                                src={logoPreview}
+                                alt="Preview"
+                                className="w-16 h-16 object-cover rounded-lg border"
+                              />
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="absolute -top-2 -right-2 w-6 h-6 rounded-full p-0"
+                                onClick={() => {
+                                  setLogoFile(null);
+                                  setLogoPreview('');
+                                }}
+                              >
+                                <X className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Campo de Website URL */}
+                      <FormField
+                        control={sponsorForm.control}
+                        name="websiteUrl"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Sitio Web</FormLabel>
+                            <FormControl>
+                              <Input placeholder="https://ejemplo.com" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
                       <div className="grid grid-cols-2 gap-4">
                         <FormField
                           control={sponsorForm.control}
@@ -505,8 +648,19 @@ const SponsorsManagement = () => {
                         <Button type="button" variant="outline" onClick={() => setIsNewSponsorOpen(false)}>
                           Cancelar
                         </Button>
-                        <Button type="submit" className="bg-[#00a587] hover:bg-[#067f5f]">
-                          Crear Patrocinador
+                        <Button 
+                          type="submit" 
+                          className="bg-[#00a587] hover:bg-[#067f5f]"
+                          disabled={createSponsorMutation.isPending || isUploadingLogo}
+                        >
+                          {(createSponsorMutation.isPending || isUploadingLogo) ? (
+                            <>
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                              {isUploadingLogo ? "Subiendo logo..." : "Creando..."}
+                            </>
+                          ) : (
+                            "Crear Patrocinador"
+                          )}
                         </Button>
                       </div>
                     </form>
