@@ -93,6 +93,7 @@ const SponsorsManagement = () => {
   const [isNewPackageOpen, setIsNewPackageOpen] = useState(false);
   const [selectedSponsor, setSelectedSponsor] = useState<Sponsor | null>(null);
   const [isViewSponsorOpen, setIsViewSponsorOpen] = useState(false);
+  const [isEditSponsorOpen, setIsEditSponsorOpen] = useState(false);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string>("");
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
@@ -154,6 +155,26 @@ const SponsorsManagement = () => {
     }
   });
 
+  const updateSponsorMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number, data: SponsorFormData }) => safeApiRequest(`/api/sponsors/${id}`, {
+      method: 'PUT',
+      data
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/sponsors'] });
+      toast({ title: "Éxito", description: "Patrocinador actualizado exitosamente" });
+      // Limpiar el formulario y estados
+      editSponsorForm.reset();
+      setLogoFile(null);
+      setLogoPreview('');
+      setIsEditSponsorOpen(false);
+      setSelectedSponsor(null);
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Error al actualizar patrocinador", variant: "destructive" });
+    }
+  });
+
   // Formularios
   const packageForm = useForm<PackageFormData>({
     resolver: zodResolver(packageSchema),
@@ -192,7 +213,30 @@ const SponsorsManagement = () => {
     }
   });
 
-  // Observar cambios en el nivel para actualizar precio y eventos automáticamente
+  // Formulario de edición de patrocinador
+  const editSponsorForm = useForm<SponsorFormData>({
+    resolver: zodResolver(sponsorSchema),
+    defaultValues: {
+      name: '',
+      category: '',
+      logo: '',
+      representative: '',
+      email: '',
+      phone: '',
+      address: '',
+      status: '',
+      level: '',
+      contractStart: '',
+      renewalProbability: 0,
+      websiteUrl: '',
+      notes: '',
+      contractValue: 0,
+      contractEnd: '',
+      eventsSponsored: 0
+    }
+  });
+
+  // Observar cambios en el nivel para actualizar precio y eventos automáticamente (formulario crear)
   const watchedLevel = sponsorForm.watch("level");
   const watchedStartDate = sponsorForm.watch("contractStart");
 
@@ -206,7 +250,7 @@ const SponsorsManagement = () => {
     }
   }, [watchedLevel, packages, sponsorForm]);
 
-  // Observar cambios en la fecha de inicio para calcular fecha de fin automáticamente
+  // Observar cambios en la fecha de inicio para calcular fecha de fin automáticamente (formulario crear)
   useEffect(() => {
     if (watchedStartDate) {
       const startDate = new Date(watchedStartDate);
@@ -215,6 +259,30 @@ const SponsorsManagement = () => {
       sponsorForm.setValue("contractEnd", endDate.toISOString().split('T')[0]);
     }
   }, [watchedStartDate, sponsorForm]);
+
+  // Observar cambios en el nivel para actualizar precio y eventos automáticamente (formulario editar)
+  const watchedEditLevel = editSponsorForm.watch("level");
+  const watchedEditStartDate = editSponsorForm.watch("contractStart");
+
+  useEffect(() => {
+    if (watchedEditLevel && packages.length > 0) {
+      const selectedPackage = packages.find((pkg: SponsorshipPackage) => pkg.level === watchedEditLevel);
+      if (selectedPackage) {
+        editSponsorForm.setValue("contractValue", parseFloat(selectedPackage.price));
+        editSponsorForm.setValue("eventsSponsored", selectedPackage.eventsIncluded);
+      }
+    }
+  }, [watchedEditLevel, packages, editSponsorForm]);
+
+  // Observar cambios en la fecha de inicio para calcular fecha de fin automáticamente (formulario editar)
+  useEffect(() => {
+    if (watchedEditStartDate) {
+      const startDate = new Date(watchedEditStartDate);
+      const endDate = new Date(startDate);
+      endDate.setFullYear(startDate.getFullYear() + 1); // Exactamente un año después
+      editSponsorForm.setValue("contractEnd", endDate.toISOString().split('T')[0]);
+    }
+  }, [watchedEditStartDate, editSponsorForm]);
 
   const onSubmitPackage = (data: PackageFormData) => {
     const formattedData = {
@@ -342,6 +410,92 @@ const SponsorsManagement = () => {
       };
       
       createSponsorMutation.mutate(formattedData);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Error al procesar el logo",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUploadingLogo(false);
+    }
+  };
+
+  // Función para abrir el modal de edición con datos precargados
+  const openEditSponsor = (sponsor: Sponsor) => {
+    setSelectedSponsor(sponsor);
+    
+    // Precargar el formulario con los datos del patrocinador
+    editSponsorForm.reset({
+      name: sponsor.name,
+      category: sponsor.category,
+      logo: sponsor.logo || '',
+      representative: sponsor.representative,
+      email: sponsor.email,
+      phone: sponsor.phone,
+      address: sponsor.address,
+      status: sponsor.status,
+      level: sponsor.level,
+      contractStart: sponsor.contractStart,
+      renewalProbability: sponsor.renewalProbability,
+      websiteUrl: sponsor.websiteUrl || '',
+      notes: sponsor.notes || '',
+      contractValue: parseFloat(sponsor.contractValue),
+      contractEnd: sponsor.contractEnd,
+      eventsSponsored: sponsor.eventsSponsored
+    });
+    
+    // Si hay logo, establecer el preview
+    if (sponsor.logo) {
+      setLogoPreview(sponsor.logo);
+    } else {
+      setLogoPreview('');
+    }
+    setLogoFile(null);
+    
+    setIsEditSponsorOpen(true);
+  };
+
+  // Función para enviar edición de patrocinador
+  const onSubmitEditSponsor = async (data: SponsorFormData) => {
+    if (!selectedSponsor) return;
+    
+    try {
+      setIsUploadingLogo(true);
+      let logoUrl = data.logo || '';
+
+      // Si hay un archivo de logo nuevo, subirlo
+      if (logoFile) {
+        logoUrl = await uploadLogo(logoFile);
+      }
+
+      // Validar que se haya seleccionado un nivel y calculado los valores
+      if (!data.level) {
+        toast({
+          title: "Error",
+          description: "Debes seleccionar un nivel de patrocinio",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (!data.contractValue || data.contractValue === 0) {
+        toast({
+          title: "Error",
+          description: "El valor del contrato no se calculó correctamente. Verifica el nivel seleccionado.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const formattedData = {
+        ...data,
+        logo: logoUrl,
+        contractValue: data.contractValue.toString(), // Convertir a string para el campo decimal
+        eventsSponsored: data.eventsSponsored || 0
+      };
+      
+      updateSponsorMutation.mutate({ id: selectedSponsor.id, data: formattedData });
     } catch (error) {
       toast({
         title: "Error",
@@ -1062,7 +1216,11 @@ const SponsorsManagement = () => {
                         <Eye className="h-4 w-4 mr-1" />
                         Ver
                       </Button>
-                      <Button size="sm" variant="outline">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => openEditSponsor(sponsor)}
+                      >
                         <Edit className="h-4 w-4 mr-1" />
                         Editar
                       </Button>
@@ -1332,6 +1490,337 @@ const SponsorsManagement = () => {
                 )}
               </div>
             )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Modal para editar patrocinador */}
+        <Dialog open={isEditSponsorOpen} onOpenChange={setIsEditSponsorOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Editar Patrocinador</DialogTitle>
+              <DialogDescription>
+                Modifica la información del patrocinador seleccionado
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              <Form {...editSponsorForm}>
+                <form onSubmit={editSponsorForm.handleSubmit(onSubmitEditSponsor)} className="space-y-6">
+                  {/* Logo Upload */}
+                  <div className="space-y-4">
+                    <Label>Logo del Patrocinador</Label>
+                    <div className="flex items-center space-x-4">
+                      <div className="flex-1">
+                        <Input
+                          type="file"
+                          accept="image/png,image/jpeg,image/jpg"
+                          onChange={handleLogoChange}
+                          className="cursor-pointer"
+                        />
+                        <p className="text-sm text-gray-500 mt-1">
+                          Formatos permitidos: PNG, JPG. Tamaño máximo: 5MB
+                        </p>
+                      </div>
+                      {logoPreview && (
+                        <div className="w-20 h-20 border border-gray-200 rounded-lg overflow-hidden bg-white">
+                          <img
+                            src={logoPreview}
+                            alt="Preview del logo"
+                            className="w-full h-full object-contain p-1"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={editSponsorForm.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nombre del Patrocinador</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Nombre completo" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={editSponsorForm.control}
+                      name="category"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Categoría</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecciona categoría" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="corporativo">Corporativo</SelectItem>
+                              <SelectItem value="local">Local</SelectItem>
+                              <SelectItem value="institucional">Institucional</SelectItem>
+                              <SelectItem value="ong">ONG</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={editSponsorForm.control}
+                      name="representative"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Representante</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Nombre del representante" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={editSponsorForm.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input placeholder="correo@ejemplo.com" type="email" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={editSponsorForm.control}
+                      name="phone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Teléfono</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Número de teléfono" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={editSponsorForm.control}
+                      name="websiteUrl"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Sitio Web (Opcional)</FormLabel>
+                          <FormControl>
+                            <Input placeholder="https://ejemplo.com" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <FormField
+                    control={editSponsorForm.control}
+                    name="address"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Dirección</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Dirección completa" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={editSponsorForm.control}
+                      name="status"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Estado</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecciona estado" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="activo">Activo</SelectItem>
+                              <SelectItem value="potencial">Potencial</SelectItem>
+                              <SelectItem value="inactivo">Inactivo</SelectItem>
+                              <SelectItem value="renovacion">Renovación</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={editSponsorForm.control}
+                      name="level"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nivel</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecciona nivel" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="bronce">Bronce</SelectItem>
+                              <SelectItem value="plata">Plata</SelectItem>
+                              <SelectItem value="oro">Oro</SelectItem>
+                              <SelectItem value="platino">Platino</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  
+                  {/* Información sobre campos automáticos */}
+                  {watchedEditLevel && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                      <div className="flex items-center gap-2 text-blue-700 text-sm">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span className="font-medium">Los siguientes campos se calculan automáticamente según el nivel seleccionado:</span>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={editSponsorForm.control}
+                      name="contractValue"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Valor del Contrato (Automático)</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="Selecciona un nivel" 
+                              type="text" 
+                              value={field.value ? `$${field.value.toLocaleString()}` : ''}
+                              readOnly
+                              className="bg-gray-50 text-gray-700"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={editSponsorForm.control}
+                      name="eventsSponsored"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Eventos Incluidos (Automático)</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="Selecciona un nivel" 
+                              type="text" 
+                              value={field.value ? `${field.value} eventos` : ''}
+                              readOnly
+                              className="bg-gray-50 text-gray-700"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={editSponsorForm.control}
+                      name="contractStart"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Fecha de Inicio</FormLabel>
+                          <FormControl>
+                            <Input type="date" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={editSponsorForm.control}
+                      name="contractEnd"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Fecha de Fin (Automática - 1 año)</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="text" 
+                              value={field.value ? new Date(field.value).toLocaleDateString() : 'Selecciona fecha de inicio'}
+                              readOnly
+                              className="bg-gray-50 text-gray-700"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <FormField
+                    control={editSponsorForm.control}
+                    name="renewalProbability"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Probabilidad de Renovación (%)</FormLabel>
+                        <FormControl>
+                          <Input placeholder="85" type="number" min="0" max="100" {...field} onChange={(e) => field.onChange(parseInt(e.target.value) || 0)} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={editSponsorForm.control}
+                    name="notes"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Notas</FormLabel>
+                        <FormControl>
+                          <Textarea placeholder="Notas adicionales sobre el patrocinador..." {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <div className="flex justify-end space-x-2">
+                    <Button type="button" variant="outline" onClick={() => setIsEditSponsorOpen(false)}>
+                      Cancelar
+                    </Button>
+                    <Button 
+                      type="submit" 
+                      className="bg-[#00a587] hover:bg-[#067f5f]"
+                      disabled={updateSponsorMutation.isPending || isUploadingLogo}
+                    >
+                      {(updateSponsorMutation.isPending || isUploadingLogo) ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          {isUploadingLogo ? "Subiendo logo..." : "Actualizando..."}
+                        </>
+                      ) : (
+                        "Actualizar Patrocinador"
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              </Form>
+            </div>
           </DialogContent>
         </Dialog>
       </div>
