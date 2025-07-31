@@ -921,10 +921,7 @@ const SponsorsManagement = () => {
                         <DollarSign className="h-4 w-4 mr-2" />
                         ${parseFloat(sponsor.contractValue).toLocaleString()}
                       </div>
-                      <div className="flex items-center text-sm text-gray-600">
-                        <Calendar className="h-4 w-4 mr-2" />
-                        {sponsor.eventsSponsored} eventos
-                      </div>
+
                       <div className="mt-3">
                         <div className="flex justify-between items-center text-sm text-gray-600 mb-1">
                           <span>Probabilidad de renovación</span>
@@ -1131,6 +1128,21 @@ const SponsorsManagement = () => {
                           )}
                         </div>
                       </div>
+                      <div className="flex justify-between items-center pt-3 border-t">
+                        <Badge variant={pkg.isActive ? "default" : "secondary"}>
+                          {pkg.isActive ? "Activo" : "Inactivo"}
+                        </Badge>
+                        <div className="flex space-x-2">
+                          <Button size="sm" variant="outline">
+                            <Eye className="h-4 w-4 mr-1" />
+                            Ver
+                          </Button>
+                          <Button size="sm" variant="outline">
+                            <Edit className="h-4 w-4 mr-1" />
+                            Editar
+                          </Button>
+                        </div>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -1140,12 +1152,182 @@ const SponsorsManagement = () => {
 
           {/* Campaigns Tab */}
           <TabsContent value="campaigns" className="space-y-6">
-            <div className="text-center py-12">
-              <Trophy className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500">Gestión de campañas próximamente</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {campaigns.map((campaign) => (
+                <Card key={campaign.id} className="hover:shadow-md transition-shadow">
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle className="text-lg">{campaign.name}</CardTitle>
+                        <CardDescription>
+                          {campaign.startDate} - {campaign.endDate}
+                        </CardDescription>
+                      </div>
+                      <Badge className={getStatusColor(campaign.status)}>
+                        {campaign.status.charAt(0).toUpperCase() + campaign.status.slice(1)}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="flex items-center text-sm text-gray-600">
+                        <DollarSign className="h-4 w-4 mr-2" />
+                        Presupuesto: ${parseFloat(campaign.budget).toLocaleString()}
+                      </div>
+                      <div className="flex items-center text-sm text-gray-600">
+                        <Building className="h-4 w-4 mr-2" />
+                        {campaign.sponsorsCount} patrocinadores
+                      </div>
+                      <div className="flex items-center text-sm text-gray-600">
+                        <TrendingUp className="h-4 w-4 mr-2" />
+                        Ingresos: ${parseFloat(campaign.revenue).toLocaleString()}
+                      </div>
+                      <div className="flex items-center text-sm text-gray-600">
+                        <Calendar className="h-4 w-4 mr-2" />
+                        {campaign.events?.length || 0} eventos
+                      </div>
+                      <div className="flex justify-between items-center pt-3 border-t">
+                        <div className="flex space-x-2">
+                          <Button size="sm" variant="outline">
+                            <Eye className="h-4 w-4 mr-1" />
+                            Ver
+                          </Button>
+                          <Button size="sm" variant="outline">
+                            <Edit className="h-4 w-4 mr-1" />
+                            Editar
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
+
+            {campaigns.length === 0 && (
+              <div className="text-center py-12">
+                <Handshake className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500">No hay campañas de patrocinio disponibles</p>
+              </div>
+            )}
           </TabsContent>
         </Tabs>
+
+        {/* Modal para ver detalles del patrocinador */}
+        <Dialog open={isViewSponsorOpen} onOpenChange={setIsViewSponsorOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Detalles del Patrocinador</DialogTitle>
+            </DialogHeader>
+            {selectedSponsor && (
+              <div className="space-y-6">
+                {/* Sección superior con logo, información básica y contrato */}
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <h3 className="font-semibold text-lg">{selectedSponsor.name}</h3>
+                    <p className="text-gray-600">{selectedSponsor.category}</p>
+                    <div className="flex space-x-2 mt-2">
+                      <Badge className={getCategoryColor(selectedSponsor.packageCategory)}>
+                        {selectedSponsor.packageCategory}
+                      </Badge>
+                      <Badge className={getStatusColor(selectedSponsor.status)}>
+                        {selectedSponsor.status}
+                      </Badge>
+                    </div>
+                  </div>
+                  
+                  {/* Logo del patrocinador */}
+                  <div className="flex justify-center items-start">
+                    {selectedSponsor.logo ? (
+                      <div className="text-center">
+                        <img 
+                          src={selectedSponsor.logo} 
+                          alt={`Logo de ${selectedSponsor.name}`}
+                          className="w-24 h-24 object-contain border border-gray-200 rounded-lg p-2 bg-white shadow-sm"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                          }}
+                        />
+                        <div className="hidden text-center p-4">
+                          <div className="w-24 h-24 bg-gray-100 border border-gray-200 rounded-lg flex items-center justify-center">
+                            <Building className="w-8 h-8 text-gray-400" />
+                          </div>
+                          <p className="text-xs text-gray-500 mt-2">Logo no disponible</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center">
+                        <div className="w-24 h-24 bg-gray-100 border border-gray-200 rounded-lg flex items-center justify-center">
+                          <Building className="w-8 h-8 text-gray-400" />
+                        </div>
+                        <p className="text-xs text-gray-500 mt-2">Sin logo</p>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-[#00a587]">
+                      ${parseFloat(selectedSponsor.contractValue).toLocaleString()}
+                    </div>
+                    <p className="text-sm text-gray-500">
+                      {selectedSponsor.contractStart} - {selectedSponsor.contractEnd}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <h4 className="font-semibold mb-2">Información de Contacto</h4>
+                    <div className="space-y-2">
+                      <div className="flex items-center text-sm">
+                        <Users className="h-4 w-4 mr-2" />
+                        {selectedSponsor.representative}
+                      </div>
+                      <div className="flex items-center text-sm">
+                        <Mail className="h-4 w-4 mr-2" />
+                        {selectedSponsor.email}
+                      </div>
+                      <div className="flex items-center text-sm">
+                        <Phone className="h-4 w-4 mr-2" />
+                        {selectedSponsor.phone}
+                      </div>
+                      <div className="flex items-center text-sm">
+                        <MapPin className="h-4 w-4 mr-2" />
+                        {selectedSponsor.address}
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold mb-2">Estadísticas</h4>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-sm">Eventos patrocinados:</span>
+                        <span className="text-sm font-medium">{selectedSponsor.eventsSponsored}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm">Prob. renovación:</span>
+                        <span className="text-sm font-medium">{selectedSponsor.renewalProbability}%</span>
+                      </div>
+                      <div className="mt-2">
+                        <Progress value={selectedSponsor.renewalProbability} className="h-2" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {selectedSponsor.notes && (
+                  <div>
+                    <h4 className="font-semibold mb-2">Notas</h4>
+                    <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
+                      {selectedSponsor.notes}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
 
         {/* Modal para editar patrocinador */}
         <Dialog open={isEditSponsorOpen} onOpenChange={setIsEditSponsorOpen}>
