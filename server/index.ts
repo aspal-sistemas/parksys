@@ -1065,541 +1065,77 @@ import { initializeDatabase } from "./initialize-db";
 // Database initialization function that runs after server starts
 async function initializeDatabaseAsync() {
   try {
-    console.log("Inicializando estructura de la base de datos de forma asíncrona...");
+    console.log("🗄️ Inicializando base de datos de forma asíncrona...");
+    
+    // Solo inicializar estructura básica, sin semillas complejas
     await initializeDatabase();
+    console.log("✅ Estructura básica de base de datos inicializada");
     
-    // Intentar inicializar los datos predeterminados con protección extra
-    try {
-      await seedDatabase();
-    } catch (error) {
-      console.error("Error al cargar datos iniciales (continuando):", error);
-    }
+    // Ejecutar inicialización en segundo plano para evitar bloquear servidor
+    setTimeout(async () => {
+      try {
+        console.log("🌱 Iniciando carga de datos semilla en segundo plano...");
+        await seedDatabase();
+        console.log("✅ Datos semilla cargados");
+      } catch (error) {
+        console.error("❌ Error al cargar datos semilla:", error);
+      }
+    }, 5000);
     
-    // Crear tablas del módulo de arbolado con protección
-    try {
-      await createTreeTables();
-    } catch (error) {
-      console.error("Error al crear tablas de arbolado (continuando):", error);
-    }
-    
-    // Cargar especies de árboles de muestra con protección
-    try {
-      await seedTreeSpecies();
-    } catch (error) {
-      console.error("Error al cargar especies de árboles (continuando):", error);
-    }
-    
-    // Inicializar integración HR-Finanzas con protección mejorada - TEMPORALMENTE DESHABILITADO PARA DESPLIEGUE
-    try {
-      console.log("HR-Finance integration seeding temporarily disabled for deployment stability");
-      // const { seedHRFinanceIntegration } = await import("./seed-hr-finance-integration");
-      // await seedHRFinanceIntegration();
-    } catch (error) {
-      console.error("Error al inicializar integración HR-Finanzas (continuando):", error);
-    }
-    
-    // Inicializar recibos de nómina con protección contra duplicados - TEMPORALMENTE DESHABILITADO PARA DESPLIEGUE
-    try {
-      console.log("Payroll receipts seeding temporarily disabled for deployment stability");
-      // const { seedPayrollReceipts } = await import("./seed-payroll-receipts");
-      // await seedPayrollReceipts();
-    } catch (error) {
-      console.error("Error al inicializar recibos de nómina (continuando):", error);
-    }
-    
-    console.log("Inicialización de base de datos completada exitosamente");
   } catch (error) {
-    console.error("Error crítico al inicializar la base de datos (servidor continuará funcionando):", error);
+    console.error("❌ Error en inicialización de base de datos:", error);
   }
 }
 
 (async () => {
-  
+  console.log("🚀 Iniciando servidor ParkSys...");
 
+  // Registrar rutas principales primero
+  const routeServer = await registerRoutes(app);
+  console.log("✅ Rutas principales registradas");
 
-  // HR routes registration moved to after main routes registration
-  // (see after registerRoutes call)
-
-  // Registrar rutas de vacaciones y control de horas
+  // Registrar rutas críticas básicas
   try {
     const { registerTimeOffRoutes } = await import("./time-off-routes");
     const timeOffRouter = express.Router();
-    
-    // Aplicar middleware JSON al router de tiempo libre
     timeOffRouter.use(express.json({ limit: '50mb' }));
     timeOffRouter.use(express.urlencoded({ extended: true, limit: '50mb' }));
-    
     registerTimeOffRoutes(app, timeOffRouter, (req: Request, res: Response, next: NextFunction) => next());
     app.use("/api/time-off", timeOffRouter);
-    console.log("Rutas de vacaciones y control de horas registradas correctamente");
+    console.log("✅ Rutas de tiempo libre registradas");
   } catch (error) {
-    console.error("Error al registrar rutas de vacaciones y control de horas:", error);
+    console.error("❌ Error registrando rutas de tiempo libre:", error);
   }
 
-  // Crear tablas de recibos de nómina
-  try {
-    const { createPayrollReceiptsTables } = await import("./create-payroll-receipts-tables");
-    await createPayrollReceiptsTables();
+  // Inicializar otras funcionalidades críticas en segundo plano
+  setTimeout(async () => {
+    console.log("🔧 Inicializando módulos adicionales en segundo plano...");
     
-    // Crear datos de muestra para recibos
-    const { seedPayrollReceipts } = await import("./seed-payroll-receipts");
-    await seedPayrollReceipts();
-  } catch (error) {
-    console.error("Error al crear tablas de recibos de nómina:", error);
-  }
+    try {
+      // Registro básico de rutas críticas
+      const { emailRouter } = await import("./email/emailRoutes");
+      app.use("/api/email", emailRouter);
+      console.log("✅ Email routes registered");
+      
+      const { default: communicationsRouter } = await import("./communications/communicationsRoutes");
+      app.use("/api/communications", communicationsRouter);
+      console.log("✅ Communications routes registered");
+      
+      const { default: feedbackRouter } = await import("./feedback-routes");
+      app.use("/api/feedback", feedbackRouter);
+      console.log("✅ Feedback routes registered");
+      
+    } catch (error) {
+      console.error("❌ Error initializing additional modules:", error);
+    }
+  }, 2000);
 
-  // Registrar rutas de Recibos de Nómina
-  try {
-    const { registerPayrollReceiptsRoutes } = await import("./payroll-receipts-routes");
-    const receiptsRouter = express.Router();
-    
-    // Aplicar middleware JSON específicamente al router de recibos
-    receiptsRouter.use(express.json({ limit: '50mb' }));
-    receiptsRouter.use(express.urlencoded({ extended: true, limit: '50mb' }));
-    
-    registerPayrollReceiptsRoutes(app, receiptsRouter, (req: Request, res: Response, next: NextFunction) => next());
-    app.use("/api/payroll", receiptsRouter); // Usar prefijo separado para evitar conflictos con HR
-    console.log("Rutas de Recibos de Nómina registradas correctamente");
-  } catch (error) {
-    console.error("Error al registrar rutas de Recibos de Nómina:", error);
-  }
-
-  // Registrar rutas de Eventos AMBU
-  try {
-    const { registerEventosAmbuRoutes } = await import("./eventos-ambu-routes");
-    const eventosAmbuRouter = express.Router();
-    
-    // Aplicar middleware JSON específicamente al router de eventos AMBU
-    eventosAmbuRouter.use(express.json({ limit: '50mb' }));
-    eventosAmbuRouter.use(express.urlencoded({ extended: true, limit: '50mb' }));
-    
-    registerEventosAmbuRoutes(app, eventosAmbuRouter, (req: Request, res: Response, next: NextFunction) => next());
-    app.use("/api", eventosAmbuRouter);
-    console.log("Rutas de Eventos AMBU registradas correctamente");
-  } catch (error) {
-    console.error("Error al registrar rutas de Eventos AMBU:", error);
-  }
-
-  // Registrar rutas del sistema de email
-  try {
-    const { emailRouter } = await import("./email/emailRoutes");
-    console.log("Registrando rutas del sistema de email...");
-    app.use("/api/email", emailRouter);
-    console.log("Rutas del sistema de email registradas correctamente");
-  } catch (error) {
-    console.error("Error al registrar rutas de email:", error);
-  }
-
-  // Registrar rutas de imágenes de actividades
-  try {
-    const activityImageRouter = await import("./activity-image-routes");
-    app.use("/api/activities", activityImageRouter.default);
-    console.log("Rutas de imágenes de actividades registradas correctamente");
-  } catch (error) {
-    console.error("Error al registrar rutas de imágenes de actividades:", error);
-  }
-
-  // Registrar rutas del sistema de comunicaciones
-  try {
-    const { default: communicationsRouter } = await import("./communications/communicationsRoutes");
-    console.log("Registrando rutas del sistema de comunicaciones...");
-    app.use("/api/communications", communicationsRouter);
-    console.log("Rutas del sistema de comunicaciones registradas correctamente");
-  } catch (error) {
-    console.error("Error al registrar rutas de comunicaciones:", error);
-  }
-
-  // Registrar rutas del sistema de publicidad
-  try {
-    const { default: advertisingRouter } = await import("./advertising-routes");
-    console.log("Registrando rutas del sistema de publicidad...");
-    app.use("/api/advertising-management", advertisingRouter);
-    console.log("Rutas del sistema de publicidad registradas correctamente");
-  } catch (error) {
-    console.error("Error al registrar rutas de publicidad:", error);
-  }
-
-  // Registrar rutas del sistema de conteo de visitantes
-  try {
-    console.log("Registrando rutas del sistema de conteo de visitantes...");
-    
-    // Crear router específico con middleware JSON
-    const visitorCountRouter = express.Router();
-    visitorCountRouter.use(express.json({ limit: '50mb' }));
-    visitorCountRouter.use(express.urlencoded({ extended: true, limit: '50mb' }));
-    
-    // Montar las rutas de visitor-count en el router con middleware
-    visitorCountRouter.use('/', visitorCountRoutes);
-    
-    app.use("/api", visitorCountRouter);
-    console.log("Rutas del sistema de conteo de visitantes registradas correctamente");
-  } catch (error) {
-    console.error("Error al registrar rutas de conteo de visitantes:", error);
-  }
-
-  // Registrar rutas del sistema de retroalimentación
-  try {
-    const { default: feedbackRouter } = await import("./feedback-routes");
-    console.log("Registrando rutas del sistema de retroalimentación...");
-    app.use("/api/feedback", feedbackRouter);
-    console.log("Rutas del sistema de retroalimentación registradas correctamente");
-  } catch (error) {
-    console.error("Error al registrar rutas de retroalimentación:", error);
-  }
-
-  // Registrar rutas del sistema de preferencias de usuario
-  try {
-    const { userPreferencesRouter } = await import("./user-preferences-routes");
-    console.log("Registrando rutas del sistema de preferencias de usuario...");
-    app.use("/api/users", userPreferencesRouter);
-    console.log("Rutas del sistema de preferencias de usuario registradas correctamente");
-  } catch (error) {
-    console.error("Error al registrar rutas de preferencias de usuario:", error);
-  }
-
-  // Inicializar tablas de comunicaciones
-  try {
-    const { seedEmailTemplates } = await import("./communications/seedCommunications");
-    await seedEmailTemplates();
-  } catch (error) {
-    console.error("Error inicializando tablas de comunicaciones:", error);
-  }
-
-  // Inicializar módulo de contabilidad
-  try {
-    const { createAccountingModule } = await import("./create-accounting-module");
-    await createAccountingModule();
-    console.log("Módulo de contabilidad inicializado correctamente");
-  } catch (error) {
-    console.error("Error inicializando módulo de contabilidad:", error);
-  }
-
-  const routeServer = await registerRoutes(app);
-
-  // Agregar campos de inscripción a la tabla activities
-  try {
-    const { addActivityRegistrationFields } = await import("./add-activity-registration-fields");
-    await addActivityRegistrationFields();
-    console.log("Campos de inscripción agregados a activities correctamente");
-  } catch (error) {
-    console.error("Error al agregar campos de inscripción:", error);
-  }
-
-  // Crear tablas de inscripciones de actividades
-  try {
-    const { createActivityRegistrationsTables } = await import("./create-activity-registrations-tables");
-    await createActivityRegistrationsTables();
-    console.log("Tablas de inscripciones de actividades inicializadas correctamente");
-  } catch (error) {
-    console.error("Error al inicializar tablas de inscripciones:", error);
-  }
-
-  // Registrar rutas de inscripciones de actividades
-  try {
-    const activityRegistrationsRouter = await import("./routes/activity-registrations");
-    console.log("Registrando rutas de inscripciones de actividades...");
-    app.use("/api/activity-registrations", activityRegistrationsRouter.default);
-    console.log("Rutas de inscripciones de actividades registradas correctamente");
-  } catch (error) {
-    console.error("Error al registrar rutas de inscripciones de actividades:", error);
-  }
-
-  // Inicializar tablas de patrocinios
-  try {
-    const { createSponsorshipTables } = await import("./create-sponsorship-tables");
-    await createSponsorshipTables();
-    
-    const { createSponsorshipContractsTables, addSampleContractData } = await import("./create-sponsorship-contracts-tables");
-    await createSponsorshipContractsTables();
-    await addSampleContractData();
-  } catch (error) {
-    console.error("Error inicializando tablas de patrocinios:", error);
-  }
-
-  // Inicializar tablas de vacaciones
-  try {
-    const { createVacationTables } = await import("./create-vacation-tables");
-    await createVacationTables();
-    console.log("✅ Tablas de vacaciones inicializadas");
-  } catch (error) {
-    console.error("Error al inicializar tablas de vacaciones:", error);
-  }
-
-  // Registrar rutas de mantenimiento de activos
-  try {
-    const { registerMaintenanceRoutes } = await import("./maintenance_routes");
-    const apiRouter = express.Router();
-    const isAuthenticated = (req: Request, res: Response, next: NextFunction) => next();
-    registerMaintenanceRoutes(app, apiRouter, isAuthenticated);
-    app.use('/api', apiRouter);
-    console.log("✅ Rutas de mantenimiento de activos registradas correctamente");
-  } catch (error) {
-    console.error("Error al registrar rutas de mantenimiento:", error);
-  }
-
-  // Registrar API de integraciones financieras múltiples
-  try {
-    const apiRouter = express.Router();
-    registerFinancialIntegrationsAPI(apiRouter, (req: Request, res: Response, next: NextFunction) => next());
-    registerMultimediaRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
-    
-    // Importar y registrar rutas de planificación presupuestaria
-    const { registerBudgetPlanningRoutes } = await import('./budget-planning-routes');
-    registerBudgetPlanningRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
-    
-    // Importar y registrar rutas del módulo financiero
-    const { registerFinanceRoutes } = await import('./finance-routes');
-    registerFinanceRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
-    
-    // Importar y registrar rutas del módulo de contabilidad
-    const { registerAccountingRoutes } = await import('./accounting-routes');
-    registerAccountingRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
-    
-    // Importar y registrar rutas de categorías de eventos
-    const { registerEventCategoriesRoutes } = await import('./event-categories-routes');
-    registerEventCategoriesRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
-    
-    // Importar y registrar rutas de instructores
-    const { registerInstructorRoutes } = await import('./instructor-routes');
-    registerInstructorRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
-    
-    // Importar y registrar rutas de categorías de activos
-    const { registerAssetCategoriesRoutes } = await import('./asset-categories-routes');
-    registerAssetCategoriesRoutes(app, apiRouter);
-    
-    const { registerInstructorEvaluationRoutes } = await import('./instructor-evaluations-routes');
-    registerInstructorEvaluationRoutes(app, apiRouter);
-    
-    // Importar y registrar rutas de concesionarios
-    const { registerConcessionairesRoutes } = await import('./concessionaires-routes');
-    registerConcessionairesRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
-    
-    // Importar y registrar rutas de patrocinios
-    const { registerSponsorshipRoutes } = await import('./sponsorship-routes');
-    registerSponsorshipRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
-
-    // Registrar rutas del módulo de evaluaciones de parques
-    const { registerParkEvaluationRoutes } = await import('./park-evaluations-routes');
-    registerParkEvaluationRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
-    
-    // Registrar rutas de criterios de evaluación configurables
-    const { registerEvaluationCriteriaRoutes } = await import('./evaluation-criteria-routes');
-    registerEvaluationCriteriaRoutes(app, apiRouter, (req: Request, res: Response, next: NextFunction) => next());
-    
-    // Importar y registrar rutas de conteo de visitantes
-    app.use("/api", visitorCountRoutes);
-    console.log("Rutas de conteo de visitantes registradas correctamente");
-    
-    // Registrar rutas del dashboard integral de visitantes
-    app.use("/api/visitors", visitorsDashboardRoutes);
-    console.log("✅ Rutas del dashboard integral de visitantes registradas correctamente");
-    
-    // CATEGORÍAS DE ACTIVOS: Registradas en la sección principal arriba para evitar duplicación
-    // MANTENIMIENTO DE ACTIVOS: Registradas en la sección principal de startup para evitar duplicación
-    
-    app.use("/api", apiRouter);
-    console.log("API de integraciones financieras múltiples registrada correctamente");
-    
-    // Crear tablas de multimedia si no existen
-    await createMultimediaTables();
-    console.log("Sistema de multimedia inicializado correctamente");
-    
-    // Crear tablas de evaluaciones de parques
-    await createParkEvaluationsTables();
-    console.log("Sistema de evaluaciones de parques inicializado correctamente");
-    
-    // Crear tablas de criterios de evaluación configurables
-    const { createEvaluationCriteriaTables, seedDefaultEvaluationCriteria } = await import('./create-evaluation-criteria-tables');
-    await createEvaluationCriteriaTables();
-    await seedDefaultEvaluationCriteria();
-    console.log("Sistema de criterios de evaluación configurables inicializado correctamente");
-  } catch (error) {
-    console.error("Error al registrar API de integraciones financieras:", error);
-  }
-
-  // Registrar módulo de seguridad
-  try {
-    console.log("🔒 Registrando módulo de seguridad...");
-    
-    const { initSecurityTables, seedSecurityData } = await import('./security/initSecurityTables');
-    await initSecurityTables();
-    await seedSecurityData();
-    
-    const securityRouter = await import('./security/securityRoutes');
-    app.use('/api/security', securityRouter.default);
-    
-    // Registrar rutas de recuperación de contraseña
-    console.log("🔑 Registrando rutas de recuperación de contraseña...");
-    const passwordRecoveryRouter = await import('./password-recovery-routes');
-    app.use('/api', passwordRecoveryRouter.default);
-    
-    console.log("✅ Módulo de seguridad registrado correctamente");
-  } catch (error) {
-    console.error("❌ Error al registrar módulo de seguridad:", error);
-  }
-
-  // Rutas para servir archivos del recibo - ANTES de Vite
-  app.get('/api/recibo-nomina', (req: Request, res: Response) => {
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    const htmlContent = `
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recibo de Nómina - Parques de México</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-            background: linear-gradient(135deg, #00a587 0%, #067f5f 100%);
-            min-height: 100vh;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            overflow: hidden;
-        }
-        .header {
-            background: linear-gradient(45deg, #00a587, #067f5f);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-        .header h1 {
-            margin: 0;
-            font-size: 2.5em;
-            font-weight: 300;
-        }
-        .content {
-            padding: 40px;
-        }
-        .feature-list {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
-        }
-        .feature-list h3 {
-            color: #00a587;
-            margin-top: 0;
-        }
-        .feature-list ul {
-            list-style: none;
-            padding: 0;
-        }
-        .feature-list li {
-            padding: 8px 0;
-            border-bottom: 1px solid #e9ecef;
-        }
-        .feature-list li:before {
-            content: "✓";
-            color: #00a587;
-            font-weight: bold;
-            margin-right: 10px;
-        }
-        .buttons {
-            text-align: center;
-            margin: 30px 0;
-        }
-        .btn {
-            display: inline-block;
-            padding: 15px 30px;
-            margin: 10px;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: bold;
-            transition: all 0.3s ease;
-        }
-        .btn-primary {
-            background: #00a587;
-            color: white;
-        }
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-        .footer {
-            background: #f8f9fa;
-            padding: 20px;
-            text-align: center;
-            color: #6c757d;
-            border-top: 3px solid #00a587;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>🌳 Parques de México</h1>
-            <p>Recibo de Nómina Oficial</p>
-        </div>
-        
-        <div class="content">
-            <h2>Recibo de Nómina con Logo Oficial</h2>
-            <p>Descarga el recibo de nómina profesional con el branding oficial de Parques de México.</p>
-            
-            <div class="feature-list">
-                <h3>Características del Recibo:</h3>
-                <ul>
-                    <li>Logo oficial de Parques de México integrado</li>
-                    <li>Colores corporativos (#00a587, #067f5f, #bcd256)</li>
-                    <li>Información fiscal completa (RFC, CURP, NSS)</li>
-                    <li>Cumplimiento legal mexicano (Art. 99 LFT)</li>
-                    <li>Registro patronal y datos fiscales</li>
-                    <li>Sección de firmas profesional</li>
-                    <li>Footer con información legal</li>
-                    <li>Formato PDF de alta calidad</li>
-                </ul>
-            </div>
-            
-            <div class="buttons">
-                <a href="/sample-receipt-with-logo.pdf" class="btn btn-primary" download>
-                    📄 Descargar PDF
-                </a>
-                <a href="/sample-receipt-with-logo.pdf" class="btn btn-secondary" target="_blank">
-                    👁️ Ver en Nueva Ventana
-                </a>
-            </div>
-        </div>
-        
-        <div class="footer">
-            <p><strong>ParkSys</strong> - Sistema de Gestión de Parques Municipales</p>
-            <p>© 2025 Parques de México. Todos los derechos reservados.</p>
-        </div>
-    </div>
-</body>
-</html>`;
-    res.send(htmlContent);
-  });
-
-  app.get('/sample-receipt-with-logo.pdf', (req: Request, res: Response) => {
-    const filePath = path.join(process.cwd(), 'public', 'sample-receipt-with-logo.pdf');
-    res.sendFile(filePath);
-  });
-
-  app.get('/parques-mexico-logo.jpg', (req: Request, res: Response) => {
-    const filePath = path.join(process.cwd(), 'public', 'parques-mexico-logo.jpg');
-    res.sendFile(filePath);
-  });
-
-  // Endpoint removido - ahora usa la ruta registrada en finance-routes.ts
-
+  // Error handling middleware
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
-
+    console.error("Server error:", err);
     res.status(status).json({ message });
-    throw err;
   });
 
 
@@ -1612,26 +1148,20 @@ async function initializeDatabaseAsync() {
   
   let appServer: any;
 
-  // Registrar rutas HR ANTES de Vite para evitar conflictos
-  try {
-    const { registerHRRoutes } = await import("./hr-routes");
-    const hrRouter = express.Router();
-    
-    // Aplicar middleware JSON específicamente al router HR
-    hrRouter.use(express.json({ limit: '50mb' }));
-    hrRouter.use(express.urlencoded({ extended: true, limit: '50mb' }));
-    
-    registerHRRoutes(app, hrRouter, (req: Request, res: Response, next: NextFunction) => next());
-    
-    // Registrar rutas del módulo de vacaciones
-    const { registerVacationRoutes } = await import("./vacation-routes");
-    registerVacationRoutes(app, hrRouter, (req: Request, res: Response, next: NextFunction) => next());
-    
-    app.use("/api/hr", hrRouter); // Registrar rutas HR ANTES de Vite
-    console.log("✅ Rutas HR y Vacaciones registradas ANTES de Vite");
-  } catch (error) {
-    console.error("Error al registrar rutas HR:", error);
-  }
+  // Register basic HR routes in background
+  setTimeout(async () => {
+    try {
+      const { registerHRRoutes } = await import("./hr-routes");
+      const hrRouter = express.Router();
+      hrRouter.use(express.json({ limit: '50mb' }));
+      hrRouter.use(express.urlencoded({ extended: true, limit: '50mb' }));
+      registerHRRoutes(app, hrRouter, (req: Request, res: Response, next: NextFunction) => next());
+      app.use("/api/hr", hrRouter);
+      console.log("✅ HR routes registered");
+    } catch (error) {
+      console.error("❌ Error registering HR routes:", error);
+    }
+  }, 3000);
 
   // Forzar modo producción para resolver problemas con proxy de Replit
   console.log("🔧 Configurando servidor para resolver problemas de proxy de Replit...");
