@@ -292,7 +292,7 @@ const SponsorsManagement = () => {
       const formattedData = {
         ...data,
         logo: logoUrl,
-        contractValue: data.contractValue // Ya es número por el esquema
+        contractValue: data.contractValue.toString() // Convertir a string para el campo decimal
       };
       
       createSponsorMutation.mutate(formattedData);
