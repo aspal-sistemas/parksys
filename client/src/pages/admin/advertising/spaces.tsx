@@ -13,14 +13,15 @@ import { apiRequest } from '@/lib/queryClient';
 
 interface AdSpace {
   id: number;
-  name: string;
-  description: string;
+  name?: string;
+  description?: string;
   page_type: string;
   position: string;
-  page_identifier: string;
-  width: number;
-  height: number;
-  category: string;
+  page_identifier?: string;
+  dimensions: string;
+  max_file_size: number;
+  allowed_formats: string[];
+  category?: string;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -38,8 +39,9 @@ const AdSpaces = () => {
   // Mutación para toggle del estado de un espacio
   const toggleSpaceMutation = useMutation({
     mutationFn: async ({ spaceId, isActive }: { spaceId: number; isActive: boolean }) => {
-      return apiRequest(`/api/advertising-management/spaces/${spaceId}`, 'PUT', { 
-        is_active: !isActive 
+      return apiRequest(`/api/advertising-management/spaces/${spaceId}`, {
+        method: 'PUT',
+        data: { is_active: !isActive }
       });
     },
     onSuccess: (data) => {
@@ -60,12 +62,12 @@ const AdSpaces = () => {
   });
 
   // Usar el endpoint de spaces que está disponible
-  const { data: spaceMappings, isLoading } = useQuery({
+  const { data: spaceMappings, isLoading, error } = useQuery({
     queryKey: ['/api/advertising-management/spaces'],
     queryFn: async () => {
       const response = await fetch('/api/advertising-management/spaces');
       if (!response.ok) {
-        throw new Error('Error al obtener espacios publicitarios');
+        throw new Error(`Error al obtener espacios publicitarios: ${response.status}`);
       }
       return response.json();
     },
@@ -73,7 +75,9 @@ const AdSpaces = () => {
 
   // Agrupar espacios por página
   const groupedSpaces = useMemo(() => {
-    if (!spaceMappings) return {};
+    if (!spaceMappings || !Array.isArray(spaceMappings)) {
+      return {};
+    }
     
     const filtered = spaceMappings.filter((space: AdSpace) => {
       const matchesSearch = searchTerm === '' || 
@@ -279,7 +283,7 @@ const AdSpaces = () => {
               <CardContent>
                 {viewMode === 'grid' ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {(spaces as any[]).map((space: AdSpace) => (
+                    {spaces && Array.isArray(spaces) ? spaces.map((space: AdSpace) => (
                       <div key={`${space.id}-${space.page_type}-${space.position}`} className="border rounded-lg p-4">
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
@@ -304,14 +308,17 @@ const AdSpaces = () => {
                         <div className="space-y-2 mb-3">
                           <div className="flex items-center gap-2">
                             <span className="text-xs text-gray-500">Dimensiones:</span>
-                            <span className="text-sm">{space.width}x{space.height}px</span>
+                            <span className="text-sm">{space.dimensions}</span>
                           </div>
-                          {space.page_identifier && (
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs text-gray-500">Identificador:</span>
-                              <span className="text-sm">{space.page_identifier}</span>
-                            </div>
-                          )}
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-gray-500">Formatos:</span>
+                            <span className="text-sm">
+                              {space.allowed_formats && Array.isArray(space.allowed_formats) 
+                                ? space.allowed_formats.map(format => format.split('/')[1]).join(', ')
+                                : 'No especificado'
+                              }
+                            </span>
+                          </div>
                         </div>
 
                         <div className="bg-blue-50 border border-blue-200 rounded p-3">
@@ -349,17 +356,21 @@ const AdSpaces = () => {
                           </Button>
                         </div>
                       </div>
-                    ))}
+                    )) : (
+                      <div className="col-span-full text-center py-8 text-gray-500">
+                        No hay espacios disponibles
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {(spaces as any[]).map((space: AdSpace) => (
+                    {spaces && Array.isArray(spaces) ? spaces.map((space: AdSpace) => (
                       <div key={`${space.id}-${space.page_type}-${space.position}-list`} className="flex items-center justify-between p-4 border rounded-lg">
                         <div className="flex items-center gap-4">
                           <div className="flex flex-col">
                             <span className="font-medium">{space.name || `Espacio ${space.id}`}</span>
                             <span className="text-sm text-gray-600">
-                              {getPositionDisplayName(space.position)} - {space.width}x{space.height}px
+                              {getPositionDisplayName(space.position)} - {space.dimensions}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
@@ -392,7 +403,11 @@ const AdSpaces = () => {
                           </Button>
                         </div>
                       </div>
-                    ))}
+                    )) : (
+                      <div className="text-center py-8 text-gray-500">
+                        No hay espacios disponibles
+                      </div>
+                    )}
                   </div>
                 )}
               </CardContent>
