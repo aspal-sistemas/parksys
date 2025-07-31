@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -71,13 +71,14 @@ const sponsorSchema = z.object({
   address: z.string().min(1, "La dirección es requerida"),
   status: z.string().min(1, "El estado es requerido"),
   level: z.string().min(1, "El nivel es requerido"),
-  contractValue: z.number().min(1, "El valor del contrato es requerido"),
   contractStart: z.string().min(1, "La fecha de inicio es requerida"),
-  contractEnd: z.string().min(1, "La fecha de fin es requerida"),
-  eventsSponsored: z.number().min(0, "Los eventos patrocinados no pueden ser negativos"),
   renewalProbability: z.number().min(0).max(100, "La probabilidad debe estar entre 0 y 100"),
   websiteUrl: z.string().url("URL inválida").optional().or(z.literal("")),
-  notes: z.string().optional()
+  notes: z.string().optional(),
+  // Campos calculados automáticamente
+  contractValue: z.number().optional(),
+  contractEnd: z.string().optional(),
+  eventsSponsored: z.number().optional()
 });
 
 type PackageFormData = z.infer<typeof packageSchema>;
@@ -180,15 +181,40 @@ const SponsorsManagement = () => {
       address: '',
       status: '',
       level: '',
-      contractValue: 0,
       contractStart: '',
-      contractEnd: '',
-      eventsSponsored: 0,
       renewalProbability: 0,
       websiteUrl: '',
-      notes: ''
+      notes: '',
+      // Campos calculados automáticamente
+      contractValue: 0,
+      contractEnd: '',
+      eventsSponsored: 0
     }
   });
+
+  // Observar cambios en el nivel para actualizar precio y eventos automáticamente
+  const watchedLevel = sponsorForm.watch("level");
+  const watchedStartDate = sponsorForm.watch("contractStart");
+
+  useEffect(() => {
+    if (watchedLevel && packages.length > 0) {
+      const selectedPackage = packages.find((pkg: SponsorshipPackage) => pkg.level === watchedLevel);
+      if (selectedPackage) {
+        sponsorForm.setValue("contractValue", parseFloat(selectedPackage.price));
+        sponsorForm.setValue("eventsSponsored", selectedPackage.eventsIncluded);
+      }
+    }
+  }, [watchedLevel, packages, sponsorForm]);
+
+  // Observar cambios en la fecha de inicio para calcular fecha de fin automáticamente
+  useEffect(() => {
+    if (watchedStartDate) {
+      const startDate = new Date(watchedStartDate);
+      const endDate = new Date(startDate);
+      endDate.setFullYear(startDate.getFullYear() + 1); // Exactamente un año después
+      sponsorForm.setValue("contractEnd", endDate.toISOString().split('T')[0]);
+    }
+  }, [watchedStartDate, sponsorForm]);
 
   const onSubmitPackage = (data: PackageFormData) => {
     const formattedData = {
@@ -289,10 +315,30 @@ const SponsorsManagement = () => {
         logoUrl = await uploadLogo(logoFile);
       }
 
+      // Validar que se haya seleccionado un nivel y calculado los valores
+      if (!data.level) {
+        toast({
+          title: "Error",
+          description: "Debes seleccionar un nivel de patrocinio",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (!data.contractValue || data.contractValue === 0) {
+        toast({
+          title: "Error",
+          description: "El valor del contrato no se calculó correctamente. Verifica el nivel seleccionado.",
+          variant: "destructive"
+        });
+        return;
+      }
+
       const formattedData = {
         ...data,
         logo: logoUrl,
-        contractValue: data.contractValue.toString() // Convertir a string para el campo decimal
+        contractValue: data.contractValue.toString(), // Convertir a string para el campo decimal
+        eventsSponsored: data.eventsSponsored || 0
       };
       
       createSponsorMutation.mutate(formattedData);
@@ -583,19 +629,33 @@ const SponsorsManagement = () => {
                           )}
                         />
                       </div>
+                      
+                      {/* Información sobre campos automáticos */}
+                      {watchedLevel && (
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                          <div className="flex items-center gap-2 text-blue-700 text-sm">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span className="font-medium">Los siguientes campos se calculan automáticamente según el nivel seleccionado:</span>
+                          </div>
+                        </div>
+                      )}
+                      
                       <div className="grid grid-cols-2 gap-4">
                         <FormField
                           control={sponsorForm.control}
                           name="contractValue"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Valor del Contrato</FormLabel>
+                              <FormLabel>Valor del Contrato (Automático)</FormLabel>
                               <FormControl>
                                 <Input 
-                                  placeholder="100000" 
-                                  type="number" 
-                                  {...field} 
-                                  onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                                  placeholder="Selecciona un nivel" 
+                                  type="text" 
+                                  value={field.value ? `$${field.value.toLocaleString()}` : ''}
+                                  readOnly
+                                  className="bg-gray-50 text-gray-700"
                                 />
                               </FormControl>
                               <FormMessage />
@@ -607,9 +667,15 @@ const SponsorsManagement = () => {
                           name="eventsSponsored"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Eventos Patrocinados</FormLabel>
+                              <FormLabel>Eventos Incluidos (Automático)</FormLabel>
                               <FormControl>
-                                <Input placeholder="5" type="number" {...field} onChange={(e) => field.onChange(parseInt(e.target.value) || 0)} />
+                                <Input 
+                                  placeholder="Selecciona un nivel" 
+                                  type="text" 
+                                  value={field.value ? `${field.value} eventos` : ''}
+                                  readOnly
+                                  className="bg-gray-50 text-gray-700"
+                                />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -635,9 +701,14 @@ const SponsorsManagement = () => {
                           name="contractEnd"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Fecha de Fin</FormLabel>
+                              <FormLabel>Fecha de Fin (Automática - 1 año)</FormLabel>
                               <FormControl>
-                                <Input type="date" {...field} />
+                                <Input 
+                                  type="text" 
+                                  value={field.value ? new Date(field.value).toLocaleDateString() : 'Selecciona fecha de inicio'}
+                                  readOnly
+                                  className="bg-gray-50 text-gray-700"
+                                />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
