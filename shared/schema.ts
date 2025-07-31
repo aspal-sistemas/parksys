@@ -508,7 +508,7 @@ export const activities = pgTable("activities", {
   registrationDeadline: timestamp("registration_deadline"), // fecha limite de registro
   maxRegistrations: integer("max_registrations"), // limite de inscripciones (puede ser diferente a capacity)
   requiresApproval: boolean("requires_approval").default(false), // requiere aprobacion manual
-  ageRestrictions: text("age_restrictions"), // restricciones de edad
+
   healthRequirements: text("health_requirements") // requisitos de salud
 });
 
@@ -544,7 +544,7 @@ export const activityRegistrations = pgTable("activity_registrations", {
   allergies: text("allergies"),
   medicationsCurrently: text("medications_currently"),
   // Estado de la inscripción
-  registrationStatus: varchar("registration_status", { length: 20 }).default("pending"), // pending/approved/rejected/cancelled
+
   approvedById: integer("approved_by_id"), // admin que aprobó
   approvedAt: timestamp("approved_at"),
   rejectionReason: text("rejection_reason"),
