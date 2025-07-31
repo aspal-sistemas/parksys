@@ -2705,12 +2705,10 @@ export type InsertContractMonthlyPayment = z.infer<typeof insertContractMonthlyP
 export const sponsorshipPackages = pgTable("sponsorship_packages", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
-  level: varchar("level", { length: 50 }).notNull(), // bronce, plata, oro, platino
+  category: varchar("category", { length: 50 }).notNull(), // bronce, plata, oro, platino
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
   duration: integer("duration").notNull(), // meses
   benefits: json("benefits").$type<string[]>().default([]),
-  eventsIncluded: integer("events_included").default(0),
-  exposureLevel: varchar("exposure_level", { length: 50 }).notNull(), // bajo, medio, alto, premium
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow()
@@ -2732,7 +2730,7 @@ export const sponsors = pgTable("sponsors", {
   
   // Estado del patrocinador
   status: varchar("status", { length: 50 }).default("potencial"), // activo, potencial, inactivo, renovacion
-  level: varchar("level", { length: 50 }).notNull(), // bronce, plata, oro, platino
+  packageCategory: varchar("package_category", { length: 50 }).notNull(), // bronce, plata, oro, platino
   
   // Información del contrato
   contractValue: decimal("contract_value", { precision: 10, scale: 2 }).default("0.00"),
