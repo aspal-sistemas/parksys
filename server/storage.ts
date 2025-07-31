@@ -1640,7 +1640,7 @@ DatabaseStorage.prototype.updateActivity = async function(id: number, activityDa
     if (activityData.targetMarket !== undefined) updateData.target_market = Array.isArray(activityData.targetMarket) ? JSON.stringify(activityData.targetMarket) : activityData.targetMarket;
     if (activityData.specialNeeds !== undefined) updateData.special_needs = Array.isArray(activityData.specialNeeds) ? JSON.stringify(activityData.specialNeeds) : activityData.specialNeeds;
     
-    // Campos de inscripciones
+    // Campos de inscripciones - usando nombres correctos del esquema
     if (activityData.registrationEnabled !== undefined) updateData.public_registration_enabled = Boolean(activityData.registrationEnabled);
     if (activityData.maxRegistrations !== undefined) updateData.max_registrations = activityData.maxRegistrations ? Number(activityData.maxRegistrations) : null;
     if (activityData.registrationDeadline !== undefined) updateData.registration_deadline = activityData.registrationDeadline;

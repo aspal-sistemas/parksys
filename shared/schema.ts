@@ -503,14 +503,14 @@ export const activities = pgTable("activities", {
   price: decimal("price", { precision: 10, scale: 2 }), // precio
   requirements: text("requirements"), // requisitos
   recurringDays: text("recurring_days").array(), // diasRecurrentes
-  // Nuevos campos para registro ciudadano
-  allowsPublicRegistration: boolean("allows_public_registration").default(false), // permitir registro publico
+  // Nuevos campos para registro ciudadano - Corregidos para coincidir con la base de datos
+  publicRegistrationEnabled: boolean("public_registration_enabled").default(false), // permitir registro publico
   registrationDeadline: timestamp("registration_deadline"), // fecha limite de registro
   registrationInstructions: text("registration_instructions"), // instrucciones especiales
   registrationStatus: varchar("registration_status", { length: 20 }).default("closed"), // abierto/cerrado/lleno
   currentRegistrations: integer("current_registrations").default(0), // inscripciones actuales
   maxRegistrations: integer("max_registrations"), // limite de inscripciones (puede ser diferente a capacity)
-  requiresApproval: boolean("requires_approval").default(false), // requiere aprobacion manual
+  requiresAdminApproval: boolean("requires_admin_approval").default(false), // requiere aprobacion manual
   ageRestrictions: text("age_restrictions"), // restricciones de edad
   healthRequirements: text("health_requirements") // requisitos de salud
 });
