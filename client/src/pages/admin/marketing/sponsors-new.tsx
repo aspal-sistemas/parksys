@@ -350,15 +350,16 @@ const SponsorsManagement = () => {
                     Nuevo Patrocinador
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-2xl">
+                <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
                   <DialogHeader>
                     <DialogTitle>Crear Nuevo Patrocinador</DialogTitle>
                     <DialogDescription>
                       Registra un nuevo patrocinador en el sistema
                     </DialogDescription>
                   </DialogHeader>
-                  <Form {...sponsorForm}>
-                    <form onSubmit={sponsorForm.handleSubmit(onSubmitSponsor)} className="space-y-4">
+                  <div className="flex-1 overflow-y-auto pr-2">
+                    <Form {...sponsorForm}>
+                      <form onSubmit={sponsorForm.handleSubmit(onSubmitSponsor)} className="space-y-4">
                       <div className="grid grid-cols-2 gap-4">
                         <FormField
                           control={sponsorForm.control}
@@ -663,8 +664,9 @@ const SponsorsManagement = () => {
                           )}
                         </Button>
                       </div>
-                    </form>
-                  </Form>
+                      </form>
+                    </Form>
+                  </div>
                 </DialogContent>
               </Dialog>
               <Dialog open={isNewPackageOpen} onOpenChange={setIsNewPackageOpen}>
