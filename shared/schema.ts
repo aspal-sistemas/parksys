@@ -509,7 +509,7 @@ export const activities = pgTable("activities", {
   maxRegistrations: integer("max_registrations"), // limite de inscripciones (puede ser diferente a capacity)
   requiresApproval: boolean("requires_approval").default(false), // requiere aprobacion manual
 
-  healthRequirements: text("health_requirements") // requisitos de salud
+
 });
 
 // Tabla de imágenes de actividades
