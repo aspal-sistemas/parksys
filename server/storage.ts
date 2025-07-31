@@ -1554,10 +1554,10 @@ DatabaseStorage.prototype.getActivity = async function(id: number): Promise<any>
         a.target_market as "targetMarket",
         a.special_needs as "specialNeeds",
         a.instructor_id as "instructorId",
-        a.public_registration_enabled as "registrationEnabled",
+        a.registration_enabled as "registrationEnabled",
         a.max_registrations as "maxRegistrations",
         a.registration_deadline as "registrationDeadline",
-        a.requires_admin_approval as "requiresApproval",
+        a.requires_approval as "requiresApproval",
         a.created_at as "createdAt",
         p.name as "parkName",
         ac.name as "category",
@@ -1640,11 +1640,11 @@ DatabaseStorage.prototype.updateActivity = async function(id: number, activityDa
     if (activityData.targetMarket !== undefined) updateData.target_market = Array.isArray(activityData.targetMarket) ? JSON.stringify(activityData.targetMarket) : activityData.targetMarket;
     if (activityData.specialNeeds !== undefined) updateData.special_needs = Array.isArray(activityData.specialNeeds) ? JSON.stringify(activityData.specialNeeds) : activityData.specialNeeds;
     
-    // Campos de inscripciones - usando nombres correctos del esquema
-    if (activityData.registrationEnabled !== undefined) updateData.public_registration_enabled = Boolean(activityData.registrationEnabled);
+    // Campos de inscripciones - usando nombres correctos de la base de datos
+    if (activityData.registrationEnabled !== undefined) updateData.registration_enabled = Boolean(activityData.registrationEnabled);
     if (activityData.maxRegistrations !== undefined) updateData.max_registrations = activityData.maxRegistrations ? Number(activityData.maxRegistrations) : null;
     if (activityData.registrationDeadline !== undefined) updateData.registration_deadline = activityData.registrationDeadline;
-    if (activityData.requiresApproval !== undefined) updateData.requires_admin_approval = Boolean(activityData.requiresApproval);
+    if (activityData.requiresApproval !== undefined) updateData.requires_approval = Boolean(activityData.requiresApproval);
     
     // Campos específicos que necesitan mapeo especial
     if (activityData.category_id) {
