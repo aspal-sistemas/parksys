@@ -165,9 +165,9 @@ router.post('/', async (req, res) => {
 
     // Verificar si la actividad existe y permite inscripciones
     const activityCheck = await sql(`
-      SELECT id, allows_public_registration, max_registrations, registration_deadline
+      SELECT id, registration_enabled, max_registrations, registration_deadline
       FROM activities 
-      WHERE id = $1 AND allows_public_registration = true
+      WHERE id = $1 AND registration_enabled = true
     `, [activityId]);
 
     if (activityCheck.length === 0) {

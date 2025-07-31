@@ -518,7 +518,11 @@ const EditarActividadPage = () => {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {parques?.map((parque: any) => (
+                          {Array.isArray(parques) ? parques.map((parque: any) => (
+                            <SelectItem key={parque.id} value={parque.id.toString() || "0"}>
+                              {parque.name || "Parque sin nombre"}
+                            </SelectItem>
+                          )) : parques?.data?.map((parque: any) => (
                             <SelectItem key={parque.id} value={parque.id.toString() || "0"}>
                               {parque.name || "Parque sin nombre"}
                             </SelectItem>
