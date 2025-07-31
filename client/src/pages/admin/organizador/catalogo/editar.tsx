@@ -29,6 +29,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
 import { Calendar } from '@/components/ui/calendar';
 import {
   Popover,
@@ -86,6 +87,12 @@ const activitySchema = z.object({
   instructorId: z.any().optional(),
   instructorName: z.string().optional(),
   instructorContact: z.string().optional(),
+  
+  // Campos para inscripciones de participantes
+  registrationEnabled: z.boolean().default(false),
+  maxRegistrations: z.coerce.number().int().positive().optional(),
+  registrationDeadline: z.string().optional(),
+  requiresApproval: z.boolean().default(true),
 });
 
 // Función para formatear la fecha correctamente para la API
@@ -197,6 +204,10 @@ const EditarActividadPage = () => {
       instructorName: "",
       instructorContact: "",
       duration: 60,
+      registrationEnabled: false,
+      maxRegistrations: 20,
+      registrationDeadline: "",
+      requiresApproval: true,
     },
     mode: "onChange"
   });
@@ -265,6 +276,10 @@ const EditarActividadPage = () => {
         instructorName: data.instructorName || "",
         instructorContact: data.instructorContact || "",
         duration: Number(data.duration) || calcularDuracionEnMinutos(startTime, endTime),
+        registrationEnabled: Boolean(data.registrationEnabled),
+        maxRegistrations: Number(data.maxRegistrations) || 20,
+        registrationDeadline: data.registrationDeadline ? format(new Date(data.registrationDeadline), 'yyyy-MM-dd') : "",
+        requiresApproval: Boolean(data.requiresApproval),
       });
     }
   }, [actividad, form]);
@@ -300,6 +315,10 @@ const EditarActividadPage = () => {
         recurringDays: values.isRecurring ? values.recurringDays : [],
         targetMarket: values.targetMarket || [],
         specialNeeds: values.specialNeeds || [],
+        registrationEnabled: values.registrationEnabled || false,
+        maxRegistrations: values.maxRegistrations || null,
+        registrationDeadline: values.registrationDeadline ? formatearFechaParaAPI(values.registrationDeadline) : null,
+        requiresApproval: values.requiresApproval || true,
       };
       
       // Agregar datos del instructor si se seleccionó uno
@@ -1183,6 +1202,143 @@ const EditarActividadPage = () => {
                             />
                           </FormControl>
                           <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Configuración de Inscripciones */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Configuración de Inscripciones</CardTitle>
+                <CardDescription>
+                  Configuración para permitir inscripciones ciudadanas a esta actividad
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Habilitar inscripciones */}
+                <FormField
+                  control={form.control}
+                  name="registrationEnabled"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-base">
+                          Permitir inscripciones públicas
+                        </FormLabel>
+                        <FormDescription>
+                          Los ciudadanos podrán inscribirse a esta actividad desde las páginas públicas
+                        </FormDescription>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                {/* Mostrar campos adicionales solo si las inscripciones están habilitadas */}
+                {form.watch("registrationEnabled") && (
+                  <>
+                    {/* Capacidad máxima de inscripciones */}
+                    <FormField
+                      control={form.control}
+                      name="maxRegistrations"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Capacidad máxima de inscripciones</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              {...field}
+                              min={1}
+                              max={1000}
+                              value={field.value || ''}
+                              onChange={(e) => field.onChange(e.target.value === '' ? undefined : parseInt(e.target.value))}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Número máximo de personas que pueden inscribirse
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Fecha límite de inscripción */}
+                    <FormField
+                      control={form.control}
+                      name="registrationDeadline"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                          <FormLabel>Fecha límite de inscripción</FormLabel>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant={"outline"}
+                                  className={cn(
+                                    "w-full pl-3 text-left font-normal",
+                                    !field.value && "text-muted-foreground"
+                                  )}
+                                >
+                                  {field.value ? (
+                                    format(new Date(field.value), "PPP", { locale: es })
+                                  ) : (
+                                    <span>Selecciona una fecha</span>
+                                  )}
+                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={field.value ? new Date(field.value) : undefined}
+                                onSelect={(date) => {
+                                  field.onChange(date ? format(date, 'yyyy-MM-dd') : '');
+                                }}
+                                disabled={(date) =>
+                                  date < new Date()
+                                }
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          <FormDescription>
+                            Fecha límite para que los ciudadanos se inscriban
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Requiere aprobación */}
+                    <FormField
+                      control={form.control}
+                      name="requiresApproval"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                          <div className="space-y-0.5">
+                            <FormLabel className="text-base">
+                              Requiere aprobación administrativa
+                            </FormLabel>
+                            <FormDescription>
+                              Las inscripciones quedarán pendientes hasta ser aprobadas por un administrador
+                            </FormDescription>
+                          </div>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
                         </FormItem>
                       )}
                     />
