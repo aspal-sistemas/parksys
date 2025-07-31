@@ -3,6 +3,7 @@ import { Link, useLocation } from 'wouter';
 import { Menu, X, ChevronDown, LogIn, Home, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import GlobalSearch from '@/components/GlobalSearch';
+import { HelpCenter } from '@/components/HelpCenter';
 import logoImage from '@assets/logo_1751306368691.png';
 
 const Header: React.FC = () => {
@@ -341,9 +342,11 @@ const Header: React.FC = () => {
                       Sitio
                     </Button>
                   </Link>
-                  <Button variant="outline" size="sm" className="w-9 h-9 p-0" disabled>
-                    <HelpCircle className="h-4 w-4" />
-                  </Button>
+                  <HelpCenter>
+                    <Button variant="outline" size="sm" className="w-9 h-9 p-0">
+                      <HelpCircle className="h-4 w-4" />
+                    </Button>
+                  </HelpCenter>
                 </div>
               )
             ) : (

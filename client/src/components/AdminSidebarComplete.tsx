@@ -5,7 +5,6 @@ import UserProfileImage from '@/components/UserProfileImage';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { useTranslation } from 'react-i18next';
 import { SidebarSearch } from './SidebarSearch';
-import { HelpCenter } from './HelpCenter';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -95,8 +94,7 @@ import {
   Image,
   Scale,
   Monitor,
-  Grid,
-  HelpCircle
+  Grid
 } from 'lucide-react';
 
 interface NavItemProps {
@@ -1259,27 +1257,15 @@ const AdminSidebarComplete: React.FC = () => {
         
         <div className="flex items-center justify-between">
           <LanguageSelector />
-          <div className="flex items-center gap-1">
-            <HelpCenter>
-              <Button 
-                variant="ghost" 
-                size="sm"
-                className="text-gray-600 hover:text-gray-900"
-                title="Centro de Ayuda"
-              >
-                <HelpCircle className="h-4 w-4" />
-              </Button>
-            </HelpCenter>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={handleLogout}
-              className="text-gray-600 hover:text-gray-900"
-              title="Cerrar Sesión"
-            >
-              <LogOut className="h-4 w-4" />
-            </Button>
-          </div>
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={handleLogout}
+            className="text-gray-600 hover:text-gray-900"
+            title="Cerrar Sesión"
+          >
+            <LogOut className="h-4 w-4" />
+          </Button>
         </div>
       </div>
     </div>
