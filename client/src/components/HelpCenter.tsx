@@ -45,12 +45,12 @@ const helpItems: HelpItem[] = [
     icon: <Users className="h-4 w-4" />
   },
   {
-    id: 'parques-guide',
-    title: 'Guía Rápida - Gestión de Parques',
-    description: 'Gestión básica de parques, amenidades y multimedia',
+    id: 'parques-manual',
+    title: 'Manual Completo - Gestión de Parques',
+    description: 'Guía completa para Dashboard, Gestión, Evaluaciones y Amenidades de Parques',
     module: 'Parques',
-    type: 'guide',
-    url: '/help/parques-guide',
+    type: 'manual',
+    url: '/help/parques-manual',
     icon: <MapPin className="h-4 w-4" />
   },
   {
