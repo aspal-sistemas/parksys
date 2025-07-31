@@ -230,7 +230,13 @@ activityRouter.put("/activities/:id", isAuthenticated, async (req: Request, res:
     }
     
     // Extraer los datos
-    const { startDate, endDate, title, description, category, location } = req.body;
+    const { 
+      startDate, endDate, title, description, category, location, parkId,
+      startTime, endTime, capacity, duration, price, isPriceRandom, isFree,
+      materials, requirements, isRecurring, recurringDays, targetMarket, specialNeeds,
+      instructorId, instructorName, instructorContact,
+      registrationEnabled, maxRegistrations, registrationDeadline, requiresApproval
+    } = req.body;
     
     // Convertir las fechas explícitamente a objetos Date
     let parsedStartDate: Date;
@@ -261,7 +267,7 @@ activityRouter.put("/activities/:id", isAuthenticated, async (req: Request, res:
       return res.status(400).json({ message: "El título es obligatorio" });
     }
     
-    // Actualizar usando SQL directo
+    // Actualizar usando SQL directo con todos los campos
     try {
       const updateResult = await db.execute(
         sql`UPDATE activities
@@ -270,7 +276,22 @@ activityRouter.put("/activities/:id", isAuthenticated, async (req: Request, res:
                 start_date = ${parsedStartDate},
                 end_date = ${parsedEndDate || null},
                 category = ${category || null},
-                location = ${location || null}
+                location = ${location || null},
+                park_id = ${parkId ? Number(parkId) : null},
+                start_time = ${startTime || null},
+                capacity = ${capacity ? Number(capacity) : null},
+                duration = ${duration ? Number(duration) : null},
+                price = ${price ? Number(price) : null},
+                is_free = ${Boolean(isFree)},
+                materials = ${materials || null},
+                requirements = ${requirements || null},
+                is_recurring = ${Boolean(isRecurring)},
+                recurring_days = ${recurringDays ? JSON.stringify(recurringDays) : null},
+                instructor_id = ${instructorId ? Number(instructorId) : null},
+                registration_enabled = ${Boolean(registrationEnabled)},
+                max_registrations = ${maxRegistrations ? Number(maxRegistrations) : null},
+                registration_deadline = ${registrationDeadline ? new Date(registrationDeadline) : null},
+                requires_approval = ${Boolean(requiresApproval)}
             WHERE id = ${activityId}
             RETURNING id, title, description, park_id as "parkId", start_date as "startDate", 
                      end_date as "endDate", category, location, created_at as "createdAt"`
