@@ -226,7 +226,7 @@ const SponsorsManagement = () => {
   
   useEffect(() => {
     if (watchedPackageCategory && packages.length > 0) {
-      const selectedPackage = packages.find((pkg: any) => pkg.category === watchedPackageCategory);
+      const selectedPackage = packages.find(pkg => pkg.category === watchedPackageCategory);
       
       if (selectedPackage) {
         sponsorForm.setValue('contractValue', parseFloat(selectedPackage.price));
@@ -250,7 +250,7 @@ const SponsorsManagement = () => {
   
   useEffect(() => {
     if (watchedEditPackageCategory && packages.length > 0) {
-      const selectedPackage = packages.find((pkg: any) => pkg.category === watchedEditPackageCategory);
+      const selectedPackage = packages.find(pkg => pkg.category === watchedEditPackageCategory);
       
       if (selectedPackage) {
         editSponsorForm.setValue('contractValue', parseFloat(selectedPackage.price));
@@ -375,7 +375,7 @@ const SponsorsManagement = () => {
       const formattedData = {
         ...data,
         logo: logoUrl,
-        contractValue: data.contractValue || 0,
+        contractValue: data.contractValue.toString(),
         eventsSponsored: data.eventsSponsored || 0
       };
       
@@ -408,9 +408,9 @@ const SponsorsManagement = () => {
       renewalProbability: sponsor.renewalProbability,
       websiteUrl: sponsor.websiteUrl || '',
       notes: sponsor.notes || '',
-      contractValue: parseFloat(sponsor.contractValue as string),
-      contractEnd: sponsor.contractEnd || '',
-      eventsSponsored: sponsor.eventsSponsored || 0
+      contractValue: parseFloat(sponsor.contractValue),
+      contractEnd: sponsor.contractEnd,
+      eventsSponsored: sponsor.eventsSponsored
     });
     
     if (sponsor.logo) {
@@ -455,7 +455,7 @@ const SponsorsManagement = () => {
       const formattedData = {
         ...data,
         logo: logoUrl,
-        contractValue: data.contractValue || 0,
+        contractValue: data.contractValue.toString(),
         eventsSponsored: data.eventsSponsored || 0
       };
       
@@ -472,7 +472,7 @@ const SponsorsManagement = () => {
   };
 
   // Funciones de filtrado
-  const filteredSponsors = sponsors.filter((sponsor: any) => {
+  const filteredSponsors = sponsors.filter(sponsor => {
     const matchesSearch = sponsor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          sponsor.representative.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = categoryFilter === "all" || sponsor.category === categoryFilter;
@@ -776,16 +776,10 @@ const SponsorsManagement = () => {
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  <SelectItem value="colomo">Colomo</SelectItem>
-                                  <SelectItem value="sauce">Sauce</SelectItem>
-                                  <SelectItem value="encino">Encino</SelectItem>
-                                  <SelectItem value="pino">Pino</SelectItem>
-                                  <SelectItem value="ahuehuete">Ahuehuete</SelectItem>
-                                  <SelectItem value="ceiba">Ceiba</SelectItem>
-                                  <SelectItem value="ardilla">Ardilla</SelectItem>
-                                  <SelectItem value="guacmaya">Guacmaya</SelectItem>
-                                  <SelectItem value="pato-real-mexicano">Pato Real Mexicano</SelectItem>
-                                  <SelectItem value="halcon">Halcón</SelectItem>
+                                  <SelectItem value="bronce">Bronce</SelectItem>
+                                  <SelectItem value="plata">Plata</SelectItem>
+                                  <SelectItem value="oro">Oro</SelectItem>
+                                  <SelectItem value="platino">Platino</SelectItem>
                                 </SelectContent>
                               </Select>
                               <FormMessage />
@@ -1018,16 +1012,10 @@ const SponsorsManagement = () => {
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  <SelectItem value="colomo">Colomo</SelectItem>
-                                  <SelectItem value="sauce">Sauce</SelectItem>
-                                  <SelectItem value="encino">Encino</SelectItem>
-                                  <SelectItem value="pino">Pino</SelectItem>
-                                  <SelectItem value="ahuehuete">Ahuehuete</SelectItem>
-                                  <SelectItem value="ceiba">Ceiba</SelectItem>
-                                  <SelectItem value="ardilla">Ardilla</SelectItem>
-                                  <SelectItem value="guacmaya">Guacmaya</SelectItem>
-                                  <SelectItem value="pato-real-mexicano">Pato Real Mexicano</SelectItem>
-                                  <SelectItem value="halcon">Halcón</SelectItem>
+                                  <SelectItem value="bronce">Bronce</SelectItem>
+                                  <SelectItem value="plata">Plata</SelectItem>
+                                  <SelectItem value="oro">Oro</SelectItem>
+                                  <SelectItem value="platino">Platino</SelectItem>
                                 </SelectContent>
                               </Select>
                               <FormMessage />
@@ -1588,16 +1576,10 @@ const SponsorsManagement = () => {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="colomo">Colomo</SelectItem>
-                            <SelectItem value="sauce">Sauce</SelectItem>
-                            <SelectItem value="encino">Encino</SelectItem>
-                            <SelectItem value="pino">Pino</SelectItem>
-                            <SelectItem value="ahuehuete">Ahuehuete</SelectItem>
-                            <SelectItem value="ceiba">Ceiba</SelectItem>
-                            <SelectItem value="ardilla">Ardilla</SelectItem>
-                            <SelectItem value="guacmaya">Guacmaya</SelectItem>
-                            <SelectItem value="pato-real-mexicano">Pato Real Mexicano</SelectItem>
-                            <SelectItem value="halcon">Halcón</SelectItem>
+                            <SelectItem value="bronce">Bronce</SelectItem>
+                            <SelectItem value="plata">Plata</SelectItem>
+                            <SelectItem value="oro">Oro</SelectItem>
+                            <SelectItem value="platino">Platino</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />

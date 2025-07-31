@@ -713,7 +713,8 @@ export type InsertParkImage = typeof parkImages.$inferInsert;
 
 export const insertParkImageSchema = createInsertSchema(parkImages).omit({ 
   id: true,
-  createdAt: true
+  createdAt: true,
+  updatedAt: true
 });
 
 export type Amenity = typeof amenities.$inferSelect;
@@ -752,7 +753,8 @@ export type InsertActivity = typeof activities.$inferInsert;
 
 export const insertActivitySchema = createInsertSchema(activities).omit({ 
   id: true,
-  createdAt: true
+  createdAt: true,
+  updatedAt: true
 });
 
 export type ActivityImage = typeof activityImages.$inferSelect;
@@ -839,14 +841,17 @@ export type InsertVolunteerEvaluation = typeof volunteerEvaluations.$inferInsert
 
 export const insertVolunteerEvaluationSchema = createInsertSchema(volunteerEvaluations).omit({ 
   id: true,
-  createdAt: true
+  createdAt: true,
+  updatedAt: true
 });
 
 export type VolunteerRecognition = typeof volunteerRecognitions.$inferSelect;
 export type InsertVolunteerRecognition = typeof volunteerRecognitions.$inferInsert;
 
 export const insertVolunteerRecognitionSchema = createInsertSchema(volunteerRecognitions).omit({ 
-  id: true
+  id: true,
+  createdAt: true,
+  updatedAt: true
 });
 
 // Perfiles de concesionarios
@@ -2700,7 +2705,7 @@ export type InsertContractMonthlyPayment = z.infer<typeof insertContractMonthlyP
 export const sponsorshipPackages = pgTable("sponsorship_packages", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
-  category: varchar("category", { length: 50 }).notNull(), // colomo, sauce, encino, pino, ahuehuete, ceiba, ardilla, guacmaya, pato-real-mexicano, halcon
+  category: varchar("category", { length: 50 }).notNull(), // bronce, plata, oro, platino
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
   duration: integer("duration").notNull(), // meses
   benefits: json("benefits").$type<string[]>().default([]),
@@ -2725,7 +2730,7 @@ export const sponsors = pgTable("sponsors", {
   
   // Estado del patrocinador
   status: varchar("status", { length: 50 }).default("potencial"), // activo, potencial, inactivo, renovacion
-  packageCategory: varchar("package_category", { length: 50 }).notNull(), // colomo, sauce, encino, pino, ahuehuete, ceiba, ardilla, guacmaya, pato-real-mexicano, halcon
+  packageCategory: varchar("package_category", { length: 50 }).notNull(), // bronce, plata, oro, platino
   
   // Información del contrato
   contractValue: decimal("contract_value", { precision: 10, scale: 2 }).default("0.00"),
