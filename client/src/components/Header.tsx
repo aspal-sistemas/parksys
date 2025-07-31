@@ -181,7 +181,7 @@ const Header: React.FC = () => {
           {/* Navegación izquierda para administradores */}
           {isAdmin && location !== '/admin/login' && (
             <div className="flex items-center gap-3">
-              {/* Panel de Control */}
+              {/* Paneles de Control */}
               <Link href="/admin">
                 <button
                   className={`border-b-2 py-2 px-3 text-sm font-medium flex items-center ${
@@ -190,7 +190,7 @@ const Header: React.FC = () => {
                       : 'border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300'
                   }`}>
                   <Home className="mr-2 h-4 w-4" />
-                  Panel de Control
+                  Paneles de Control
                 </button>
               </Link>
 
