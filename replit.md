@@ -18,13 +18,8 @@ The application uses a client-server architecture with a modern full-stack:
   - Renamed `level` field to `category` in `sponsorship_packages` table
   - Renamed `level` field to `package_category` in `sponsors` table  
   - Removed `events_included` and `exposure_level` fields from `sponsorship_packages`
-  - Added `benefits` field (JSON array) and `isActive` field (boolean) to sponsorship packages
-- **Nature-Themed Category System**: Implemented new sponsorship hierarchy using Mexican native species (lowest to highest):
-  - Trees: Colomo → Sauce → Encino → Pino → Ahuehuete → Ceiba
-  - Wildlife: Ardilla → Guacmaya → Pato Real Mexicano → Halcón
-  - Updated all existing database records and UI forms to use new categorization
 - **UI Consistency**: Standardized sponsor management modal interactions and button text to "Guardar cambios"
-- **Form Validation**: Updated Zod schemas to match new database structure with nature-themed categories
+- **Form Validation**: Updated Zod schemas to match new database structure
 - **Component Architecture**: Separated logo upload states between create/edit modals to prevent interference
 - **UI/UX Decisions**: Emphasizes a consistent design language with `Card` patterns, standardized iconography (e.g., `bg-gray-50`, `w-8 h-8 text-gray-900`, `text-3xl font-bold`), corporate color palettes (e.g., green, blue, orange, purple, teal), and responsive layouts. Design principles include visual-first approaches (e.g., photo-prominent cards), intuitive navigation (e.g., left-aligned admin navigation, simplified sidebars), and clear separation of content.
 - **Technical Implementations**: Features include dynamic form handling, robust data validation, lazy loading for routes, centralized state management, and optimized image loading.
