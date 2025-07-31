@@ -86,28 +86,40 @@ export function SidebarSearch() {
     { id: 'concessions-reports', title: 'Reportes de Concesiones', description: 'Informes de concesiones', href: '/admin/concessions/reports', module: 'Concesiones', icon: <FileText className="h-4 w-4" /> },
 
     // Marketing y Comunicación - Marketing
+    { id: 'marketing-dashboard', title: 'Dashboard Marketing', description: 'Panel de control de marketing', href: '/admin/marketing', module: 'Marketing', icon: <BarChart3 className="h-4 w-4" /> },
     { id: 'marketing-sponsors', title: 'Patrocinadores', description: 'Gestión de patrocinadores', href: '/admin/marketing/sponsors', module: 'Marketing', icon: <Users className="h-4 w-4" /> },
-    { id: 'marketing-contracts', title: 'Contratos de Marketing', description: 'Gestión de contratos', href: '/admin/marketing/contracts', module: 'Marketing', icon: <FileText className="h-4 w-4" /> },
+    { id: 'marketing-contracts', title: 'Contratos de Marketing', description: 'Gestión de contratos de marketing', href: '/admin/marketing/contracts', module: 'Marketing', icon: <FileText className="h-4 w-4" /> },
     { id: 'marketing-events', title: 'Eventos de Marketing', description: 'Eventos promocionales', href: '/admin/marketing/events', module: 'Marketing', icon: <Calendar className="h-4 w-4" /> },
     { id: 'marketing-assets', title: 'Activos Promocionales', description: 'Material promocional', href: '/admin/marketing/assets', module: 'Marketing', icon: <Package className="h-4 w-4" /> },
-    { id: 'marketing-evaluations', title: 'Evaluaciones de Marketing', description: 'Evaluaciones de campañas', href: '/admin/marketing/evaluations', module: 'Marketing', icon: <FileText className="h-4 w-4" /> },
+    { id: 'marketing-evaluations', title: 'Evaluaciones de Marketing', description: 'Evaluaciones de campañas de marketing', href: '/admin/marketing/evaluations', module: 'Marketing', icon: <FileText className="h-4 w-4" /> },
 
     // Marketing y Comunicación - Publicidad
-    { id: 'advertising-advertisements', title: 'Anuncios', description: 'Gestión de anuncios', href: '/admin/advertising/advertisements', module: 'Publicidad', icon: <FileText className="h-4 w-4" /> },
-    { id: 'advertising-spaces', title: 'Espacios Publicitarios', description: 'Gestión de espacios', href: '/admin/advertising/spaces', module: 'Publicidad', icon: <MapPin className="h-4 w-4" /> },
-    { id: 'advertising-campaigns', title: 'Campañas Publicitarias', description: 'Gestión de campañas', href: '/admin/advertising/campaigns', module: 'Publicidad', icon: <Calendar className="h-4 w-4" /> },
-    { id: 'advertising-assignments', title: 'Asignaciones', description: 'Asignaciones publicitarias', href: '/admin/advertising/assignments', module: 'Publicidad', icon: <Settings className="h-4 w-4" /> },
+    { id: 'advertising-dashboard', title: 'Dashboard Publicidad', description: 'Panel de control publicitario', href: '/admin/advertising', module: 'Publicidad', icon: <BarChart3 className="h-4 w-4" /> },
+    { id: 'advertising-spaces', title: 'Espacios Publicitarios', description: 'Gestión de espacios publicitarios', href: '/admin/advertising/spaces', module: 'Publicidad', icon: <MapPin className="h-4 w-4" /> },
+    { id: 'advertising-advertisements', title: 'Anuncios', description: 'Gestión de anuncios publicitarios', href: '/admin/advertising/advertisements', module: 'Publicidad', icon: <FileText className="h-4 w-4" /> },
+    { id: 'advertising-campaigns', title: 'Campañas Publicitarias', description: 'Gestión de campañas publicitarias', href: '/admin/advertising/campaigns', module: 'Publicidad', icon: <Calendar className="h-4 w-4" /> },
+    { id: 'advertising-assignments', title: 'Asignaciones Publicitarias', description: 'Asignaciones de espacios publicitarios', href: '/admin/advertising/assignments', module: 'Publicidad', icon: <Settings className="h-4 w-4" /> },
     { id: 'advertising-space-mappings', title: 'Mapeo de Espacios', description: 'Mapeo de espacios publicitarios', href: '/admin/advertising/space-mappings', module: 'Publicidad', icon: <MapPin className="h-4 w-4" /> },
 
     // Marketing y Comunicación - Comunicaciones
+    { id: 'communications-dashboard', title: 'Dashboard Comunicaciones', description: 'Panel de control de comunicaciones', href: '/admin/communications', module: 'Comunicaciones', icon: <BarChart3 className="h-4 w-4" /> },
     { id: 'communications-templates', title: 'Plantillas de Email', description: 'Plantillas de comunicación', href: '/admin/communications/templates', module: 'Comunicaciones', icon: <FileText className="h-4 w-4" /> },
     { id: 'communications-queue', title: 'Cola de Emails', description: 'Cola de envío de emails', href: '/admin/communications/queue', module: 'Comunicaciones', icon: <Calendar className="h-4 w-4" /> },
     { id: 'communications-campaigns', title: 'Campañas de Email', description: 'Campañas de comunicación', href: '/admin/communications/campaigns', module: 'Comunicaciones', icon: <Calendar className="h-4 w-4" /> },
     { id: 'communications-bulk', title: 'Envío Masivo', description: 'Envío masivo de emails', href: '/admin/communications/bulk', module: 'Comunicaciones', icon: <Users className="h-4 w-4" /> },
-    { id: 'communications-analytics', title: 'Análisis de Comunicaciones', description: 'Análisis de rendimiento', href: '/admin/communications/analytics', module: 'Comunicaciones', icon: <BarChart3 className="h-4 w-4" /> },
+    { id: 'communications-analytics', title: 'Análisis de Comunicaciones', description: 'Análisis de rendimiento de comunicaciones', href: '/admin/communications/analytics', module: 'Comunicaciones', icon: <BarChart3 className="h-4 w-4" /> },
 
     // Recursos Humanos
-    { id: 'hr-employees', title: 'Gestión de Personal', description: 'Administración de empleados', href: '/admin/hr/employees', module: 'RH', icon: <Users className="h-4 w-4" /> },
+    { id: 'hr-dashboard', title: 'Dashboard RH', description: 'Panel de control de recursos humanos', href: '/admin/hr/dashboard', module: 'RH', icon: <BarChart3 className="h-4 w-4" /> },
+    { id: 'hr-employees', title: 'Empleados', description: 'Gestión de personal y empleados', href: '/admin/hr/employees', module: 'RH', icon: <Users className="h-4 w-4" /> },
+    { id: 'hr-payroll', title: 'Nómina', description: 'Gestión de nóminas y pagos', href: '/admin/hr/payroll', module: 'RH', icon: <Users className="h-4 w-4" /> },
+    { id: 'hr-vacations', title: 'Vacaciones', description: 'Gestión de vacaciones y permisos', href: '/admin/hr/vacations', module: 'RH', icon: <Calendar className="h-4 w-4" /> },
+
+    // Seguridad
+    { id: 'security-dashboard', title: 'Dashboard Seguridad', description: 'Panel de control de seguridad', href: '/admin/security', module: 'Seguridad', icon: <Shield className="h-4 w-4" /> },
+    { id: 'security-password', title: 'Cambiar Contraseña', description: 'Gestión de contraseñas', href: '/admin/security/password', module: 'Seguridad', icon: <Shield className="h-4 w-4" /> },
+    { id: 'security-audit', title: 'Auditoría', description: 'Auditoría de seguridad del sistema', href: '/admin/security/audit', module: 'Seguridad', icon: <Shield className="h-4 w-4" /> },
+    { id: 'security-settings', title: 'Configuración de Seguridad', description: 'Configuración de seguridad', href: '/admin/security/settings', module: 'Seguridad', icon: <Settings className="h-4 w-4" /> },
 
     // Instructores
     { id: 'instructors', title: 'Gestión de Instructores', description: 'Administración de instructores', href: '/admin/instructors', module: 'Instructores', icon: <Users className="h-4 w-4" /> },
