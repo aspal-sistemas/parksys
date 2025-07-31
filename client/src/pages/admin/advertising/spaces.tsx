@@ -11,23 +11,19 @@ import { MapPin, Calendar, Image, Link as LinkIcon, ExternalLink, Grid, List, Ey
 import { Link } from 'wouter';
 import { apiRequest } from '@/lib/queryClient';
 
-interface SpaceMapping {
-  space_id: number;
-  space_name: string;
+interface AdSpace {
+  id: number;
+  name: string;
+  description: string;
   page_type: string;
   position: string;
-  description: string;
-  ad_id: number | null;
-  ad_title: string | null;
-  ad_content: string | null;
-  image_url: string | null;
-  link_url: string | null;
-  placement_id: number | null;
-  priority: number | null;
-  start_date: string | null;
-  end_date: string | null;
-  placement_active: boolean;
-  space_active: boolean;
+  page_identifier: string;
+  width: number;
+  height: number;
+  category: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 const AdSpaces = () => {
@@ -42,13 +38,12 @@ const AdSpaces = () => {
   // Mutación para toggle del estado de un espacio
   const toggleSpaceMutation = useMutation({
     mutationFn: async ({ spaceId, isActive }: { spaceId: number; isActive: boolean }) => {
-      return apiRequest(`/api/advertising-management/spaces/${spaceId}`, {
-        method: 'PUT',
-        data: { isActive: !isActive }
+      return apiRequest(`/api/advertising-management/spaces/${spaceId}`, 'PUT', { 
+        is_active: !isActive 
       });
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['/api/advertising-management/space-mappings'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/advertising-management/spaces'] });
       toast({
         title: "Espacio actualizado",
         description: `El espacio ha sido ${data.data.isActive ? 'activado' : 'desactivado'} correctamente.`,
@@ -64,11 +59,11 @@ const AdSpaces = () => {
     },
   });
 
-  // Usar el endpoint de space-mappings que tiene información completa
+  // Usar el endpoint de spaces que está disponible
   const { data: spaceMappings, isLoading } = useQuery({
-    queryKey: ['/api/advertising-management/space-mappings'],
+    queryKey: ['/api/advertising-management/spaces'],
     queryFn: async () => {
-      const response = await fetch('/api/advertising-management/space-mappings');
+      const response = await fetch('/api/advertising-management/spaces');
       if (!response.ok) {
         throw new Error('Error al obtener espacios publicitarios');
       }
@@ -80,24 +75,22 @@ const AdSpaces = () => {
   const groupedSpaces = useMemo(() => {
     if (!spaceMappings) return {};
     
-    const filtered = spaceMappings.filter((space: SpaceMapping) => {
+    const filtered = spaceMappings.filter((space: AdSpace) => {
       const matchesSearch = searchTerm === '' || 
-        space.space_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        space.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         space.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        space.ad_title?.toLowerCase().includes(searchTerm.toLowerCase());
+        space.category?.toLowerCase().includes(searchTerm.toLowerCase());
       
       const matchesPageType = filterPageType === 'all' || space.page_type === filterPageType;
       
       const matchesStatus = filterStatus === 'all' || 
-        (filterStatus === 'active' && space.space_active) ||
-        (filterStatus === 'inactive' && !space.space_active) ||
-        (filterStatus === 'with_ad' && space.ad_id) ||
-        (filterStatus === 'without_ad' && !space.ad_id);
+        (filterStatus === 'active' && space.is_active) ||
+        (filterStatus === 'inactive' && !space.is_active);
       
       return matchesSearch && matchesPageType && matchesStatus;
     });
     
-    return filtered.reduce((acc: any, space: SpaceMapping) => {
+    return filtered.reduce((acc: any, space: AdSpace) => {
       if (!acc[space.page_type]) {
         acc[space.page_type] = [];
       }
@@ -286,93 +279,63 @@ const AdSpaces = () => {
               <CardContent>
                 {viewMode === 'grid' ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {(spaces as any[]).map((space: SpaceMapping) => (
-                      <div key={`${space.space_id}-${space.placement_id}`} className="border rounded-lg p-4">
+                    {(spaces as any[]).map((space: AdSpace) => (
+                      <div key={`${space.id}-${space.page_type}-${space.position}`} className="border rounded-lg p-4">
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
-                            <Badge variant={space.space_active ? "default" : "secondary"}>
+                            <Badge variant={space.is_active ? "default" : "secondary"}>
                               {getPositionDisplayName(space.position)}
                             </Badge>
-                            <Badge variant={space.placement_active ? "default" : "outline"}>
-                              {space.placement_active ? 'Activo' : 'Inactivo'}
+                            <Badge variant="outline">
+                              {space.category || 'General'}
                             </Badge>
                           </div>
-                          <span className="text-sm text-gray-500">ID: {space.space_id}</span>
+                          <span className="text-sm text-gray-500">ID: {space.id}</span>
                         </div>
                         
                         <h3 className="font-semibold text-sm mb-1">
-                          {space.space_name || `Espacio ${space.space_id}`}
+                          {space.name || `Espacio ${space.id}`}
                         </h3>
                         
                         {space.description && (
                           <p className="text-xs text-gray-600 mb-3">{space.description}</p>
                         )}
 
-                        {space.ad_id ? (
-                          <div className="space-y-3">
-                            <div className="bg-green-50 border border-green-200 rounded p-3">
-                              <div className="flex items-center gap-2 mb-2">
-                                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                <span className="text-sm font-medium text-green-800">
-                                  Anuncio Asignado
-                                </span>
-                              </div>
-                              
-                              <div className="space-y-2">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-xs text-gray-500">Título:</span>
-                                  <span className="text-sm font-medium">{space.ad_title}</span>
-                                </div>
-                                
-                                {space.image_url && (
-                                  <div className="flex items-center gap-2">
-                                    <Image className="h-3 w-3 text-gray-500" />
-                                    <span className="text-xs text-gray-600">Imagen disponible</span>
-                                  </div>
-                                )}
-                                
-                                {space.link_url && (
-                                  <div className="flex items-center gap-2">
-                                    <LinkIcon className="h-3 w-3 text-gray-500" />
-                                    <span className="text-xs text-gray-600">Enlace configurado</span>
-                                  </div>
-                                )}
-                                
-                                <div className="flex items-center gap-2">
-                                  <Calendar className="h-3 w-3 text-gray-500" />
-                                  <span className="text-xs text-gray-600">
-                                    {space.start_date && space.end_date && 
-                                      `${new Date(space.start_date as string).toLocaleDateString()} - ${new Date(space.end_date as string).toLocaleDateString()}`
-                                    }
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
+                        <div className="space-y-2 mb-3">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-gray-500">Dimensiones:</span>
+                            <span className="text-sm">{space.width}x{space.height}px</span>
                           </div>
-                        ) : (
-                          <div className="bg-yellow-50 border border-yellow-200 rounded p-3">
-                            <div className="flex items-center gap-2 mb-1">
-                              <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                              <span className="text-sm font-medium text-yellow-800">
-                                Sin Anuncio Asignado
-                              </span>
+                          {space.page_identifier && (
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-gray-500">Identificador:</span>
+                              <span className="text-sm">{space.page_identifier}</span>
                             </div>
-                            <p className="text-xs text-yellow-700">
-                              Este espacio está disponible para asignar anuncios
-                            </p>
+                          )}
+                        </div>
+
+                        <div className="bg-blue-50 border border-blue-200 rounded p-3">
+                          <div className="flex items-center gap-2 mb-1">
+                            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                            <span className="text-sm font-medium text-blue-800">
+                              Espacio Publicitario Configurado
+                            </span>
                           </div>
-                        )}
+                          <p className="text-xs text-blue-700">
+                            Este espacio está listo para mostrar anuncios
+                          </p>
+                        </div>
                         
                         {/* Botón de toggle */}
                         <div className="mt-3 flex justify-end">
                           <Button
-                            variant={space.space_active ? "outline" : "default"}
+                            variant={space.is_active ? "outline" : "default"}
                             size="sm"
-                            onClick={() => toggleSpaceMutation.mutate({ spaceId: space.space_id, isActive: space.space_active })}
+                            onClick={() => toggleSpaceMutation.mutate({ spaceId: space.id, isActive: space.is_active })}
                             disabled={toggleSpaceMutation.isPending}
                             className="flex items-center gap-2"
                           >
-                            {space.space_active ? (
+                            {space.is_active ? (
                               <>
                                 <PowerOff className="h-3 w-3" />
                                 Desactivar
@@ -390,49 +353,32 @@ const AdSpaces = () => {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {(spaces as any[]).map((space: SpaceMapping) => (
-                      <div key={`${space.space_id}-${space.placement_id}`} className="flex items-center justify-between p-4 border rounded-lg">
+                    {(spaces as any[]).map((space: AdSpace) => (
+                      <div key={`${space.id}-${space.page_type}-${space.position}-list`} className="flex items-center justify-between p-4 border rounded-lg">
                         <div className="flex items-center gap-4">
                           <div className="flex flex-col">
-                            <span className="font-medium">{space.space_name || `Espacio ${space.space_id}`}</span>
+                            <span className="font-medium">{space.name || `Espacio ${space.id}`}</span>
                             <span className="text-sm text-gray-600">
-                              {getPositionDisplayName(space.position)}
+                              {getPositionDisplayName(space.position)} - {space.width}x{space.height}px
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            {space.ad_id ? (
-                              <>
-                                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                <span className="text-sm font-medium">{space.ad_title}</span>
-                              </>
-                            ) : (
-                              <>
-                                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                                <span className="text-sm font-medium text-yellow-700">Sin anuncio asignado</span>
-                              </>
-                            )}
+                            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                            <span className="text-sm font-medium">{space.category || 'General'}</span>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Badge variant={space.space_active ? "default" : "secondary"}>
-                            {getPositionDisplayName(space.position)}
+                          <Badge variant={space.is_active ? "default" : "secondary"}>
+                            {space.is_active ? 'Activo' : 'Inactivo'}
                           </Badge>
-                          <Badge variant={space.placement_active ? "default" : "outline"}>
-                            {space.placement_active ? 'Activo' : 'Inactivo'}
-                          </Badge>
-                          {space.ad_id && space.start_date && space.end_date && (
-                            <Badge variant="outline">
-                              {new Date(space.start_date as string).toLocaleDateString()} - {new Date(space.end_date as string).toLocaleDateString()}
-                            </Badge>
-                          )}
                           <Button
-                            variant={space.space_active ? "outline" : "default"}
+                            variant={space.is_active ? "outline" : "default"}
                             size="sm"
-                            onClick={() => toggleSpaceMutation.mutate({ spaceId: space.space_id, isActive: space.space_active })}
+                            onClick={() => toggleSpaceMutation.mutate({ spaceId: space.id, isActive: space.is_active })}
                             disabled={toggleSpaceMutation.isPending}
                             className="flex items-center gap-2"
                           >
-                            {space.space_active ? (
+                            {space.is_active ? (
                               <>
                                 <PowerOff className="h-3 w-3" />
                                 Desactivar

@@ -139,7 +139,7 @@ router.post('/media/upload', upload.single('file'), async (req, res) => {
       }
     }
     
-    res.status(500).json({ error: 'Error subiendo archivo: ' + error.message });
+    res.status(500).json({ error: 'Error subiendo archivo: ' + (error as Error).message });
   }
 });
 
@@ -168,7 +168,7 @@ router.get('/media', async (req, res) => {
     });
   } catch (error) {
     console.error('❌ Error obteniendo archivos multimedia:', error);
-    res.status(500).json({ error: 'Error obteniendo archivos: ' + error.message });
+    res.status(500).json({ error: 'Error obteniendo archivos: ' + (error as Error).message });
   }
 });
 
@@ -220,7 +220,7 @@ router.delete('/media/:id', async (req, res) => {
     });
   } catch (error) {
     console.error('❌ Error eliminando archivo:', error);
-    res.status(500).json({ error: 'Error eliminando archivo: ' + error.message });
+    res.status(500).json({ error: 'Error eliminando archivo: ' + (error as Error).message });
   }
 });
 
@@ -240,7 +240,7 @@ router.get('/spaces', async (req, res) => {
     res.json(result.rows);
   } catch (error) {
     console.error('❌ Error obteniendo espacios:', error);
-    res.status(500).json({ error: 'Error obteniendo espacios publicitarios: ' + error.message });
+    res.status(500).json({ error: 'Error obteniendo espacios publicitarios: ' + (error as Error).message });
   }
 });
 
@@ -273,7 +273,7 @@ router.post('/spaces', async (req, res) => {
     res.status(201).json(result.rows[0]);
   } catch (error) {
     console.error('❌ Error creando espacio:', error);
-    res.status(500).json({ error: 'Error creando espacio publicitario: ' + error.message });
+    res.status(500).json({ error: 'Error creando espacio publicitario: ' + (error as Error).message });
   }
 });
 
@@ -312,7 +312,7 @@ router.put('/spaces/:id', async (req, res) => {
     res.json(result.rows[0]);
   } catch (error) {
     console.error('❌ Error actualizando espacio:', error);
-    res.status(500).json({ error: 'Error actualizando espacio publicitario: ' + error.message });
+    res.status(500).json({ error: 'Error actualizando espacio publicitario: ' + (error as Error).message });
   }
 });
 
@@ -505,7 +505,7 @@ router.put('/advertisements/:id', async (req, res) => {
     res.json(result.rows[0]);
   } catch (error) {
     console.error('❌ Error actualizando anuncio:', error);
-    res.status(500).json({ error: 'Error actualizando anuncio: ' + error.message });
+    res.status(500).json({ error: 'Error actualizando anuncio: ' + (error as Error).message });
   }
 });
 
@@ -1025,7 +1025,7 @@ router.get('/campaigns', async (req, res) => {
     res.json(result.rows);
   } catch (error) {
     console.error('❌ Error obteniendo campañas:', error);
-    res.status(500).json({ error: 'Error obteniendo campañas: ' + error.message });
+    res.status(500).json({ error: 'Error obteniendo campañas: ' + (error as Error).message });
   }
 });
 
@@ -1066,7 +1066,7 @@ router.post('/campaigns', async (req, res) => {
     res.json(result.rows[0]);
   } catch (error) {
     console.error('❌ Error creando campaña:', error);
-    res.status(500).json({ error: 'Error creando campaña: ' + error.message });
+    res.status(500).json({ error: 'Error creando campaña: ' + (error as Error).message });
   }
 });
 
@@ -1120,7 +1120,7 @@ router.put('/campaigns/:id', async (req, res) => {
     res.json(result.rows[0]);
   } catch (error) {
     console.error('❌ Error actualizando campaña:', error);
-    res.status(500).json({ error: 'Error actualizando campaña: ' + error.message });
+    res.status(500).json({ error: 'Error actualizando campaña: ' + (error as Error).message });
   }
 });
 
@@ -1160,7 +1160,7 @@ router.patch('/campaigns/:id/status', async (req, res) => {
     res.json(result.rows[0]);
   } catch (error) {
     console.error('❌ Error cambiando estado de campaña:', error);
-    res.status(500).json({ error: 'Error cambiando estado de campaña: ' + error.message });
+    res.status(500).json({ error: 'Error cambiando estado de campaña: ' + (error as Error).message });
   }
 });
 
@@ -1184,7 +1184,7 @@ router.delete('/campaigns/:id', async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     console.error('❌ Error eliminando campaña:', error);
-    res.status(500).json({ error: 'Error eliminando campaña: ' + error.message });
+    res.status(500).json({ error: 'Error eliminando campaña: ' + (error as Error).message });
   }
 });
 
@@ -1242,7 +1242,7 @@ router.get('/campaigns/:id', async (req, res) => {
     res.json(campaign);
   } catch (error) {
     console.error('❌ Error obteniendo campaña:', error);
-    res.status(500).json({ error: 'Error obteniendo campaña: ' + error.message });
+    res.status(500).json({ error: 'Error obteniendo campaña: ' + (error as Error).message });
   }
 });
 
