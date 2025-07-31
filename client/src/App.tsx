@@ -1110,6 +1110,13 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/finance/dashboard')))}
           </Suspense>
         </Route>
+
+        {/* Rutas del Centro de Ayuda */}
+        <Route path="/help/visitantes-manual">
+          <Suspense fallback={<div className="p-8 text-center">Cargando manual de visitantes...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/help/VisitantesManual')))}
+          </Suspense>
+        </Route>
         
         <Route component={NotFound} />
         </Switch>
