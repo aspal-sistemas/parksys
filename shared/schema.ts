@@ -502,7 +502,17 @@ export const activities = pgTable("activities", {
   isFree: boolean("is_free").default(true), // esGratuita
   price: decimal("price", { precision: 10, scale: 2 }), // precio
   requirements: text("requirements"), // requisitos
-  recurringDays: text("recurring_days").array() // diasRecurrentes
+  recurringDays: text("recurring_days").array(), // diasRecurrentes
+  // Nuevos campos para registro ciudadano
+  allowsPublicRegistration: boolean("allows_public_registration").default(false), // permitir registro publico
+  registrationDeadline: timestamp("registration_deadline"), // fecha limite de registro
+  registrationInstructions: text("registration_instructions"), // instrucciones especiales
+  registrationStatus: varchar("registration_status", { length: 20 }).default("closed"), // abierto/cerrado/lleno
+  currentRegistrations: integer("current_registrations").default(0), // inscripciones actuales
+  maxRegistrations: integer("max_registrations"), // limite de inscripciones (puede ser diferente a capacity)
+  requiresApproval: boolean("requires_approval").default(false), // requiere aprobacion manual
+  ageRestrictions: text("age_restrictions"), // restricciones de edad
+  healthRequirements: text("health_requirements") // requisitos de salud
 });
 
 // Tabla de imágenes de actividades
@@ -518,6 +528,60 @@ export const activityImages = pgTable("activity_images", {
   uploadedById: integer("uploaded_by_id"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow()
+});
+
+// Tabla de inscripciones ciudadanas a actividades
+export const activityRegistrations = pgTable("activity_registrations", {
+  id: serial("id").primaryKey(),
+  activityId: integer("activity_id").notNull().references(() => activities.id, { onDelete: "cascade" }),
+  // Datos del ciudadano
+  fullName: varchar("full_name", { length: 100 }).notNull(),
+  email: varchar("email", { length: 100 }).notNull(),
+  phone: varchar("phone", { length: 20 }),
+  dateOfBirth: date("date_of_birth"),
+  age: integer("age"),
+  emergencyContact: varchar("emergency_contact", { length: 100 }),
+  emergencyPhone: varchar("emergency_phone", { length: 20 }),
+  // Información médica básica
+  medicalConditions: text("medical_conditions"),
+  allergies: text("allergies"),
+  medicationsCurrently: text("medications_currently"),
+  // Estado de la inscripción
+  registrationStatus: varchar("registration_status", { length: 20 }).default("pending"), // pending/approved/rejected/cancelled
+  approvedById: integer("approved_by_id"), // admin que aprobó
+  approvedAt: timestamp("approved_at"),
+  rejectionReason: text("rejection_reason"),
+  // Datos adicionales
+  specialRequests: text("special_requests"),
+  experienceLevel: varchar("experience_level", { length: 20 }), // beginner/intermediate/advanced
+  hasParticipatedBefore: boolean("has_participated_before").default(false),
+  paymentStatus: varchar("payment_status", { length: 20 }).default("pending"), // pending/paid/exempt (para actividades de pago)
+  paymentReference: varchar("payment_reference", { length: 100 }),
+  // Consentimientos
+  acceptsTerms: boolean("accepts_terms").default(false),
+  acceptsPhotos: boolean("accepts_photos").default(false), // autoriza fotos durante la actividad
+  parentalConsent: boolean("parental_consent").default(false), // para menores de edad
+  parentName: varchar("parent_name", { length: 100 }), // nombre del padre/tutor
+  parentPhone: varchar("parent_phone", { length: 20 }), // teléfono del padre/tutor
+  // Metadatos
+  registrationSource: varchar("registration_source", { length: 50 }).default("web"), // web/app/phone/in-person
+  ipAddress: varchar("ip_address", { length: 45 }), // para auditoria
+  userAgent: text("user_agent"), // información del navegador
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow()
+});
+
+// Tabla de histórico de cambios en inscripciones (auditoría)
+export const activityRegistrationHistory = pgTable("activity_registration_history", {
+  id: serial("id").primaryKey(),
+  registrationId: integer("registration_id").notNull().references(() => activityRegistrations.id, { onDelete: "cascade" }),
+  changeType: varchar("change_type", { length: 50 }).notNull(), // created/status_changed/updated/cancelled
+  previousStatus: varchar("previous_status", { length: 20 }),
+  newStatus: varchar("new_status", { length: 20 }),
+  changeReason: text("change_reason"),
+  changedById: integer("changed_by_id"), // ID del admin que hizo el cambio
+  changeDetails: jsonb("change_details"), // detalles adicionales del cambio en JSON
+  createdAt: timestamp("created_at").notNull().defaultNow()
 });
 
 export const comments = pgTable("comments", {
@@ -704,6 +768,40 @@ export const insertActivityImageSchema = createInsertSchema(activityImages).omit
   createdAt: true,
   updatedAt: true
 });
+
+// Tipos para inscripciones de actividades
+export type ActivityRegistration = typeof activityRegistrations.$inferSelect;
+export type InsertActivityRegistration = typeof activityRegistrations.$inferInsert;
+
+export const insertActivityRegistrationSchema = createInsertSchema(activityRegistrations).omit({ 
+  id: true,
+  createdAt: true,
+  updatedAt: true
+}).extend({
+  email: z.string().email("Email inválido"),
+  phone: z.string().min(10, "Teléfono debe tener al menos 10 dígitos").optional(),
+  age: z.number().min(1).max(120).optional(),
+  emergencyPhone: z.string().min(10, "Teléfono de emergencia debe tener al menos 10 dígitos").optional(),
+  acceptsTerms: z.boolean().refine(val => val === true, "Debe aceptar los términos y condiciones")
+});
+
+export type ActivityRegistrationHistory = typeof activityRegistrationHistory.$inferSelect;
+export type InsertActivityRegistrationHistory = typeof activityRegistrationHistory.$inferInsert;
+
+export const insertActivityRegistrationHistorySchema = createInsertSchema(activityRegistrationHistory).omit({ 
+  id: true,
+  createdAt: true
+});
+
+// Tipo extendido para inscripciones con información de actividad
+export type ExtendedActivityRegistration = ActivityRegistration & {
+  activity?: Activity & {
+    park?: typeof parks.$inferSelect;
+    category?: ActivityCategory;
+    instructor?: typeof instructors.$inferSelect;
+  };
+  approvedBy?: typeof users.$inferSelect;
+};
 
 export type Comment = typeof comments.$inferSelect;
 export type InsertComment = typeof comments.$inferInsert;

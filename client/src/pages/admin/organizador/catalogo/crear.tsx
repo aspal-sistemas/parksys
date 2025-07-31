@@ -88,6 +88,15 @@ const formSchema = z.object({
   
   // Campo para seleccionar al instructor por su ID
   instructorId: z.string().optional(),
+  
+  // Nuevos campos para registro ciudadano
+  allowsPublicRegistration: z.boolean().default(false),
+  maxRegistrations: z.coerce.number().int().positive().optional(),
+  registrationDeadline: z.string().optional(),
+  registrationInstructions: z.string().optional(),
+  requiresApproval: z.boolean().default(false),
+  ageRestrictions: z.string().optional(),
+  healthRequirements: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -186,6 +195,14 @@ const CrearActividadPage = () => {
       targetMarket: [],
       specialNeeds: [],
       instructorId: "",
+      // Valores por defecto para registro ciudadano
+      allowsPublicRegistration: false,
+      maxRegistrations: undefined,
+      registrationDeadline: "",
+      registrationInstructions: "",
+      requiresApproval: false,
+      ageRestrictions: "",
+      healthRequirements: "",
     },
   });
 
@@ -241,6 +258,16 @@ const CrearActividadPage = () => {
         recurringDays: values.recurringDays || [],
         targetMarket: values.targetMarket || [],
         specialNeeds: values.specialNeeds || [],
+        // Campos para registro ciudadano
+        allowsPublicRegistration: values.allowsPublicRegistration || false,
+        maxRegistrations: values.maxRegistrations || null,
+        registrationDeadline: values.registrationDeadline || null,
+        registrationInstructions: values.registrationInstructions || "",
+        requiresApproval: values.requiresApproval || false,
+        ageRestrictions: values.ageRestrictions || "",
+        healthRequirements: values.healthRequirements || "",
+        registrationStatus: values.allowsPublicRegistration ? "open" : "closed",
+        currentRegistrations: 0,
         ...instructorData
       };
       
@@ -883,6 +910,173 @@ const CrearActividadPage = () => {
                     </FormItem>
                   )}
                 />
+              </div>
+
+              {/* Sección de Registro Ciudadano */}
+              <div className="space-y-4 pt-4 border-t">
+                <h3 className="text-lg font-medium">Configuración de Registro Ciudadano</h3>
+                <p className="text-sm text-gray-600">Configura si los ciudadanos pueden inscribirse a esta actividad desde el sitio público</p>
+                
+                <FormField
+                  control={form.control}
+                  name="allowsPublicRegistration"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-base">
+                          Permitir inscripción pública
+                        </FormLabel>
+                        <FormDescription>
+                          Los ciudadanos podrán inscribirse a esta actividad desde la página pública
+                        </FormDescription>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                {form.watch("allowsPublicRegistration") && (
+                  <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="maxRegistrations"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Capacidad máxima de inscripciones</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                placeholder="Ej: 25"
+                                {...field}
+                                value={field.value || ""}
+                                onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Número máximo de personas que se pueden inscribir
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="registrationDeadline"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Fecha límite de inscripción</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="date"
+                                {...field}
+                                value={field.value || ""}
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Fecha después de la cual no se aceptan inscripciones
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <FormField
+                      control={form.control}
+                      name="registrationInstructions"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Instrucciones para inscripción</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              placeholder="Instrucciones específicas para los participantes al inscribirse"
+                              {...field}
+                              value={field.value || ""}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Información adicional que verán los ciudadanos al inscribirse
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="requiresApproval"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                          <div className="space-y-0.5">
+                            <FormLabel className="text-base">
+                              Requiere aprobación administrativa
+                            </FormLabel>
+                            <FormDescription>
+                              Las inscripciones deben ser aprobadas manualmente por un administrador
+                            </FormDescription>
+                          </div>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="ageRestrictions"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Restricciones de edad</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="Ej: Mayores de 18 años"
+                                {...field}
+                                value={field.value || ""}
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Restricciones específicas de edad para participar
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="healthRequirements"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Requisitos de salud</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="Ej: Certificado médico, buena condición física"
+                                {...field}
+                                value={field.value || ""}
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Requisitos médicos o de salud para participar
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Sección de Instructor/Facilitador */}

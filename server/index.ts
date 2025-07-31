@@ -1276,6 +1276,34 @@ async function initializeDatabaseAsync() {
 
   const routeServer = await registerRoutes(app);
 
+  // Agregar campos de inscripción a la tabla activities
+  try {
+    const { addActivityRegistrationFields } = await import("./add-activity-registration-fields");
+    await addActivityRegistrationFields();
+    console.log("Campos de inscripción agregados a activities correctamente");
+  } catch (error) {
+    console.error("Error al agregar campos de inscripción:", error);
+  }
+
+  // Crear tablas de inscripciones de actividades
+  try {
+    const { createActivityRegistrationsTables } = await import("./create-activity-registrations-tables");
+    await createActivityRegistrationsTables();
+    console.log("Tablas de inscripciones de actividades inicializadas correctamente");
+  } catch (error) {
+    console.error("Error al inicializar tablas de inscripciones:", error);
+  }
+
+  // Registrar rutas de inscripciones de actividades
+  try {
+    const activityRegistrationsRouter = await import("./routes/activity-registrations");
+    console.log("Registrando rutas de inscripciones de actividades...");
+    app.use("/api/activity-registrations", activityRegistrationsRouter.default);
+    console.log("Rutas de inscripciones de actividades registradas correctamente");
+  } catch (error) {
+    console.error("Error al registrar rutas de inscripciones de actividades:", error);
+  }
+
   // Inicializar tablas de patrocinios
   try {
     const { createSponsorshipTables } = await import("./create-sponsorship-tables");

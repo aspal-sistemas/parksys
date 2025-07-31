@@ -285,6 +285,11 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/activities/activity-images')))}
           </Suspense>
         </Route>
+        <Route path="/admin/activities/registrations">
+          <Suspense fallback={<div className="p-8 text-center">Cargando gestión de inscripciones...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/activities/registrations')))}
+          </Suspense>
+        </Route>
         <Route path="/admin/analytics" component={AdminAnalytics} />
         <Route path="/admin/documents" component={AdminDocuments} />
         <Route path="/admin/comments" component={AdminComments} />
