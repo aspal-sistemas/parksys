@@ -84,7 +84,7 @@ export default function ActivityDetailPage() {
       const response = await apiRequest(
         'POST',
         `/api/activities/${activityId}/register`,
-        data
+        { data }
       );
       
       if (!response.ok) {

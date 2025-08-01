@@ -535,11 +535,7 @@ const EditarActividadPage = () => {
                             <SelectItem key={parque.id} value={parque.id.toString() || "0"}>
                               {parque.name || "Parque sin nombre"}
                             </SelectItem>
-                          )) : parques?.data?.map((parque: any) => (
-                            <SelectItem key={parque.id} value={parque.id.toString() || "0"}>
-                              {parque.name || "Parque sin nombre"}
-                            </SelectItem>
-                          ))}
+                          )) : null}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -690,10 +686,9 @@ const EditarActividadPage = () => {
                             }}
                             disabled={(date) => {
                               const startDate = form.getValues("startDate");
-                              return (
-                                date < new Date("1900-01-01") ||
-                                (startDate && date < new Date(startDate))
-                              );
+                              if (date < new Date("1900-01-01")) return true;
+                              if (startDate && date < new Date(startDate)) return true;
+                              return false;
                             }}
                             initialFocus
                           />
@@ -805,7 +800,7 @@ const EditarActividadPage = () => {
                                     <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                                       <FormControl>
                                         <Checkbox
-                                          checked={field.value?.includes(dia.id)}
+                                          checked={field.value?.includes(dia.id) || false}
                                           onCheckedChange={(checked) => {
                                             return checked
                                               ? field.onChange([...field.value || [], dia.id])
@@ -1052,7 +1047,7 @@ const EditarActividadPage = () => {
                                 <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                                   <FormControl>
                                     <Checkbox
-                                      checked={field.value?.includes(grupo.id)}
+                                      checked={field.value?.includes(grupo.id) || false}
                                       onCheckedChange={(checked) => {
                                         return checked
                                           ? field.onChange([...field.value || [], grupo.id])
@@ -1157,14 +1152,14 @@ const EditarActividadPage = () => {
                             field.onChange(instructorId);
                             
                             // Encontrar el instructor seleccionado
-                            const instructor = instructores?.find((i: any) => i.id === instructorId);
+                            const instructor = Array.isArray(instructores) ? instructores.find((i: any) => i.id === instructorId) : null;
                             if (instructor) {
                               form.setValue("instructorName", instructor.fullName || `${instructor.firstName} ${instructor.lastName}`);
                               form.setValue("instructorContact", instructor.email || instructor.contactEmail || '');
                             }
                           }
                         }}
-                        value={field.value ? field.value.toString() : "0"}
+                        value={field.value !== undefined && field.value !== null ? field.value.toString() : "0"}
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -1173,11 +1168,11 @@ const EditarActividadPage = () => {
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="0">Sin instructor asignado</SelectItem>
-                          {instructores?.map((instructor: any) => (
+                          {Array.isArray(instructores) ? instructores.map((instructor: any) => (
                             <SelectItem key={instructor.id} value={instructor.id.toString()}>
                               {instructor.fullName || `${instructor.firstName} ${instructor.lastName}`}
                             </SelectItem>
-                          ))}
+                          )) : null}
                         </SelectContent>
                       </Select>
                       <FormDescription>
