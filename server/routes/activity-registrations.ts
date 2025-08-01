@@ -573,6 +573,7 @@ router.get('/stats/:activityId', async (req, res) => {
   }
 });
 
+
 // Obtener detalles de una inscripción específica
 router.get('/:id', async (req, res) => {
   try {
@@ -655,98 +656,6 @@ router.delete('/:id', async (req, res) => {
   } catch (error) {
     console.error('Error al eliminar inscripción:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
-  }
-});
-
-// GET /api/activities-summary - Resumen de actividades con estadísticas
-router.get('/activities-summary', async (req, res) => {
-  try {
-    console.log('📊 Obteniendo resumen de actividades con estadísticas...');
-
-    const activitiesSummary = await sql`
-      SELECT 
-        a.id,
-        a.title,
-        a.description,
-        a.category,
-        a.start_date,
-        a.end_date,
-        a.start_time,
-        a.location,
-        a.capacity,
-        a.price,
-        a.is_free,
-        a.registration_enabled,
-        a.max_registrations,
-        a.registration_deadline,
-        p.name as park_name,
-        COUNT(ar.id) as total_registrations,
-        COUNT(CASE WHEN ar.status = 'approved' THEN 1 END) as approved_registrations,
-        COUNT(CASE WHEN ar.status = 'pending' THEN 1 END) as pending_registrations,
-        COUNT(CASE WHEN ar.status = 'rejected' THEN 1 END) as rejected_registrations,
-        COALESCE(a.max_registrations, a.capacity, 0) as max_capacity,
-        CASE 
-          WHEN a.is_free = true THEN 0
-          ELSE COUNT(CASE WHEN ar.status = 'approved' THEN 1 END) * COALESCE(a.price::numeric, 0)
-        END as total_revenue,
-        CASE 
-          WHEN a.is_free = true THEN 0
-          ELSE COUNT(ar.id) * COALESCE(a.price::numeric, 0)
-        END as potential_revenue
-      FROM activities a
-      LEFT JOIN parks p ON a.park_id = p.id
-      LEFT JOIN activity_registrations ar ON a.id = ar.activity_id
-      GROUP BY a.id, a.title, a.description, a.category, a.start_date, a.end_date, 
-               a.start_time, a.location, a.capacity, a.price, a.is_free, 
-               a.registration_enabled, a.max_registrations, a.registration_deadline, p.name
-      ORDER BY a.start_date DESC
-    `;
-
-    // Formatear los datos para el frontend
-    const formattedSummary = activitiesSummary.map((activity: any) => {
-      const maxCapacity = activity.max_capacity || 0;
-      const totalRegistrations = parseInt(activity.total_registrations) || 0;
-      const availableSlots = Math.max(0, maxCapacity - totalRegistrations);
-
-      return {
-        id: activity.id,
-        title: activity.title,
-        description: activity.description,
-        category: activity.category,
-        parkName: activity.park_name,
-        startDate: activity.start_date,
-        endDate: activity.end_date,
-        startTime: activity.start_time,
-        location: activity.location,
-        capacity: activity.capacity,
-        price: activity.price,
-        isFree: activity.is_free,
-        registrationStats: {
-          totalRegistrations: totalRegistrations,
-          approved: parseInt(activity.approved_registrations) || 0,
-          pending: parseInt(activity.pending_registrations) || 0,
-          rejected: parseInt(activity.rejected_registrations) || 0,
-          availableSlots: availableSlots
-        },
-        revenue: {
-          totalRevenue: parseFloat(activity.total_revenue) || 0,
-          potentialRevenue: parseFloat(activity.potential_revenue) || 0
-        },
-        registrationEnabled: activity.registration_enabled,
-        maxRegistrations: activity.max_registrations,
-        registrationDeadline: activity.registration_deadline
-      };
-    });
-
-    console.log(`📊 Resumen de actividades procesado: ${formattedSummary.length} actividades`);
-    res.json(formattedSummary);
-
-  } catch (error) {
-    console.error('Error al obtener resumen de actividades:', error);
-    res.status(500).json({ 
-      error: 'Error interno del servidor',
-      details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
-    });
   }
 });
 

@@ -127,9 +127,9 @@ const ActivityRegistrationsPage = () => {
 
   // Obtener resumen de actividades con estadísticas de inscripciones
   const { data: activitiesSummaryData, isLoading: isLoadingSummary } = useQuery({
-    queryKey: ['/api/activities-summary'],
+    queryKey: ['/api/activities-summary-data'],
     queryFn: async () => {
-      const response = await fetch('/api/activities-summary');
+      const response = await fetch('/api/activities-summary-data');
       if (!response.ok) throw new Error('Error al cargar resumen de actividades');
       return response.json();
     },
