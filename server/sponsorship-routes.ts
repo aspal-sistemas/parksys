@@ -1104,7 +1104,7 @@ export function registerSponsorshipRoutes(app: any, apiRouter: any, isAuthentica
       ]);
       
       // Calcular ROI
-      const totalInvestment = parseFloat(sponsor.contract_value || '0');
+      const totalInvestment = parseFloat(sponsor.contractValue || '0');
       const totalLeads = metrics.reduce((sum, m) => sum + (m.leadsGenerated || 0), 0);
       const totalConversions = metrics.reduce((sum, m) => sum + (m.conversions || 0), 0);
       const totalImpressions = metrics.reduce((sum, m) => sum + (m.impressions || 0), 0);

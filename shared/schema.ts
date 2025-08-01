@@ -2705,7 +2705,7 @@ export type InsertContractMonthlyPayment = z.infer<typeof insertContractMonthlyP
 export const sponsorshipPackages = pgTable("sponsorship_packages", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
-  category: varchar("category", { length: 50 }).notNull(), // hormiga, abeja, colibrí, ardilla, conejo, ciervo, lobo, águila, león, jaguar
+  category: varchar("category", { length: 50 }).notNull(), // nivel1, nivel2, nivel3, nivel4, nivel5, nivel6, nivel7, nivel8, nivel9, nivel10
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
   duration: integer("duration").notNull(), // meses
   benefits: json("benefits").$type<string[]>().default([]),
@@ -2730,7 +2730,7 @@ export const sponsors = pgTable("sponsors", {
   
   // Estado del patrocinador
   status: varchar("status", { length: 50 }).default("potencial"), // activo, potencial, inactivo, renovacion
-  packageCategory: varchar("package_category", { length: 50 }).notNull(), // hormiga, abeja, colibrí, ardilla, conejo, ciervo, lobo, águila, león, jaguar
+  packageName: varchar("package_name", { length: 255 }).notNull(), // nombre del paquete asociado
   
   // Información del contrato
   contractValue: decimal("contract_value", { precision: 10, scale: 2 }).default("0.00"),

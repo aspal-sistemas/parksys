@@ -68,7 +68,7 @@ const sponsorSchema = z.object({
   phone: z.string().min(1, "El teléfono es requerido"),
   address: z.string().min(1, "La dirección es requerida"),
   status: z.string().min(1, "El estado es requerido"),
-  packageCategory: z.string().min(1, "La categoría del paquete es requerida"),
+  packageName: z.string().min(1, "El nombre del paquete es requerido"),
   contractStart: z.string().min(1, "La fecha de inicio es requerida"),
   renewalProbability: z.number().min(0).max(100, "La probabilidad debe estar entre 0 y 100"),
   websiteUrl: z.string().url("URL inválida").optional().or(z.literal("")),
@@ -204,7 +204,7 @@ const SponsorsManagement = () => {
       phone: '',
       address: '',
       status: '',
-      packageCategory: '',
+      packageName: '',
       contractStart: '',
       renewalProbability: 0,
       websiteUrl: '',
@@ -226,7 +226,7 @@ const SponsorsManagement = () => {
       phone: '',
       address: '',
       status: '',
-      packageCategory: '',
+      packageName: '',
       contractStart: '',
       renewalProbability: 0,
       websiteUrl: '',
@@ -249,19 +249,19 @@ const SponsorsManagement = () => {
     }
   });
 
-  // Watch para calcular automáticamente campos dependientes de la categoría del paquete
-  const watchedPackageCategory = sponsorForm.watch('packageCategory');
+  // Watch para calcular automáticamente campos dependientes del paquete
+  const watchedPackageName = sponsorForm.watch('packageName');
   const watchedContractStart = sponsorForm.watch('contractStart');
   
   useEffect(() => {
-    if (watchedPackageCategory && packages.length > 0) {
-      const selectedPackage = packages.find(pkg => pkg.category === watchedPackageCategory);
+    if (watchedPackageName && packages.length > 0) {
+      const selectedPackage = packages.find(pkg => pkg.name === watchedPackageName);
       
       if (selectedPackage) {
         sponsorForm.setValue('contractValue', parseFloat(selectedPackage.price));
       }
     }
-  }, [watchedPackageCategory, packages]);
+  }, [watchedPackageName, packages]);
   
   useEffect(() => {
     if (watchedContractStart) {
@@ -274,18 +274,18 @@ const SponsorsManagement = () => {
   }, [watchedContractStart]);
 
   // Watch para el formulario de edición
-  const watchedEditPackageCategory = editSponsorForm.watch('packageCategory');
+  const watchedEditPackageName = editSponsorForm.watch('packageName');
   const watchedEditContractStart = editSponsorForm.watch('contractStart');
   
   useEffect(() => {
-    if (watchedEditPackageCategory && packages.length > 0) {
-      const selectedPackage = packages.find(pkg => pkg.category === watchedEditPackageCategory);
+    if (watchedEditPackageName && packages.length > 0) {
+      const selectedPackage = packages.find(pkg => pkg.name === watchedEditPackageName);
       
       if (selectedPackage) {
         editSponsorForm.setValue('contractValue', parseFloat(selectedPackage.price));
       }
     }
-  }, [watchedEditPackageCategory, packages]);
+  }, [watchedEditPackageName, packages]);
   
   useEffect(() => {
     if (watchedEditContractStart) {
@@ -383,10 +383,10 @@ const SponsorsManagement = () => {
         logoUrl = await uploadLogo(logoFile);
       }
 
-      if (!data.packageCategory) {
+      if (!data.packageName) {
         toast({
           title: "Error",
-          description: "Debes seleccionar una categoría de paquete",
+          description: "Debes seleccionar un nombre de paquete",
           variant: "destructive"
         });
         return;
@@ -433,7 +433,7 @@ const SponsorsManagement = () => {
       phone: sponsor.phone,
       address: sponsor.address,
       status: sponsor.status,
-      packageCategory: sponsor.packageCategory,
+      packageName: sponsor.packageName,
       contractStart: sponsor.contractStart,
       renewalProbability: sponsor.renewalProbability,
       websiteUrl: sponsor.websiteUrl || '',
@@ -503,10 +503,10 @@ const SponsorsManagement = () => {
         logoUrl = await uploadLogo(editLogoFile);
       }
 
-      if (!data.packageCategory) {
+      if (!data.packageName) {
         toast({
           title: "Error",
-          description: "Debes seleccionar una categoría de paquete",
+          description: "Debes seleccionar un nombre de paquete",
           variant: "destructive"
         });
         return;
@@ -551,93 +551,21 @@ const SponsorsManagement = () => {
     return matchesSearch && matchesCategory && matchesStatus;
   });
 
-  // Sistema de categorías inspirado en gemas y metales preciosos (10 niveles)
-  const sponsorTiers = {
-    amatista: { 
-      name: "Amatista", 
-      color: "bg-purple-100 text-purple-800", 
-      price: 25000,
-      level: 1,
-      description: "Colaborador básico"
-    },
-    esmeralda: { 
-      name: "Esmeralda", 
-      color: "bg-emerald-100 text-emerald-800", 
-      price: 50000,
-      level: 2,
-      description: "Contribuidor activo"
-    },
-    zafiro: { 
-      name: "Zafiro", 
-      color: "bg-blue-100 text-blue-800", 
-      price: 75000,
-      level: 3,
-      description: "Aliado valioso"
-    },
-    onix: { 
-      name: "Ónix", 
-      color: "bg-gray-100 text-gray-800", 
-      price: 125000,
-      level: 4,
-      description: "Socio estratégico"
-    },
-    cobre: { 
-      name: "Cobre", 
-      color: "bg-orange-100 text-orange-800", 
-      price: 200000,
-      level: 5,
-      description: "Patrocinador comprometido"
-    },
-    bronce: { 
-      name: "Bronce", 
-      color: "bg-amber-100 text-amber-800", 
-      price: 300000,
-      level: 6,
-      description: "Benefactor destacado"
-    },
-    plata: { 
-      name: "Plata", 
-      color: "bg-slate-100 text-slate-800", 
-      price: 450000,
-      level: 7,
-      description: "Patrocinador premium"
-    },
-    oro: { 
-      name: "Oro", 
-      color: "bg-yellow-100 text-yellow-800", 
-      price: 650000,
-      level: 8,
-      description: "Patrocinador de élite"
-    },
-    platino: { 
-      name: "Platino", 
-      color: "bg-gray-200 text-gray-900", 
-      price: 900000,
-      level: 9,
-      description: "Patrocinador exclusivo"
-    },
-    diamante: { 
-      name: "Diamante", 
-      color: "bg-cyan-100 text-cyan-800", 
-      price: 1200000,
-      level: 10,
-      description: "Patrocinador supremo"
-    }
-  };
-
   // Funciones de utilidad para estilos
   const getCategoryColor = (category: string) => {
-    return sponsorTiers[category as keyof typeof sponsorTiers]?.color || "bg-gray-100 text-gray-800";
+    // Colorización basada en el tipo de empresa
+    const colors = {
+      corporativo: "bg-blue-100 text-blue-800",
+      local: "bg-green-100 text-green-800",
+      institucional: "bg-purple-100 text-purple-800", 
+      ong: "bg-orange-100 text-orange-800"
+    };
+    return colors[category as keyof typeof colors] || "bg-gray-100 text-gray-800";
   };
 
-  const getTierInfo = (category: string) => {
-    return sponsorTiers[category as keyof typeof sponsorTiers] || {
-      name: category,
-      color: "bg-gray-100 text-gray-800",
-      price: 0,
-      level: 0,
-      description: "Categoría no definida"
-    };
+  const getPackageInfo = (packageName: string) => {
+    const pkg = packages.find(p => p.name === packageName);
+    return pkg || null;
   };
 
   const getStatusColor = (status: string) => {
@@ -913,24 +841,23 @@ const SponsorsManagement = () => {
                         />
                         <FormField
                           control={sponsorForm.control}
-                          name="packageCategory"
+                          name="packageName"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Categoría del Paquete</FormLabel>
+                              <FormLabel>Paquete de Patrocinio</FormLabel>
                               <Select onValueChange={field.onChange} value={field.value}>
                                 <FormControl>
                                   <SelectTrigger>
-                                    <SelectValue placeholder="Selecciona categoría" />
+                                    <SelectValue placeholder="Selecciona paquete" />
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  {Object.entries(sponsorTiers).map(([key, tier]) => (
-                                    <SelectItem key={key} value={key}>
-                                      <div className="flex items-center space-x-2">
-                                        <span>{tier.icon}</span>
-                                        <span>{tier.name}</span>
+                                  {packages.map((pkg) => (
+                                    <SelectItem key={pkg.id} value={pkg.name}>
+                                      <div className="flex items-center justify-between w-full">
+                                        <span>{pkg.name}</span>
                                         <span className="text-xs text-gray-500">
-                                          (${tier.price.toLocaleString()})
+                                          (${parseFloat(pkg.price).toLocaleString()})
                                         </span>
                                       </div>
                                     </SelectItem>
@@ -1054,8 +981,8 @@ const SponsorsManagement = () => {
                         </div>
                       </div>
                       <div className="flex flex-col space-y-1">
-                        <Badge className={getCategoryColor(sponsor.packageCategory)}>
-                          {getTierInfo(sponsor.packageCategory).icon} {getTierInfo(sponsor.packageCategory).name}
+                        <Badge className="bg-emerald-100 text-emerald-800">
+                          {getPackageInfo(sponsor.packageName)?.name || sponsor.packageName}
                         </Badge>
                         <Badge className={getStatusColor(sponsor.status)}>
                           {sponsor.status.charAt(0).toUpperCase() + sponsor.status.slice(1)}
@@ -1167,15 +1094,9 @@ const SponsorsManagement = () => {
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  {Object.entries(sponsorTiers).map(([key, tier]) => (
-                                    <SelectItem key={key} value={key}>
-                                      <div className="flex items-center space-x-2">
-                                        <span>{tier.icon}</span>
-                                        <span>{tier.name}</span>
-                                        <span className="text-xs text-gray-500">
-                                          (${tier.price.toLocaleString()})
-                                        </span>
-                                      </div>
+                                  {Array.from({ length: 10 }, (_, i) => i + 1).map((level) => (
+                                    <SelectItem key={level} value={`nivel${level}`}>
+                                      <span>Nivel {level}</span>
                                     </SelectItem>
                                   ))}
                                 </SelectContent>
@@ -1304,8 +1225,8 @@ const SponsorsManagement = () => {
                       <div>
                         <CardTitle className="text-lg">{pkg.name}</CardTitle>
                         <CardDescription>
-                          <Badge className={getCategoryColor(pkg.category)}>
-                            {getTierInfo(pkg.category).name}
+                          <Badge className="bg-slate-100 text-slate-800">
+                            {pkg.category}
                           </Badge>
                         </CardDescription>
                       </div>
@@ -1432,8 +1353,8 @@ const SponsorsManagement = () => {
                     <h3 className="font-semibold text-lg">{selectedSponsor.name}</h3>
                     <p className="text-gray-600">{selectedSponsor.type}</p>
                     <div className="flex space-x-2 mt-2">
-                      <Badge className={getCategoryColor(selectedSponsor.packageCategory)}>
-                        {getTierInfo(selectedSponsor.packageCategory).name}
+                      <Badge className="bg-emerald-100 text-emerald-800">
+                        {getPackageInfo(selectedSponsor.packageName)?.name || selectedSponsor.packageName}
                       </Badge>
                       <Badge className={getStatusColor(selectedSponsor.status)}>
                         {selectedSponsor.status}
@@ -1727,23 +1648,23 @@ const SponsorsManagement = () => {
                   />
                   <FormField
                     control={editSponsorForm.control}
-                    name="packageCategory"
+                    name="packageName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Categoría del Paquete</FormLabel>
+                        <FormLabel>Paquete de Patrocinio</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Selecciona categoría" />
+                              <SelectValue placeholder="Selecciona paquete" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {Object.entries(sponsorTiers).map(([key, tier]) => (
-                              <SelectItem key={key} value={key}>
+                            {packages.map((pkg) => (
+                              <SelectItem key={pkg.id} value={pkg.name}>
                                 <div className="flex items-center justify-between w-full">
-                                  <span>{tier.name}</span>
+                                  <span>{pkg.name}</span>
                                   <span className="text-xs text-gray-500">
-                                    (${tier.price.toLocaleString()})
+                                    (${parseFloat(pkg.price).toLocaleString()})
                                   </span>
                                 </div>
                               </SelectItem>
@@ -1847,8 +1768,8 @@ const SponsorsManagement = () => {
                   <div>
                     <h3 className="font-semibold text-lg">{selectedPackage.name}</h3>
                     <div className="flex space-x-2 mt-2">
-                      <Badge className={getCategoryColor(selectedPackage.category)}>
-                        {getTierInfo(selectedPackage.category).name}
+                      <Badge className="bg-slate-100 text-slate-800">
+                        {selectedPackage.category}
                       </Badge>
                       <Badge variant={selectedPackage.isActive ? "default" : "secondary"}>
                         {selectedPackage.isActive ? "Activo" : "Inactivo"}
@@ -1941,14 +1862,9 @@ const SponsorsManagement = () => {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {Object.entries(sponsorTiers).map(([key, tier]) => (
-                              <SelectItem key={key} value={key}>
-                                <div className="flex items-center justify-between w-full">
-                                  <span>{tier.name}</span>
-                                  <span className="text-xs text-gray-500">
-                                    (${tier.price.toLocaleString()})
-                                  </span>
-                                </div>
+                            {Array.from({ length: 10 }, (_, i) => i + 1).map((level) => (
+                              <SelectItem key={level} value={`nivel${level}`}>
+                                <span>Nivel {level}</span>
                               </SelectItem>
                             ))}
                           </SelectContent>
