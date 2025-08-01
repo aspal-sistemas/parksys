@@ -424,12 +424,22 @@ const SponsorsManagement = () => {
         return;
       }
 
+      // Formatear fechas correctamente
+      const formatDate = (dateValue: string) => {
+        if (!dateValue) return null;
+        const date = new Date(dateValue);
+        return date.toISOString().split('T')[0]; // yyyy-MM-dd format
+      };
+
       const formattedData = {
         ...data,
         category: data.type, // Map 'type' to 'category' for backend compatibility
         logo: logoUrl,
-        contractValue: data.contractValue || 0,
-        eventsSponsored: data.eventsSponsored || 0
+        contractValue: Number(data.contractValue) || 0,
+        eventsSponsored: Number(data.eventsSponsored) || 0,
+        contractStart: formatDate(data.contractStart),
+        contractEnd: formatDate(data.contractEnd),
+        renewalProbability: Number(data.renewalProbability) || 0
       };
       
       createSponsorMutation.mutate(formattedData);
@@ -549,12 +559,22 @@ const SponsorsManagement = () => {
         return;
       }
 
+      // Formatear fechas correctamente
+      const formatDate = (dateValue: string) => {
+        if (!dateValue) return null;
+        const date = new Date(dateValue);
+        return date.toISOString().split('T')[0]; // yyyy-MM-dd format
+      };
+
       const formattedData = {
         ...data,
         category: data.type, // Map 'type' to 'category' for backend compatibility
         logo: logoUrl,
-        contractValue: data.contractValue || 0,
-        eventsSponsored: data.eventsSponsored || 0
+        contractValue: Number(data.contractValue) || 0,
+        eventsSponsored: Number(data.eventsSponsored) || 0,
+        contractStart: formatDate(data.contractStart),
+        contractEnd: formatDate(data.contractEnd),
+        renewalProbability: Number(data.renewalProbability) || 0
       };
       
       updateSponsorMutation.mutate({ id: selectedSponsor.id, data: formattedData });

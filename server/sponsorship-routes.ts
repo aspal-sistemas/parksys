@@ -253,7 +253,10 @@ export function registerSponsorshipRoutes(app: any, apiRouter: any, isAuthentica
   apiRouter.put('/sponsors/:id', isAuthenticated, async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
+      console.log('🔧 Datos recibidos para actualización:', req.body);
+      
       const validatedData = insertSponsorSchema.parse(req.body);
+      console.log('✅ Datos validados:', validatedData);
       
       const [updatedSponsor] = await db
         .update(sponsors)
@@ -265,9 +268,14 @@ export function registerSponsorshipRoutes(app: any, apiRouter: any, isAuthentica
         return res.status(404).json({ error: 'Patrocinador no encontrado' });
       }
       
+      console.log('✅ Patrocinador actualizado exitosamente');
       res.json(updatedSponsor);
     } catch (error) {
       console.error('Error al actualizar patrocinador:', error);
+      if (error.name === 'ZodError') {
+        console.error('Detalles del error de validación:', error.errors);
+        return res.status(400).json({ error: 'Datos inválidos', details: error.errors });
+      }
       res.status(500).json({ error: 'Error interno del servidor' });
     }
   });
