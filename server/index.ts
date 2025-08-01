@@ -1064,6 +1064,7 @@ import visitorsDashboardRoutes from "./visitors-dashboard-routes";
 import { registerParkEvaluationRoutes } from "./park-evaluations-routes";
 import { registerEvaluationCriteriaRoutes } from "./evaluation-criteria-routes";
 import { registerSponsorshipRoutes } from "./sponsorship-routes";
+import feedbackRouter from "./feedback-routes";
 import { seedTreeSpecies } from "./seed-tree-species";
 
 import { initializeDatabase } from "./initialize-db";
@@ -1147,6 +1148,14 @@ async function initializeDatabaseAsync() {
     console.log("✅ Rutas de patrocinios registradas");
   } catch (error) {
     console.error("❌ Error registrando rutas de patrocinios:", error);
+  }
+
+  // Registrar rutas de feedback de visitantes
+  try {
+    app.use("/api/visitor-feedback", feedbackRouter);
+    console.log("✅ Rutas de feedback de visitantes registradas");
+  } catch (error) {
+    console.error("❌ Error registrando rutas de feedback:", error);
   }
 
   // Inicializar otras funcionalidades críticas en segundo plano
