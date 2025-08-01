@@ -54,6 +54,7 @@ import { updateSkillsRouter } from "./updateSkills";
 import { registerEventRoutes } from "./events-routes";
 import { registerActivityRoutes } from "./activitiesRoutes";
 import advertisingRoutes from "./advertising-routes";
+import activityRegistrationsRouter from "./routes/activity-registrations";
 import { uploadAdvertising, handleAdvertisingUpload } from "./api/advertising-upload";
 import { 
   insertParkSchema, insertCommentSchema, insertIncidentSchema, 
@@ -189,6 +190,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Registramos las rutas de imágenes de actividades
   apiRouter.use('/activities', activityImageRouter);
+  
+  // Registramos las rutas de inscripciones de actividades
+  apiRouter.use('/activity-registrations', activityRegistrationsRouter);
+  console.log('📝 Rutas de inscripciones de actividades registradas');
   
   // Registramos las rutas del módulo de arbolado
   registerTreeRoutes(app, apiRouter, isAuthenticated);

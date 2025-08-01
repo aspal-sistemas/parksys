@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, useLocation } from 'wouter';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { useToast } from '@/hooks/use-toast';
 
 interface ActivityData {
   id: number;
@@ -68,6 +69,16 @@ function ActivityDetailPage() {
   const params = useParams();
   const [, setLocation] = useLocation();
   const activityId = params.id;
+  const { toast } = useToast();
+
+  // Estado del formulario de inscripción
+  const [formData, setFormData] = useState({
+    participantName: '',
+    participantEmail: '',
+    participantPhone: '',
+    notes: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { data: activity, isLoading, error } = useQuery<ActivityData>({
     queryKey: [`/api/activities/${activityId}`],
@@ -78,6 +89,82 @@ function ActivityDetailPage() {
     queryKey: [`/api/activities/${activityId}/images`],
     enabled: !!activityId,
   });
+
+  // Mutación para enviar inscripción
+  const registrationMutation = useMutation({
+    mutationFn: async (registrationData: any) => {
+      const response = await fetch('/api/activity-registrations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(registrationData),
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Error al registrar inscripción');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "¡Inscripción exitosa!",
+        description: activity?.requiresApproval 
+          ? "Tu solicitud ha sido enviada y será revisada. Recibirás una confirmación por correo."
+          : "Te has inscrito exitosamente. Recibirás una confirmación por correo.",
+      });
+      // Limpiar formulario
+      setFormData({
+        participantName: '',
+        participantEmail: '',
+        participantPhone: '',
+        notes: ''
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error al inscribirse",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Manejar cambios en el formulario
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  // Manejar envío del formulario
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.participantName || !formData.participantEmail || !formData.participantPhone) {
+      toast({
+        title: "Error",
+        description: "Por favor completa todos los campos obligatorios",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const registrationData = {
+      activityId: parseInt(activityId!),
+      participantName: formData.participantName,
+      participantEmail: formData.participantEmail,
+      participantPhone: formData.participantPhone,
+      notes: formData.notes || null,
+      acceptsTerms: true
+    };
+
+    registrationMutation.mutate(registrationData);
+  };
 
   if (isLoading) {
     return (
@@ -212,13 +299,16 @@ function ActivityDetailPage() {
                   </div>
 
                   {/* Formulario simple de inscripción */}
-                  <form className="space-y-4">
+                  <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Nombre completo *
                       </label>
                       <input
                         type="text"
+                        name="participantName"
+                        value={formData.participantName}
+                        onChange={handleInputChange}
                         required
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                         placeholder="Tu nombre completo"
@@ -231,6 +321,9 @@ function ActivityDetailPage() {
                       </label>
                       <input
                         type="email"
+                        name="participantEmail"
+                        value={formData.participantEmail}
+                        onChange={handleInputChange}
                         required
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                         placeholder="tu@email.com"
@@ -243,6 +336,9 @@ function ActivityDetailPage() {
                       </label>
                       <input
                         type="tel"
+                        name="participantPhone"
+                        value={formData.participantPhone}
+                        onChange={handleInputChange}
                         required
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                         placeholder="(555) 123-4567"
@@ -254,15 +350,22 @@ function ActivityDetailPage() {
                         Comentarios adicionales
                       </label>
                       <textarea
+                        name="notes"
+                        value={formData.notes}
+                        onChange={handleInputChange}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                         rows={3}
                         placeholder="¿Alguna pregunta o información adicional?"
                       />
                     </div>
 
-                    <Button type="submit" className="w-full bg-green-600 hover:bg-green-700 text-white">
+                    <Button 
+                      type="submit" 
+                      disabled={registrationMutation.isPending}
+                      className="w-full bg-green-600 hover:bg-green-700 text-white disabled:opacity-50"
+                    >
                       <Calendar className="h-4 w-4 mr-2" />
-                      Inscribirme a la actividad
+                      {registrationMutation.isPending ? 'Inscribiendo...' : 'Inscribirme a la actividad'}
                     </Button>
                   </form>
 
