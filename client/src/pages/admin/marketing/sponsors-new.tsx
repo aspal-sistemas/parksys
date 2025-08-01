@@ -61,7 +61,7 @@ const packageSchema = z.object({
 
 const sponsorSchema = z.object({
   name: z.string().min(1, "El nombre es requerido"),
-  category: z.string().min(1, "La categoría es requerida"),
+  type: z.string().min(1, "El tipo es requerido"),
   logo: z.string().optional(),
   representative: z.string().min(1, "El representante es requerido"),
   email: z.string().email("Email inválido"),
@@ -180,7 +180,7 @@ const SponsorsManagement = () => {
     resolver: zodResolver(sponsorSchema),
     defaultValues: {
       name: '',
-      category: '',
+      type: '',
       logo: '',
       representative: '',
       email: '',
@@ -202,7 +202,7 @@ const SponsorsManagement = () => {
     resolver: zodResolver(sponsorSchema),
     defaultValues: {
       name: '',
-      category: '',
+      type: '',
       logo: '',
       representative: '',
       email: '',
@@ -374,6 +374,7 @@ const SponsorsManagement = () => {
 
       const formattedData = {
         ...data,
+        category: data.type, // Map 'type' to 'category' for backend compatibility
         logo: logoUrl,
         contractValue: data.contractValue.toString(),
         eventsSponsored: data.eventsSponsored || 0
@@ -396,7 +397,7 @@ const SponsorsManagement = () => {
     
     editSponsorForm.reset({
       name: sponsor.name,
-      category: sponsor.category,
+      type: sponsor.category, // Map 'category' from backend to 'type' in form
       logo: sponsor.logo || '',
       representative: sponsor.representative,
       email: sponsor.email,
@@ -454,6 +455,7 @@ const SponsorsManagement = () => {
 
       const formattedData = {
         ...data,
+        category: data.type, // Map 'type' to 'category' for backend compatibility
         logo: logoUrl,
         contractValue: data.contractValue.toString(),
         eventsSponsored: data.eventsSponsored || 0
@@ -485,7 +487,6 @@ const SponsorsManagement = () => {
   const sponsorTiers = {
     amatista: { 
       name: "Amatista", 
-      icon: "💜", 
       color: "bg-purple-100 text-purple-800", 
       price: 25000,
       level: 1,
@@ -493,7 +494,6 @@ const SponsorsManagement = () => {
     },
     esmeralda: { 
       name: "Esmeralda", 
-      icon: "💚", 
       color: "bg-emerald-100 text-emerald-800", 
       price: 50000,
       level: 2,
@@ -501,7 +501,6 @@ const SponsorsManagement = () => {
     },
     zafiro: { 
       name: "Zafiro", 
-      icon: "💙", 
       color: "bg-blue-100 text-blue-800", 
       price: 75000,
       level: 3,
@@ -509,7 +508,6 @@ const SponsorsManagement = () => {
     },
     onix: { 
       name: "Ónix", 
-      icon: "🖤", 
       color: "bg-gray-100 text-gray-800", 
       price: 125000,
       level: 4,
@@ -517,7 +515,6 @@ const SponsorsManagement = () => {
     },
     cobre: { 
       name: "Cobre", 
-      icon: "🟫", 
       color: "bg-orange-100 text-orange-800", 
       price: 200000,
       level: 5,
@@ -525,7 +522,6 @@ const SponsorsManagement = () => {
     },
     bronce: { 
       name: "Bronce", 
-      icon: "🥉", 
       color: "bg-amber-100 text-amber-800", 
       price: 300000,
       level: 6,
@@ -533,7 +529,6 @@ const SponsorsManagement = () => {
     },
     plata: { 
       name: "Plata", 
-      icon: "🥈", 
       color: "bg-slate-100 text-slate-800", 
       price: 450000,
       level: 7,
@@ -541,7 +536,6 @@ const SponsorsManagement = () => {
     },
     oro: { 
       name: "Oro", 
-      icon: "🥇", 
       color: "bg-yellow-100 text-yellow-800", 
       price: 650000,
       level: 8,
@@ -549,7 +543,6 @@ const SponsorsManagement = () => {
     },
     platino: { 
       name: "Platino", 
-      icon: "⚪", 
       color: "bg-gray-200 text-gray-900", 
       price: 900000,
       level: 9,
@@ -557,7 +550,6 @@ const SponsorsManagement = () => {
     },
     diamante: { 
       name: "Diamante", 
-      icon: "💎", 
       color: "bg-cyan-100 text-cyan-800", 
       price: 1200000,
       level: 10,
@@ -573,7 +565,6 @@ const SponsorsManagement = () => {
   const getTierInfo = (category: string) => {
     return sponsorTiers[category as keyof typeof sponsorTiers] || {
       name: category,
-      icon: "🏢",
       color: "bg-gray-100 text-gray-800",
       price: 0,
       level: 0,
@@ -688,14 +679,14 @@ const SponsorsManagement = () => {
                         />
                         <FormField
                           control={sponsorForm.control}
-                          name="category"
+                          name="type"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Categoría</FormLabel>
+                              <FormLabel>Tipo</FormLabel>
                               <Select onValueChange={field.onChange} value={field.value}>
                                 <FormControl>
                                   <SelectTrigger>
-                                    <SelectValue placeholder="Selecciona categoría" />
+                                    <SelectValue placeholder="Selecciona tipo" />
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
@@ -1371,10 +1362,10 @@ const SponsorsManagement = () => {
                 <div className="grid grid-cols-3 gap-4">
                   <div>
                     <h3 className="font-semibold text-lg">{selectedSponsor.name}</h3>
-                    <p className="text-gray-600">{selectedSponsor.category}</p>
+                    <p className="text-gray-600">{selectedSponsor.type}</p>
                     <div className="flex space-x-2 mt-2">
                       <Badge className={getCategoryColor(selectedSponsor.packageCategory)}>
-                        {getTierInfo(selectedSponsor.packageCategory).icon} {getTierInfo(selectedSponsor.packageCategory).name}
+                        {getTierInfo(selectedSponsor.packageCategory).name}
                       </Badge>
                       <Badge className={getStatusColor(selectedSponsor.status)}>
                         {selectedSponsor.status}
@@ -1502,14 +1493,14 @@ const SponsorsManagement = () => {
                   />
                   <FormField
                     control={editSponsorForm.control}
-                    name="category"
+                    name="type"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Categoría</FormLabel>
+                        <FormLabel>Tipo</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Selecciona categoría" />
+                              <SelectValue placeholder="Selecciona tipo" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -1681,8 +1672,7 @@ const SponsorsManagement = () => {
                           <SelectContent>
                             {Object.entries(sponsorTiers).map(([key, tier]) => (
                               <SelectItem key={key} value={key}>
-                                <div className="flex items-center space-x-2">
-                                  <span>{tier.icon}</span>
+                                <div className="flex items-center justify-between w-full">
                                   <span>{tier.name}</span>
                                   <span className="text-xs text-gray-500">
                                     (${tier.price.toLocaleString()})
