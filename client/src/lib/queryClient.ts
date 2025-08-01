@@ -25,7 +25,7 @@ export async function safeApiRequest(url: string, options: any = {}) {
     }
   }
   
-  requestHeaders["Authorization"] = storedToken ? `Bearer ${storedToken}` : "Bearer direct-token-1750522117022";
+  requestHeaders["Authorization"] = storedToken ? `Bearer ${storedToken}` : "Bearer direct-token-1754063087518";
   requestHeaders["X-User-Id"] = userId;
   requestHeaders["X-User-Role"] = userRole;
 
@@ -96,7 +96,7 @@ export async function apiRequest(
       }
     }
     
-    headers["Authorization"] = storedToken ? `Bearer ${storedToken}` : "Bearer direct-token-1750522117022";
+    headers["Authorization"] = storedToken ? `Bearer ${storedToken}` : "Bearer direct-token-1754063087518";
     headers["X-User-Id"] = userId;
     headers["X-User-Role"] = userRole;
   }
