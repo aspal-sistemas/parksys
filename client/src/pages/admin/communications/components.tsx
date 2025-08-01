@@ -755,19 +755,34 @@ export const QueueSection: React.FC = () => {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center space-x-2 mb-1">
                       <h4 className="font-medium text-sm truncate">{email.subject}</h4>
-                      <Badge variant="outline" className="text-xs">{email.module}</Badge>
+                      {email.templateId && (
+                        <Badge variant="outline" className="text-xs">
+                          Plantilla #{email.templateId}
+                        </Badge>
+                      )}
                     </div>
-                    <p className="text-xs text-gray-600 mb-1">Para: {email.recipient}</p>
-                    <p className="text-xs text-gray-500">Plantilla: {email.template}</p>
+                    <p className="text-xs text-gray-600 mb-1">Para: {email.to}</p>
+                    <p className="text-xs text-gray-500">
+                      Programado: {new Date(email.scheduledFor).toLocaleString()}
+                    </p>
+                    {email.attempts > 0 && (
+                      <p className="text-xs text-orange-600">
+                        Intentos: {email.attempts}/{email.maxAttempts}
+                      </p>
+                    )}
                   </div>
                   
                   <div className="flex flex-col items-end space-y-1 min-w-0">
                     <Badge className={`text-xs ${getStatusBadge(email.status)}`}>
                       {email.status.charAt(0).toUpperCase() + email.status.slice(1)}
                     </Badge>
-                    <p className="text-xs text-gray-500">{email.scheduledFor}</p>
-                    {email.retries > 0 && (
-                      <p className="text-xs text-red-500">Reintentos: {email.retries}</p>
+                    <p className="text-xs text-gray-500">
+                      {new Date(email.createdAt).toLocaleDateString()}
+                    </p>
+                    {email.errorMessage && (
+                      <p className="text-xs text-red-500" title={email.errorMessage}>
+                        Error ⚠️
+                      </p>
                     )}
                   </div>
                 </div>

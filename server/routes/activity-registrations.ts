@@ -88,6 +88,7 @@ async function sendRegistrationConfirmationEmail(registration: any, activity: an
       subject: subject,
       htmlContent: htmlContent,
       textContent: `Hola ${registration.participant_name}, hemos recibido tu inscripción para ${activity.title}. ${activity.requires_approval ? 'Está siendo revisada.' : 'Ha sido confirmada.'}`,
+      templateId: 15225, // ID de la plantilla "Confirmación de Inscripción - Actividad"
       priority: 'normal' as const,
       metadata: {
         module: 'Actividades',
@@ -187,6 +188,7 @@ async function sendRegistrationApprovalEmail(registration: any, activity: any) {
       subject: subject,
       htmlContent: htmlContent,
       textContent: `¡Hola ${registration.participant_name}! Tu inscripción para ${activity.title} ha sido aprobada. Nos vemos el ${format(new Date(activity.start_date), 'dd/MM/yyyy', { locale: es })} a las ${activity.start_time || 'hora por confirmar'}.`,
+      templateId: 15226, // ID de la plantilla "Aprobación de Inscripción - Actividad"
       priority: 'high' as const,
       metadata: {
         module: 'Actividades',
