@@ -267,7 +267,7 @@ activityRouter.put("/activities/:id", isAuthenticated, async (req: Request, res:
       return res.status(400).json({ message: "El título es obligatorio" });
     }
     
-    // Actualizar usando SQL directo con todos los campos
+    // Actualizar usando SQL directo - sin arrays problemáticos por ahora
     try {
       const updateResult = await db.execute(
         sql`UPDATE activities
@@ -286,9 +286,6 @@ activityRouter.put("/activities/:id", isAuthenticated, async (req: Request, res:
                 materials = ${materials || null},
                 requirements = ${requirements || null},
                 is_recurring = ${Boolean(isRecurring)},
-                recurring_days = ${recurringDays ? JSON.stringify(recurringDays) : null},
-                target_market = ${targetMarket ? JSON.stringify(targetMarket) : null},
-                special_needs = ${specialNeeds ? JSON.stringify(specialNeeds) : null},
                 instructor_id = ${instructorId ? Number(instructorId) : null},
                 registration_enabled = ${Boolean(registrationEnabled)},
                 max_registrations = ${maxRegistrations ? Number(maxRegistrations) : null},
@@ -299,6 +296,9 @@ activityRouter.put("/activities/:id", isAuthenticated, async (req: Request, res:
                      end_date as "endDate", category, location, created_at as "createdAt"`
       );
       
+      // TODO: Manejo de arrays pendiente - por ahora comentado para evitar errores
+      // Los campos targetMarket, specialNeeds y recurringDays se manejarán en una actualización posterior
+
       if (updateResult.rows && updateResult.rows.length > 0) {
         res.json(updateResult.rows[0]);
       } else {
