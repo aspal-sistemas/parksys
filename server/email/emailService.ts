@@ -371,6 +371,17 @@ class EmailService {
   }
 
   private async sendWithNodemailer(options: EmailOptions): Promise<boolean> {
+    console.log('📧 [NODEMAILER] Preparando envío de email...');
+    console.log('📧 [NODEMAILER] Para:', options.to);
+    console.log('📧 [NODEMAILER] Asunto:', options.subject);
+    console.log('📧 [NODEMAILER] Contenido HTML length:', options.html?.length || 0);
+    console.log('📧 [NODEMAILER] Contenido Text length:', options.text?.length || 0);
+    
+    // Log de una muestra del contenido HTML para debug
+    if (options.html) {
+      console.log('📧 [NODEMAILER] HTML sample (primeros 200 chars):', options.html.substring(0, 200));
+    }
+
     const mailOptions = {
       from: options.from || this.defaultFrom,
       to: Array.isArray(options.to) ? options.to.join(', ') : options.to,
@@ -382,7 +393,9 @@ class EmailService {
       attachments: options.attachments,
     };
 
-    await nodemailerTransporter.sendMail(mailOptions);
+    console.log('📧 [NODEMAILER] Enviando email...');
+    const result = await nodemailerTransporter.sendMail(mailOptions);
+    console.log('📧 [NODEMAILER] Email enviado exitosamente:', result.messageId);
     return true;
   }
 

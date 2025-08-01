@@ -101,7 +101,10 @@ export class EmailTemplateService {
     const processedHtml = htmlTemplate(variables);
     
     // Optimizar CSS inline para mejor compatibilidad
-    const inlinedHtml = juice(processedHtml);
+    let inlinedHtml = juice(processedHtml);
+    
+    // Fix: Corregir comillas dobles escapadas que pueden causar problemas de renderizado
+    inlinedHtml = inlinedHtml.replace(/=""/g, '="').replace(/"">/g, '">');
     
     // Procesar el asunto
     const subjectTemplate = Handlebars.compile(templateData.subject);

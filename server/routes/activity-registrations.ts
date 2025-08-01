@@ -20,60 +20,60 @@ async function sendRegistrationConfirmationEmail(registration: any, activity: an
     const subject = `✅ Confirmación de Inscripción - ${activity.title}`;
     
     const htmlContent = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
-        <div style="background-color: white; border-radius: 10px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #16a34a; margin: 0; font-size: 28px;">🎯 ParkSys</h1>
+      <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;'>
+        <div style='background-color: white; border-radius: 10px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);'>
+          <div style='text-align: center; margin-bottom: 30px;'>
+            <h1 style='color: #16a34a; margin: 0; font-size: 28px;'>🎯 ParkSys</h1>
           </div>
           
-          <h2 style="color: #333; text-align: center; margin-bottom: 30px;">¡Inscripción Recibida!</h2>
+          <h2 style='color: #333; text-align: center; margin-bottom: 30px;'>¡Inscripción Recibida!</h2>
           
-          <div style="background-color: #f0f9ff; border-left: 4px solid #16a34a; padding: 20px; margin: 20px 0; border-radius: 0 8px 8px 0;">
-            <p style="margin: 0; color: #333; font-size: 16px;">
+          <div style='background-color: #f0f9ff; border-left: 4px solid #16a34a; padding: 20px; margin: 20px 0; border-radius: 0 8px 8px 0;'>
+            <p style='margin: 0; color: #333; font-size: 16px;'>
               <strong>Hola ${registration.participant_name},</strong>
             </p>
-            <p style="margin: 10px 0 0 0; color: #666;">
+            <p style='margin: 10px 0 0 0; color: #666;'>
               Hemos recibido tu inscripción para la actividad <strong>${activity.title}</strong> 
               ${activity.requires_approval ? ' y está siendo revisada por nuestro equipo' : ' y ha sido confirmada'}.
             </p>
           </div>
           
-          <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h3 style="color: #16a34a; margin-top: 0;">Detalles de la Actividad:</h3>
-            <ul style="list-style: none; padding: 0; margin: 0;">
-              <li style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;"><strong>📍 Actividad:</strong> ${activity.title}</li>
-              <li style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;"><strong>🏛️ Parque:</strong> ${activity.park_name || 'Por confirmar'}</li>
-              <li style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;"><strong>📅 Fecha:</strong> ${format(new Date(activity.start_date), 'dd/MM/yyyy', { locale: es })}</li>
-              <li style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;"><strong>⏰ Hora:</strong> ${activity.start_time || 'Por confirmar'}</li>
-              <li style="padding: 8px 0;"><strong>📍 Ubicación:</strong> ${activity.location || 'Por confirmar'}</li>
+          <div style='background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;'>
+            <h3 style='color: #16a34a; margin-top: 0;'>Detalles de la Actividad:</h3>
+            <ul style='list-style: none; padding: 0; margin: 0;'>
+              <li style='padding: 8px 0; border-bottom: 1px solid #e2e8f0;'><strong>📍 Actividad:</strong> ${activity.title}</li>
+              <li style='padding: 8px 0; border-bottom: 1px solid #e2e8f0;'><strong>🏛️ Parque:</strong> ${activity.park_name || 'Por confirmar'}</li>
+              <li style='padding: 8px 0; border-bottom: 1px solid #e2e8f0;'><strong>📅 Fecha:</strong> ${format(new Date(activity.start_date), 'dd/MM/yyyy', { locale: es })}</li>
+              <li style='padding: 8px 0; border-bottom: 1px solid #e2e8f0;'><strong>⏰ Hora:</strong> ${activity.start_time || 'Por confirmar'}</li>
+              <li style='padding: 8px 0;'><strong>📍 Ubicación:</strong> ${activity.location || 'Por confirmar'}</li>
             </ul>
           </div>
           
-          <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h3 style="color: #16a34a; margin-top: 0;">Tus Datos:</h3>
-            <ul style="list-style: none; padding: 0; margin: 0;">
-              <li style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;"><strong>👤 Nombre:</strong> ${registration.participant_name}</li>
-              <li style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;"><strong>📧 Email:</strong> ${registration.participant_email}</li>
-              <li style="padding: 8px 0;"><strong>📱 Teléfono:</strong> ${registration.participant_phone || 'No proporcionado'}</li>
+          <div style='background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;'>
+            <h3 style='color: #16a34a; margin-top: 0;'>Tus Datos:</h3>
+            <ul style='list-style: none; padding: 0; margin: 0;'>
+              <li style='padding: 8px 0; border-bottom: 1px solid #e2e8f0;'><strong>👤 Nombre:</strong> ${registration.participant_name}</li>
+              <li style='padding: 8px 0; border-bottom: 1px solid #e2e8f0;'><strong>📧 Email:</strong> ${registration.participant_email}</li>
+              <li style='padding: 8px 0;'><strong>📱 Teléfono:</strong> ${registration.participant_phone || 'No proporcionado'}</li>
             </ul>
           </div>
           
           ${activity.requires_approval ? `
-          <div style="background-color: #fef3c7; border: 1px solid #f59e0b; padding: 15px; border-radius: 8px; margin: 20px 0;">
-            <p style="margin: 0; color: #92400e; font-size: 14px;">
+          <div style='background-color: #fef3c7; border: 1px solid #f59e0b; padding: 15px; border-radius: 8px; margin: 20px 0;'>
+            <p style='margin: 0; color: #92400e; font-size: 14px;'>
               <strong>ℹ️ Pendiente de Aprobación:</strong> Tu inscripción será revisada y recibirás otro correo con la confirmación final.
             </p>
           </div>
           ` : `
-          <div style="background-color: #dcfce7; border: 1px solid #16a34a; padding: 15px; border-radius: 8px; margin: 20px 0;">
-            <p style="margin: 0; color: #166534; font-size: 14px;">
+          <div style='background-color: #dcfce7; border: 1px solid #16a34a; padding: 15px; border-radius: 8px; margin: 20px 0;'>
+            <p style='margin: 0; color: #166534; font-size: 14px;'>
               <strong>✅ Inscripción Confirmada:</strong> ¡Ya estás registrado para esta actividad!
             </p>
           </div>
           `}
           
-          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
-            <p style="color: #666; font-size: 14px; margin: 0;">
+          <div style='text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0;'>
+            <p style='color: #666; font-size: 14px; margin: 0;'>
               Sistema de Gestión de Parques Urbanos<br>
               Fecha de inscripción: ${format(new Date(registration.registration_date), 'dd/MM/yyyy HH:mm', { locale: es })}
             </p>
@@ -123,57 +123,57 @@ async function sendRegistrationApprovalEmail(registration: any, activity: any) {
     const subject = `🎉 ¡Inscripción Aprobada! - ${activity.title}`;
     
     const htmlContent = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
-        <div style="background-color: white; border-radius: 10px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #16a34a; margin: 0; font-size: 28px;">🎯 ParkSys</h1>
+      <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;'>
+        <div style='background-color: white; border-radius: 10px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);'>
+          <div style='text-align: center; margin-bottom: 30px;'>
+            <h1 style='color: #16a34a; margin: 0; font-size: 28px;'>🎯 ParkSys</h1>
           </div>
           
-          <div style="text-align: center; margin-bottom: 30px;">
-            <div style="font-size: 48px; margin-bottom: 15px;">🎉</div>
-            <h2 style="color: #16a34a; margin: 0; font-size: 24px;">¡Tu Inscripción Ha Sido Aprobada!</h2>
+          <div style='text-align: center; margin-bottom: 30px;'>
+            <div style='font-size: 48px; margin-bottom: 15px;'>🎉</div>
+            <h2 style='color: #16a34a; margin: 0; font-size: 24px;'>¡Tu Inscripción Ha Sido Aprobada!</h2>
           </div>
           
-          <div style="background-color: #dcfce7; border-left: 4px solid #16a34a; padding: 20px; margin: 20px 0; border-radius: 0 8px 8px 0;">
-            <p style="margin: 0; color: #333; font-size: 16px;">
+          <div style='background-color: #dcfce7; border-left: 4px solid #16a34a; padding: 20px; margin: 20px 0; border-radius: 0 8px 8px 0;'>
+            <p style='margin: 0; color: #333; font-size: 16px;'>
               <strong>¡Excelente noticia, ${registration.participant_name}!</strong>
             </p>
-            <p style="margin: 10px 0 0 0; color: #666;">
+            <p style='margin: 10px 0 0 0; color: #666;'>
               Tu inscripción para <strong>${activity.title}</strong> ha sido aprobada oficialmente. 
               ¡Ya tienes tu lugar reservado!
             </p>
           </div>
           
-          <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h3 style="color: #16a34a; margin-top: 0;">📋 Detalles de tu Actividad:</h3>
-            <ul style="list-style: none; padding: 0; margin: 0;">
-              <li style="padding: 10px 0; border-bottom: 1px solid #e2e8f0;"><strong>🎯 Actividad:</strong> ${activity.title}</li>
-              <li style="padding: 10px 0; border-bottom: 1px solid #e2e8f0;"><strong>🏛️ Parque:</strong> ${activity.park_name || 'Por confirmar'}</li>
-              <li style="padding: 10px 0; border-bottom: 1px solid #e2e8f0;"><strong>📅 Fecha:</strong> ${format(new Date(activity.start_date), 'dd/MM/yyyy', { locale: es })}</li>
-              <li style="padding: 10px 0; border-bottom: 1px solid #e2e8f0;"><strong>⏰ Hora:</strong> ${activity.start_time || 'Por confirmar'}</li>
-              <li style="padding: 10px 0;"><strong>📍 Ubicación:</strong> ${activity.location || 'Por confirmar'}</li>
+          <div style='background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;'>
+            <h3 style='color: #16a34a; margin-top: 0;'>📋 Detalles de tu Actividad:</h3>
+            <ul style='list-style: none; padding: 0; margin: 0;'>
+              <li style='padding: 10px 0; border-bottom: 1px solid #e2e8f0;'><strong>🎯 Actividad:</strong> ${activity.title}</li>
+              <li style='padding: 10px 0; border-bottom: 1px solid #e2e8f0;'><strong>🏛️ Parque:</strong> ${activity.park_name || 'Por confirmar'}</li>
+              <li style='padding: 10px 0; border-bottom: 1px solid #e2e8f0;'><strong>📅 Fecha:</strong> ${format(new Date(activity.start_date), 'dd/MM/yyyy', { locale: es })}</li>
+              <li style='padding: 10px 0; border-bottom: 1px solid #e2e8f0;'><strong>⏰ Hora:</strong> ${activity.start_time || 'Por confirmar'}</li>
+              <li style='padding: 10px 0;'><strong>📍 Ubicación:</strong> ${activity.location || 'Por confirmar'}</li>
             </ul>
           </div>
           
-          <div style="background-color: #dbeafe; border: 1px solid #3b82f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h3 style="color: #1d4ed8; margin-top: 0;">📝 Instrucciones Importantes:</h3>
-            <ul style="color: #1e40af; margin: 0; padding-left: 20px;">
-              <li style="margin-bottom: 8px;">Llega <strong>15 minutos antes</strong> de la hora programada</li>
-              <li style="margin-bottom: 8px;">Trae ropa cómoda y adecuada para la actividad</li>
-              <li style="margin-bottom: 8px;">Si tienes alguna condición médica, avísanos al llegar</li>
+          <div style='background-color: #dbeafe; border: 1px solid #3b82f6; padding: 20px; border-radius: 8px; margin: 20px 0;'>
+            <h3 style='color: #1d4ed8; margin-top: 0;'>📝 Instrucciones Importantes:</h3>
+            <ul style='color: #1e40af; margin: 0; padding-left: 20px;'>
+              <li style='margin-bottom: 8px;'>Llega <strong>15 minutos antes</strong> de la hora programada</li>
+              <li style='margin-bottom: 8px;'>Trae ropa cómoda y adecuada para la actividad</li>
+              <li style='margin-bottom: 8px;'>Si tienes alguna condición médica, avísanos al llegar</li>
               <li>En caso de cancelación, avísanos con <strong>24 horas de anticipación</strong></li>
             </ul>
           </div>
           
-          <div style="background-color: #dcfce7; border: 1px solid #16a34a; padding: 15px; border-radius: 8px; margin: 20px 0; text-align: center;">
-            <p style="margin: 0; color: #166534; font-size: 16px;">
+          <div style='background-color: #dcfce7; border: 1px solid #16a34a; padding: 15px; border-radius: 8px; margin: 20px 0; text-align: center;'>
+            <p style='margin: 0; color: #166534; font-size: 16px;'>
               <strong>✅ Estado: CONFIRMADO</strong><br>
-              <span style="font-size: 14px;">Aprobado el ${format(new Date(registration.approved_at || new Date()), 'dd/MM/yyyy HH:mm', { locale: es })}</span>
+              <span style='font-size: 14px;'>Aprobado el ${format(new Date(registration.approved_at || new Date()), 'dd/MM/yyyy HH:mm', { locale: es })}</span>
             </p>
           </div>
           
-          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
-            <p style="color: #666; font-size: 14px; margin: 0;">
+          <div style='text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0;'>
+            <p style='color: #666; font-size: 14px; margin: 0;'>
               ¡Nos vemos pronto!<br>
               Sistema de Gestión de Parques Urbanos
             </p>

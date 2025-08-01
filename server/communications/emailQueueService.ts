@@ -164,8 +164,8 @@ export class EmailQueueService {
         cc: email.cc,
         bcc: email.bcc,
         subject: email.subject,
-        html: email.htmlContent,
-        text: email.textContent,
+        html: email.html_content,
+        text: email.text_content,
       });
 
       if (success) {
