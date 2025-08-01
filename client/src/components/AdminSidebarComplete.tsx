@@ -880,6 +880,13 @@ const AdminSidebarComplete: React.FC = () => {
               >
                 Calculadora
               </NavItem>
+              <NavItem 
+                href="/admin/payments" 
+                icon={<CreditCard className="h-4 w-4" />}
+                active={location === '/admin/payments'}
+              >
+                Registro de Pagos
+              </NavItem>
             </CollapsibleSubmenu>
 
             {/* CONTABILIDAD */}
