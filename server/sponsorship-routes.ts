@@ -136,31 +136,35 @@ export function registerSponsorshipRoutes(app: any, apiRouter: any, isAuthentica
     try {
       console.log('🔍 Obteniendo patrocinadores...');
       
-      // Usar query SQL directo para mapear correctamente los campos
+      // Usar query SQL directo con JOIN para obtener información de paquetes
       const result = await pool.query(`
         SELECT 
-          id,
-          name,
-          category,
-          logo,
-          representative,
-          email,
-          phone,
-          address,
-          website_url,
-          status,
-          package_name,
-          package_category,
-          contract_value,
-          contract_start,
-          contract_end,
-          events_sponsored,
-          renewal_probability,
-          notes,
-          created_at,
-          updated_at
-        FROM sponsors 
-        ORDER BY created_at DESC
+          s.id,
+          s.name,
+          s.category,
+          s.logo,
+          s.representative,
+          s.email,
+          s.phone,
+          s.address,
+          s.website_url,
+          s.status,
+          sp.name as package_name,
+          s.package_category,
+          s.contract_value,
+          s.contract_start,
+          s.contract_end,
+          s.events_sponsored,
+          s.renewal_probability,
+          s.notes,
+          s.created_at,
+          s.updated_at,
+          sp.level as package_level,
+          sp.benefits as package_benefits,
+          sp.price as package_price
+        FROM sponsors s
+        LEFT JOIN sponsorship_packages sp ON s.package_category = sp.category
+        ORDER BY s.created_at DESC
       `);
       
       // Mapear a camelCase manualmente
@@ -184,7 +188,10 @@ export function registerSponsorshipRoutes(app: any, apiRouter: any, isAuthentica
         renewalProbability: row.renewal_probability,
         notes: row.notes,
         createdAt: row.created_at,
-        updatedAt: row.updated_at
+        updatedAt: row.updated_at,
+        packageLevel: row.package_level,
+        packageBenefits: row.package_benefits,
+        packagePrice: row.package_price
       }));
       
       console.log('✅ Patrocinadores encontrados:', mappedSponsors.length);
