@@ -457,6 +457,13 @@ const SponsorsManagement = () => {
   const openEditSponsor = (sponsor: Sponsor) => {
     setSelectedSponsor(sponsor);
     
+    // Función para formatear fecha de ISO/timestamp a yyyy-MM-dd
+    const formatDateForInput = (dateValue: string | null) => {
+      if (!dateValue) return '';
+      const date = new Date(dateValue);
+      return date.toISOString().split('T')[0]; // yyyy-MM-dd format
+    };
+    
     editSponsorForm.reset({
       name: sponsor.name,
       type: sponsor.category, // Map 'category' from backend to 'type' in form
@@ -467,12 +474,12 @@ const SponsorsManagement = () => {
       address: sponsor.address || '',
       status: sponsor.status || '',
       packageName: sponsor.packageName,
-      contractStart: sponsor.contractStart || '',
+      contractStart: formatDateForInput(sponsor.contractStart),
       renewalProbability: sponsor.renewalProbability || 0,
       websiteUrl: sponsor.websiteUrl || '',
       notes: sponsor.notes || '',
       contractValue: parseFloat(sponsor.contractValue || '0'),
-      contractEnd: sponsor.contractEnd || '',
+      contractEnd: formatDateForInput(sponsor.contractEnd),
       eventsSponsored: sponsor.eventsSponsored || 0
     });
     

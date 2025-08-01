@@ -1,0 +1,29 @@
+chunk-SKRUXVEK.js?v=73ae3eab:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+i18next.js?v=73ae3eab:208 i18next::backendConnector: loaded namespace common for language es Object
+i18next.js?v=73ae3eab:208 i18next: languageChanged es
+i18next.js?v=73ae3eab:208 i18next: initialized Object
+js?key=AIzaSyDaqAAzVMAp-8OSbeOhV5pzwIo7cX509Io&libraries=places:1383 Google Maps JavaScript API has been loaded directly without loading=async. This can result in suboptimal performance. For best-practice loading patterns please see https://goo.gle/js-api-loading
+jda @ js?key=AIzaSyDaqAAzVMAp-8OSbeOhV5pzwIo7cX509Io&libraries=places:1383
+maps.googleapis.com/maps/api/mapsjs/gen_204?csp_test=true:1  Failed to load resource: net::ERR_BLOCKED_BY_CLIENT
+queryClient.ts:32 🌐 [SAFE API] GET /api/sponsorship-packages
+queryClient.ts:32 🌐 [SAFE API] GET /api/sponsors
+queryClient.ts:32 🌐 [SAFE API] GET /api/sponsorship-campaigns
+chunk-QT4D3PZW.js?v=73ae3eab:339 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+(anonymous) @ chunk-QT4D3PZW.js?v=73ae3eab:339
+The specified value "2025-08-10T00:00:00.000Z" does not conform to the required format, "yyyy-MM-dd".
+The specified value "2025-08-10T00:00:00.000Z" does not conform to the required format, "yyyy-MM-dd".
+The specified value "2025-08-10T00:00:00.000Z" does not conform to the required format, "yyyy-MM-dd".
+The specified value "2025-08-10T00:00:00.000Z" does not conform to the required format, "yyyy-MM-dd".
+The specified value "2025-08-10T00:00:00.000Z" does not conform to the required format, "yyyy-MM-dd".
+The specified value "2025-08-10T00:00:00.000Z" does not conform to the required format, "yyyy-MM-dd".
+The specified value "2025-08-10T00:00:00.000Z" does not conform to the required format, "yyyy-MM-dd".
+The specified value "2025-08-10T00:00:00.000Z" does not conform to the required format, "yyyy-MM-dd".
+The specified value "2025-08-10T00:00:00.000Z" does not conform to the required format, "yyyy-MM-dd".
+queryClient.ts:32 🌐 [SAFE API] PUT /api/sponsors/7753
+queryClient.ts:32 🌐 [SAFE API] GET /api/sponsors
+chunk-QT4D3PZW.js?v=73ae3eab:339 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+(anonymous) @ chunk-QT4D3PZW.js?v=73ae3eab:339
+chunk-QT4D3PZW.js?v=73ae3eab:339 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+(anonymous) @ chunk-QT4D3PZW.js?v=73ae3eab:339
+queryClient.ts:32 🌐 [SAFE API] PUT /api/sponsors/7753
+queryClient.ts:32 🌐 [SAFE API] GET /api/sponsors
