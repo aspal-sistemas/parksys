@@ -89,9 +89,11 @@ export class EmailQueueService {
    * Procesa la cola de emails
    */
   async processQueue() {
-    if (this.isProcessing) return;
+    if (this.isProcessing) return { processed: 0, failed: 0 };
 
     this.isProcessing = true;
+    let processed = 0;
+    let failed = 0;
 
     try {
       // Obtener emails pendientes que deben ser enviados
@@ -115,20 +117,28 @@ export class EmailQueueService {
 
       if (pendingEmails.length === 0) {
         this.isProcessing = false;
-        return;
+        return { processed: 0, failed: 0 };
       }
 
       console.log(`📧 Procesando ${pendingEmails.length} emails de la cola`);
 
       for (const email of pendingEmails) {
-        await this.processEmail(email);
+        const success = await this.processEmail(email);
+        if (success) {
+          processed++;
+        } else {
+          failed++;
+        }
         
         // Pequeña pausa entre emails para no sobrecargar
         await new Promise(resolve => setTimeout(resolve, 100));
       }
 
+      return { processed, failed };
+
     } catch (error) {
       console.error('❌ Error procesando cola de emails:', error);
+      return { processed, failed };
     } finally {
       this.isProcessing = false;
     }
@@ -137,7 +147,7 @@ export class EmailQueueService {
   /**
    * Procesa un email individual
    */
-  private async processEmail(email: any) {
+  private async processEmail(email: any): Promise<boolean> {
     try {
       // Actualizar estado a "sending"
       await db.update(emailQueue)
@@ -172,6 +182,7 @@ export class EmailQueueService {
         await this.logEmail(email, 'sent');
 
         console.log(`✅ Email enviado: ${email.to} - ${email.subject}`);
+        return true;
       } else {
         throw new Error('Falló el envío del email');
       }
@@ -207,6 +218,7 @@ export class EmailQueueService {
 
         console.log(`⏰ Email programado para reintento: ${email.to} - Intento ${email.attempts + 1}`);
       }
+      return false;
     }
   }
 
