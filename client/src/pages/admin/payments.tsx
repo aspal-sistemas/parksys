@@ -258,7 +258,7 @@ export default function PaymentsPage() {
                 <SelectValue placeholder="Tipo de servicio" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos los servicios</SelectItem>
+                <SelectItem value="all">Todos los servicios</SelectItem>
                 <SelectItem value="activity">Actividades</SelectItem>
                 <SelectItem value="event">Eventos</SelectItem>
                 <SelectItem value="space_reservation">Reservas de Espacios</SelectItem>
@@ -277,7 +277,7 @@ export default function PaymentsPage() {
                 <SelectValue placeholder="Estado del pago" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos los estados</SelectItem>
+                <SelectItem value="all">Todos los estados</SelectItem>
                 <SelectItem value="pending">Pendiente</SelectItem>
                 <SelectItem value="succeeded">Exitoso</SelectItem>
                 <SelectItem value="failed">Fallido</SelectItem>

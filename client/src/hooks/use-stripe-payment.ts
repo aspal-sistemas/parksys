@@ -113,8 +113,8 @@ export function useStripePayment() {
       
       if (filters?.page) queryParams.append('page', filters.page.toString());
       if (filters?.limit) queryParams.append('limit', filters.limit.toString());
-      if (filters?.serviceType) queryParams.append('serviceType', filters.serviceType);
-      if (filters?.status) queryParams.append('status', filters.status);
+      if (filters?.serviceType && filters.serviceType !== 'all') queryParams.append('serviceType', filters.serviceType);
+      if (filters?.status && filters.status !== 'all') queryParams.append('status', filters.status);
 
       const response = await apiRequest('GET', `/api/payments?${queryParams.toString()}`);
       const data = await response.json();

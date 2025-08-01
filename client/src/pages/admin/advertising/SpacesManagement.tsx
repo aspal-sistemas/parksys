@@ -280,7 +280,7 @@ export default function SpacesManagement() {
                 <SelectValue placeholder="Categoría" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todas</SelectItem>
+                <SelectItem value="all">Todas</SelectItem>
                 <SelectItem value="institutional">Institucional</SelectItem>
                 <SelectItem value="commercial">Comercial</SelectItem>
               </SelectContent>
@@ -290,7 +290,7 @@ export default function SpacesManagement() {
                 <SelectValue placeholder="Estado" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos</SelectItem>
+                <SelectItem value="all">Todos</SelectItem>
                 <SelectItem value="active">Activo</SelectItem>
                 <SelectItem value="inactive">Inactivo</SelectItem>
               </SelectContent>
