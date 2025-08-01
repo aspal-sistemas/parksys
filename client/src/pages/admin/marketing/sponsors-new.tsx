@@ -178,6 +178,18 @@ const SponsorsManagement = () => {
     }
   });
 
+  const deleteSponsorMutation = useMutation({
+    mutationFn: (id: number) => 
+      safeApiRequest(`/api/sponsors/${id}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/sponsors'] });
+      toast({ title: "Éxito", description: "Patrocinador eliminado exitosamente" });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Error al eliminar patrocinador", variant: "destructive" });
+    }
+  });
+
   const updatePackageMutation = useMutation({
     mutationFn: ({ id, data }: { id: number, data: any }) => 
       safeApiRequest(`/api/sponsorship-packages/${id}`, { method: 'PUT', data }),
@@ -1037,11 +1049,11 @@ const SponsorsManagement = () => {
                           </CardDescription>
                         </div>
                       </div>
-                      <div className="flex flex-col space-y-1">
-                        <Badge className="bg-emerald-100 text-emerald-800">
+                      <div className="flex flex-col space-y-1 items-end">
+                        <Badge className="bg-emerald-100 text-emerald-800 text-xs">
                           {getPackageInfo(sponsor.packageName)?.name || sponsor.packageName}
                         </Badge>
-                        <Badge className={getStatusColor(sponsor.status)}>
+                        <Badge className={`${getStatusColor(sponsor.status)} text-xs`}>
                           {sponsor.status.charAt(0).toUpperCase() + sponsor.status.slice(1)}
                         </Badge>
                       </div>
@@ -1071,24 +1083,39 @@ const SponsorsManagement = () => {
                       </div>
                     </div>
                     <div className="flex justify-between mt-4 pt-4 border-t">
+                      <div className="flex space-x-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setSelectedSponsor(sponsor);
+                            setIsViewSponsorOpen(true);
+                          }}
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          Ver
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => openEditSponsor(sponsor)}
+                        >
+                          <Edit className="h-4 w-4 mr-1" />
+                          Editar
+                        </Button>
+                      </div>
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => {
-                          setSelectedSponsor(sponsor);
-                          setIsViewSponsorOpen(true);
+                          if (confirm('¿Estás seguro de que deseas eliminar este patrocinador?')) {
+                            deleteSponsorMutation.mutate(sponsor.id);
+                          }
                         }}
+                        className="hover:bg-red-50 hover:border-red-200 hover:text-red-600"
                       >
-                        <Eye className="h-4 w-4 mr-1" />
-                        Ver
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => openEditSponsor(sponsor)}
-                      >
-                        <Edit className="h-4 w-4 mr-1" />
-                        Editar
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Eliminar
                       </Button>
                     </div>
                   </CardContent>
