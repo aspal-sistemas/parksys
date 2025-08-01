@@ -53,6 +53,7 @@ import { Switch } from '@/components/ui/switch';
 const packageSchema = z.object({
   name: z.string().min(1, "El nombre es requerido"),
   category: z.string().min(1, "La categoría es requerida"),
+  level: z.number().optional(), // Campo calculado automáticamente
   price: z.string().min(1, "El precio es requerido"),
   duration: z.number().min(1, "La duración es requerida"),
   benefits: z.array(z.string()).min(1, "Al menos un beneficio es requerido"),
@@ -481,13 +482,18 @@ const SponsorsManagement = () => {
     if (!selectedPackage) return;
     
     try {
+      // Calcular level automáticamente desde category
+      const levelNumber = parseInt(data.category.replace('nivel', ''));
       const formattedData = {
         ...data,
+        level: levelNumber,
         price: parseFloat(data.price).toString()
       };
       
+      console.log('Edit package data:', formattedData);
       updatePackageMutation.mutate({ id: selectedPackage.id, data: formattedData });
     } catch (error) {
+      console.error('Error processing package edit:', error);
       toast({
         title: "Error",
         description: "Error al procesar el paquete",
@@ -1073,7 +1079,17 @@ const SponsorsManagement = () => {
                     <form onSubmit={packageForm.handleSubmit((data) => {
                       console.log('Form data received:', data);
                       console.log('Form validation errors:', packageForm.formState.errors);
-                      createPackageMutation.mutate(data);
+                      
+                      // Calcular level automáticamente desde category
+                      const levelNumber = parseInt(data.category.replace('nivel', ''));
+                      const submissionData = {
+                        ...data,
+                        level: levelNumber,
+                        price: parseFloat(data.price).toString() // Asegurar formato correcto
+                      };
+                      
+                      console.log('Submission data:', submissionData);
+                      createPackageMutation.mutate(submissionData);
                     })} className="space-y-4">
                       <div className="grid grid-cols-2 gap-4">
                         <FormField
