@@ -45,10 +45,6 @@ const Home: React.FC = () => {
   const { data: sponsors = [], isLoading: sponsorsLoading } = useQuery({
     queryKey: ['/api/sponsors'],
   });
-
-  // Debug para verificar datos de sponsors
-  console.log('🏢 Sponsors data:', sponsors);
-  console.log('🔄 Sponsors loading:', sponsorsLoading);
   
   const allParks = parksResponse?.data || [];
   
@@ -471,10 +467,9 @@ const Home: React.FC = () => {
               // Loading skeleton
               Array.from({ length: 6 }).map((_, index) => (
                 <div key={index} className="group">
-                  <div className="bg-white rounded-2xl p-6 shadow-lg">
+                  <div className="bg-white rounded-2xl p-4 shadow-lg">
                     <div className="text-center">
-                      <div className="w-16 h-16 mx-auto mb-3 bg-gray-200 rounded-lg animate-pulse"></div>
-                      <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                      <div className="w-full h-20 mx-auto bg-gray-200 rounded-lg animate-pulse"></div>
                     </div>
                   </div>
                 </div>
@@ -494,11 +489,11 @@ const Home: React.FC = () => {
                       }}
                     >
                       <div className="text-center">
-                        <div className="mb-3 group-hover:scale-110 transition-transform duration-300">
+                        <div className="group-hover:scale-105 transition-transform duration-300">
                           <img 
                             src={sponsor.logo} 
                             alt={`Logo de ${sponsor.name}`}
-                            className="w-16 h-16 mx-auto object-contain rounded-lg"
+                            className="w-full h-20 mx-auto object-contain rounded-lg"
                             onError={(e) => {
                               // Fallback si la imagen no carga
                               const target = e.target as HTMLImageElement;
@@ -506,13 +501,10 @@ const Home: React.FC = () => {
                               target.nextElementSibling?.classList.remove('hidden');
                             }}
                           />
-                          <div className="w-16 h-16 mx-auto bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg flex items-center justify-center text-2xl hidden">
+                          <div className="w-full h-20 mx-auto bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg flex items-center justify-center text-3xl hidden">
                             🏢
                           </div>
                         </div>
-                        <p className="text-sm font-medium text-gray-700 group-hover:text-purple-600 transition-colors">
-                          {sponsor.name}
-                        </p>
                       </div>
                     </div>
                   </div>
