@@ -95,6 +95,8 @@ const ActivityRegistrationsPage = () => {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('registrations');
   const [summaryViewMode, setSummaryViewMode] = useState<'cards' | 'table'>('cards');
+  const [summaryCurrentPage, setSummaryCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
   const itemsPerPage = 10;
 
   // Obtener inscripciones
@@ -139,6 +141,13 @@ const ActivityRegistrationsPage = () => {
   const registrations = registrationsData?.registrations || [];
   const totalPages = registrationsData?.pagination?.totalPages || 1;
   const activities = activitiesData || [];
+
+  // Paginación para el resumen de actividades
+  const totalSummaryActivities = activitiesSummaryData?.length || 0;
+  const totalSummaryPages = Math.ceil(totalSummaryActivities / ITEMS_PER_PAGE);
+  const startIndex = (summaryCurrentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedSummaryData = activitiesSummaryData?.slice(startIndex, endIndex) || [];
 
   // Mutación para aprobar/rechazar inscripciones
   const statusMutation = useMutation({
@@ -818,7 +827,9 @@ const ActivityRegistrationsPage = () => {
                     <div className="flex items-center justify-between">
                       <div>
                         <h3 className="text-lg font-semibold">Resumen de Actividades</h3>
-                        <p className="text-gray-600">Estadísticas detalladas de inscripciones por actividad</p>
+                        <p className="text-gray-600">
+                          Estadísticas detalladas de inscripciones por actividad ({totalSummaryActivities} total)
+                        </p>
                       </div>
                       <div className="flex border rounded-lg p-1">
                         <Button
@@ -850,7 +861,7 @@ const ActivityRegistrationsPage = () => {
                     {/* Vista de Tarjetas */}
                     {summaryViewMode === 'cards' && (
                       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                        {activitiesSummaryData.map((activity: ActivitySummary) => (
+                        {paginatedSummaryData.map((activity: ActivitySummary) => (
                           <Card key={activity.id} className="hover:shadow-lg transition-shadow">
                             <CardHeader className="pb-2">
                               <div className="flex items-start justify-between">
@@ -958,7 +969,7 @@ const ActivityRegistrationsPage = () => {
                                 </tr>
                               </thead>
                               <tbody>
-                                {activitiesSummaryData.map((activity: ActivitySummary, index: number) => (
+                                {paginatedSummaryData.map((activity: ActivitySummary, index: number) => (
                                   <tr key={activity.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                                     <td className="p-4">
                                       <div>
@@ -1013,6 +1024,68 @@ const ActivityRegistrationsPage = () => {
                                 ))}
                               </tbody>
                             </table>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {/* Paginación del resumen */}
+                    {totalSummaryPages > 1 && (
+                      <Card>
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div className="text-sm text-gray-600">
+                              Mostrando {startIndex + 1}-{Math.min(endIndex, totalSummaryActivities)} de {totalSummaryActivities} actividades
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setSummaryCurrentPage(prev => Math.max(prev - 1, 1))}
+                                disabled={summaryCurrentPage === 1}
+                                className="flex items-center gap-1"
+                              >
+                                <ChevronLeft className="h-4 w-4" />
+                                Anterior
+                              </Button>
+                              
+                              <div className="flex items-center gap-1">
+                                {Array.from({ length: totalSummaryPages }, (_, i) => i + 1)
+                                  .filter(page => {
+                                    if (totalSummaryPages <= 7) return true;
+                                    if (page === 1 || page === totalSummaryPages) return true;
+                                    if (Math.abs(page - summaryCurrentPage) <= 1) return true;
+                                    return false;
+                                  })
+                                  .map((page, index, array) => (
+                                    <React.Fragment key={page}>
+                                      {index > 0 && array[index - 1] !== page - 1 && (
+                                        <span className="px-2 text-gray-400">...</span>
+                                      )}
+                                      <Button
+                                        variant={summaryCurrentPage === page ? "default" : "outline"}
+                                        size="sm"
+                                        onClick={() => setSummaryCurrentPage(page)}
+                                        className="w-8 h-8 p-0"
+                                      >
+                                        {page}
+                                      </Button>
+                                    </React.Fragment>
+                                  ))
+                                }
+                              </div>
+
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setSummaryCurrentPage(prev => Math.min(prev + 1, totalSummaryPages))}
+                                disabled={summaryCurrentPage === totalSummaryPages}
+                                className="flex items-center gap-1"
+                              >
+                                Siguiente
+                                <ChevronRight className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </div>
                         </CardContent>
                       </Card>
