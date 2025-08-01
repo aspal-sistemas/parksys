@@ -1061,6 +1061,8 @@ import { seedDatabase } from "./seed";
 import { createTreeTables } from "./create-tree-tables";
 import visitorCountRoutes from "./visitor-count-routes";
 import visitorsDashboardRoutes from "./visitors-dashboard-routes";
+import { registerParkEvaluationRoutes } from "./park-evaluations-routes";
+import { registerEvaluationCriteriaRoutes } from "./evaluation-criteria-routes";
 import { seedTreeSpecies } from "./seed-tree-species";
 
 import { initializeDatabase } from "./initialize-db";
@@ -1108,6 +1110,30 @@ async function initializeDatabaseAsync() {
     console.log("✅ Rutas de tiempo libre registradas");
   } catch (error) {
     console.error("❌ Error registrando rutas de tiempo libre:", error);
+  }
+
+  // Registrar rutas de evaluaciones de parques
+  try {
+    const parkEvaluationRouter = express.Router();
+    parkEvaluationRouter.use(express.json({ limit: '50mb' }));
+    parkEvaluationRouter.use(express.urlencoded({ extended: true, limit: '50mb' }));
+    registerParkEvaluationRoutes(app, parkEvaluationRouter, (req: Request, res: Response, next: NextFunction) => next());
+    app.use("/api", parkEvaluationRouter);
+    console.log("✅ Rutas de evaluaciones de parques registradas");
+  } catch (error) {
+    console.error("❌ Error registrando rutas de evaluaciones:", error);
+  }
+
+  // Registrar rutas de criterios de evaluación
+  try {
+    const evaluationCriteriaRouter = express.Router();
+    evaluationCriteriaRouter.use(express.json({ limit: '50mb' }));
+    evaluationCriteriaRouter.use(express.urlencoded({ extended: true, limit: '50mb' }));
+    registerEvaluationCriteriaRoutes(app, evaluationCriteriaRouter, (req: Request, res: Response, next: NextFunction) => next());
+    app.use("/api", evaluationCriteriaRouter);
+    console.log("✅ Rutas de criterios de evaluación registradas");
+  } catch (error) {
+    console.error("❌ Error registrando rutas de criterios:", error);
   }
 
   // Inicializar otras funcionalidades críticas en segundo plano
