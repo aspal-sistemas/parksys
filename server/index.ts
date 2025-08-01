@@ -1,5 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
+import { registerActivityPaymentRoutes } from "./routes/activityPayments";
 import { setupVite, serveStatic, log } from "./vite";
 import path from "path";
 import fs from "fs";
@@ -1110,6 +1111,9 @@ async function initializeDatabaseAsync() {
 
   // Registrar rutas principales primero
   const routeServer = await registerRoutes(app);
+  
+  // Registrar rutas de pagos de actividades
+  registerActivityPaymentRoutes(app);
   console.log("✅ Rutas principales registradas");
 
   // Registrar rutas críticas básicas

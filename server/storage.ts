@@ -90,6 +90,11 @@ export interface IStorage {
   getIncident(id: number): Promise<any>;
   updateIncidentStatus(id: number, status: string): Promise<any>;
   getParkIncidents(parkId: number): Promise<any[]>;
+  
+  // Activity Registration methods
+  getActivityById(id: number): Promise<any>;
+  getActivityRegistrationById(id: number): Promise<any>;
+  updateActivityRegistration(id: number, data: any): Promise<any>;
 }
 
 // Implementación simplificada
@@ -1720,4 +1725,40 @@ DatabaseStorage.prototype.updateIncidentStatus = async function(id: number, stat
 
 DatabaseStorage.prototype.getParkIncidents = async function(parkId: number): Promise<any[]> {
   return [];
+};
+
+// Activity Registration implementations
+DatabaseStorage.prototype.getActivityById = async function(id: number): Promise<any> {
+  try {
+    const result = await db.select().from(activities).where(eq(activities.id, id));
+    return result[0] || null;
+  } catch (error) {
+    console.error("Error getting activity by ID:", error);
+    return null;
+  }
+};
+
+DatabaseStorage.prototype.getActivityRegistrationById = async function(id: number): Promise<any> {
+  try {
+    const { activityRegistrations } = schema;
+    const result = await db.select().from(activityRegistrations).where(eq(activityRegistrations.id, id));
+    return result[0] || null;
+  } catch (error) {
+    console.error("Error getting activity registration by ID:", error);
+    return null;
+  }
+};
+
+DatabaseStorage.prototype.updateActivityRegistration = async function(id: number, data: any): Promise<any> {
+  try {
+    const { activityRegistrations } = schema;
+    const result = await db.update(activityRegistrations)
+      .set(data)
+      .where(eq(activityRegistrations.id, id))
+      .returning();
+    return result[0] || null;
+  } catch (error) {
+    console.error("Error updating activity registration:", error);
+    throw error;
+  }
 };

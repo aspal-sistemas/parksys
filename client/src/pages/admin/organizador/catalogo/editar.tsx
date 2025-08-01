@@ -93,7 +93,7 @@ const activitySchema = z.object({
   registrationEnabled: z.boolean().default(false),
   maxRegistrations: z.coerce.number().int().positive().optional(),
   registrationDeadline: z.string().optional(),
-  requiresApproval: z.boolean().default(true),
+  requiresApproval: z.boolean().default(false), // Cambiado a false para que sea opcional por defecto
 });
 
 // Función para formatear la fecha correctamente para la API
@@ -867,96 +867,120 @@ const EditarActividadPage = () => {
                     </FormItem>
                   )}
                 />
-                
-                {/* Precio */}
-                <div className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="isFree"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={(checked) => {
-                              field.onChange(checked);
-                              if (checked) {
-                                form.setValue("price", 0);
-                              }
-                            }}
-                          />
-                        </FormControl>
-                        <div className="space-y-1 leading-none">
-                          <FormLabel>
-                            Actividad gratuita
-                          </FormLabel>
-                          <FormDescription>
-                            Marca esta opción si la actividad no tiene costo.
-                          </FormDescription>
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                  
-                  {!form.watch("isFree") && (
-                    <div className="space-y-4">
-                      <FormField
-                        control={form.control}
-                        name="price"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Precio (MXN)</FormLabel>
-                            <FormControl>
-                              <Input
-                                type="number"
-                                min={0}
-                                step="0.01"
-                                value={field.value || ''}
-                                onChange={(e) => {
-                                  const value = e.target.value;
-                                  if (value === '') {
-                                    field.onChange(0);
-                                  } else {
-                                    const numericValue = parseFloat(value);
-                                    if (!isNaN(numericValue)) {
-                                      field.onChange(numericValue);
-                                    }
-                                  }
-                                }}
-                                placeholder="0.00"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={form.control}
-                        name="isPriceRandom"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                            <FormControl>
-                              <Checkbox
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                            <div className="space-y-1 leading-none">
-                              <FormLabel>
-                                Cuota de recuperación voluntaria
-                              </FormLabel>
-                              <FormDescription>
-                                El precio es sugerido, pero los participantes pueden aportar una cantidad diferente.
-                              </FormDescription>
-                            </div>
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+              </CardContent>
+            </Card>
+            
+            {/* Configuración de Precios y Pagos */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Configuración de Precios y Pagos</CardTitle>
+                <CardDescription>
+                  Configura el precio y las opciones de pago para la actividad
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Actividad gratuita */}
+                <FormField
+                  control={form.control}
+                  name="isFree"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-base">
+                          Actividad gratuita
+                        </FormLabel>
+                        <FormDescription>
+                          Esta actividad no tiene costo para los participantes
+                        </FormDescription>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={(checked) => {
+                            field.onChange(checked);
+                            if (checked) {
+                              form.setValue("price", 0);
+                            }
+                          }}
+                        />
+                      </FormControl>
+                    </FormItem>
                   )}
-                </div>
+                />
                 
+                {/* Campos de precio (solo mostrar si no es gratuita) */}
+                {!form.watch("isFree") && (
+                  <div className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="price"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Precio (MXN)</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              min={0}
+                              step="0.01"
+                              value={field.value || ''}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                if (value === '') {
+                                  field.onChange(0);
+                                } else {
+                                  const numericValue = parseFloat(value);
+                                  if (!isNaN(numericValue)) {
+                                    field.onChange(numericValue);
+                                  }
+                                }
+                              }}
+                              placeholder="0.00"
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Precio que pagarán los participantes para inscribirse
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="isPriceRandom"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                          <div className="space-y-0.5">
+                            <FormLabel className="text-base">
+                              Cuota de recuperación voluntaria
+                            </FormLabel>
+                            <FormDescription>
+                              El precio es sugerido, los participantes pueden aportar una cantidad diferente
+                            </FormDescription>
+                          </div>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+            
+            {/* Detalles complementarios */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Detalles Complementarios</CardTitle>
+                <CardDescription>
+                  Información adicional sobre materiales y requisitos
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
                 {/* Materiales */}
                 <FormField
                   control={form.control}

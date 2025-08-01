@@ -554,6 +554,12 @@ export const activityRegistrations = pgTable("activity_registrations", {
   hasParticipatedBefore: boolean("has_participated_before").default(false),
   paymentStatus: varchar("payment_status", { length: 20 }).default("pending"), // pending/paid/exempt (para actividades de pago)
   paymentReference: varchar("payment_reference", { length: 100 }),
+  // Campos Stripe para pagos
+  stripePaymentIntentId: varchar("stripe_payment_intent_id", { length: 100 }),
+  stripeCustomerId: varchar("stripe_customer_id", { length: 100 }),
+  stripeSessionId: varchar("stripe_session_id", { length: 100 }),
+  paidAmount: decimal("paid_amount", { precision: 10, scale: 2 }),
+  paymentDate: timestamp("payment_date"),
   // Consentimientos
   acceptsTerms: boolean("accepts_terms").default(false),
   acceptsPhotos: boolean("accepts_photos").default(false), // autoriza fotos durante la actividad
