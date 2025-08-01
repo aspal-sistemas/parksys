@@ -436,7 +436,7 @@ const VerActividadesPage = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="todos">Todos los parques</SelectItem>
-              {parques.map((parque) => (
+              {Array.isArray(parques) && parques.map((parque) => (
                 <SelectItem key={parque.id} value={parque.id.toString()}>
                   {parque.name}
                 </SelectItem>
