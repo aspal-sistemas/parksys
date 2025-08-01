@@ -763,24 +763,35 @@ export const QueueSection: React.FC = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Emails procesados</span>
-                <span className="font-bold">342</span>
+            {isLoading ? (
+              <div className="space-y-4">
+                <div className="animate-pulse space-y-4">
+                  <div className="h-4 bg-gray-200 rounded"></div>
+                  <div className="h-4 bg-gray-200 rounded"></div>
+                  <div className="h-4 bg-gray-200 rounded"></div>
+                  <div className="h-4 bg-gray-200 rounded"></div>
+                </div>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Tasa de éxito</span>
-                <span className="font-bold text-green-600">96.8%</span>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Total procesados</span>
+                  <span className="font-bold">{(stats.sent || 0) + (stats.failed || 0)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Exitosos</span>
+                  <span className="font-bold text-green-600">{stats.sent || 0}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Fallidos</span>
+                  <span className="font-bold text-red-600">{stats.failed || 0}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">En cola</span>
+                  <span className="font-bold text-orange-600">{stats.pending || 0}</span>
+                </div>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Tiempo promedio</span>
-                <span className="font-bold">2.3s</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Emails en cola</span>
-                <span className="font-bold text-orange-600">{statusCounts.pending}</span>
-              </div>
-            </div>
+            )}
           </CardContent>
         </Card>
 
@@ -792,23 +803,42 @@ export const QueueSection: React.FC = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {[
-                { module: "HR", count: 12, color: "bg-blue-500" },
-                { module: "Finanzas", count: 8, color: "bg-green-500" },
-                { module: "Eventos", count: 6, color: "bg-purple-500" },
-                { module: "Seguridad", count: 4, color: "bg-red-500" },
-                { module: "Activos", count: 3, color: "bg-yellow-500" }
-              ].map((item) => (
-                <div key={item.module} className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <div className={`w-3 h-3 rounded-full ${item.color}`}></div>
-                    <span className="text-sm">{item.module}</span>
-                  </div>
-                  <span className="font-bold text-sm">{item.count}</span>
+            {isLoading ? (
+              <div className="space-y-3">
+                <div className="animate-pulse space-y-3">
+                  <div className="h-4 bg-gray-200 rounded"></div>
+                  <div className="h-4 bg-gray-200 rounded"></div>
+                  <div className="h-4 bg-gray-200 rounded"></div>
                 </div>
-              ))}
-            </div>
+              </div>
+            ) : queueEmails.length === 0 ? (
+              <div className="text-center py-6">
+                <p className="text-gray-500 text-sm">No hay emails en cola</p>
+                <p className="text-gray-400 text-xs mt-1">Los módulos aparecerán aquí cuando haya actividad</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {/* Mostrar distribución real basada en metadata de emails */}
+                {Object.entries(
+                  queueEmails.reduce((acc, email) => {
+                    const module = email.metadata?.department || email.metadata?.module || 'Sistema';
+                    acc[module] = (acc[module] || 0) + 1;
+                    return acc;
+                  }, {} as Record<string, number>)
+                ).map(([module, count], index) => {
+                  const colors = ["bg-blue-500", "bg-green-500", "bg-purple-500", "bg-red-500", "bg-yellow-500", "bg-indigo-500"];
+                  return (
+                    <div key={module} className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <div className={`w-3 h-3 rounded-full ${colors[index % colors.length]}`}></div>
+                        <span className="text-sm">{module}</span>
+                      </div>
+                      <span className="font-bold text-sm">{count}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
