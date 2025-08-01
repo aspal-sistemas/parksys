@@ -94,7 +94,8 @@ import {
   Image,
   Scale,
   Monitor,
-  Grid
+  Grid,
+  Globe
 } from 'lucide-react';
 
 interface NavItemProps {
@@ -178,6 +179,11 @@ const ModuleNav: React.FC<ModuleNavProps> = ({
         iconColor: 'text-slate-600',
         textColor: 'text-slate-700',
         hoverBg: 'hover:bg-slate-50'
+      },
+      'public': {
+        iconColor: 'text-blue-600',
+        textColor: 'text-blue-700',
+        hoverBg: 'hover:bg-blue-50'
       }
     };
     
@@ -299,6 +305,11 @@ const AdminSidebarComplete: React.FC = () => {
   
   // Determinar qué módulo debe estar abierto basado en la ruta actual
   const getActiveModule = () => {
+    // Rutas públicas
+    if (location.startsWith('/public/')) {
+      return ['public'];
+    }
+    
     // Rutas que pertenecen al módulo "Gestión"
     if (location.startsWith('/admin/visitors') || 
         location.startsWith('/admin/parks') || 
@@ -371,6 +382,28 @@ const AdminSidebarComplete: React.FC = () => {
           defaultValue={defaultAccordion}
           className="space-y-1"
         >
+
+          {/* 0. PÁGINAS PÚBLICAS */}
+          <ModuleNav 
+            title="Páginas Públicas" 
+            icon={<Globe className="h-5 w-5" />}
+            value="public"
+          >
+            <NavItem 
+              href="/public/activities" 
+              icon={<Calendar className="h-5 w-5" />}
+              active={location.startsWith('/public/activities')}
+            >
+              Catálogo de Actividades
+            </NavItem>
+            <NavItem 
+              href="/parks" 
+              icon={<Map className="h-5 w-5" />}
+              active={location === '/parks'}
+            >
+              Directorio de Parques
+            </NavItem>
+          </ModuleNav>
 
           {/* 1. CONFIGURACIÓN */}
           <ModuleNav 
