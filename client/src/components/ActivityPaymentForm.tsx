@@ -18,6 +18,7 @@ interface ActivityPaymentFormProps {
     title: string;
     price: string | number;
     isFree: boolean;
+    isPriceRandom?: boolean;
     parkName: string;
   };
   registrationData: {
@@ -45,34 +46,30 @@ export function ActivityPaymentForm({
   const [paymentError, setPaymentError] = useState<string | null>(null);
 
   // Determine if this is a suggested price (random pricing)
-  const isPriceRandom = true; // TODO: Get this from activity data when available
+  const isPriceRandom = activity.isPriceRandom || false;
   const basePrice = parseFloat(activity.price.toString());
 
   // Payment processing mutation
-  const processPaymentMutation = useMutation({
+  const createPaymentIntentMutation = useMutation({
     mutationFn: async (paymentData: any) => {
       const response = await apiRequest(
         'POST',
-        `/api/activities/${activity.id}/payment`,
+        `/api/activities/${activity.id}/create-payment-intent`,
         paymentData
       );
       
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Error al procesar el pago');
+        throw new Error(error.error || 'Error al crear el pago');
       }
       
       return response.json();
-    },
-    onSuccess: (data) => {
-      setProcessing(false);
-      onPaymentSuccess(data);
     },
     onError: (error: Error) => {
       setProcessing(false);
       setPaymentError(error.message);
       toast({
-        title: "Error en el pago",
+        title: "Error creando el pago",
         description: error.message,
         variant: "destructive",
       });
@@ -109,30 +106,41 @@ export function ActivityPaymentForm({
     }
 
     try {
-      // Create payment method
-      const { error: methodError, paymentMethod } = await stripe.createPaymentMethod({
-        type: 'card',
-        card: cardElement,
-        billing_details: {
-          name: registrationData.fullName,
+      // Step 1: Create payment intent
+      const paymentIntentData = await createPaymentIntentMutation.mutateAsync({
+        customerData: {
+          fullName: registrationData.fullName,
           email: registrationData.email,
           phone: registrationData.phone,
         },
+        amount: finalAmount,
       });
 
-      if (methodError) {
-        throw new Error(methodError.message);
+      // Step 2: Confirm payment with Stripe
+      const { error: confirmError } = await stripe.confirmCardPayment(
+        paymentIntentData.clientSecret,
+        {
+          payment_method: {
+            card: cardElement,
+            billing_details: {
+              name: registrationData.fullName,
+              email: registrationData.email,
+              phone: registrationData.phone,
+            },
+          },
+        }
+      );
+
+      if (confirmError) {
+        throw new Error(confirmError.message);
       }
 
-      // Process payment
-      await processPaymentMutation.mutateAsync({
-        paymentMethodId: paymentMethod.id,
+      // Payment successful
+      setProcessing(false);
+      onPaymentSuccess({
+        paymentIntentId: paymentIntentData.paymentIntentId,
         amount: finalAmount,
-        registrationData,
-        participantName: registrationData.fullName,
-        participantEmail: registrationData.email,
-        participantPhone: registrationData.phone,
-        additionalInfo: registrationData.additionalInfo,
+        currency: 'mxn',
       });
 
     } catch (error: any) {

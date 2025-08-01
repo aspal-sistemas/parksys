@@ -32,6 +32,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { ActivityPaymentForm } from '@/components/ActivityPaymentForm';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
 
 // Schema for registration form
 const registrationSchema = z.object({
@@ -42,6 +44,9 @@ const registrationSchema = z.object({
 });
 
 type RegistrationFormData = z.infer<typeof registrationSchema>;
+
+// Initialize Stripe
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || '');
 
 export default function ActivityDetailPage() {
   const params = useParams();
@@ -475,18 +480,21 @@ export default function ActivityDetailPage() {
           </DialogHeader>
           
           {registrationData && (
-            <ActivityPaymentForm
-              activity={{
-                id: (activity as any).id,
-                title: (activity as any).title,
-                price: (activity as any).price,
-                isFree: (activity as any).isFree,
-                parkName: (activity as any).parkName,
-              }}
-              registrationData={registrationData}
-              onPaymentSuccess={handlePaymentSuccess}
-              onCancel={() => setShowPaymentDialog(false)}
-            />
+            <Elements stripe={stripePromise}>
+              <ActivityPaymentForm
+                activity={{
+                  id: (activity as any).id,
+                  title: (activity as any).title,
+                  price: (activity as any).price,
+                  isFree: (activity as any).isFree,
+                  isPriceRandom: (activity as any).isPriceRandom,
+                  parkName: (activity as any).parkName,
+                }}
+                registrationData={registrationData}
+                onPaymentSuccess={handlePaymentSuccess}
+                onCancel={() => setShowPaymentDialog(false)}
+              />
+            </Elements>
           )}
         </DialogContent>
       </Dialog>
