@@ -541,6 +541,7 @@ export const TemplatesSection: React.FC = () => {
 export const QueueSection: React.FC = () => {
   const [queueEmails, setQueueEmails] = React.useState<any[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
+  const [isProcessing, setIsProcessing] = React.useState(false);
   const [stats, setStats] = React.useState<any>({});
 
   // Obtener emails de la cola
@@ -574,6 +575,32 @@ export const QueueSection: React.FC = () => {
       }
     } catch (error) {
       console.error('Error fetching queue stats:', error);
+    }
+  };
+
+  const processQueue = async () => {
+    try {
+      setIsProcessing(true);
+      const response = await fetch('/api/communications/queue/process', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        console.log('✅ Cola procesada:', result);
+        // Refrescar datos después del procesamiento
+        await fetchQueueEmails();
+        await fetchQueueStats();
+      } else {
+        console.error('Error al procesar la cola:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error procesando cola:', error);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -677,9 +704,23 @@ export const QueueSection: React.FC = () => {
                 <Pause className="h-4 w-4 mr-2" />
                 Pausar Cola
               </Button>
-              <Button className="bg-[#00a587] hover:bg-[#067f5f]" size="sm">
-                <Play className="h-4 w-4 mr-2" />
-                Procesar Ahora
+              <Button 
+                className="bg-[#00a587] hover:bg-[#067f5f]" 
+                size="sm"
+                onClick={processQueue}
+                disabled={isProcessing || queueEmails.length === 0}
+              >
+                {isProcessing ? (
+                  <>
+                    <div className="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full"></div>
+                    Procesando...
+                  </>
+                ) : (
+                  <>
+                    <Play className="h-4 w-4 mr-2" />
+                    Procesar Ahora
+                  </>
+                )}
               </Button>
             </div>
           </CardTitle>

@@ -84,13 +84,13 @@ async function sendRegistrationConfirmationEmail(registration: any, activity: an
     
     // Agregar email a la cola en lugar de envío directo
     const emailData = {
+      to: registration.participant_email,
       subject: subject,
-      recipient: registration.participant_email,
-      template_name: 'Confirmación de Inscripción - Actividad',
-      html_content: htmlContent,
-      text_content: `Hola ${registration.participant_name}, hemos recibido tu inscripción para ${activity.title}. ${activity.requires_approval ? 'Está siendo revisada.' : 'Ha sido confirmada.'}`,
-      priority: 'normal',
-      variables: JSON.stringify({
+      htmlContent: htmlContent,
+      textContent: `Hola ${registration.participant_name}, hemos recibido tu inscripción para ${activity.title}. ${activity.requires_approval ? 'Está siendo revisada.' : 'Ha sido confirmada.'}`,
+      priority: 'normal' as const,
+      metadata: {
+        module: 'Actividades',
         participant_name: registration.participant_name,
         activity_title: activity.title,
         activity_date: format(new Date(activity.start_date), 'dd/MM/yyyy', { locale: es }),
@@ -98,9 +98,7 @@ async function sendRegistrationConfirmationEmail(registration: any, activity: an
         park_name: activity.park_name,
         location: activity.location,
         requires_approval: activity.requires_approval
-      }),
-      module: 'Actividades',
-      scheduled_for: new Date()
+      }
     };
 
     const result = await emailQueueService.addToQueue(emailData);
@@ -185,13 +183,13 @@ async function sendRegistrationApprovalEmail(registration: any, activity: any) {
     
     // Agregar email a la cola en lugar de envío directo
     const emailData = {
+      to: registration.participant_email,
       subject: subject,
-      recipient: registration.participant_email,
-      template_name: 'Aprobación de Inscripción - Actividad',
-      html_content: htmlContent,
-      text_content: `¡Hola ${registration.participant_name}! Tu inscripción para ${activity.title} ha sido aprobada. Nos vemos el ${format(new Date(activity.start_date), 'dd/MM/yyyy', { locale: es })} a las ${activity.start_time || 'hora por confirmar'}.`,
-      priority: 'high',
-      variables: JSON.stringify({
+      htmlContent: htmlContent,
+      textContent: `¡Hola ${registration.participant_name}! Tu inscripción para ${activity.title} ha sido aprobada. Nos vemos el ${format(new Date(activity.start_date), 'dd/MM/yyyy', { locale: es })} a las ${activity.start_time || 'hora por confirmar'}.`,
+      priority: 'high' as const,
+      metadata: {
+        module: 'Actividades',
         participant_name: registration.participant_name,
         activity_title: activity.title,
         activity_date: format(new Date(activity.start_date), 'dd/MM/yyyy', { locale: es }),
@@ -199,9 +197,7 @@ async function sendRegistrationApprovalEmail(registration: any, activity: any) {
         park_name: activity.park_name,
         location: activity.location,
         approved_at: registration.approved_at
-      }),
-      module: 'Actividades',
-      scheduled_for: new Date()
+      }
     };
 
     const result = await emailQueueService.addToQueue(emailData);

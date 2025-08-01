@@ -185,6 +185,24 @@ communicationsRouter.get('/queue/stats', async (req: Request, res: Response) => 
   }
 });
 
+// Procesar cola inmediatamente
+communicationsRouter.post('/queue/process', async (req: Request, res: Response) => {
+  try {
+    console.log('🚀 Iniciando procesamiento manual de la cola...');
+    const result = await emailQueueService.processQueue();
+    console.log('✅ Procesamiento de cola completado:', result);
+    res.json({ 
+      success: true, 
+      processed: result.processed || 0,
+      failed: result.failed || 0,
+      message: 'Cola procesada exitosamente'
+    });
+  } catch (error) {
+    console.error('Error procesando cola:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
 // ===== ENVÍO MASIVO =====
 
 // Obtener tipos de usuarios disponibles
