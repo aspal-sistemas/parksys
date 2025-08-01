@@ -123,14 +123,18 @@ const SponsorsManagement = () => {
 
   // Mutaciones para crear/actualizar datos
   const createPackageMutation = useMutation({
-    mutationFn: (data: PackageFormData) => safeApiRequest('/api/sponsorship-packages', 'POST', data),
+    mutationFn: (data: PackageFormData) => {
+      console.log('Creating package with data:', data);
+      return safeApiRequest('/api/sponsorship-packages', 'POST', data);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/sponsorship-packages'] });
       toast({ title: "Éxito", description: "Paquete creado exitosamente" });
       setIsNewPackageOpen(false);
       packageForm.reset();
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Error creating package:', error);
       toast({ title: "Error", description: "Error al crear paquete", variant: "destructive" });
     }
   });
@@ -405,7 +409,7 @@ const SponsorsManagement = () => {
         ...data,
         category: data.type, // Map 'type' to 'category' for backend compatibility
         logo: logoUrl,
-        contractValue: data.contractValue.toString(),
+        contractValue: data.contractValue || 0,
         eventsSponsored: data.eventsSponsored || 0
       };
       
@@ -428,19 +432,19 @@ const SponsorsManagement = () => {
       name: sponsor.name,
       type: sponsor.category, // Map 'category' from backend to 'type' in form
       logo: sponsor.logo || '',
-      representative: sponsor.representative,
-      email: sponsor.email,
-      phone: sponsor.phone,
-      address: sponsor.address,
-      status: sponsor.status,
+      representative: sponsor.representative || '',
+      email: sponsor.email || '',
+      phone: sponsor.phone || '',
+      address: sponsor.address || '',
+      status: sponsor.status || '',
       packageName: sponsor.packageName,
-      contractStart: sponsor.contractStart,
-      renewalProbability: sponsor.renewalProbability,
+      contractStart: sponsor.contractStart || '',
+      renewalProbability: sponsor.renewalProbability || 0,
       websiteUrl: sponsor.websiteUrl || '',
       notes: sponsor.notes || '',
-      contractValue: parseFloat(sponsor.contractValue),
-      contractEnd: sponsor.contractEnd,
-      eventsSponsored: sponsor.eventsSponsored
+      contractValue: parseFloat(sponsor.contractValue || '0'),
+      contractEnd: sponsor.contractEnd || '',
+      eventsSponsored: sponsor.eventsSponsored || 0
     });
     
     if (sponsor.logo) {
@@ -466,8 +470,8 @@ const SponsorsManagement = () => {
       category: pkg.category,
       price: pkg.price.toString(),
       duration: pkg.duration,
-      benefits: pkg.benefits,
-      isActive: pkg.isActive
+      benefits: pkg.benefits || [],
+      isActive: pkg.isActive || true
     });
     
     setIsEditPackageOpen(true);
