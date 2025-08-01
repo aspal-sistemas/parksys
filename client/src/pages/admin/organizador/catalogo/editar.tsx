@@ -369,6 +369,11 @@ const EditarActividadPage = () => {
   
   // Manejar el envío del formulario
   const onSubmit = (values: any) => {
+    console.log("🚀 onSubmit ejecutado con valores:", values);
+    console.log("🔍 Errores del formulario:", form.formState.errors);
+    console.log("🔍 Estado del formulario válido:", form.formState.isValid);
+    console.log("🔍 Campos sucios:", form.formState.dirtyFields);
+    
     actualizarActividad.mutate(values);
   };
   
@@ -1347,6 +1352,12 @@ const EditarActividadPage = () => {
               <Button 
                 type="submit"
                 disabled={actualizarActividad.isPending}
+                onClick={(e) => {
+                  console.log("🔥 Botón clickeado - evento submit");
+                  console.log("🔍 Form valid:", form.formState.isValid);
+                  console.log("🔍 Form errors:", form.formState.errors);
+                  // No prevenimos default, dejamos que el form maneje
+                }}
               >
                 {actualizarActividad.isPending ? (
                   <>
