@@ -192,6 +192,7 @@ export default function ActivityDetailPage() {
   const availableSlots = getAvailableSlots();
   const isFullyBooked = availableSlots === 0;
   const canRegister = activity && (activity as any).registrationEnabled && !isFullyBooked;
+  const activityData = activity as any;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -261,16 +262,37 @@ export default function ActivityDetailPage() {
                   </Badge>
                 )}
                 
+                {/* Price and payment info */}
+                {!activityData.isFree && canRegister && (
+                  <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <div className="flex items-center gap-2 text-sm text-blue-800">
+                      <CreditCard className="h-4 w-4" />
+                      <span className="font-medium">
+                        {activityData.isPriceRandom ? 'Cuota sugerida' : 'Precio fijo'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-blue-600 mt-1">
+                      {activityData.isPriceRandom 
+                        ? `Puedes contribuir desde $${parseFloat(activityData.price).toLocaleString('es-MX')} MXN o la cantidad que desees`
+                        : 'El pago se procesa de forma segura con Stripe'
+                      }
+                    </p>
+                  </div>
+                )}
+
                 <Button 
                   className="w-full mt-4" 
                   disabled={!canRegister}
                   onClick={() => setShowRegistrationDialog(true)}
+                  variant={activityData.isFree ? "default" : "default"}
                 >
                   {isFullyBooked 
                     ? 'Sin espacios disponibles' 
-                    : !(activity as any).registrationEnabled 
+                    : !activityData.registrationEnabled 
                     ? 'Inscripciones cerradas'
-                    : 'Inscribirse ahora'
+                    : activityData.isFree 
+                    ? 'Inscribirse gratis'
+                    : `Inscribirse - ${formatPrice()}`
                   }
                 </Button>
               </CardContent>

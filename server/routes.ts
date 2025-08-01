@@ -56,6 +56,7 @@ import { registerActivityRoutes } from "./activitiesRoutes";
 import advertisingRoutes from "./advertising-routes";
 import activityRegistrationsRouter from "./routes/activity-registrations";
 import paymentsRouter from "./routes/payments";
+import { registerActivityPaymentRoutes } from "./routes/activityPayments";
 import { uploadAdvertising, handleAdvertisingUpload } from "./api/advertising-upload";
 import { 
   insertParkSchema, insertCommentSchema, insertIncidentSchema, 
@@ -287,6 +288,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Registramos las rutas de inscripciones de actividades (DESPUÉS del endpoint específico)
   apiRouter.use('/activity-registrations', activityRegistrationsRouter);
   console.log('📝 Rutas de inscripciones de actividades registradas');
+  
+  // Registramos las rutas de pagos de actividades con Stripe
+  registerActivityPaymentRoutes(app);
+  console.log('💳 Rutas de pagos de actividades registradas');
   
   // Registramos las rutas del módulo de arbolado
   registerTreeRoutes(app, apiRouter, isAuthenticated);
