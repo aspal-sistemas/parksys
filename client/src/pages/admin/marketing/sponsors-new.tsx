@@ -481,87 +481,87 @@ const SponsorsManagement = () => {
     return matchesSearch && matchesCategory && matchesStatus;
   });
 
-  // Sistema de categorías inspirado en fauna silvestre (10 niveles)
+  // Sistema de categorías inspirado en gemas y metales preciosos (10 niveles)
   const sponsorTiers = {
-    hormiga: { 
-      name: "Hormiga", 
-      icon: "🐜", 
-      color: "bg-amber-100 text-amber-800", 
+    amatista: { 
+      name: "Amatista", 
+      icon: "💜", 
+      color: "bg-purple-100 text-purple-800", 
       price: 25000,
       level: 1,
       description: "Colaborador básico"
     },
-    abeja: { 
-      name: "Abeja", 
-      icon: "🐝", 
-      color: "bg-yellow-100 text-yellow-800", 
+    esmeralda: { 
+      name: "Esmeralda", 
+      icon: "💚", 
+      color: "bg-emerald-100 text-emerald-800", 
       price: 50000,
       level: 2,
       description: "Contribuidor activo"
     },
-    colibrí: { 
-      name: "Colibrí", 
-      icon: "🐦", 
-      color: "bg-emerald-100 text-emerald-800", 
+    zafiro: { 
+      name: "Zafiro", 
+      icon: "💙", 
+      color: "bg-blue-100 text-blue-800", 
       price: 75000,
       level: 3,
-      description: "Aliado ágil"
+      description: "Aliado valioso"
     },
-    ardilla: { 
-      name: "Ardilla", 
-      icon: "🐿️", 
-      color: "bg-orange-100 text-orange-800", 
+    onix: { 
+      name: "Ónix", 
+      icon: "🖤", 
+      color: "bg-gray-100 text-gray-800", 
       price: 125000,
       level: 4,
       description: "Socio estratégico"
     },
-    conejo: { 
-      name: "Conejo", 
-      icon: "🐰", 
-      color: "bg-pink-100 text-pink-800", 
+    cobre: { 
+      name: "Cobre", 
+      icon: "🟫", 
+      color: "bg-orange-100 text-orange-800", 
       price: 200000,
       level: 5,
       description: "Patrocinador comprometido"
     },
-    ciervo: { 
-      name: "Ciervo", 
-      icon: "🦌", 
-      color: "bg-green-100 text-green-800", 
+    bronce: { 
+      name: "Bronce", 
+      icon: "🥉", 
+      color: "bg-amber-100 text-amber-800", 
       price: 300000,
       level: 6,
       description: "Benefactor destacado"
     },
-    lobo: { 
-      name: "Lobo", 
-      icon: "🐺", 
+    plata: { 
+      name: "Plata", 
+      icon: "🥈", 
       color: "bg-slate-100 text-slate-800", 
       price: 450000,
       level: 7,
-      description: "Líder de manada"
+      description: "Patrocinador premium"
     },
-    águila: { 
-      name: "Águila", 
-      icon: "🦅", 
-      color: "bg-blue-100 text-blue-800", 
+    oro: { 
+      name: "Oro", 
+      icon: "🥇", 
+      color: "bg-yellow-100 text-yellow-800", 
       price: 650000,
       level: 8,
-      description: "Visionario supremo"
+      description: "Patrocinador de élite"
     },
-    león: { 
-      name: "León", 
-      icon: "🦁", 
-      color: "bg-yellow-100 text-yellow-900", 
+    platino: { 
+      name: "Platino", 
+      icon: "⚪", 
+      color: "bg-gray-200 text-gray-900", 
       price: 900000,
       level: 9,
-      description: "Rey de la selva"
+      description: "Patrocinador exclusivo"
     },
-    jaguar: { 
-      name: "Jaguar", 
-      icon: "🐆", 
-      color: "bg-purple-100 text-purple-800", 
+    diamante: { 
+      name: "Diamante", 
+      icon: "💎", 
+      color: "bg-cyan-100 text-cyan-800", 
       price: 1200000,
       level: 10,
-      description: "Guardián supremo"
+      description: "Patrocinador supremo"
     }
   };
 
