@@ -7,13 +7,15 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
 import { queryClient } from '@/lib/queryClient';
 import { 
   UserCheck, Search, Filter, Download, Users, 
   Calendar, MapPin, Clock, CheckCircle, XCircle, 
   AlertCircle, Eye, Mail, Phone, Grid3X3, List,
-  ChevronLeft, ChevronRight
+  ChevronLeft, ChevronRight, BarChart3, DollarSign,
+  TrendingUp, Target
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -54,6 +56,35 @@ interface ActivityRegistration {
   };
 }
 
+interface ActivitySummary {
+  id: number;
+  title: string;
+  description?: string;
+  category: string;
+  parkName: string;
+  startDate: string;
+  endDate?: string;
+  startTime: string;
+  location?: string;
+  capacity: number;
+  price: string;
+  isFree: boolean;
+  registrationStats: {
+    totalRegistrations: number;
+    approved: number;
+    pending: number;
+    rejected: number;
+    availableSlots: number;
+  };
+  revenue: {
+    totalRevenue: number;
+    potentialRevenue: number;
+  };
+  registrationEnabled: boolean;
+  maxRegistrations?: number;
+  registrationDeadline?: string;
+}
+
 const ActivityRegistrationsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -62,6 +93,8 @@ const ActivityRegistrationsPage = () => {
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
   const [selectedRegistration, setSelectedRegistration] = useState<ActivityRegistration | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('registrations');
+  const [summaryViewMode, setSummaryViewMode] = useState<'cards' | 'table'>('cards');
   const itemsPerPage = 10;
 
   // Obtener inscripciones
@@ -90,6 +123,17 @@ const ActivityRegistrationsPage = () => {
       if (!response.ok) throw new Error('Error al cargar actividades');
       return response.json();
     }
+  });
+
+  // Obtener resumen de actividades con estadísticas de inscripciones
+  const { data: activitiesSummaryData, isLoading: isLoadingSummary } = useQuery({
+    queryKey: ['/api/activities-summary'],
+    queryFn: async () => {
+      const response = await fetch('/api/activities-summary');
+      if (!response.ok) throw new Error('Error al cargar resumen de actividades');
+      return response.json();
+    },
+    enabled: activeTab === 'summary'
   });
 
   const registrations = registrationsData?.registrations || [];
@@ -193,6 +237,22 @@ const ActivityRegistrationsPage = () => {
             <p className="text-gray-600 mt-2">Administra las inscripciones ciudadanas a actividades públicas</p>
           </CardContent>
         </Card>
+
+        {/* Sistema de Pestañas */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="registrations" className="flex items-center gap-2">
+              <UserCheck className="h-4 w-4" />
+              Inscripciones
+            </TabsTrigger>
+            <TabsTrigger value="summary" className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4" />
+              Resumen de Actividades
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Pestaña de Inscripciones */}
+          <TabsContent value="registrations" className="space-y-6">
 
         {/* Estadísticas */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -739,6 +799,240 @@ const ActivityRegistrationsPage = () => {
             )}
           </DialogContent>
         </Dialog>
+          </TabsContent>
+
+          {/* Pestaña de Resumen de Actividades */}
+          <TabsContent value="summary" className="space-y-6">
+            {isLoadingSummary ? (
+              <div className="flex items-center justify-center h-64">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00a587] mx-auto mb-4"></div>
+                  <p className="text-gray-600">Cargando resumen de actividades...</p>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {/* Controles de vista para resumen */}
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-lg font-semibold">Resumen de Actividades</h3>
+                        <p className="text-gray-600">Estadísticas detalladas de inscripciones por actividad</p>
+                      </div>
+                      <div className="flex border rounded-lg p-1">
+                        <Button
+                          variant={summaryViewMode === 'cards' ? "default" : "ghost"}
+                          size="sm"
+                          onClick={() => setSummaryViewMode('cards')}
+                          className="flex items-center gap-1"
+                        >
+                          <Grid3X3 className="h-4 w-4" />
+                          Tarjetas
+                        </Button>
+                        <Button
+                          variant={summaryViewMode === 'table' ? "default" : "ghost"}
+                          size="sm"
+                          onClick={() => setSummaryViewMode('table')}
+                          className="flex items-center gap-1"
+                        >
+                          <List className="h-4 w-4" />
+                          Lista
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Contenido del resumen */}
+                {activitiesSummaryData && activitiesSummaryData.length > 0 ? (
+                  <>
+                    {/* Vista de Tarjetas */}
+                    {summaryViewMode === 'cards' && (
+                      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                        {activitiesSummaryData.map((activity: ActivitySummary) => (
+                          <Card key={activity.id} className="hover:shadow-lg transition-shadow">
+                            <CardHeader className="pb-2">
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  <CardTitle className="text-lg line-clamp-2">{activity.title}</CardTitle>
+                                  <p className="text-sm text-gray-600 mt-1">{activity.category}</p>
+                                </div>
+                                <Badge variant={activity.registrationEnabled ? "default" : "secondary"}>
+                                  {activity.registrationEnabled ? "Activa" : "Cerrada"}
+                                </Badge>
+                              </div>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                              {/* Información básica */}
+                              <div className="space-y-2 text-sm">
+                                <div className="flex items-center gap-2 text-gray-600">
+                                  <MapPin className="h-3 w-3" />
+                                  <span className="truncate">{activity.parkName}</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-gray-600">
+                                  <Calendar className="h-3 w-3" />
+                                  <span>{format(new Date(activity.startDate), 'dd/MM/yyyy', { locale: es })}</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-gray-600">
+                                  <Clock className="h-3 w-3" />
+                                  <span>{activity.startTime}</span>
+                                </div>
+                              </div>
+
+                              {/* Estadísticas de inscripciones */}
+                              <div className="border-t pt-4">
+                                <h4 className="font-medium text-sm mb-3">Estadísticas de Inscripciones</h4>
+                                <div className="grid grid-cols-2 gap-3">
+                                  <div className="text-center p-2 bg-blue-50 rounded">
+                                    <div className="text-lg font-bold text-blue-600">{activity.registrationStats.totalRegistrations}</div>
+                                    <div className="text-xs text-gray-600">Total</div>
+                                  </div>
+                                  <div className="text-center p-2 bg-green-50 rounded">
+                                    <div className="text-lg font-bold text-green-600">{activity.registrationStats.approved}</div>
+                                    <div className="text-xs text-gray-600">Aprobadas</div>
+                                  </div>
+                                  <div className="text-center p-2 bg-orange-50 rounded">
+                                    <div className="text-lg font-bold text-orange-600">{activity.registrationStats.pending}</div>
+                                    <div className="text-xs text-gray-600">Pendientes</div>
+                                  </div>
+                                  <div className="text-center p-2 bg-gray-50 rounded">
+                                    <div className="text-lg font-bold text-gray-600">{activity.registrationStats.availableSlots}</div>
+                                    <div className="text-xs text-gray-600">Disponibles</div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Información de capacidad y ingresos */}
+                              <div className="border-t pt-4">
+                                <div className="flex justify-between items-center mb-2">
+                                  <span className="text-sm font-medium">Capacidad</span>
+                                  <span className="text-sm text-gray-600">
+                                    {activity.registrationStats.totalRegistrations} / {activity.capacity || activity.maxRegistrations || 'Sin límite'}
+                                  </span>
+                                </div>
+                                {!activity.isFree && (
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-sm font-medium">Ingresos</span>
+                                    <div className="text-right">
+                                      <div className="text-sm font-bold text-green-600">
+                                        ${activity.revenue.totalRevenue.toLocaleString()}
+                                      </div>
+                                      <div className="text-xs text-gray-500">
+                                        Potencial: ${activity.revenue.potentialRevenue.toLocaleString()}
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Precio */}
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm font-medium">Precio</span>
+                                <Badge variant={activity.isFree ? "secondary" : "outline"}>
+                                  {activity.isFree ? 'Gratuita' : `$${parseFloat(activity.price).toLocaleString()}`}
+                                </Badge>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Vista de Lista/Tabla */}
+                    {summaryViewMode === 'table' && (
+                      <Card>
+                        <CardContent className="p-0">
+                          <div className="overflow-x-auto">
+                            <table className="w-full">
+                              <thead className="bg-gray-50 border-b">
+                                <tr>
+                                  <th className="text-left p-4 font-medium text-gray-900">Actividad</th>
+                                  <th className="text-left p-4 font-medium text-gray-900">Parque</th>
+                                  <th className="text-center p-4 font-medium text-gray-900">Total</th>
+                                  <th className="text-center p-4 font-medium text-gray-900">Aprobadas</th>
+                                  <th className="text-center p-4 font-medium text-gray-900">Pendientes</th>
+                                  <th className="text-center p-4 font-medium text-gray-900">Disponibles</th>
+                                  <th className="text-right p-4 font-medium text-gray-900">Ingresos</th>
+                                  <th className="text-center p-4 font-medium text-gray-900">Estado</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {activitiesSummaryData.map((activity: ActivitySummary, index: number) => (
+                                  <tr key={activity.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                                    <td className="p-4">
+                                      <div>
+                                        <div className="font-medium text-gray-900 line-clamp-1">{activity.title}</div>
+                                        <div className="text-sm text-gray-600">{activity.category}</div>
+                                        <div className="text-xs text-gray-500">
+                                          {format(new Date(activity.startDate), 'dd/MM/yyyy', { locale: es })} - {activity.startTime}
+                                        </div>
+                                      </div>
+                                    </td>
+                                    <td className="p-4 text-sm text-gray-600">{activity.parkName}</td>
+                                    <td className="p-4 text-center">
+                                      <span className="inline-flex items-center justify-center w-8 h-8 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                                        {activity.registrationStats.totalRegistrations}
+                                      </span>
+                                    </td>
+                                    <td className="p-4 text-center">
+                                      <span className="inline-flex items-center justify-center w-8 h-8 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                                        {activity.registrationStats.approved}
+                                      </span>
+                                    </td>
+                                    <td className="p-4 text-center">
+                                      <span className="inline-flex items-center justify-center w-8 h-8 bg-orange-100 text-orange-800 rounded-full text-sm font-medium">
+                                        {activity.registrationStats.pending}
+                                      </span>
+                                    </td>
+                                    <td className="p-4 text-center">
+                                      <span className="inline-flex items-center justify-center w-8 h-8 bg-gray-100 text-gray-800 rounded-full text-sm font-medium">
+                                        {activity.registrationStats.availableSlots}
+                                      </span>
+                                    </td>
+                                    <td className="p-4 text-right">
+                                      {activity.isFree ? (
+                                        <span className="text-gray-500">Gratuita</span>
+                                      ) : (
+                                        <div>
+                                          <div className="font-medium text-green-600">
+                                            ${activity.revenue.totalRevenue.toLocaleString()}
+                                          </div>
+                                          <div className="text-xs text-gray-500">
+                                            Pot: ${activity.revenue.potentialRevenue.toLocaleString()}
+                                          </div>
+                                        </div>
+                                      )}
+                                    </td>
+                                    <td className="p-4 text-center">
+                                      <Badge variant={activity.registrationEnabled ? "default" : "secondary"}>
+                                        {activity.registrationEnabled ? "Activa" : "Cerrada"}
+                                      </Badge>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </>
+                ) : (
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="text-center py-8">
+                        <BarChart3 className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">Sin Actividades</h3>
+                        <p className="text-gray-600">No hay actividades disponibles para mostrar estadísticas.</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
     </AdminLayout>
   );
