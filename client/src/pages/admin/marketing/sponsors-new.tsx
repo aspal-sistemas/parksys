@@ -126,7 +126,7 @@ const SponsorsManagement = () => {
   const createPackageMutation = useMutation({
     mutationFn: (data: PackageFormData) => {
       console.log('Creating package with data:', data);
-      return safeApiRequest('/api/sponsorship-packages', 'POST', data);
+      return safeApiRequest('/api/sponsorship-packages', { method: 'POST', data });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/sponsorship-packages'] });
@@ -141,7 +141,7 @@ const SponsorsManagement = () => {
   });
 
   const createSponsorMutation = useMutation({
-    mutationFn: (data: any) => safeApiRequest('/api/sponsors', 'POST', data),
+    mutationFn: (data: any) => safeApiRequest('/api/sponsors', { method: 'POST', data }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/sponsors'] });
       toast({ title: "Éxito", description: "Patrocinador creado exitosamente" });
@@ -157,7 +157,7 @@ const SponsorsManagement = () => {
 
   const updateSponsorMutation = useMutation({
     mutationFn: ({ id, data }: { id: number, data: any }) => 
-      safeApiRequest(`/api/sponsors/${id}`, 'PUT', data),
+      safeApiRequest(`/api/sponsors/${id}`, { method: 'PUT', data }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/sponsors'] });
       toast({ title: "Éxito", description: "Patrocinador actualizado exitosamente" });
@@ -173,7 +173,7 @@ const SponsorsManagement = () => {
 
   const updatePackageMutation = useMutation({
     mutationFn: ({ id, data }: { id: number, data: any }) => 
-      safeApiRequest(`/api/sponsorship-packages/${id}`, 'PUT', data),
+      safeApiRequest(`/api/sponsorship-packages/${id}`, { method: 'PUT', data }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/sponsorship-packages'] });
       toast({ title: "Éxito", description: "Paquete actualizado exitosamente" });
