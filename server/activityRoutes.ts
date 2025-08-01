@@ -287,6 +287,8 @@ activityRouter.put("/activities/:id", isAuthenticated, async (req: Request, res:
                 requirements = ${requirements || null},
                 is_recurring = ${Boolean(isRecurring)},
                 recurring_days = ${recurringDays ? JSON.stringify(recurringDays) : null},
+                target_market = ${targetMarket ? JSON.stringify(targetMarket) : null},
+                special_needs = ${specialNeeds ? JSON.stringify(specialNeeds) : null},
                 instructor_id = ${instructorId ? Number(instructorId) : null},
                 registration_enabled = ${Boolean(registrationEnabled)},
                 max_registrations = ${maxRegistrations ? Number(maxRegistrations) : null},
