@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { emailService } from '../email/emailService';
+import { emailQueueService } from '../communications/emailQueueService';
 
 const router = Router();
 const sql = neon(process.env.DATABASE_URL!);
@@ -81,17 +82,32 @@ async function sendRegistrationConfirmationEmail(registration: any, activity: an
       </div>
     `;
     
-    const result = await emailService.sendEmail({
-      to: registration.participant_email,
+    // Agregar email a la cola en lugar de envío directo
+    const emailData = {
       subject: subject,
-      html: htmlContent,
-      text: `Hola ${registration.participant_name}, hemos recibido tu inscripción para ${activity.title}. ${activity.requires_approval ? 'Está siendo revisada.' : 'Ha sido confirmada.'}`
-    });
-    
+      recipient: registration.participant_email,
+      template_name: 'Confirmación de Inscripción - Actividad',
+      html_content: htmlContent,
+      text_content: `Hola ${registration.participant_name}, hemos recibido tu inscripción para ${activity.title}. ${activity.requires_approval ? 'Está siendo revisada.' : 'Ha sido confirmada.'}`,
+      priority: 'normal',
+      variables: JSON.stringify({
+        participant_name: registration.participant_name,
+        activity_title: activity.title,
+        activity_date: format(new Date(activity.start_date), 'dd/MM/yyyy', { locale: es }),
+        start_time: activity.start_time,
+        park_name: activity.park_name,
+        location: activity.location,
+        requires_approval: activity.requires_approval
+      }),
+      module: 'Actividades',
+      scheduled_for: new Date()
+    };
+
+    const result = await emailQueueService.addToQueue(emailData);
     if (result) {
-      console.log('✅ Correo de confirmación enviado exitosamente a:', registration.participant_email);
+      console.log('✅ Correo de confirmación agregado a la cola exitosamente para:', registration.participant_email);
     } else {
-      console.error('❌ Fallo al enviar correo de confirmación a:', registration.participant_email);
+      console.error('❌ Fallo al agregar correo de confirmación a la cola para:', registration.participant_email);
     }
     return result;
   } catch (error) {
@@ -167,14 +183,29 @@ async function sendRegistrationApprovalEmail(registration: any, activity: any) {
       </div>
     `;
     
-    const result = await emailService.sendEmail({
-      to: registration.participant_email,
+    // Agregar email a la cola en lugar de envío directo
+    const emailData = {
       subject: subject,
-      html: htmlContent,
-      text: `¡Hola ${registration.participant_name}! Tu inscripción para ${activity.title} ha sido aprobada. Nos vemos el ${format(new Date(activity.start_date), 'dd/MM/yyyy', { locale: es })} a las ${activity.start_time || 'hora por confirmar'}.`
-    });
-    
-    console.log('✅ Correo de aprobación enviado exitosamente');
+      recipient: registration.participant_email,
+      template_name: 'Aprobación de Inscripción - Actividad',
+      html_content: htmlContent,
+      text_content: `¡Hola ${registration.participant_name}! Tu inscripción para ${activity.title} ha sido aprobada. Nos vemos el ${format(new Date(activity.start_date), 'dd/MM/yyyy', { locale: es })} a las ${activity.start_time || 'hora por confirmar'}.`,
+      priority: 'high',
+      variables: JSON.stringify({
+        participant_name: registration.participant_name,
+        activity_title: activity.title,
+        activity_date: format(new Date(activity.start_date), 'dd/MM/yyyy', { locale: es }),
+        start_time: activity.start_time,
+        park_name: activity.park_name,
+        location: activity.location,
+        approved_at: registration.approved_at
+      }),
+      module: 'Actividades',
+      scheduled_for: new Date()
+    };
+
+    const result = await emailQueueService.addToQueue(emailData);
+    console.log('✅ Correo de aprobación agregado a la cola exitosamente');
     return result;
   } catch (error) {
     console.error('❌ Error enviando correo de aprobación:', error);

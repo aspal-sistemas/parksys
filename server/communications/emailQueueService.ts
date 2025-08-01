@@ -1,6 +1,7 @@
 import cron from 'node-cron';
 import { v4 as uuidv4 } from 'uuid';
 import { pool } from '../db';
+import { db } from '../db';
 import { emailQueue, emailLogs, emailTemplates } from '../../shared/schema';
 import { eq, and, lte, gte, desc, asc } from 'drizzle-orm';
 import { emailService } from '../email/emailService';
@@ -62,9 +63,9 @@ export class EmailQueueService {
         emailData.templateId,
         emailData.templateVariables
       );
-      htmlContent = processed.html;
-      textContent = processed.text;
-      subject = processed.subject;
+      htmlContent = processed.html || '';
+      textContent = processed.text || '';
+      subject = processed.subject || emailData.subject;
     }
 
     const result = await db.insert(emailQueue).values({

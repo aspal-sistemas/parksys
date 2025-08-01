@@ -539,74 +539,43 @@ export const TemplatesSection: React.FC = () => {
 };
 
 export const QueueSection: React.FC = () => {
-  const queueEmails = [
-    {
-      id: 1,
-      subject: "Bienvenida - María González",
-      template: "Bienvenida Empleado",
-      recipient: "maria.gonzalez@parques.gob.mx",
-      scheduledFor: "2025-06-25 09:00:00",
-      status: "pending",
-      priority: "normal",
-      retries: 0,
-      module: "HR"
-    },
-    {
-      id: 2,
-      subject: "Recibo de Nómina - Diciembre 2024",
-      template: "Recibo de Nómina",
-      recipient: "carlos.martinez@parques.gob.mx",
-      scheduledFor: "2025-06-25 08:30:00",
-      status: "processing",
-      priority: "high",
-      retries: 0,
-      module: "Finanzas"
-    },
-    {
-      id: 3,
-      subject: "Nueva Actividad - Yoga en el Parque",
-      template: "Nueva Actividad en Parque",
-      recipient: "voluntarios@parques.gob.mx",
-      scheduledFor: "2025-06-25 10:15:00",
-      status: "pending",
-      priority: "normal",
-      retries: 0,
-      module: "Eventos"
-    },
-    {
-      id: 4,
-      subject: "Vencimiento Contrato - Cafetería Central",
-      template: "Vencimiento de Contrato",
-      recipient: "admin@cafeteriacentral.com",
-      scheduledFor: "2025-06-25 07:45:00",
-      status: "failed",
-      priority: "high",
-      retries: 2,
-      module: "Concesiones"
-    },
-    {
-      id: 5,
-      subject: "Mantenimiento Programado - Juegos Infantiles",
-      template: "Mantenimiento de Activos",
-      recipient: "mantenimiento@parques.gob.mx",
-      scheduledFor: "2025-06-25 11:00:00",
-      status: "sent",
-      priority: "normal",
-      retries: 0,
-      module: "Activos"
-    },
-    {
-      id: 6,
-      subject: "Incidente Reportado - Bosque Los Colomos",
-      template: "Reporte de Incidente",
-      recipient: "seguridad@parques.gob.mx",
-      scheduledFor: "2025-06-25 06:30:00",
-      status: "sent",
-      priority: "urgent",
-      retries: 0,
-      module: "Seguridad"
+  const [queueEmails, setQueueEmails] = React.useState<any[]>([]);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [stats, setStats] = React.useState<any>({});
+
+  // Obtener emails de la cola
+  React.useEffect(() => {
+    fetchQueueEmails();
+    fetchQueueStats();
+  }, []);
+
+  const fetchQueueEmails = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch('/api/communications/queue');
+      if (response.ok) {
+        const data = await response.json();
+        setQueueEmails(data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching queue emails:', error);
+      setQueueEmails([]);
+    } finally {
+      setIsLoading(false);
     }
-  ];
+  };
+
+  const fetchQueueStats = async () => {
+    try {
+      const response = await fetch('/api/communications/queue/stats');
+      if (response.ok) {
+        const data = await response.json();
+        setStats(data || {});
+      }
+    } catch (error) {
+      console.error('Error fetching queue stats:', error);
+    }
+  };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -719,8 +688,20 @@ export const QueueSection: React.FC = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {queueEmails.map((email) => (
+          {isLoading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin h-8 w-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+              <p className="text-gray-500">Cargando cola de emails...</p>
+            </div>
+          ) : queueEmails.length === 0 ? (
+            <div className="text-center py-8">
+              <Mail className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Cola vacía</h3>
+              <p className="text-gray-500">No hay emails pendientes en la cola actualmente.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {queueEmails.map((email) => (
               <div key={email.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
                 <div className="flex items-start space-x-4 flex-1">
                   <div className="flex items-center space-x-2">
@@ -766,8 +747,9 @@ export const QueueSection: React.FC = () => {
                   )}
                 </div>
               </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 

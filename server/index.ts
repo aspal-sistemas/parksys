@@ -1169,6 +1169,20 @@ async function initializeDatabaseAsync() {
     console.error("❌ Error registrando rutas de feedback:", error);
   }
 
+  // Registrar rutas de communications ANTES de Vite
+  try {
+    const { default: communicationsRouter } = await import("./communications/communicationsRoutes");
+    app.use("/api/communications", communicationsRouter);
+    console.log("✅ Communications routes registered");
+
+    // Inicializar plantillas de correo de inscripciones de actividades
+    const { insertActivityRegistrationTemplates } = await import("./communications/activity-registration-templates");
+    await insertActivityRegistrationTemplates();
+    console.log("✅ Activity registration email templates initialized");
+  } catch (error) {
+    console.error("❌ Error registrando rutas de communications:", error);
+  }
+
   // Inicializar otras funcionalidades críticas en segundo plano
   setTimeout(async () => {
     console.log("🔧 Inicializando módulos adicionales en segundo plano...");
@@ -1179,14 +1193,7 @@ async function initializeDatabaseAsync() {
       app.use("/api/email", emailRouter);
       console.log("✅ Email routes registered");
       
-      const { default: communicationsRouter } = await import("./communications/communicationsRoutes");
-      app.use("/api/communications", communicationsRouter);
-      
-      // Inicializar plantillas de correo de inscripciones de actividades
-      const { insertActivityRegistrationTemplates } = await import("./communications/activity-registration-templates");
-      await insertActivityRegistrationTemplates();
-      
-      console.log("✅ Communications routes registered");
+      // Communications routes ya registradas anteriormente
       
       const { default: feedbackRouter } = await import("./feedback-routes");
       app.use("/api/feedback", feedbackRouter);

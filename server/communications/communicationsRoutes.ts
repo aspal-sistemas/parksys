@@ -3,6 +3,7 @@ import { emailTemplateService } from './emailTemplateService';
 import { emailQueueService } from './emailQueueService';
 import { emailService } from '../email/emailService';
 import { pool } from '../db';
+import { db } from '../db';
 import { users } from '../../shared/schema';
 import { eq, inArray } from 'drizzle-orm';
 
@@ -243,7 +244,7 @@ communicationsRouter.post('/send/bulk', async (req: Request, res: Response) => {
     }).from(users).where(inArray(users.role, userTypes));
 
     // Preparar emails para la cola
-    const emails = targetUsers.map(user => ({
+    const emails = targetUsers.map((user: any) => ({
       to: user.email,
       subject: subject || 'Comunicación importante',
       templateId: templateId,
