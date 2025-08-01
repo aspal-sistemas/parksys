@@ -1181,6 +1181,11 @@ async function initializeDatabaseAsync() {
       
       const { default: communicationsRouter } = await import("./communications/communicationsRoutes");
       app.use("/api/communications", communicationsRouter);
+      
+      // Inicializar plantillas de correo de inscripciones de actividades
+      const { insertActivityRegistrationTemplates } = await import("./communications/activity-registration-templates");
+      await insertActivityRegistrationTemplates();
+      
       console.log("✅ Communications routes registered");
       
       const { default: feedbackRouter } = await import("./feedback-routes");

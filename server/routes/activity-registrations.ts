@@ -1,15 +1,129 @@
 import { Router } from 'express';
 import { neon } from '@neondatabase/serverless';
+import { z } from 'zod';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { emailTemplateService } from '../communications/emailTemplateService';
+import { emailQueueService } from '../communications/emailQueueService';
 
 const router = Router();
 const sql = neon(process.env.DATABASE_URL!);
+
+// Función auxiliar para enviar correo de confirmación de inscripción
+async function sendRegistrationConfirmationEmail(registration: any, activity: any) {
+  try {
+    console.log('📧 Enviando correo de confirmación de inscripción...');
+    
+    // Obtener plantilla de confirmación
+    const templates = await emailTemplateService.getTemplatesByType('activity_registration_pending');
+    if (templates.length === 0) {
+      console.error('❌ No se encontró plantilla de confirmación de inscripción');
+      return false;
+    }
+    
+    const template = templates[0];
+    
+    // Preparar variables para la plantilla
+    const variables = {
+      participantName: registration.participant_name,
+      participantEmail: registration.participant_email,
+      participantPhone: registration.participant_phone || 'No proporcionado',
+      activityTitle: activity.title,
+      activityStartDate: activity.start_date,
+      activityStartTime: activity.start_time || 'Por confirmar',
+      activityLocation: activity.location || 'Por confirmar',
+      parkName: activity.park_name || 'Sistema de Parques',
+      registrationDate: registration.registration_date,
+      currentDate: format(new Date(), 'dd/MM/yyyy', { locale: es })
+    };
+    
+    // Procesar plantilla
+    const processedTemplate = await emailTemplateService.processTemplate(template.id, variables);
+    
+    // Agregar a la cola de emails
+    await emailQueueService.addToQueue({
+      to: registration.participant_email,
+      subject: processedTemplate.subject,
+      htmlContent: processedTemplate.htmlContent,
+      textContent: processedTemplate.textContent,
+      priority: 'high',
+      templateId: template.id,
+      variables: variables,
+      metadata: {
+        registrationId: registration.id,
+        activityId: activity.id,
+        emailType: 'registration_confirmation'
+      }
+    });
+    
+    console.log('✅ Correo de confirmación agregado a la cola');
+    return true;
+  } catch (error) {
+    console.error('❌ Error enviando correo de confirmación:', error);
+    return false;
+  }
+}
+
+// Función auxiliar para enviar correo de aprobación de inscripción
+async function sendRegistrationApprovalEmail(registration: any, activity: any) {
+  try {
+    console.log('📧 Enviando correo de aprobación de inscripción...');
+    
+    // Obtener plantilla de aprobación
+    const templates = await emailTemplateService.getTemplatesByType('activity_registration_approved');
+    if (templates.length === 0) {
+      console.error('❌ No se encontró plantilla de aprobación de inscripción');
+      return false;
+    }
+    
+    const template = templates[0];
+    
+    // Preparar variables para la plantilla
+    const variables = {
+      participantName: registration.participant_name,
+      participantEmail: registration.participant_email,
+      activityTitle: activity.title,
+      activityStartDate: activity.start_date,
+      activityStartTime: activity.start_time || 'Por confirmar',
+      activityLocation: activity.location || 'Por confirmar',
+      parkName: activity.park_name || 'Sistema de Parques',
+      approvalDate: registration.approved_at || new Date(),
+      currentDate: format(new Date(), 'dd/MM/yyyy', { locale: es })
+    };
+    
+    // Procesar plantilla
+    const processedTemplate = await emailTemplateService.processTemplate(template.id, variables);
+    
+    // Agregar a la cola de emails
+    await emailQueueService.addToQueue({
+      to: registration.participant_email,
+      subject: processedTemplate.subject,
+      htmlContent: processedTemplate.htmlContent,
+      textContent: processedTemplate.textContent,
+      priority: 'high',
+      templateId: template.id,
+      variables: variables,
+      metadata: {
+        registrationId: registration.id,
+        activityId: activity.id,
+        emailType: 'registration_approval'
+      }
+    });
+    
+    console.log('✅ Correo de aprobación agregado a la cola');
+    return true;
+  } catch (error) {
+    console.error('❌ Error enviando correo de aprobación:', error);
+    return false;
+  }
+}
 
 // Obtener todas las inscripciones con paginación y filtros
 router.get('/', async (req, res) => {
   try {
     const { 
       page = '1', 
-      limit = '12', 
+      limit = '10', 
       search = '', 
       status = '', 
       activity = '' 
@@ -230,9 +344,26 @@ router.post('/', async (req, res) => {
       dietaryRestrictions, notes, acceptsTerms
     ]);
 
+    const newRegistration = result[0];
+
+    // Obtener datos completos de la actividad para el correo
+    const activityData = await sql(`
+      SELECT a.*, p.name as park_name
+      FROM activities a
+      LEFT JOIN parks p ON a.park_id = p.id
+      WHERE a.id = $1
+    `, [activityId]);
+
+    // Enviar correo de confirmación automáticamente (en segundo plano)
+    if (activityData.length > 0) {
+      setTimeout(async () => {
+        await sendRegistrationConfirmationEmail(newRegistration, activityData[0]);
+      }, 1000);
+    }
+
     res.status(201).json({
-      message: 'Inscripción creada exitosamente',
-      registration: result[0]
+      message: 'Inscripción creada exitosamente. Se enviará un correo de confirmación a su email.',
+      registration: newRegistration
     });
   } catch (error) {
     console.error('Error al crear inscripción:', error);
@@ -280,10 +411,28 @@ router.put('/:id/status', async (req, res) => {
     queryParams.push(id);
 
     const result = await sql(updateQuery, queryParams);
+    const updatedRegistration = result[0];
+
+    // Si la inscripción fue aprobada, enviar correo de aprobación
+    if (status === 'approved') {
+      // Obtener dados completos de la actividad para el correo
+      const activityData = await sql(`
+        SELECT a.*, p.name as park_name
+        FROM activities a
+        LEFT JOIN parks p ON a.park_id = p.id
+        WHERE a.id = $1
+      `, [updatedRegistration.activity_id]);
+
+      if (activityData.length > 0) {
+        setTimeout(async () => {
+          await sendRegistrationApprovalEmail(updatedRegistration, activityData[0]);
+        }, 1000);
+      }
+    }
 
     res.json({
-      message: `Inscripción ${status === 'approved' ? 'aprobada' : 'rechazada'} exitosamente`,
-      registration: result[0]
+      message: `Inscripción ${status === 'approved' ? 'aprobada' : 'rechazada'} exitosamente${status === 'approved' ? '. Se enviará un correo de confirmación al participante.' : ''}`,
+      registration: updatedRegistration
     });
   } catch (error) {
     console.error('Error al actualizar estado:', error);
