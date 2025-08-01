@@ -41,6 +41,15 @@ const Home: React.FC = () => {
     queryKey: ['/api/parks'],
   });
   
+  // Fetch sponsors para la sección de patrocinadores
+  const { data: sponsors = [], isLoading: sponsorsLoading } = useQuery({
+    queryKey: ['/api/sponsors'],
+  });
+
+  // Debug para verificar datos de sponsors
+  console.log('🏢 Sponsors data:', sponsors);
+  console.log('🔄 Sponsors loading:', sponsorsLoading);
+  
   const allParks = parksResponse?.data || [];
   
   // Filtrar parques sin nombre o marcados como eliminados
@@ -458,33 +467,63 @@ const Home: React.FC = () => {
           
           {/* Grid de patrocinadores */}
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8 items-center">
-            {[
-              { name: "Gobierno de Jalisco", logo: "🏛️" },
-              { name: "Guadalajara", logo: "🌆" },
-              { name: "SEMADET", logo: "🌱" },
-              { name: "Universidad de Guadalajara", logo: "🎓" },
-              { name: "ITESO", logo: "📚" },
-              { name: "Fundación Gonzalez Gallo", logo: "🏢" },
-              { name: "CIATEJ", logo: "🔬" },
-              { name: "Bosque La Primavera", logo: "🌲" },
-              { name: "WWF México", logo: "🐼" },
-              { name: "Pronatura", logo: "🦋" },
-              { name: "Reforestamos México", logo: "🌳" },
-              { name: "Green Peace", logo: "🌍" }
-            ].map((sponsor, index) => (
-              <div key={index} className="group">
-                <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer">
-                  <div className="text-center">
-                    <div className="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">
-                      {sponsor.logo}
+            {sponsorsLoading ? (
+              // Loading skeleton
+              Array.from({ length: 6 }).map((_, index) => (
+                <div key={index} className="group">
+                  <div className="bg-white rounded-2xl p-6 shadow-lg">
+                    <div className="text-center">
+                      <div className="w-16 h-16 mx-auto mb-3 bg-gray-200 rounded-lg animate-pulse"></div>
+                      <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
                     </div>
-                    <p className="text-sm font-medium text-gray-700 group-hover:text-purple-600 transition-colors">
-                      {sponsor.name}
-                    </p>
                   </div>
                 </div>
+              ))
+            ) : sponsors.length > 0 ? (
+              // Mostrar patrocinadores reales
+              sponsors
+                .filter((sponsor: any) => sponsor.status === 'activo' && sponsor.logo) // Solo activos con logo
+                .map((sponsor: any, index: number) => (
+                  <div key={sponsor.id || index} className="group">
+                    <div 
+                      className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer"
+                      onClick={() => {
+                        if (sponsor.websiteUrl) {
+                          window.open(sponsor.websiteUrl, '_blank', 'noopener,noreferrer');
+                        }
+                      }}
+                    >
+                      <div className="text-center">
+                        <div className="mb-3 group-hover:scale-110 transition-transform duration-300">
+                          <img 
+                            src={sponsor.logo} 
+                            alt={`Logo de ${sponsor.name}`}
+                            className="w-16 h-16 mx-auto object-contain rounded-lg"
+                            onError={(e) => {
+                              // Fallback si la imagen no carga
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              target.nextElementSibling?.classList.remove('hidden');
+                            }}
+                          />
+                          <div className="w-16 h-16 mx-auto bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg flex items-center justify-center text-2xl hidden">
+                            🏢
+                          </div>
+                        </div>
+                        <p className="text-sm font-medium text-gray-700 group-hover:text-purple-600 transition-colors">
+                          {sponsor.name}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))
+            ) : (
+              // Fallback cuando no hay patrocinadores
+              <div className="col-span-full text-center py-8">
+                <div className="text-gray-400 text-lg mb-2">🤝</div>
+                <p className="text-gray-500">Próximamente más patrocinadores se unirán a nuestra causa</p>
               </div>
-            ))}
+            )}
           </div>
           
           {/* Call to action para patrocinadores */}
