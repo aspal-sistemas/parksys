@@ -190,14 +190,24 @@ activityRouter.get("/activities/:id", async (req: Request, res: Response) => {
   try {
     const activityId = Number(req.params.id);
     
-    // Usar SQL directo para evitar problemas con el esquema
+    // Usar SQL directo con TODOS los campos incluyendo configuración de inscripciones
     const result = await db.execute(
       sql`SELECT a.id, a.park_id as "parkId", a.title, a.description, 
                a.start_date as "startDate", a.end_date as "endDate", 
-               a.category, a.location, a.created_at as "createdAt",
-               p.name as "parkName"
+               a.category, a.category_id as "categoryId", a.location, a.created_at as "createdAt",
+               a.start_time as "startTime", a.capacity, a.duration, a.price, 
+               a.is_free as "isFree", a.materials, a.requirements, 
+               a.is_recurring as "isRecurring", a.recurring_days as "recurringDays",
+               a.target_market as "targetMarket", a.special_needs as "specialNeeds",
+               a.instructor_id as "instructorId", 
+               a.registration_enabled as "registrationEnabled",
+               a.max_registrations as "maxRegistrations", 
+               a.registration_deadline as "registrationDeadline",
+               a.requires_approval as "requiresApproval",
+               p.name as "parkName", i.first_name || ' ' || i.last_name as "instructorName"
            FROM activities a
            LEFT JOIN parks p ON a.park_id = p.id
+           LEFT JOIN instructors i ON a.instructor_id = i.id
            WHERE a.id = ${activityId}`
     );
     

@@ -294,6 +294,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 // ENDPOINT PARA OBTENER ACTIVIDAD ESPECÍFICA
 app.get("/api/activities/:id", async (req: Request, res: Response) => {
   console.log("🎯 GET ACTIVITY ENDPOINT - ID:", req.params.id);
+  console.log("🎯 EJECUTANDO ENDPOINT DESDE SERVER/INDEX.TS");
   
   try {
     const activityId = parseInt(req.params.id);
@@ -327,6 +328,11 @@ app.get("/api/activities/:id", async (req: Request, res: Response) => {
     console.log("🔍 Raw activity data from DB:");
     console.log("target_market raw:", activity.target_market, typeof activity.target_market);
     console.log("special_needs raw:", activity.special_needs, typeof activity.special_needs);
+    console.log("🔍 Campos de inscripción en activity:");
+    console.log("registration_enabled:", activity.registration_enabled);
+    console.log("max_registrations:", activity.max_registrations);
+    console.log("registration_deadline:", activity.registration_deadline);
+    console.log("requires_approval:", activity.requires_approval);
     
     // Parsear campos JSON
     let targetMarket = [];
@@ -403,7 +409,12 @@ app.get("/api/activities/:id", async (req: Request, res: Response) => {
       instructorName: activity.instructor_name,
       startTime: activity.start_time,
       targetMarket: targetMarket,
-      specialNeeds: specialNeeds
+      specialNeeds: specialNeeds,
+      // Campos de configuración de inscripciones
+      registrationEnabled: activity.registration_enabled,
+      maxRegistrations: activity.max_registrations,
+      registrationDeadline: activity.registration_deadline,
+      requiresApproval: activity.requires_approval
     };
 
     console.log("🎯 Actividad encontrada:", formattedActivity);
