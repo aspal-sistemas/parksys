@@ -340,21 +340,31 @@ class EmailService {
   }
 
   private async sendWithSendGrid(options: EmailOptions): Promise<boolean> {
-    const msg = {
+    const msg: any = {
       to: options.to,
       from: options.from || this.defaultFrom,
       subject: options.subject,
-      text: options.text,
-      html: options.html,
       cc: options.cc,
       bcc: options.bcc,
-      attachments: options.attachments?.map(att => ({
+    };
+
+    // Agregar contenido
+    if (options.html) {
+      msg.html = options.html;
+    }
+    if (options.text) {
+      msg.text = options.text;
+    }
+
+    // Agregar attachments si existen
+    if (options.attachments && options.attachments.length > 0) {
+      msg.attachments = options.attachments.map(att => ({
         filename: att.filename,
         content: att.content.toString('base64'),
         type: att.contentType,
         disposition: 'attachment',
-      })),
-    };
+      }));
+    }
 
     await sgMail.send(msg);
     return true;

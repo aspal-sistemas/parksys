@@ -12,6 +12,9 @@ const sql = neon(process.env.DATABASE_URL!);
 async function sendRegistrationConfirmationEmail(registration: any, activity: any) {
   try {
     console.log('📧 Enviando correo de confirmación de inscripción...');
+    console.log('📧 Email destinatario:', registration.participant_email);
+    console.log('📧 Nombre participante:', registration.participant_name);
+    console.log('📧 Actividad:', activity.title);
     
     const subject = `✅ Confirmación de Inscripción - ${activity.title}`;
     
@@ -85,7 +88,11 @@ async function sendRegistrationConfirmationEmail(registration: any, activity: an
       text: `Hola ${registration.participant_name}, hemos recibido tu inscripción para ${activity.title}. ${activity.requires_approval ? 'Está siendo revisada.' : 'Ha sido confirmada.'}`
     });
     
-    console.log('✅ Correo de confirmación enviado exitosamente');
+    if (result) {
+      console.log('✅ Correo de confirmación enviado exitosamente a:', registration.participant_email);
+    } else {
+      console.error('❌ Fallo al enviar correo de confirmación a:', registration.participant_email);
+    }
     return result;
   } catch (error) {
     console.error('❌ Error enviando correo de confirmación:', error);
@@ -411,11 +418,14 @@ router.post('/', async (req, res) => {
       WHERE a.id = $1
     `, [activityId]);
 
-    // Enviar correo de confirmación automáticamente (en segundo plano)
+    // Enviar correo de confirmación automáticamente
     if (activityData.length > 0) {
-      setTimeout(async () => {
+      try {
         await sendRegistrationConfirmationEmail(newRegistration, activityData[0]);
-      }, 1000);
+      } catch (emailError) {
+        console.error('❌ Error enviando email de confirmación:', emailError);
+        // No falla la operación si el email falla
+      }
     }
 
     res.status(201).json({
