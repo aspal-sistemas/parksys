@@ -92,6 +92,9 @@ const SponsorsManagement = () => {
   const [selectedSponsor, setSelectedSponsor] = useState<Sponsor | null>(null);
   const [isViewSponsorOpen, setIsViewSponsorOpen] = useState(false);
   const [isEditSponsorOpen, setIsEditSponsorOpen] = useState(false);
+  const [selectedPackage, setSelectedPackage] = useState<SponsorshipPackage | null>(null);
+  const [isViewPackageOpen, setIsViewPackageOpen] = useState(false);
+  const [isEditPackageOpen, setIsEditPackageOpen] = useState(false);
   // Estados separados para cada modal
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string>("");
@@ -163,6 +166,20 @@ const SponsorsManagement = () => {
     }
   });
 
+  const updatePackageMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number, data: PackageFormData }) => 
+      safeApiRequest(`/api/sponsorship-packages/${id}`, 'PUT', data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/sponsorship-packages'] });
+      toast({ title: "Éxito", description: "Paquete actualizado exitosamente" });
+      setIsEditPackageOpen(false);
+      editPackageForm.reset();
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Error al actualizar paquete", variant: "destructive" });
+    }
+  });
+
   // Formularios
   const packageForm = useForm<PackageFormData>({
     resolver: zodResolver(packageSchema),
@@ -217,6 +234,18 @@ const SponsorsManagement = () => {
       contractValue: 0,
       contractEnd: '',
       eventsSponsored: 0
+    }
+  });
+
+  const editPackageForm = useForm<PackageFormData>({
+    resolver: zodResolver(packageSchema),
+    defaultValues: {
+      name: '',
+      category: '',
+      price: '',
+      duration: 12,
+      benefits: [],
+      isActive: true
     }
   });
 
@@ -422,6 +451,45 @@ const SponsorsManagement = () => {
     setEditLogoFile(null);
     
     setIsEditSponsorOpen(true);
+  };
+
+  const openViewPackage = (pkg: SponsorshipPackage) => {
+    setSelectedPackage(pkg);
+    setIsViewPackageOpen(true);
+  };
+
+  const openEditPackage = (pkg: SponsorshipPackage) => {
+    setSelectedPackage(pkg);
+    
+    editPackageForm.reset({
+      name: pkg.name,
+      category: pkg.category,
+      price: pkg.price.toString(),
+      duration: pkg.duration,
+      benefits: pkg.benefits,
+      isActive: pkg.isActive
+    });
+    
+    setIsEditPackageOpen(true);
+  };
+
+  const onSubmitEditPackage = async (data: PackageFormData) => {
+    if (!selectedPackage) return;
+    
+    try {
+      const formattedData = {
+        ...data,
+        price: parseFloat(data.price).toString()
+      };
+      
+      updatePackageMutation.mutate({ id: selectedPackage.id, data: formattedData });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Error al procesar el paquete",
+        variant: "destructive"
+      });
+    }
   };
 
   const onSubmitEditSponsor = async (data: SponsorFormData) => {
@@ -1237,7 +1305,7 @@ const SponsorsManagement = () => {
                         <CardTitle className="text-lg">{pkg.name}</CardTitle>
                         <CardDescription>
                           <Badge className={getCategoryColor(pkg.category)}>
-                            {getTierInfo(pkg.category).icon} {getTierInfo(pkg.category).name}
+                            {getTierInfo(pkg.category).name}
                           </Badge>
                         </CardDescription>
                       </div>
@@ -1270,11 +1338,11 @@ const SponsorsManagement = () => {
                           {pkg.isActive ? "Activo" : "Inactivo"}
                         </Badge>
                         <div className="flex space-x-2">
-                          <Button size="sm" variant="outline">
+                          <Button size="sm" variant="outline" onClick={() => openViewPackage(pkg)}>
                             <Eye className="h-4 w-4 mr-1" />
                             Ver
                           </Button>
-                          <Button size="sm" variant="outline">
+                          <Button size="sm" variant="outline" onClick={() => openEditPackage(pkg)}>
                             <Edit className="h-4 w-4 mr-1" />
                             Editar
                           </Button>
@@ -1755,6 +1823,238 @@ const SponsorsManagement = () => {
                       <>
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                         {isUploadingLogo ? "Subiendo logo..." : "Actualizando..."}
+                      </>
+                    ) : (
+                      "Guardar cambios"
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Modal para ver detalles del paquete */}
+        <Dialog open={isViewPackageOpen} onOpenChange={setIsViewPackageOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Detalles del Paquete</DialogTitle>
+            </DialogHeader>
+            {selectedPackage && (
+              <div className="space-y-6">
+                {/* Información principal del paquete */}
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <h3 className="font-semibold text-lg">{selectedPackage.name}</h3>
+                    <div className="flex space-x-2 mt-2">
+                      <Badge className={getCategoryColor(selectedPackage.category)}>
+                        {getTierInfo(selectedPackage.category).name}
+                      </Badge>
+                      <Badge variant={selectedPackage.isActive ? "default" : "secondary"}>
+                        {selectedPackage.isActive ? "Activo" : "Inactivo"}
+                      </Badge>
+                    </div>
+                  </div>
+                  
+                  <div className="text-right">
+                    <div className="text-3xl font-bold text-[#00a587]">
+                      ${parseFloat(selectedPackage.price).toLocaleString()}
+                    </div>
+                    <p className="text-sm text-gray-500">
+                      Duración: {selectedPackage.duration} meses
+                    </p>
+                  </div>
+                </div>
+
+                {/* Lista completa de beneficios */}
+                <div>
+                  <h4 className="font-semibold mb-3">Beneficios Incluidos</h4>
+                  <div className="grid grid-cols-1 gap-2">
+                    {selectedPackage.benefits?.map((benefit, index) => (
+                      <div key={index} className="flex items-center text-sm">
+                        <CheckCircle className="h-4 w-4 mr-3 text-green-500 flex-shrink-0" />
+                        <span>{benefit}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Estadísticas del paquete */}
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-semibold mb-2">Estadísticas</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <span className="text-sm text-gray-600">Patrocinadores activos:</span>
+                      <div className="text-lg font-semibold">
+                        {sponsors.filter(s => s.packageCategory === selectedPackage.category).length}
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-sm text-gray-600">Ingresos generados:</span>
+                      <div className="text-lg font-semibold text-[#00a587]">
+                        ${(sponsors.filter(s => s.packageCategory === selectedPackage.category)
+                           .reduce((sum, s) => sum + parseFloat(s.contractValue), 0)).toLocaleString()}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Modal para editar paquete */}
+        <Dialog open={isEditPackageOpen} onOpenChange={setIsEditPackageOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Editar Paquete</DialogTitle>
+              <DialogDescription>
+                Actualiza la información del paquete de patrocinio
+              </DialogDescription>
+            </DialogHeader>
+            <Form {...editPackageForm}>
+              <form onSubmit={editPackageForm.handleSubmit(onSubmitEditPackage)} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={editPackageForm.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nombre del Paquete</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Paquete Premium" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={editPackageForm.control}
+                    name="category"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Categoría</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecciona categoría" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {Object.entries(sponsorTiers).map(([key, tier]) => (
+                              <SelectItem key={key} value={key}>
+                                <div className="flex items-center justify-between w-full">
+                                  <span>{tier.name}</span>
+                                  <span className="text-xs text-gray-500">
+                                    (${tier.price.toLocaleString()})
+                                  </span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={editPackageForm.control}
+                    name="price"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Precio ($)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="25000" 
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={editPackageForm.control}
+                    name="duration"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Duración (meses)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            placeholder="12" 
+                            {...field} 
+                            onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={editPackageForm.control}
+                  name="benefits"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Beneficios (separados por comas)</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Logo en eventos, Stand exclusivo, Menciones en redes sociales"
+                          value={Array.isArray(field.value) ? field.value.join(', ') : field.value || ''}
+                          onChange={(e) => {
+                            const benefitsArray = e.target.value.split(',').map(b => b.trim()).filter(b => b);
+                            field.onChange(benefitsArray);
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={editPackageForm.control}
+                  name="isActive"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-base">Paquete Activo</FormLabel>
+                        <FormDescription>
+                          El paquete estará disponible para los patrocinadores
+                        </FormDescription>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                <div className="flex justify-end space-x-2 pt-4">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setIsEditPackageOpen(false)}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    className="bg-[#00a587] hover:bg-[#008f75]"
+                    disabled={updatePackageMutation.isPending}
+                  >
+                    {updatePackageMutation.isPending ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Actualizando...
                       </>
                     ) : (
                       "Guardar cambios"
