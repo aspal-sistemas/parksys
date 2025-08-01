@@ -2,6 +2,7 @@ import Handlebars from 'handlebars';
 import juice from 'juice';
 import { convert } from 'html-to-text';
 import { pool } from '../db';
+import { db } from '../db';
 import { emailTemplates } from '../../shared/schema';
 import { eq } from 'drizzle-orm';
 
@@ -41,7 +42,7 @@ export class EmailTemplateService {
     });
 
     // Helper condicional
-    Handlebars.registerHelper('ifEquals', function(arg1: any, arg2: any, options: any) {
+    Handlebars.registerHelper('ifEquals', function(this: any, arg1: any, arg2: any, options: any) {
       return (arg1 == arg2) ? options.fn(this) : options.inverse(this);
     });
 

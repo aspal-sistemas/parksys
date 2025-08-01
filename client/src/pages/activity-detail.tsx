@@ -90,6 +90,12 @@ function ActivityDetailPage() {
     enabled: !!activityId,
   });
 
+  // Obtener estadísticas de inscripciones
+  const { data: registrationStats, refetch: refetchStats } = useQuery({
+    queryKey: [`/api/activity-registrations/stats/${activityId}`],
+    enabled: !!activityId,
+  });
+
   // Mutación para enviar inscripción
   const registrationMutation = useMutation({
     mutationFn: async (registrationData: any) => {
@@ -122,6 +128,8 @@ function ActivityDetailPage() {
         participantPhone: '',
         notes: ''
       });
+      // Actualizar estadísticas de inscripciones
+      refetchStats();
     },
     onError: (error: Error) => {
       toast({
@@ -285,9 +293,24 @@ function ActivityDetailPage() {
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-600">Plazas disponibles:</span>
                       <span className="font-medium text-green-600">
-                        {activity.maxRegistrations ? `${activity.maxRegistrations} personas` : 'Sin límite'}
+                        {activity.maxRegistrations ? (
+                          `${Math.max(0, activity.maxRegistrations - (registrationStats?.totalActive || 0))} de ${activity.maxRegistrations} disponibles`
+                        ) : 'Sin límite'}
                       </span>
                     </div>
+                    {registrationStats && (
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-600">Inscritos actuales:</span>
+                        <span className="font-medium text-blue-600">
+                          {registrationStats.totalActive} personas
+                          {registrationStats.pendingCount > 0 && (
+                            <span className="text-orange-500 ml-1">
+                              ({registrationStats.pendingCount} pendientes)
+                            </span>
+                          )}
+                        </span>
+                      </div>
+                    )}
                     {activity.registrationDeadline && (
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-gray-600">Fecha límite:</span>

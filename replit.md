@@ -14,18 +14,22 @@ The application uses a client-server architecture with a modern full-stack:
 - **Authentication**: Role-based access control system.
 
 ## Recent Changes (August 1, 2025)
-- **NEW: 10-Tier Gemstone & Precious Metal Sponsor System**: Completely redesigned sponsorship categories:
+- **COMPLETED: Activity Registration Management System with Email Automation**:
+  - **Admin Interface**: Comprehensive management dashboard with filters (status, activity, search), pagination (10 items per page), grid/table view toggle
+  - **Registration Details**: Complete modal views showing participant information, activity details, and action buttons for approval/rejection
+  - **Automated Email System**: Two-stage email workflow using Gmail integration:
+    - **Registration Confirmation**: Automatic email sent immediately upon public registration with activity details and approval status
+    - **Approval Confirmation**: Professional email sent when admin approves registration with instructions and event details
+  - **Real-time Statistics**: Dynamic display of available slots, current registrations, and pending approvals on activity detail pages
+  - **Database Integration**: Full CRUD operations with proper validation and error handling
+- **Email Integration**: Successfully adapted to use existing Gmail configuration instead of SendGrid:
+  - Professional HTML email templates with responsive design
+  - Proper error handling and logging for email delivery
+  - Integration with existing `emailService` from server/email/emailService.ts
+- **Previous: 10-Tier Gemstone & Precious Metal Sponsor System**: Completely redesigned sponsorship categories:
   - **Replaced 4-tier system** (Bronce, Plata, Oro, Platino) with **10-tier gemstone/precious metal system**
   - **New Tiers**: Amatista ($25k), Esmeralda ($50k), Zafiro ($75k), Ónix ($125k), Cobre ($200k), Bronce ($300k), Plata ($450k), Oro ($650k), Platino ($900k), Diamante ($1.2M)
   - **Each tier includes**: Unique gemstone/metal emoji icon, tier-specific color scheme, graduated benefits package, descriptive status titles
-  - **UI Enhancements**: Dynamic tier selection with pricing, visual icons in all cards and forms, enhanced package displays
-- **Database Schema Updates**: Restructured sponsorship system tables:
-  - Updated `category` field values in `sponsorship_packages` and `package_category` in `sponsors` tables to use new gemstone/precious metal names
-  - Inserted comprehensive benefit packages for each of the 10 new tiers with elegant gemstone-inspired naming
-  - Maintained backward compatibility with existing sponsor data structure
-- **UI Consistency**: Standardized sponsor management modal interactions and button text to "Guardar cambios"
-- **Form Validation**: Updated Zod schemas to match new database structure
-- **Component Architecture**: Separated logo upload states between create/edit modals to prevent interference
 - **UI/UX Decisions**: Emphasizes a consistent design language with `Card` patterns, standardized iconography (e.g., `bg-gray-50`, `w-8 h-8 text-gray-900`, `text-3xl font-bold`), corporate color palettes (e.g., green, blue, orange, purple, teal), and responsive layouts. Design principles include visual-first approaches (e.g., photo-prominent cards), intuitive navigation (e.g., left-aligned admin navigation, simplified sidebars), and clear separation of content.
 - **Technical Implementations**: Features include dynamic form handling, robust data validation, lazy loading for routes, centralized state management, and optimized image loading.
 - **Feature Specifications**:

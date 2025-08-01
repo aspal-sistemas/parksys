@@ -3,8 +3,7 @@ import { neon } from '@neondatabase/serverless';
 import { z } from 'zod';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { emailTemplateService } from '../communications/emailTemplateService';
-import { emailQueueService } from '../communications/emailQueueService';
+import { emailService } from '../email/emailService';
 
 const router = Router();
 const sql = neon(process.env.DATABASE_URL!);
@@ -14,50 +13,80 @@ async function sendRegistrationConfirmationEmail(registration: any, activity: an
   try {
     console.log('📧 Enviando correo de confirmación de inscripción...');
     
-    // Obtener plantilla de confirmación
-    const templates = await emailTemplateService.getTemplatesByType('activity_registration_pending');
-    if (templates.length === 0) {
-      console.error('❌ No se encontró plantilla de confirmación de inscripción');
-      return false;
-    }
+    const subject = `✅ Confirmación de Inscripción - ${activity.title}`;
     
-    const template = templates[0];
+    const htmlContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+        <div style="background-color: white; border-radius: 10px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #16a34a; margin: 0; font-size: 28px;">🎯 ParkSys</h1>
+          </div>
+          
+          <h2 style="color: #333; text-align: center; margin-bottom: 30px;">¡Inscripción Recibida!</h2>
+          
+          <div style="background-color: #f0f9ff; border-left: 4px solid #16a34a; padding: 20px; margin: 20px 0; border-radius: 0 8px 8px 0;">
+            <p style="margin: 0; color: #333; font-size: 16px;">
+              <strong>Hola ${registration.participant_name},</strong>
+            </p>
+            <p style="margin: 10px 0 0 0; color: #666;">
+              Hemos recibido tu inscripción para la actividad <strong>${activity.title}</strong> 
+              ${activity.requires_approval ? ' y está siendo revisada por nuestro equipo' : ' y ha sido confirmada'}.
+            </p>
+          </div>
+          
+          <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="color: #16a34a; margin-top: 0;">Detalles de la Actividad:</h3>
+            <ul style="list-style: none; padding: 0; margin: 0;">
+              <li style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;"><strong>📍 Actividad:</strong> ${activity.title}</li>
+              <li style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;"><strong>🏛️ Parque:</strong> ${activity.park_name || 'Por confirmar'}</li>
+              <li style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;"><strong>📅 Fecha:</strong> ${format(new Date(activity.start_date), 'dd/MM/yyyy', { locale: es })}</li>
+              <li style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;"><strong>⏰ Hora:</strong> ${activity.start_time || 'Por confirmar'}</li>
+              <li style="padding: 8px 0;"><strong>📍 Ubicación:</strong> ${activity.location || 'Por confirmar'}</li>
+            </ul>
+          </div>
+          
+          <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="color: #16a34a; margin-top: 0;">Tus Datos:</h3>
+            <ul style="list-style: none; padding: 0; margin: 0;">
+              <li style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;"><strong>👤 Nombre:</strong> ${registration.participant_name}</li>
+              <li style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;"><strong>📧 Email:</strong> ${registration.participant_email}</li>
+              <li style="padding: 8px 0;"><strong>📱 Teléfono:</strong> ${registration.participant_phone || 'No proporcionado'}</li>
+            </ul>
+          </div>
+          
+          ${activity.requires_approval ? `
+          <div style="background-color: #fef3c7; border: 1px solid #f59e0b; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <p style="margin: 0; color: #92400e; font-size: 14px;">
+              <strong>ℹ️ Pendiente de Aprobación:</strong> Tu inscripción será revisada y recibirás otro correo con la confirmación final.
+            </p>
+          </div>
+          ` : `
+          <div style="background-color: #dcfce7; border: 1px solid #16a34a; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <p style="margin: 0; color: #166534; font-size: 14px;">
+              <strong>✅ Inscripción Confirmada:</strong> ¡Ya estás registrado para esta actividad!
+            </p>
+          </div>
+          `}
+          
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+            <p style="color: #666; font-size: 14px; margin: 0;">
+              Sistema de Gestión de Parques Urbanos<br>
+              Fecha de inscripción: ${format(new Date(registration.registration_date), 'dd/MM/yyyy HH:mm', { locale: es })}
+            </p>
+          </div>
+        </div>
+      </div>
+    `;
     
-    // Preparar variables para la plantilla
-    const variables = {
-      participantName: registration.participant_name,
-      participantEmail: registration.participant_email,
-      participantPhone: registration.participant_phone || 'No proporcionado',
-      activityTitle: activity.title,
-      activityStartDate: activity.start_date,
-      activityStartTime: activity.start_time || 'Por confirmar',
-      activityLocation: activity.location || 'Por confirmar',
-      parkName: activity.park_name || 'Sistema de Parques',
-      registrationDate: registration.registration_date,
-      currentDate: format(new Date(), 'dd/MM/yyyy', { locale: es })
-    };
-    
-    // Procesar plantilla
-    const processedTemplate = await emailTemplateService.processTemplate(template.id, variables);
-    
-    // Agregar a la cola de emails
-    await emailQueueService.addToQueue({
+    const result = await emailService.sendEmail({
       to: registration.participant_email,
-      subject: processedTemplate.subject,
-      htmlContent: processedTemplate.htmlContent,
-      textContent: processedTemplate.textContent,
-      priority: 'high',
-      templateId: template.id,
-      variables: variables,
-      metadata: {
-        registrationId: registration.id,
-        activityId: activity.id,
-        emailType: 'registration_confirmation'
-      }
+      subject: subject,
+      html: htmlContent,
+      text: `Hola ${registration.participant_name}, hemos recibido tu inscripción para ${activity.title}. ${activity.requires_approval ? 'Está siendo revisada.' : 'Ha sido confirmada.'}`
     });
     
-    console.log('✅ Correo de confirmación agregado a la cola');
-    return true;
+    console.log('✅ Correo de confirmación enviado exitosamente');
+    return result;
   } catch (error) {
     console.error('❌ Error enviando correo de confirmación:', error);
     return false;
@@ -69,49 +98,77 @@ async function sendRegistrationApprovalEmail(registration: any, activity: any) {
   try {
     console.log('📧 Enviando correo de aprobación de inscripción...');
     
-    // Obtener plantilla de aprobación
-    const templates = await emailTemplateService.getTemplatesByType('activity_registration_approved');
-    if (templates.length === 0) {
-      console.error('❌ No se encontró plantilla de aprobación de inscripción');
-      return false;
-    }
+    const subject = `🎉 ¡Inscripción Aprobada! - ${activity.title}`;
     
-    const template = templates[0];
+    const htmlContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+        <div style="background-color: white; border-radius: 10px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #16a34a; margin: 0; font-size: 28px;">🎯 ParkSys</h1>
+          </div>
+          
+          <div style="text-align: center; margin-bottom: 30px;">
+            <div style="font-size: 48px; margin-bottom: 15px;">🎉</div>
+            <h2 style="color: #16a34a; margin: 0; font-size: 24px;">¡Tu Inscripción Ha Sido Aprobada!</h2>
+          </div>
+          
+          <div style="background-color: #dcfce7; border-left: 4px solid #16a34a; padding: 20px; margin: 20px 0; border-radius: 0 8px 8px 0;">
+            <p style="margin: 0; color: #333; font-size: 16px;">
+              <strong>¡Excelente noticia, ${registration.participant_name}!</strong>
+            </p>
+            <p style="margin: 10px 0 0 0; color: #666;">
+              Tu inscripción para <strong>${activity.title}</strong> ha sido aprobada oficialmente. 
+              ¡Ya tienes tu lugar reservado!
+            </p>
+          </div>
+          
+          <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="color: #16a34a; margin-top: 0;">📋 Detalles de tu Actividad:</h3>
+            <ul style="list-style: none; padding: 0; margin: 0;">
+              <li style="padding: 10px 0; border-bottom: 1px solid #e2e8f0;"><strong>🎯 Actividad:</strong> ${activity.title}</li>
+              <li style="padding: 10px 0; border-bottom: 1px solid #e2e8f0;"><strong>🏛️ Parque:</strong> ${activity.park_name || 'Por confirmar'}</li>
+              <li style="padding: 10px 0; border-bottom: 1px solid #e2e8f0;"><strong>📅 Fecha:</strong> ${format(new Date(activity.start_date), 'dd/MM/yyyy', { locale: es })}</li>
+              <li style="padding: 10px 0; border-bottom: 1px solid #e2e8f0;"><strong>⏰ Hora:</strong> ${activity.start_time || 'Por confirmar'}</li>
+              <li style="padding: 10px 0;"><strong>📍 Ubicación:</strong> ${activity.location || 'Por confirmar'}</li>
+            </ul>
+          </div>
+          
+          <div style="background-color: #dbeafe; border: 1px solid #3b82f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="color: #1d4ed8; margin-top: 0;">📝 Instrucciones Importantes:</h3>
+            <ul style="color: #1e40af; margin: 0; padding-left: 20px;">
+              <li style="margin-bottom: 8px;">Llega <strong>15 minutos antes</strong> de la hora programada</li>
+              <li style="margin-bottom: 8px;">Trae ropa cómoda y adecuada para la actividad</li>
+              <li style="margin-bottom: 8px;">Si tienes alguna condición médica, avísanos al llegar</li>
+              <li>En caso de cancelación, avísanos con <strong>24 horas de anticipación</strong></li>
+            </ul>
+          </div>
+          
+          <div style="background-color: #dcfce7; border: 1px solid #16a34a; padding: 15px; border-radius: 8px; margin: 20px 0; text-align: center;">
+            <p style="margin: 0; color: #166534; font-size: 16px;">
+              <strong>✅ Estado: CONFIRMADO</strong><br>
+              <span style="font-size: 14px;">Aprobado el ${format(new Date(registration.approved_at || new Date()), 'dd/MM/yyyy HH:mm', { locale: es })}</span>
+            </p>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+            <p style="color: #666; font-size: 14px; margin: 0;">
+              ¡Nos vemos pronto!<br>
+              Sistema de Gestión de Parques Urbanos
+            </p>
+          </div>
+        </div>
+      </div>
+    `;
     
-    // Preparar variables para la plantilla
-    const variables = {
-      participantName: registration.participant_name,
-      participantEmail: registration.participant_email,
-      activityTitle: activity.title,
-      activityStartDate: activity.start_date,
-      activityStartTime: activity.start_time || 'Por confirmar',
-      activityLocation: activity.location || 'Por confirmar',
-      parkName: activity.park_name || 'Sistema de Parques',
-      approvalDate: registration.approved_at || new Date(),
-      currentDate: format(new Date(), 'dd/MM/yyyy', { locale: es })
-    };
-    
-    // Procesar plantilla
-    const processedTemplate = await emailTemplateService.processTemplate(template.id, variables);
-    
-    // Agregar a la cola de emails
-    await emailQueueService.addToQueue({
+    const result = await emailService.sendEmail({
       to: registration.participant_email,
-      subject: processedTemplate.subject,
-      htmlContent: processedTemplate.htmlContent,
-      textContent: processedTemplate.textContent,
-      priority: 'high',
-      templateId: template.id,
-      variables: variables,
-      metadata: {
-        registrationId: registration.id,
-        activityId: activity.id,
-        emailType: 'registration_approval'
-      }
+      subject: subject,
+      html: htmlContent,
+      text: `¡Hola ${registration.participant_name}! Tu inscripción para ${activity.title} ha sido aprobada. Nos vemos el ${format(new Date(activity.start_date), 'dd/MM/yyyy', { locale: es })} a las ${activity.start_time || 'hora por confirmar'}.`
     });
     
-    console.log('✅ Correo de aprobación agregado a la cola');
-    return true;
+    console.log('✅ Correo de aprobación enviado exitosamente');
+    return result;
   } catch (error) {
     console.error('❌ Error enviando correo de aprobación:', error);
     return false;
@@ -436,6 +493,43 @@ router.put('/:id/status', async (req, res) => {
     });
   } catch (error) {
     console.error('Error al actualizar estado:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// Obtener estadísticas de inscripciones para una actividad
+router.get('/stats/:activityId', async (req, res) => {
+  try {
+    const { activityId } = req.params;
+
+    const stats = await sql(`
+      SELECT 
+        COUNT(*) as total_registrations,
+        COUNT(CASE WHEN status = 'approved' THEN 1 END) as approved_count,
+        COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending_count,
+        COUNT(CASE WHEN status = 'rejected' THEN 1 END) as rejected_count,
+        COUNT(CASE WHEN status IN ('approved', 'pending') THEN 1 END) as total_active
+      FROM activity_registrations 
+      WHERE activity_id = $1
+    `, [activityId]);
+
+    const result = stats[0] || {
+      total_registrations: 0,
+      approved_count: 0,
+      pending_count: 0,
+      rejected_count: 0,
+      total_active: 0
+    };
+
+    res.json({
+      totalRegistrations: parseInt(result.total_registrations),
+      approvedCount: parseInt(result.approved_count),
+      pendingCount: parseInt(result.pending_count),
+      rejectedCount: parseInt(result.rejected_count),
+      totalActive: parseInt(result.total_active)
+    });
+  } catch (error) {
+    console.error('Error al obtener estadísticas:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
