@@ -38,7 +38,7 @@ export function registerSponsorshipRoutes(app: any, apiRouter: any, isAuthentica
       const packages = await db
         .select()
         .from(sponsorshipPackages)
-        .orderBy(desc(sponsorshipPackages.createdAt));
+        .orderBy(sponsorshipPackages.id); // Ordenar por ID ascendente (1 al 10)
       
       res.json(packages);
     } catch (error) {
