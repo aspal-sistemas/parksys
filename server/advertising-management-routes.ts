@@ -742,8 +742,8 @@ router.post('/track-impression', async (req, res) => {
     }
 
     await pool.query(`
-      INSERT INTO ad_metrics (advertisement_id, event_type, event_date, placement_id)
-      SELECT ap.advertisement_id, 'impression', CURRENT_DATE, $1
+      INSERT INTO ad_metrics (advertisement_id, event_type, event_date, event_hour, placement_id)
+      SELECT ap.advertisement_id, 'impression', CURRENT_DATE, EXTRACT(HOUR FROM CURRENT_TIMESTAMP), $1
       FROM ad_placements ap
       WHERE ap.id = $1
     `, [placementId]);
@@ -766,8 +766,8 @@ router.post('/track-click', async (req, res) => {
     }
 
     await pool.query(`
-      INSERT INTO ad_metrics (advertisement_id, event_type, event_date, placement_id)
-      SELECT ap.advertisement_id, 'click', CURRENT_DATE, $1
+      INSERT INTO ad_metrics (advertisement_id, event_type, event_date, event_hour, placement_id)
+      SELECT ap.advertisement_id, 'click', CURRENT_DATE, EXTRACT(HOUR FROM CURRENT_TIMESTAMP), $1
       FROM ad_placements ap
       WHERE ap.id = $1
     `, [placementId]);
