@@ -249,6 +249,24 @@ export function registerSponsorshipRoutes(app: any, apiRouter: any, isAuthentica
     }
   });
   
+  // Eliminar patrocinador
+  apiRouter.delete('/sponsors/:id', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      
+      const result = await pool.query('DELETE FROM sponsors WHERE id = $1 RETURNING *', [id]);
+      
+      if (result.rowCount === 0) {
+        return res.status(404).json({ error: 'Patrocinador no encontrado' });
+      }
+      
+      res.json({ message: 'Patrocinador eliminado exitosamente' });
+    } catch (error) {
+      console.error('Error al eliminar patrocinador:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  });
+
   // Actualizar patrocinador
   apiRouter.put('/sponsors/:id', isAuthenticated, async (req: Request, res: Response) => {
     try {

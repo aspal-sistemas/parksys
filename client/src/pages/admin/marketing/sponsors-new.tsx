@@ -633,6 +633,7 @@ const SponsorsManagement = () => {
 
   const getPackageInfo = (packageName: string) => {
     const pkg = packages.find((p: any) => p.name === packageName);
+    console.log(`🔍 Buscando paquete "${packageName}":`, pkg);
     return pkg || null;
   };
 
@@ -1049,12 +1050,12 @@ const SponsorsManagement = () => {
                           </CardDescription>
                         </div>
                       </div>
-                      <div className="flex flex-col space-y-1 items-end">
-                        <Badge className="bg-emerald-100 text-emerald-800 text-xs">
-                          {getPackageInfo(sponsor.packageName)?.name || sponsor.packageName}
+                      <div className="flex flex-col space-y-1 items-end min-w-[120px]">
+                        <Badge className="bg-emerald-100 text-emerald-800 text-xs whitespace-nowrap">
+                          {getPackageInfo(sponsor.packageName)?.name || sponsor.packageName || 'Sin paquete'}
                         </Badge>
-                        <Badge className={`${getStatusColor(sponsor.status)} text-xs`}>
-                          {sponsor.status.charAt(0).toUpperCase() + sponsor.status.slice(1)}
+                        <Badge className={`${getStatusColor(sponsor.status)} text-xs whitespace-nowrap`}>
+                          {(sponsor.status || 'sin estado').charAt(0).toUpperCase() + (sponsor.status || 'sin estado').slice(1)}
                         </Badge>
                       </div>
                     </div>
@@ -1508,7 +1509,13 @@ const SponsorsManagement = () => {
                       ${parseFloat(selectedSponsor.contractValue).toLocaleString()}
                     </div>
                     <p className="text-sm text-gray-500">
-                      {selectedSponsor.contractStart ? new Date(selectedSponsor.contractStart + 'T00:00:00').toLocaleDateString('es-MX') : 'No definida'} - {selectedSponsor.contractEnd ? new Date(selectedSponsor.contractEnd + 'T00:00:00').toLocaleDateString('es-MX') : 'No definida'}
+                      {selectedSponsor.contractStart ? (() => {
+                        const date = new Date(selectedSponsor.contractStart);
+                        return isNaN(date.getTime()) ? 'Fecha inválida' : date.toLocaleDateString('es-MX');
+                      })() : 'No definida'} - {selectedSponsor.contractEnd ? (() => {
+                        const date = new Date(selectedSponsor.contractEnd);
+                        return isNaN(date.getTime()) ? 'Fecha inválida' : date.toLocaleDateString('es-MX');
+                      })() : 'No definida'}
                     </p>
                   </div>
                 </div>
