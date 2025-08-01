@@ -140,7 +140,7 @@ const SponsorsManagement = () => {
   });
 
   const createSponsorMutation = useMutation({
-    mutationFn: (data: SponsorFormData) => safeApiRequest('/api/sponsors', 'POST', data),
+    mutationFn: (data: any) => safeApiRequest('/api/sponsors', 'POST', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/sponsors'] });
       toast({ title: "Éxito", description: "Patrocinador creado exitosamente" });
@@ -155,7 +155,7 @@ const SponsorsManagement = () => {
   });
 
   const updateSponsorMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number, data: SponsorFormData }) => 
+    mutationFn: ({ id, data }: { id: number, data: any }) => 
       safeApiRequest(`/api/sponsors/${id}`, 'PUT', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/sponsors'] });
@@ -171,7 +171,7 @@ const SponsorsManagement = () => {
   });
 
   const updatePackageMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number, data: PackageFormData }) => 
+    mutationFn: ({ id, data }: { id: number, data: any }) => 
       safeApiRequest(`/api/sponsorship-packages/${id}`, 'PUT', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/sponsorship-packages'] });
@@ -259,7 +259,7 @@ const SponsorsManagement = () => {
   
   useEffect(() => {
     if (watchedPackageName && packages.length > 0) {
-      const selectedPackage = packages.find(pkg => pkg.name === watchedPackageName);
+      const selectedPackage = packages.find((pkg: any) => pkg.name === watchedPackageName);
       
       if (selectedPackage) {
         sponsorForm.setValue('contractValue', parseFloat(selectedPackage.price));
@@ -283,7 +283,7 @@ const SponsorsManagement = () => {
   
   useEffect(() => {
     if (watchedEditPackageName && packages.length > 0) {
-      const selectedPackage = packages.find(pkg => pkg.name === watchedEditPackageName);
+      const selectedPackage = packages.find((pkg: any) => pkg.name === watchedEditPackageName);
       
       if (selectedPackage) {
         editSponsorForm.setValue('contractValue', parseFloat(selectedPackage.price));
@@ -529,7 +529,7 @@ const SponsorsManagement = () => {
         ...data,
         category: data.type, // Map 'type' to 'category' for backend compatibility
         logo: logoUrl,
-        contractValue: data.contractValue.toString(),
+        contractValue: data.contractValue || 0,
         eventsSponsored: data.eventsSponsored || 0
       };
       
@@ -546,9 +546,9 @@ const SponsorsManagement = () => {
   };
 
   // Funciones de filtrado
-  const filteredSponsors = sponsors.filter(sponsor => {
+  const filteredSponsors = sponsors.filter((sponsor: any) => {
     const matchesSearch = sponsor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         sponsor.representative.toLowerCase().includes(searchTerm.toLowerCase());
+                         (sponsor.representative || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = categoryFilter === "all" || sponsor.category === categoryFilter;
     const matchesStatus = statusFilter === "all" || sponsor.status === statusFilter;
     
@@ -568,7 +568,7 @@ const SponsorsManagement = () => {
   };
 
   const getPackageInfo = (packageName: string) => {
-    const pkg = packages.find(p => p.name === packageName);
+    const pkg = packages.find((p: any) => p.name === packageName);
     return pkg || null;
   };
 
@@ -1070,7 +1070,11 @@ const SponsorsManagement = () => {
                     </DialogDescription>
                   </DialogHeader>
                   <Form {...packageForm}>
-                    <form onSubmit={packageForm.handleSubmit((data) => createPackageMutation.mutate(data))} className="space-y-4">
+                    <form onSubmit={packageForm.handleSubmit((data) => {
+                      console.log('Form data received:', data);
+                      console.log('Form validation errors:', packageForm.formState.errors);
+                      createPackageMutation.mutate(data);
+                    })} className="space-y-4">
                       <div className="grid grid-cols-2 gap-4">
                         <FormField
                           control={packageForm.control}
