@@ -36,7 +36,8 @@ import {
   Gift,
   Upload,
   Image,
-  X
+  X,
+  Trash2
 } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -56,7 +57,12 @@ const packageSchema = z.object({
   level: z.number().optional(), // Campo calculado automáticamente
   price: z.string().min(1, "El precio es requerido"),
   duration: z.number().min(1, "La duración es requerida"),
-  benefits: z.array(z.string()).min(1, "Al menos un beneficio es requerido"),
+  benefits: z.union([z.array(z.string()), z.string()]).transform((val) => {
+    if (typeof val === 'string') {
+      return val.split(',').map(b => b.trim()).filter(b => b);
+    }
+    return val;
+  }).refine((val) => val.length > 0, "Al menos un beneficio es requerido"),
   isActive: z.boolean().default(true)
 });
 
@@ -185,6 +191,18 @@ const SponsorsManagement = () => {
     }
   });
 
+  const deletePackageMutation = useMutation({
+    mutationFn: (id: number) => 
+      safeApiRequest(`/api/sponsorship-packages/${id}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/sponsorship-packages'] });
+      toast({ title: "Éxito", description: "Paquete eliminado exitosamente" });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Error al eliminar paquete", variant: "destructive" });
+    }
+  });
+
   // Formularios
   const packageForm = useForm<PackageFormData>({
     resolver: zodResolver(packageSchema),
@@ -193,7 +211,7 @@ const SponsorsManagement = () => {
       category: '',
       price: '',
       duration: 12,
-      benefits: [],
+      benefits: '',
       isActive: true
     }
   });
@@ -249,7 +267,7 @@ const SponsorsManagement = () => {
       category: '',
       price: '',
       duration: 12,
-      benefits: [],
+      benefits: '',
       isActive: true
     }
   });
@@ -471,7 +489,7 @@ const SponsorsManagement = () => {
       category: pkg.category,
       price: pkg.price.toString(),
       duration: pkg.duration,
-      benefits: pkg.benefits || [],
+      benefits: Array.isArray(pkg.benefits) ? pkg.benefits.join(', ') : (pkg.benefits || ''),
       isActive: pkg.isActive || true
     });
     
@@ -1179,10 +1197,10 @@ const SponsorsManagement = () => {
                             <FormControl>
                               <Textarea 
                                 placeholder="Logo en eventos, Stand exclusivo, Menciones en redes sociales"
-                                value={Array.isArray(field.value) ? field.value.join(', ') : field.value || ''}
+                                value={typeof field.value === 'string' ? field.value : (Array.isArray(field.value) ? field.value.join(', ') : '')}
                                 onChange={(e) => {
-                                  const benefitsArray = e.target.value.split(',').map(b => b.trim()).filter(b => b);
-                                  field.onChange(benefitsArray);
+                                  // Solo almacenar el valor como string para permitir edición normal
+                                  field.onChange(e.target.value);
                                 }}
                               />
                             </FormControl>
@@ -1290,6 +1308,19 @@ const SponsorsManagement = () => {
                           <Button size="sm" variant="outline" onClick={() => openEditPackage(pkg)}>
                             <Edit className="h-4 w-4 mr-1" />
                             Editar
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            onClick={() => {
+                              if (confirm('¿Estás seguro de que deseas eliminar este paquete?')) {
+                                deletePackageMutation.mutate(pkg.id);
+                              }
+                            }}
+                            className="hover:bg-red-50 hover:border-red-200 hover:text-red-600"
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Eliminar
                           </Button>
                         </div>
                       </div>
@@ -1945,10 +1976,10 @@ const SponsorsManagement = () => {
                       <FormControl>
                         <Textarea 
                           placeholder="Logo en eventos, Stand exclusivo, Menciones en redes sociales"
-                          value={Array.isArray(field.value) ? field.value.join(', ') : field.value || ''}
+                          value={typeof field.value === 'string' ? field.value : (Array.isArray(field.value) ? field.value.join(', ') : '')}
                           onChange={(e) => {
-                            const benefitsArray = e.target.value.split(',').map(b => b.trim()).filter(b => b);
-                            field.onChange(benefitsArray);
+                            // Solo almacenar el valor como string para permitir edición normal
+                            field.onChange(e.target.value);
                           }}
                         />
                       </FormControl>
