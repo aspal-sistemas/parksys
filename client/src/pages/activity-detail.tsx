@@ -432,41 +432,7 @@ function ActivityDetailPage() {
               pageType="activity-detail" 
             />
 
-            {/* Información adicional */}
-            {(activity?.requirements || activity?.materials || (activity?.specialNeeds && activity.specialNeeds.length > 0)) && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Información Adicional</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {activity?.requirements && (
-                    <div>
-                      <h4 className="font-medium text-gray-900 mb-2">Requisitos</h4>
-                      <p className="text-sm text-gray-600">{activity.requirements}</p>
-                    </div>
-                  )}
-                  {activity?.materials && (
-                    <div>
-                      <h4 className="font-medium text-gray-900 mb-2">Materiales</h4>
-                      <p className="text-sm text-gray-600">{activity.materials}</p>
-                    </div>
-                  )}
-                  {activity?.specialNeeds && activity.specialNeeds.length > 0 && (
-                    <div>
-                      <h4 className="font-medium text-gray-900 mb-2">Requerimientos Especiales</h4>
-                      <div className="space-y-1">
-                        {activity.specialNeeds.map((need, index) => (
-                          <p key={index} className="text-sm text-gray-600 flex items-center gap-2">
-                            <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
-                            {need}
-                          </p>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
+
 
             {/* Botón de contacto */}
             <Card>
