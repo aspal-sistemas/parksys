@@ -40,6 +40,7 @@ import {
 } from 'lucide-react';
 import { useStripePayment } from '@/hooks/use-stripe-payment';
 import { useToast } from '@/hooks/use-toast';
+import AdminLayout from '@/components/AdminLayout';
 
 interface Payment {
   id: number;
@@ -164,6 +165,7 @@ export default function PaymentsPage() {
   });
 
   return (
+    <AdminLayout title="Gestión de Pagos" subtitle="Administra todos los pagos procesados con Stripe">
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -556,5 +558,6 @@ export default function PaymentsPage() {
         </CardContent>
       </Card>
     </div>
+    </AdminLayout>
   );
 }
