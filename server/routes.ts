@@ -16,10 +16,11 @@ import * as schema from "@shared/schema";
 const { parkAmenities, amenities } = schema;
 import { videoRouter } from "./video_routes";
 import { registerVolunteerRoutes } from "./volunteerRoutes";
-// import { registerInstructorRoutes } from "./instructorRoutes"; // Comentado para evitar conflictos - se usa instructor-routes.ts
+import { registerInstructorRoutes } from "./instructor-routes";
 import { registerPublicRoutes } from "./publicRoutes";
 import { registerAssetRoutes } from "./asset_routes";
 import { registerAssetImageRoutes } from "./asset-image-routes";
+import activityImageRouter from "./activity-image-routes";
 import { registerMaintenanceRoutes } from "./maintenance_routes_fixed";
 import { registerAssetAssignmentRoutes } from "./asset_assignment_routes";
 import { registerSpaceReservationRoutes } from "./space-reservations-routes";
@@ -174,7 +175,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerVolunteerRoutes(app, apiRouter, null, isAuthenticated);
   
   // Registramos las rutas del módulo de instructores
-  // registerInstructorRoutes(app, apiRouter, publicRouter, isAuthenticated); // Comentado - se usa instructor-routes.ts
+  registerInstructorRoutes(app, apiRouter, isAuthenticated);
   
   // Registramos las rutas del módulo de activos
   registerAssetRoutes(app, apiRouter, isAuthenticated); // RESTAURADO - rutas POST de mantenimientos están comentadas en asset_routes.ts
@@ -185,6 +186,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Registramos las rutas del módulo de actividades
   registerActivityRoutes(app, apiRouter, isAuthenticated, hasParkAccess);
+  
+  // Registramos las rutas de imágenes de actividades
+  apiRouter.use('/activities', activityImageRouter);
   
   // Registramos las rutas del módulo de arbolado
   registerTreeRoutes(app, apiRouter, isAuthenticated);
