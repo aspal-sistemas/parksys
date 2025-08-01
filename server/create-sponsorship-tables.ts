@@ -9,53 +9,159 @@ export async function createSponsorshipTables() {
   try {
     console.log('🎯 Inicializando tablas del sistema de patrocinios...');
     
-    // Crear datos iniciales para paquetes de patrocinio
+    // Crear datos iniciales para paquetes de patrocinio - Sistema de 10 niveles inspirado en fauna silvestre
     const initialPackages = [
       {
-        name: "Paquete Platino",
-        level: "platino",
-        price: "500000",
+        name: "Paquete Jaguar",
+        category: "jaguar",
+        price: "1200000",
         duration: 12,
         benefits: [
-          "Logo principal en todos los eventos",
-          "Stand exclusivo premium",
-          "Menciones en redes sociales",
-          "Activaciones especiales",
-          "Reportes mensuales detallados",
-          "Acceso VIP a eventos"
+          "Patrocinio principal exclusivo en todos los eventos",
+          "Stand premium VIP con ubicación privilegiada",
+          "Branding completo en materiales oficiales",
+          "Campañas publicitarias personalizadas",
+          "Reportes semanales y análisis detallados",
+          "Acceso a eventos privados y networking exclusivo",
+          "Reconocimiento como guardián supremo de los parques"
         ],
-        eventsIncluded: 15,
-        exposureLevel: "premium",
         isActive: true
       },
       {
-        name: "Paquete Oro",
-        level: "oro",
+        name: "Paquete León",
+        category: "león",
+        price: "900000",
+        duration: 12,
+        benefits: [
+          "Patrocinio principal en eventos masivos",
+          "Stand VIP premium",
+          "Logo prominente en toda comunicación",
+          "Activaciones especiales trimestrales",
+          "Reportes mensuales ejecutivos",
+          "Acceso VIP a inauguraciones",
+          "Título de rey de la conservación"
+        ],
+        isActive: true
+      },
+      {
+        name: "Paquete Águila",
+        category: "águila",
+        price: "650000",
+        duration: 12,
+        benefits: [
+          "Patrocinio destacado en eventos principales",
+          "Stand premium con vista privilegiada",
+          "Presencia en campañas digitales",
+          "Reportes mensuales detallados",
+          "Acceso a eventos especiales",
+          "Reconocimiento como visionario supremo"
+        ],
+        isActive: true
+      },
+      {
+        name: "Paquete Lobo",
+        category: "lobo",
+        price: "450000",
+        duration: 12,
+        benefits: [
+          "Patrocinio en eventos selectos",
+          "Stand estratégico premium",
+          "Menciones en redes sociales",
+          "Reportes bimestrales",
+          "Activaciones grupales",
+          "Liderazgo de manada reconocido"
+        ],
+        isActive: true
+      },
+      {
+        name: "Paquete Ciervo",
+        category: "ciervo",
         price: "300000",
         duration: 12,
         benefits: [
-          "Logo destacado en eventos",
-          "Stand premium",
-          "Menciones en redes sociales",
+          "Patrocinio en eventos comunitarios",
+          "Stand destacado",
+          "Presencia en material promocional",
           "Reportes trimestrales",
-          "Activaciones comerciales"
+          "Participación en actividades especiales",
+          "Estatus de benefactor destacado"
         ],
-        eventsIncluded: 10,
-        exposureLevel: "alto",
         isActive: true
       },
       {
-        name: "Paquete Plata",
-        level: "plata",
-        price: "150000",
+        name: "Paquete Conejo",
+        category: "conejo",
+        price: "200000",
         duration: 12,
         benefits: [
-          "Logo en materiales promocionales",
-          "Stand estándar",
-          "Menciones ocasionales",
-          "Reportes semestrales"
+          "Patrocinio en eventos familiares",
+          "Stand estándar premium",
+          "Logo en materiales selectos",
+          "Reportes trimestrales",
+          "Acceso a eventos comunitarios",
+          "Reconocimiento como patrocinador comprometido"
         ],
-        eventsIncluded: 6,
+        isActive: true
+      },
+      {
+        name: "Paquete Ardilla",
+        category: "ardilla", 
+        price: "125000",
+        duration: 12,
+        benefits: [
+          "Patrocinio en eventos locales",
+          "Stand estándar",
+          "Menciones en comunicaciones",
+          "Reportes semestrales",
+          "Participación en actividades educativas",
+          "Estatus de socio estratégico"
+        ],
+        isActive: true
+      },
+      {
+        name: "Paquete Colibrí",
+        category: "colibrí",
+        price: "75000",
+        duration: 12,
+        benefits: [
+          "Patrocinio en eventos específicos",
+          "Espacio de exhibición",
+          "Logo en materiales básicos",
+          "Reportes semestrales",
+          "Acceso a eventos educativos",
+          "Reconocimiento como aliado ágil"
+        ],
+        isActive: true
+      },
+      {
+        name: "Paquete Abeja",
+        category: "abeja",
+        price: "50000",
+        duration: 12,
+        benefits: [
+          "Patrocinio en actividades ambientales",
+          "Espacio básico de exhibición",
+          "Menciones ocasionales",
+          "Reportes anuales",
+          "Participación en programas de voluntariado",
+          "Estatus de contribuidor activo"
+        ],
+        isActive: true
+      },
+      {
+        name: "Paquete Hormiga",
+        category: "hormiga",
+        price: "25000",
+        duration: 12,
+        benefits: [
+          "Patrocinio en eventos comunitarios básicos",
+          "Reconocimiento en materiales impresos",
+          "Reportes anuales básicos",
+          "Acceso a eventos públicos",
+          "Certificado de colaborador básico"
+        ],
+        isActive: true
+      }: 6,
         exposureLevel: "medio",
         isActive: true
       },

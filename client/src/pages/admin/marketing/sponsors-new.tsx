@@ -481,15 +481,104 @@ const SponsorsManagement = () => {
     return matchesSearch && matchesCategory && matchesStatus;
   });
 
+  // Sistema de categorías inspirado en fauna silvestre (10 niveles)
+  const sponsorTiers = {
+    hormiga: { 
+      name: "Hormiga", 
+      icon: "🐜", 
+      color: "bg-amber-100 text-amber-800", 
+      price: 25000,
+      level: 1,
+      description: "Colaborador básico"
+    },
+    abeja: { 
+      name: "Abeja", 
+      icon: "🐝", 
+      color: "bg-yellow-100 text-yellow-800", 
+      price: 50000,
+      level: 2,
+      description: "Contribuidor activo"
+    },
+    colibrí: { 
+      name: "Colibrí", 
+      icon: "🐦", 
+      color: "bg-emerald-100 text-emerald-800", 
+      price: 75000,
+      level: 3,
+      description: "Aliado ágil"
+    },
+    ardilla: { 
+      name: "Ardilla", 
+      icon: "🐿️", 
+      color: "bg-orange-100 text-orange-800", 
+      price: 125000,
+      level: 4,
+      description: "Socio estratégico"
+    },
+    conejo: { 
+      name: "Conejo", 
+      icon: "🐰", 
+      color: "bg-pink-100 text-pink-800", 
+      price: 200000,
+      level: 5,
+      description: "Patrocinador comprometido"
+    },
+    ciervo: { 
+      name: "Ciervo", 
+      icon: "🦌", 
+      color: "bg-green-100 text-green-800", 
+      price: 300000,
+      level: 6,
+      description: "Benefactor destacado"
+    },
+    lobo: { 
+      name: "Lobo", 
+      icon: "🐺", 
+      color: "bg-slate-100 text-slate-800", 
+      price: 450000,
+      level: 7,
+      description: "Líder de manada"
+    },
+    águila: { 
+      name: "Águila", 
+      icon: "🦅", 
+      color: "bg-blue-100 text-blue-800", 
+      price: 650000,
+      level: 8,
+      description: "Visionario supremo"
+    },
+    león: { 
+      name: "León", 
+      icon: "🦁", 
+      color: "bg-yellow-100 text-yellow-900", 
+      price: 900000,
+      level: 9,
+      description: "Rey de la selva"
+    },
+    jaguar: { 
+      name: "Jaguar", 
+      icon: "🐆", 
+      color: "bg-purple-100 text-purple-800", 
+      price: 1200000,
+      level: 10,
+      description: "Guardián supremo"
+    }
+  };
+
   // Funciones de utilidad para estilos
   const getCategoryColor = (category: string) => {
-    const colors = {
-      bronce: "bg-orange-100 text-orange-800",
-      plata: "bg-gray-100 text-gray-800", 
-      oro: "bg-yellow-100 text-yellow-800",
-      platino: "bg-purple-100 text-purple-800"
+    return sponsorTiers[category as keyof typeof sponsorTiers]?.color || "bg-gray-100 text-gray-800";
+  };
+
+  const getTierInfo = (category: string) => {
+    return sponsorTiers[category as keyof typeof sponsorTiers] || {
+      name: category,
+      icon: "🏢",
+      color: "bg-gray-100 text-gray-800",
+      price: 0,
+      level: 0,
+      description: "Categoría no definida"
     };
-    return colors[category as keyof typeof colors] || "bg-gray-100 text-gray-800";
   };
 
   const getStatusColor = (status: string) => {
@@ -776,10 +865,17 @@ const SponsorsManagement = () => {
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  <SelectItem value="bronce">Bronce</SelectItem>
-                                  <SelectItem value="plata">Plata</SelectItem>
-                                  <SelectItem value="oro">Oro</SelectItem>
-                                  <SelectItem value="platino">Platino</SelectItem>
+                                  {Object.entries(sponsorTiers).map(([key, tier]) => (
+                                    <SelectItem key={key} value={key}>
+                                      <div className="flex items-center space-x-2">
+                                        <span>{tier.icon}</span>
+                                        <span>{tier.name}</span>
+                                        <span className="text-xs text-gray-500">
+                                          (${tier.price.toLocaleString()})
+                                        </span>
+                                      </div>
+                                    </SelectItem>
+                                  ))}
                                 </SelectContent>
                               </Select>
                               <FormMessage />
@@ -900,7 +996,7 @@ const SponsorsManagement = () => {
                       </div>
                       <div className="flex flex-col space-y-1">
                         <Badge className={getCategoryColor(sponsor.packageCategory)}>
-                          {sponsor.packageCategory.charAt(0).toUpperCase() + sponsor.packageCategory.slice(1)}
+                          {getTierInfo(sponsor.packageCategory).icon} {getTierInfo(sponsor.packageCategory).name}
                         </Badge>
                         <Badge className={getStatusColor(sponsor.status)}>
                           {sponsor.status.charAt(0).toUpperCase() + sponsor.status.slice(1)}
@@ -1012,10 +1108,17 @@ const SponsorsManagement = () => {
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  <SelectItem value="bronce">Bronce</SelectItem>
-                                  <SelectItem value="plata">Plata</SelectItem>
-                                  <SelectItem value="oro">Oro</SelectItem>
-                                  <SelectItem value="platino">Platino</SelectItem>
+                                  {Object.entries(sponsorTiers).map(([key, tier]) => (
+                                    <SelectItem key={key} value={key}>
+                                      <div className="flex items-center space-x-2">
+                                        <span>{tier.icon}</span>
+                                        <span>{tier.name}</span>
+                                        <span className="text-xs text-gray-500">
+                                          (${tier.price.toLocaleString()})
+                                        </span>
+                                      </div>
+                                    </SelectItem>
+                                  ))}
                                 </SelectContent>
                               </Select>
                               <FormMessage />
@@ -1143,7 +1246,7 @@ const SponsorsManagement = () => {
                         <CardTitle className="text-lg">{pkg.name}</CardTitle>
                         <CardDescription>
                           <Badge className={getCategoryColor(pkg.category)}>
-                            {pkg.category.charAt(0).toUpperCase() + pkg.category.slice(1)}
+                            {getTierInfo(pkg.category).icon} {getTierInfo(pkg.category).name}
                           </Badge>
                         </CardDescription>
                       </div>
@@ -1271,7 +1374,7 @@ const SponsorsManagement = () => {
                     <p className="text-gray-600">{selectedSponsor.category}</p>
                     <div className="flex space-x-2 mt-2">
                       <Badge className={getCategoryColor(selectedSponsor.packageCategory)}>
-                        {selectedSponsor.packageCategory}
+                        {getTierInfo(selectedSponsor.packageCategory).icon} {getTierInfo(selectedSponsor.packageCategory).name}
                       </Badge>
                       <Badge className={getStatusColor(selectedSponsor.status)}>
                         {selectedSponsor.status}
@@ -1576,10 +1679,17 @@ const SponsorsManagement = () => {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="bronce">Bronce</SelectItem>
-                            <SelectItem value="plata">Plata</SelectItem>
-                            <SelectItem value="oro">Oro</SelectItem>
-                            <SelectItem value="platino">Platino</SelectItem>
+                            {Object.entries(sponsorTiers).map(([key, tier]) => (
+                              <SelectItem key={key} value={key}>
+                                <div className="flex items-center space-x-2">
+                                  <span>{tier.icon}</span>
+                                  <span>{tier.name}</span>
+                                  <span className="text-xs text-gray-500">
+                                    (${tier.price.toLocaleString()})
+                                  </span>
+                                </div>
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                         <FormMessage />

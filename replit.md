@@ -13,11 +13,16 @@ The application uses a client-server architecture with a modern full-stack:
 - **Database**: PostgreSQL with Drizzle ORM.
 - **Authentication**: Role-based access control system.
 
-## Recent Changes (July 31, 2025)
+## Recent Changes (August 1, 2025)
+- **NEW: 10-Tier Wildlife-Inspired Sponsor System**: Completely redesigned sponsorship categories:
+  - **Replaced 4-tier system** (Bronce, Plata, Oro, Platino) with **10-tier wildlife system**
+  - **New Tiers**: Hormiga ($25k), Abeja ($50k), Colibrí ($75k), Ardilla ($125k), Conejo ($200k), Ciervo ($300k), Lobo ($450k), Águila ($650k), León ($900k), Jaguar ($1.2M)
+  - **Each tier includes**: Unique animal emoji icon, tier-specific color scheme, graduated benefits package, descriptive status titles
+  - **UI Enhancements**: Dynamic tier selection with pricing, visual icons in all cards and forms, enhanced package displays
 - **Database Schema Updates**: Restructured sponsorship system tables:
-  - Renamed `level` field to `category` in `sponsorship_packages` table
-  - Renamed `level` field to `package_category` in `sponsors` table  
-  - Removed `events_included` and `exposure_level` fields from `sponsorship_packages`
+  - Updated `category` field values in `sponsorship_packages` and `package_category` in `sponsors` tables to use new wildlife names
+  - Inserted comprehensive benefit packages for each of the 10 new tiers
+  - Maintained backward compatibility with existing sponsor data structure
 - **UI Consistency**: Standardized sponsor management modal interactions and button text to "Guardar cambios"
 - **Form Validation**: Updated Zod schemas to match new database structure
 - **Component Architecture**: Separated logo upload states between create/edit modals to prevent interference
