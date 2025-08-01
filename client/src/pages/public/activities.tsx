@@ -33,7 +33,7 @@ export default function PublicActivitiesPage() {
   });
 
   // Filter activities
-  const filteredActivities = (activities || [])?.filter((activity: any) => {
+  const filteredActivities = Array.isArray(activities) ? activities.filter((activity: any) => {
     // Only show activities with registration enabled
     if (!activity.registrationEnabled) return false;
     
@@ -54,7 +54,7 @@ export default function PublicActivitiesPage() {
     }
     
     return true;
-  }) || [];
+  }) : [];
 
   const handleActivityClick = (activityId: number) => {
     setLocation(`/public/activities/${activityId}`);
@@ -134,7 +134,7 @@ export default function PublicActivitiesPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todas las categorías</SelectItem>
-                  {(categories || [])?.map((category: any) => (
+                  {Array.isArray(categories) && categories.map((category: any) => (
                     <SelectItem key={category.id} value={category.name}>
                       {category.name}
                     </SelectItem>
@@ -149,7 +149,7 @@ export default function PublicActivitiesPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos los parques</SelectItem>
-                  {(parks || [])?.map((park: any) => (
+                  {Array.isArray(parks) && parks.map((park: any) => (
                     <SelectItem key={park.id} value={park.id.toString()}>
                       {park.name}
                     </SelectItem>

@@ -92,12 +92,12 @@ export default function ActivityDetailPage() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/activities', activityId] });
       
-      if (activity && activity.isFree) {
+      if (activity && (activity as any).isFree) {
         // Free activity - show success directly
         setRegistrationStep('success');
         toast({
           title: "¡Registro exitoso!",
-          description: activity && activity.requiresApproval 
+          description: activity && (activity as any).requiresApproval 
             ? "Tu registro está pendiente de aprobación. Recibirás una confirmación por email."
             : "Te has registrado exitosamente a la actividad.",
         });
@@ -128,7 +128,7 @@ export default function ActivityDetailPage() {
     toast({
       title: "¡Registro y pago exitosos!",
       description: `Tu pago de ${paymentData.amount} MXN ha sido procesado. ${
-        activity && activity.requiresApproval 
+        activity && (activity as any).requiresApproval 
           ? 'Tu registro está pendiente de aprobación.'
           : 'Estás registrado en la actividad.'
       }`,
@@ -140,18 +140,20 @@ export default function ActivityDetailPage() {
 
   const getAvailableSlots = () => {
     if (!activity) return 0;
-    const totalSlots = activity.maxRegistrations || activity.capacity || 0;
-    const registeredCount = activity.registeredCount || 0;
+    const activityData = activity as any;
+    const totalSlots = activityData.maxRegistrations || activityData.capacity || 0;
+    const registeredCount = activityData.registeredCount || 0;
     return Math.max(0, totalSlots - registeredCount);
   };
 
   const formatPrice = () => {
     if (!activity) return '';
-    if (activity.isFree) return 'Gratuita';
-    if (activity.isPriceRandom) {
-      return `Desde $${parseFloat(activity.price).toLocaleString('es-MX')} MXN (sugerido)`;
+    const activityData = activity as any;
+    if (activityData.isFree) return 'Gratuita';
+    if (activityData.isPriceRandom) {
+      return `Desde $${parseFloat(activityData.price).toLocaleString('es-MX')} MXN (sugerido)`;
     }
-    return `$${parseFloat(activity.price).toLocaleString('es-MX')} MXN`;
+    return `$${parseFloat(activityData.price).toLocaleString('es-MX')} MXN`;
   };
 
   if (isLoading) {
@@ -184,7 +186,7 @@ export default function ActivityDetailPage() {
 
   const availableSlots = getAvailableSlots();
   const isFullyBooked = availableSlots === 0;
-  const canRegister = activity && activity.registrationEnabled && !isFullyBooked;
+  const canRegister = activity && (activity as any).registrationEnabled && !isFullyBooked;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -203,13 +205,13 @@ export default function ActivityDetailPage() {
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
             <div className="flex-1">
               <Badge variant="secondary" className="mb-2">
-                {activity.category}
+                {(activity as any).category}
               </Badge>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                {activity.title}
+                {(activity as any).title}
               </h1>
               <p className="text-lg text-gray-600">
-                {activity.description}
+                {(activity as any).description}
               </p>
             </div>
             
@@ -224,31 +226,31 @@ export default function ActivityDetailPage() {
                 <div className="space-y-3 text-sm">
                   <div className="flex items-center">
                     <MapPin className="h-4 w-4 mr-2 text-gray-500" />
-                    {activity.parkName}
-                    {activity.location && ` - ${activity.location}`}
+                    {(activity as any).parkName}
+                    {(activity as any).location && ` - ${(activity as any).location}`}
                   </div>
                   
                   <div className="flex items-center">
                     <Calendar className="h-4 w-4 mr-2 text-gray-500" />
-                    {format(new Date(activity.startDate), 'PPP', { locale: es })}
+                    {format(new Date((activity as any).startDate), 'PPP', { locale: es })}
                   </div>
                   
-                  {activity.startTime && (
+                  {(activity as any).startTime && (
                     <div className="flex items-center">
                       <Clock className="h-4 w-4 mr-2 text-gray-500" />
-                      {activity.startTime}
-                      {activity.duration && ` (${activity.duration} min)`}
+                      {(activity as any).startTime}
+                      {(activity as any).duration && ` (${(activity as any).duration} min)`}
                     </div>
                   )}
                   
                   <div className="flex items-center">
                     <Users className="h-4 w-4 mr-2 text-gray-500" />
                     {availableSlots} espacios disponibles
-                    {activity.maxRegistrations && ` de ${activity.maxRegistrations}`}
+                    {(activity as any).maxRegistrations && ` de ${(activity as any).maxRegistrations}`}
                   </div>
                 </div>
                 
-                {activity.requiresApproval && (
+                {(activity as any).requiresApproval && (
                   <Badge variant="outline" className="mt-3 text-xs">
                     Requiere aprobación administrativa
                   </Badge>
@@ -261,7 +263,7 @@ export default function ActivityDetailPage() {
                 >
                   {isFullyBooked 
                     ? 'Sin espacios disponibles' 
-                    : !activity.registrationEnabled 
+                    : !(activity as any).registrationEnabled 
                     ? 'Inscripciones cerradas'
                     : 'Inscribirse ahora'
                   }
@@ -277,37 +279,37 @@ export default function ActivityDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
             {/* Description */}
-            {activity.description && (
+            {(activity as any).description && (
               <Card>
                 <CardHeader>
                   <CardTitle>Descripción</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-700 leading-relaxed">
-                    {activity.description}
+                    {(activity as any).description}
                   </p>
                 </CardContent>
               </Card>
             )}
 
             {/* Materials and Requirements */}
-            {(activity.materials || activity.requirements) && (
+            {(activity.(activity as any).materials || activity.(activity as any).requirements) && (
               <Card>
                 <CardHeader>
                   <CardTitle>Información importante</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {activity.materials && (
+                  {activity.(activity as any).materials && (
                     <div>
                       <h4 className="font-medium text-gray-900 mb-2">Materiales necesarios:</h4>
-                      <p className="text-gray-700">{activity.materials}</p>
+                      <p className="text-gray-700">{activity.(activity as any).materials}</p>
                     </div>
                   )}
                   
-                  {activity.requirements && (
+                  {activity.(activity as any).requirements && (
                     <div>
                       <h4 className="font-medium text-gray-900 mb-2">Requisitos:</h4>
-                      <p className="text-gray-700">{activity.requirements}</p>
+                      <p className="text-gray-700">{activity.(activity as any).requirements}</p>
                     </div>
                   )}
                 </CardContent>
@@ -315,7 +317,7 @@ export default function ActivityDetailPage() {
             )}
 
             {/* Instructor */}
-            {activity.instructorName && (
+            {activity.(activity as any).instructorName && (
               <Card>
                 <CardHeader>
                   <CardTitle>Instructor</CardTitle>
@@ -326,9 +328,9 @@ export default function ActivityDetailPage() {
                       <User className="h-5 w-5 text-gray-500" />
                     </div>
                     <div>
-                      <p className="font-medium">{activity.instructorName}</p>
-                      {activity.instructorContact && (
-                        <p className="text-sm text-gray-600">{activity.instructorContact}</p>
+                      <p className="font-medium">{activity.(activity as any).instructorName}</p>
+                      {activity.(activity as any).instructorContact && (
+                        <p className="text-sm text-gray-600">{activity.(activity as any).instructorContact}</p>
                       )}
                     </div>
                   </div>
@@ -345,25 +347,25 @@ export default function ActivityDetailPage() {
                 <CardTitle>Información rápida</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
-                {activity.capacity && (
+                {activity.(activity as any).capacity && (
                   <div className="flex justify-between">
                     <span>Capacidad máxima:</span>
-                    <span className="font-medium">{activity.capacity} personas</span>
+                    <span className="font-medium">{activity.(activity as any).capacity} personas</span>
                   </div>
                 )}
                 
-                {activity.duration && (
+                {activity.(activity as any).duration && (
                   <div className="flex justify-between">
                     <span>Duración:</span>
-                    <span className="font-medium">{activity.duration} minutos</span>
+                    <span className="font-medium">{activity.(activity as any).duration} minutos</span>
                   </div>
                 )}
                 
-                {activity.registrationDeadline && (
+                {activity.(activity as any).registrationDeadline && (
                   <div className="flex justify-between">
                     <span>Fecha límite:</span>
                     <span className="font-medium">
-                      {format(new Date(activity.registrationDeadline), 'PP', { locale: es })}
+                      {format(new Date(activity.(activity as any).registrationDeadline), 'PP', { locale: es })}
                     </span>
                   </div>
                 )}
@@ -379,7 +381,7 @@ export default function ActivityDetailPage() {
           <DialogHeader>
             <DialogTitle>Inscripción a la actividad</DialogTitle>
             <DialogDescription>
-              Completa tus datos para inscribirte a "{activity.title}"
+              Completa tus datos para inscribirte a "{activity.(activity as any).title}"
             </DialogDescription>
           </DialogHeader>
           
@@ -475,11 +477,11 @@ export default function ActivityDetailPage() {
           {registrationData && (
             <ActivityPaymentForm
               activity={{
-                id: activity.id,
-                title: activity.title,
-                price: activity.price,
-                isFree: activity.isFree,
-                parkName: activity.parkName,
+                id: activity.(activity as any).id,
+                title: activity.(activity as any).title,
+                price: activity.(activity as any).price,
+                isFree: activity.(activity as any).isFree,
+                parkName: activity.(activity as any).parkName,
               }}
               registrationData={registrationData}
               onPaymentSuccess={handlePaymentSuccess}
@@ -498,7 +500,7 @@ export default function ActivityDetailPage() {
               ¡Registro exitoso!
             </DialogTitle>
             <DialogDescription>
-              {activity.requiresApproval 
+              {activity.(activity as any).requiresApproval 
                 ? 'Tu registro está pendiente de aprobación. Recibirás una confirmación por email cuando sea aprobado.'
                 : 'Te has registrado exitosamente a la actividad. Te esperamos!'
               }
