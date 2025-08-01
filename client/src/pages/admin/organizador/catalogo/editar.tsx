@@ -49,6 +49,7 @@ import { CalendarIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Spinner } from '@/components/Spinner';
 import ActivityImageManager from '@/components/ActivityImageManager';
+import { safeApiRequest } from '@/lib/queryClient';
 
 // Esquema para validar el formulario
 const activitySchema = z.object({
@@ -341,23 +342,11 @@ const EditarActividadPage = () => {
       const finalData = { ...data, ...instructorData };
       console.log("Enviando datos a la API:", finalData);
       
-      // Usar directamente fetch para tener más control sobre la petición
-      const response = await fetch(`/api/activities/${activityId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(finalData)
+      // Usar safeApiRequest en lugar de fetch directo
+      return await safeApiRequest(`/api/activities/${activityId}`, { 
+        method: 'PUT', 
+        data: finalData 
       });
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Error en la respuesta:", errorText);
-        throw new Error(`Error al actualizar actividad: ${response.status} ${errorText}`);
-      }
-      
-      return await response.json();
     },
     onSuccess: () => {
       toast({
