@@ -150,7 +150,7 @@ export function registerSponsorshipRoutes(app: any, apiRouter: any, isAuthentica
           s.website_url,
           s.status,
           sp.name as package_name,
-          s.package_category,
+          sp.category as package_category,
           s.contract_value,
           s.contract_start,
           s.contract_end,
@@ -163,7 +163,7 @@ export function registerSponsorshipRoutes(app: any, apiRouter: any, isAuthentica
           sp.benefits as package_benefits,
           sp.price as package_price
         FROM sponsors s
-        LEFT JOIN sponsorship_packages sp ON s.package_category = sp.category
+        LEFT JOIN sponsorship_packages sp ON s.package_name = sp.name
         ORDER BY s.created_at DESC
       `);
       

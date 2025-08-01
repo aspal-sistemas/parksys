@@ -432,9 +432,6 @@ const SponsorsManagement = () => {
         return date.toISOString().split('T')[0]; // yyyy-MM-dd format
       };
 
-      // Encontrar el paquete seleccionado para obtener su categoría
-      const selectedPackage = packages.find((p: any) => p.name === data.packageName);
-
       const formattedData = {
         ...data,
         category: data.type, // Map 'type' to 'category' for backend compatibility
@@ -443,8 +440,7 @@ const SponsorsManagement = () => {
         eventsSponsored: Number(data.eventsSponsored) || 0,
         contractStart: formatDate(data.contractStart),
         contractEnd: formatDate(data.contractEnd),
-        renewalProbability: Number(data.renewalProbability) || 0,
-        packageCategory: selectedPackage?.category || null // Añadir packageCategory
+        renewalProbability: Number(data.renewalProbability) || 0
       };
       
       createSponsorMutation.mutate(formattedData);
@@ -578,9 +574,6 @@ const SponsorsManagement = () => {
         return date.toISOString().split('T')[0]; // yyyy-MM-dd format
       };
 
-      // Encontrar el paquete seleccionado para obtener su categoría
-      const selectedPackage = packages.find((p: any) => p.name === data.packageName);
-
       const formattedData = {
         ...data,
         category: data.type, // Map 'type' to 'category' for backend compatibility
@@ -589,8 +582,7 @@ const SponsorsManagement = () => {
         eventsSponsored: Number(data.eventsSponsored) || 0,
         contractStart: formatDate(data.contractStart),
         contractEnd: formatDate(data.contractEnd),
-        renewalProbability: Number(data.renewalProbability) || 0,
-        packageCategory: selectedPackage?.category || null // Añadir packageCategory
+        renewalProbability: Number(data.renewalProbability) || 0
       };
       
       updateSponsorMutation.mutate({ id: selectedSponsor.id, data: formattedData });
