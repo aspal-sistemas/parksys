@@ -1063,6 +1063,7 @@ import visitorCountRoutes from "./visitor-count-routes";
 import visitorsDashboardRoutes from "./visitors-dashboard-routes";
 import { registerParkEvaluationRoutes } from "./park-evaluations-routes";
 import { registerEvaluationCriteriaRoutes } from "./evaluation-criteria-routes";
+import { registerSponsorshipRoutes } from "./sponsorship-routes";
 import { seedTreeSpecies } from "./seed-tree-species";
 
 import { initializeDatabase } from "./initialize-db";
@@ -1134,6 +1135,18 @@ async function initializeDatabaseAsync() {
     console.log("✅ Rutas de criterios de evaluación registradas");
   } catch (error) {
     console.error("❌ Error registrando rutas de criterios:", error);
+  }
+
+  // Registrar rutas de patrocinios
+  try {
+    const sponsorshipRouter = express.Router();
+    sponsorshipRouter.use(express.json({ limit: '50mb' }));
+    sponsorshipRouter.use(express.urlencoded({ extended: true, limit: '50mb' }));
+    registerSponsorshipRoutes(app, sponsorshipRouter, (req: Request, res: Response, next: NextFunction) => next());
+    app.use("/api", sponsorshipRouter);
+    console.log("✅ Rutas de patrocinios registradas");
+  } catch (error) {
+    console.error("❌ Error registrando rutas de patrocinios:", error);
   }
 
   // Inicializar otras funcionalidades críticas en segundo plano
