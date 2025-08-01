@@ -55,6 +55,7 @@ import { registerEventRoutes } from "./events-routes";
 import { registerActivityRoutes } from "./activitiesRoutes";
 import advertisingRoutes from "./advertising-routes";
 import activityRegistrationsRouter from "./routes/activity-registrations";
+import paymentsRouter from "./routes/payments";
 import { uploadAdvertising, handleAdvertisingUpload } from "./api/advertising-upload";
 import { 
   insertParkSchema, insertCommentSchema, insertIncidentSchema, 
@@ -659,6 +660,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Añadir router especial para actualizar habilidades
   app.use('/api', updateSkillsRouter);
+  
+  // Añadir rutas de pagos con Stripe
+  app.use(paymentsRouter);
 
   // Get all parks with option to filter
   apiRouter.get("/parks", async (req: Request, res: Response) => {

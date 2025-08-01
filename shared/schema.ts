@@ -3537,4 +3537,237 @@ export const insertParkFeedbackSchema = createInsertSchema(parkFeedback).omit({
 export type ParkFeedback = typeof parkFeedback.$inferSelect;
 export type InsertParkFeedback = z.infer<typeof insertParkFeedbackSchema>;
 
+// ===== SISTEMA DE PAGOS CON STRIPE =====
+
+// Enum para tipos de servicios que se pueden pagar
+export const paymentServiceTypeEnum = pgEnum("payment_service_type", [
+  "activity",
+  "event", 
+  "space_reservation",
+  "concession_fee",
+  "sponsorship",
+  "permit",
+  "maintenance_service",
+  "other"
+]);
+
+// Enum para estado de pagos Stripe
+export const stripePaymentStatusEnum = pgEnum("stripe_payment_status", [
+  "pending",
+  "processing", 
+  "succeeded",
+  "failed",
+  "canceled",
+  "refunded",
+  "partially_refunded"
+]);
+
+// Tabla principal de pagos
+export const payments = pgTable("payments", {
+  id: serial("id").primaryKey(),
+  
+  // Información de Stripe
+  stripePaymentIntentId: varchar("stripe_payment_intent_id", { length: 255 }).unique(),
+  stripeCustomerId: varchar("stripe_customer_id", { length: 255 }),
+  
+  // Información del servicio
+  serviceType: paymentServiceTypeEnum("service_type").notNull(),
+  serviceId: integer("service_id").notNull(), // ID del servicio (actividad, evento, etc.)
+  serviceName: varchar("service_name", { length: 255 }).notNull(),
+  serviceDescription: text("service_description"),
+  
+  // Información del cliente
+  customerName: varchar("customer_name", { length: 255 }).notNull(),
+  customerEmail: varchar("customer_email", { length: 255 }).notNull(),
+  customerPhone: varchar("customer_phone", { length: 50 }),
+  
+  // Información financiera
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(), // Monto en pesos mexicanos
+  currency: varchar("currency", { length: 3 }).default("mxn"),
+  applicationFeeAmount: decimal("application_fee_amount", { precision: 10, scale: 2 }).default("0.00"),
+  
+  // Estado y fechas
+  status: stripePaymentStatusEnum("status").default("pending"),
+  paidAt: timestamp("paid_at"),
+  failedAt: timestamp("failed_at"),
+  canceledAt: timestamp("canceled_at"),
+  refundedAt: timestamp("refunded_at"),
+  
+  // Información adicional
+  paymentMethod: varchar("payment_method", { length: 50 }), // card, oxxo, spei, etc.
+  receiptEmail: varchar("receipt_email", { length: 255 }),
+  
+  // Metadatos
+  metadata: jsonb("metadata").default({}), // Información adicional del servicio
+  notes: text("notes"),
+  
+  // Error handling
+  errorMessage: text("error_message"),
+  lastErrorAt: timestamp("last_error_at"),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+
+// Tabla de reembolsos
+export const paymentRefunds = pgTable("payment_refunds", {
+  id: serial("id").primaryKey(),
+  paymentId: integer("payment_id").notNull().references(() => payments.id),
+  
+  // Información de Stripe
+  stripeRefundId: varchar("stripe_refund_id", { length: 255 }).unique(),
+  
+  // Información del reembolso
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  reason: varchar("reason", { length: 100 }), // duplicate, fraudulent, requested_by_customer
+  description: text("description"),
+  
+  // Estado
+  status: varchar("status", { length: 50 }).default("pending"), // pending, succeeded, failed, canceled
+  
+  // Información administrativa
+  requestedBy: integer("requested_by").references(() => users.id),
+  approvedBy: integer("approved_by").references(() => users.id),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+
+// Tabla de métodos de pago guardados (para clientes recurrentes)
+export const savedPaymentMethods = pgTable("saved_payment_methods", {
+  id: serial("id").primaryKey(),
+  
+  // Información de Stripe
+  stripeCustomerId: varchar("stripe_customer_id", { length: 255 }).notNull(),
+  stripePaymentMethodId: varchar("stripe_payment_method_id", { length: 255 }).notNull(),
+  
+  // Información del cliente
+  customerEmail: varchar("customer_email", { length: 255 }).notNull(),
+  customerName: varchar("customer_name", { length: 255 }),
+  
+  // Información de la tarjeta
+  cardBrand: varchar("card_brand", { length: 50 }), // visa, mastercard, amex
+  cardLast4: varchar("card_last_4", { length: 4 }),
+  cardExpMonth: integer("card_exp_month"),
+  cardExpYear: integer("card_exp_year"),
+  
+  // Estado
+  isActive: boolean("is_active").default(true),
+  isDefault: boolean("is_default").default(false),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+
+// Tabla de configuración de precios por servicio
+export const servicePaymentConfigs = pgTable("service_payment_configs", {
+  id: serial("id").primaryKey(),
+  
+  // Configuración del servicio
+  serviceType: paymentServiceTypeEnum("service_type").notNull(),
+  serviceId: integer("service_id").notNull(), // ID del servicio específico
+  
+  // Configuración de precios
+  basePrice: decimal("base_price", { precision: 10, scale: 2 }).notNull(),
+  currency: varchar("currency", { length: 3 }).default("mxn"),
+  
+  // Descuentos y promociones
+  discountPercentage: decimal("discount_percentage", { precision: 5, scale: 2 }).default("0.00"),
+  discountAmount: decimal("discount_amount", { precision: 10, scale: 2 }).default("0.00"),
+  discountValidUntil: timestamp("discount_valid_until"),
+  
+  // Configuración de Stripe
+  stripeProductId: varchar("stripe_product_id", { length: 255 }),
+  stripePriceId: varchar("stripe_price_id", { length: 255 }),
+  
+  // Configuración de pagos
+  allowInstallments: boolean("allow_installments").default(false),
+  maxInstallments: integer("max_installments").default(1),
+  requiresDeposit: boolean("requires_deposit").default(false),
+  depositAmount: decimal("deposit_amount", { precision: 10, scale: 2 }).default("0.00"),
+  
+  // Estado
+  isActive: boolean("is_active").default(true),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+
+// Tabla de transacciones webhook de Stripe
+export const stripeWebhookEvents = pgTable("stripe_webhook_events", {
+  id: serial("id").primaryKey(),
+  
+  // Información del webhook
+  stripeEventId: varchar("stripe_event_id", { length: 255 }).unique().notNull(),
+  eventType: varchar("event_type", { length: 100 }).notNull(),
+  
+  // Datos del evento
+  eventData: jsonb("event_data").notNull(),
+  
+  // Estado de procesamiento
+  processed: boolean("processed").default(false),
+  processedAt: timestamp("processed_at"),
+  errorMessage: text("error_message"),
+  
+  // Información relacionada
+  relatedPaymentId: integer("related_payment_id").references(() => payments.id),
+  
+  createdAt: timestamp("created_at").defaultNow()
+});
+
+// Schemas de validación para pagos
+export const insertPaymentSchema = createInsertSchema(payments).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+}).extend({
+  amount: z.union([z.string(), z.number()]).transform(val => String(val))
+});
+
+export const insertPaymentRefundSchema = createInsertSchema(paymentRefunds).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+}).extend({
+  amount: z.union([z.string(), z.number()]).transform(val => String(val))
+});
+
+export const insertSavedPaymentMethodSchema = createInsertSchema(savedPaymentMethods).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+export const insertServicePaymentConfigSchema = createInsertSchema(servicePaymentConfigs).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+}).extend({
+  basePrice: z.union([z.string(), z.number()]).transform(val => String(val)),
+  discountPercentage: z.union([z.string(), z.number()]).transform(val => String(val)),
+  discountAmount: z.union([z.string(), z.number()]).transform(val => String(val)),
+  depositAmount: z.union([z.string(), z.number()]).transform(val => String(val))
+});
+
+export const insertStripeWebhookEventSchema = createInsertSchema(stripeWebhookEvents).omit({
+  id: true,
+  createdAt: true
+});
+
+// Tipos TypeScript para pagos
+export type Payment = typeof payments.$inferSelect;
+export type InsertPayment = z.infer<typeof insertPaymentSchema>;
+
+export type PaymentRefund = typeof paymentRefunds.$inferSelect;
+export type InsertPaymentRefund = z.infer<typeof insertPaymentRefundSchema>;
+
+export type SavedPaymentMethod = typeof savedPaymentMethods.$inferSelect;
+export type InsertSavedPaymentMethod = z.infer<typeof insertSavedPaymentMethodSchema>;
+
+export type ServicePaymentConfig = typeof servicePaymentConfigs.$inferSelect;
+export type InsertServicePaymentConfig = z.infer<typeof insertServicePaymentConfigSchema>;
+
+export type StripeWebhookEvent = typeof stripeWebhookEvents.$inferSelect;
+export type InsertStripeWebhookEvent = z.infer<typeof insertStripeWebhookEventSchema>;
+
 

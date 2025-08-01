@@ -22,6 +22,7 @@ import AdminUsers from "@/pages/admin/users";
 import AdminActivities from "@/pages/admin/activities";
 import AdminAmenities from "@/pages/admin/amenities";
 import AdminSettings from "@/pages/admin/settings";
+import AdminPayments from "@/pages/admin/payments";
 import AdminLogin from "@/pages/admin/login";
 import TestAccess from "@/pages/test-access";
 import AdminVolunteers from "@/pages/admin/volunteers";
@@ -101,6 +102,11 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/activity-detail')))}
           </Suspense>
         </Route>
+        <Route path="/activity/:id/payment">
+          <Suspense fallback={<div className="p-8 text-center">Cargando página de pago...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/activity-payment')))}
+          </Suspense>
+        </Route>
         <Route path="/calendar">
           <Suspense fallback={<div className="p-8 text-center">Cargando calendario...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/calendar')))}
@@ -157,6 +163,7 @@ function Router() {
         
         <Route path="/admin" component={AdminDashboard} />
         <Route path="/admin/parks" component={AdminParks} />
+        <Route path="/admin/payments" component={AdminPayments} />
         <Route path="/admin/parks/dashboard">
           <Suspense fallback={<div className="p-8 text-center">Cargando dashboard de parques...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/admin/parks-dashboard')))}
