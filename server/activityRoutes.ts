@@ -202,7 +202,40 @@ activityRouter.get("/activities/:id", async (req: Request, res: Response) => {
     );
     
     if (result.rows && result.rows.length > 0) {
-      res.json(result.rows[0]);
+      const activity = result.rows[0];
+      
+      // Procesar arrays JSON si existen
+      if (activity.targetMarket) {
+        try {
+          activity.targetMarket = JSON.parse(activity.targetMarket);
+        } catch (e) {
+          activity.targetMarket = [];
+        }
+      } else {
+        activity.targetMarket = [];
+      }
+      
+      if (activity.specialNeeds) {
+        try {
+          activity.specialNeeds = JSON.parse(activity.specialNeeds);
+        } catch (e) {
+          activity.specialNeeds = [];
+        }
+      } else {
+        activity.specialNeeds = [];
+      }
+      
+      if (activity.recurringDays) {
+        try {
+          activity.recurringDays = JSON.parse(activity.recurringDays);
+        } catch (e) {
+          activity.recurringDays = [];
+        }
+      } else {
+        activity.recurringDays = [];
+      }
+      
+      res.json(activity);
     } else {
       res.status(404).json({ message: "Actividad no encontrada" });
     }
@@ -231,7 +264,7 @@ activityRouter.put("/activities/:id", isAuthenticated, async (req: Request, res:
     
     // Extraer los datos
     const { 
-      startDate, endDate, title, description, category, location, parkId,
+      startDate, endDate, title, description, category, category_id, location, parkId,
       startTime, endTime, capacity, duration, price, isPriceRandom, isFree,
       materials, requirements, isRecurring, recurringDays, targetMarket, specialNeeds,
       instructorId, instructorName, instructorContact,
@@ -267,15 +300,25 @@ activityRouter.put("/activities/:id", isAuthenticated, async (req: Request, res:
       return res.status(400).json({ message: "El título es obligatorio" });
     }
     
-    // Actualizar usando SQL directo - sin arrays problemáticos por ahora
+    // Actualizar usando SQL directo
     try {
+      console.log("🔍 Valores antes del UPDATE:", {
+        category_id,
+        targetMarket,
+        specialNeeds,
+        registrationEnabled,
+        maxRegistrations,
+        registrationDeadline,
+        requiresApproval
+      });
+      
       const updateResult = await db.execute(
         sql`UPDATE activities
             SET title = ${title},
                 description = ${description || null},
                 start_date = ${parsedStartDate},
                 end_date = ${parsedEndDate || null},
-                category = ${category || null},
+                category_id = ${category_id ? Number(category_id) : null},
                 location = ${location || null},
                 park_id = ${parkId ? Number(parkId) : null},
                 start_time = ${startTime || null},
@@ -290,14 +333,13 @@ activityRouter.put("/activities/:id", isAuthenticated, async (req: Request, res:
                 registration_enabled = ${Boolean(registrationEnabled)},
                 max_registrations = ${maxRegistrations ? Number(maxRegistrations) : null},
                 registration_deadline = ${registrationDeadline ? new Date(registrationDeadline) : null},
-                requires_approval = ${Boolean(requiresApproval)}
+                requires_approval = ${Boolean(requiresApproval)},
+                target_market = ${targetMarket ? JSON.stringify(targetMarket) : null},
+                special_needs = ${specialNeeds ? JSON.stringify(specialNeeds) : null}
             WHERE id = ${activityId}
             RETURNING id, title, description, park_id as "parkId", start_date as "startDate", 
-                     end_date as "endDate", category, location, created_at as "createdAt"`
+                     end_date as "endDate", category_id as "categoryId", location, created_at as "createdAt"`
       );
-      
-      // TODO: Manejo de arrays pendiente - por ahora comentado para evitar errores
-      // Los campos targetMarket, specialNeeds y recurringDays se manejarán en una actualización posterior
 
       if (updateResult.rows && updateResult.rows.length > 0) {
         res.json(updateResult.rows[0]);
