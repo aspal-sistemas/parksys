@@ -174,6 +174,18 @@ communicationsRouter.post('/queue/:id/retry', async (req: Request, res: Response
   }
 });
 
+// Cancelar email (POST method)
+communicationsRouter.post('/queue/:id/cancel', async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id);
+    await emailQueueService.cancelEmail(id);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error cancelando email:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
 // Obtener estadísticas de la cola
 communicationsRouter.get('/queue/stats', async (req: Request, res: Response) => {
   try {

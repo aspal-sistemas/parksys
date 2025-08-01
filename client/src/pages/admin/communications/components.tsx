@@ -9,6 +9,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
+import { useToast } from '@/hooks/use-toast';
 import { 
   Mail, 
   Send, 
@@ -543,6 +546,10 @@ export const QueueSection: React.FC = () => {
   const [isLoading, setIsLoading] = React.useState(true);
   const [isProcessing, setIsProcessing] = React.useState(false);
   const [stats, setStats] = React.useState<any>({});
+  const [selectedEmail, setSelectedEmail] = React.useState<any>(null);
+  const [emailPreviewOpen, setEmailPreviewOpen] = React.useState(false);
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   // Obtener emails de la cola
   React.useEffect(() => {
@@ -601,6 +608,71 @@ export const QueueSection: React.FC = () => {
       console.error('Error procesando cola:', error);
     } finally {
       setIsProcessing(false);
+    }
+  };
+
+  const viewEmailContent = (email: any) => {
+    setSelectedEmail(email);
+    setEmailPreviewOpen(true);
+  };
+
+  const retryEmail = async (emailId: number) => {
+    try {
+      const response = await fetch(`/api/communications/queue/${emailId}/retry`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      if (response.ok) {
+        toast({
+          title: "Email reintentado",
+          description: "El email ha sido marcado para reintento",
+        });
+        await fetchQueueEmails();
+      } else {
+        toast({
+          title: "Error",
+          description: "No se pudo reintentar el email",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error retrying email:', error);
+      toast({
+        title: "Error",
+        description: "Error al reintentar el email",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const cancelEmail = async (emailId: number) => {
+    try {
+      const response = await fetch(`/api/communications/queue/${emailId}/cancel`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      if (response.ok) {
+        toast({
+          title: "Email cancelado",
+          description: "El email ha sido cancelado exitosamente",
+        });
+        await fetchQueueEmails();
+      } else {
+        toast({
+          title: "Error",
+          description: "No se pudo cancelar el email",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error canceling email:', error);
+      toast({
+        title: "Error",
+        description: "Error al cancelar el email",
+        variant: "destructive",
+      });
     }
   };
 
@@ -788,16 +860,34 @@ export const QueueSection: React.FC = () => {
                 </div>
                 
                 <div className="flex items-center space-x-1 ml-4">
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-8 w-8 p-0 text-blue-600 hover:bg-blue-50"
+                    onClick={() => viewEmailContent(email)}
+                    title="Ver contenido del email"
+                  >
                     <Eye className="h-4 w-4" />
                   </Button>
                   {email.status === 'failed' && (
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-blue-600">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 w-8 p-0 text-green-600 hover:bg-green-50"
+                      onClick={() => retryEmail(email.id)}
+                      title="Reintentar envío"
+                    >
                       <Play className="h-4 w-4" />
                     </Button>
                   )}
                   {email.status === 'pending' && (
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-red-600">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 w-8 p-0 text-red-600 hover:bg-red-50"
+                      onClick={() => cancelEmail(email.id)}
+                      title="Cancelar email"
+                    >
                       <Pause className="h-4 w-4" />
                     </Button>
                   )}
@@ -898,6 +988,84 @@ export const QueueSection: React.FC = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Modal de Vista Previa de Email */}
+      <Dialog open={emailPreviewOpen} onOpenChange={setEmailPreviewOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <Mail className="h-5 w-5" />
+              <span>Vista Previa del Email</span>
+              {selectedEmail?.templateId && (
+                <Badge variant="outline">
+                  Plantilla #{selectedEmail.templateId}
+                </Badge>
+              )}
+            </DialogTitle>
+            <DialogDescription>
+              {selectedEmail?.to && `Para: ${selectedEmail.to}`}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedEmail && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <Label className="font-medium">Asunto:</Label>
+                  <p className="text-gray-700">{selectedEmail.subject}</p>
+                </div>
+                <div>
+                  <Label className="font-medium">Estado:</Label>
+                  <Badge className={getStatusBadge(selectedEmail.status)}>
+                    {selectedEmail.status}
+                  </Badge>
+                </div>
+                <div>
+                  <Label className="font-medium">Prioridad:</Label>
+                  <Badge className={getPriorityBadge(selectedEmail.priority)}>
+                    {selectedEmail.priority}
+                  </Badge>
+                </div>
+                <div>
+                  <Label className="font-medium">Programado para:</Label>
+                  <p className="text-gray-700">
+                    {new Date(selectedEmail.scheduledFor).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+              
+              {selectedEmail.errorMessage && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <Label className="font-medium text-red-700">Error:</Label>
+                  <p className="text-red-600 text-sm mt-1">{selectedEmail.errorMessage}</p>
+                </div>
+              )}
+              
+              <div className="space-y-2">
+                <Label className="font-medium">Contenido HTML:</Label>
+                <div className="border rounded-lg p-4 bg-white">
+                  <iframe
+                    srcDoc={selectedEmail.htmlContent}
+                    className="w-full h-96 border-0"
+                    title="Vista previa del email"
+                  />
+                </div>
+              </div>
+              
+              {selectedEmail.textContent && (
+                <div className="space-y-2">
+                  <Label className="font-medium">Contenido de Texto:</Label>
+                  <div className="border rounded-lg p-4 bg-gray-50">
+                    <pre className="text-sm text-gray-700 whitespace-pre-wrap">
+                      {selectedEmail.textContent}
+                    </pre>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
