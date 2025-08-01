@@ -168,6 +168,7 @@ const SponsorsManagement = () => {
       queryClient.invalidateQueries({ queryKey: ['/api/sponsors'] });
       toast({ title: "Éxito", description: "Patrocinador actualizado exitosamente" });
       setIsEditSponsorOpen(false);
+      setIsViewSponsorOpen(false); // También cerrar modal de vista para forzar actualización
       editSponsorForm.reset();
       setEditLogoFile(null);
       setEditLogoPreview("");
@@ -431,6 +432,9 @@ const SponsorsManagement = () => {
         return date.toISOString().split('T')[0]; // yyyy-MM-dd format
       };
 
+      // Encontrar el paquete seleccionado para obtener su categoría
+      const selectedPackage = packages.find((p: any) => p.name === data.packageName);
+
       const formattedData = {
         ...data,
         category: data.type, // Map 'type' to 'category' for backend compatibility
@@ -439,7 +443,8 @@ const SponsorsManagement = () => {
         eventsSponsored: Number(data.eventsSponsored) || 0,
         contractStart: formatDate(data.contractStart),
         contractEnd: formatDate(data.contractEnd),
-        renewalProbability: Number(data.renewalProbability) || 0
+        renewalProbability: Number(data.renewalProbability) || 0,
+        packageCategory: selectedPackage?.category || null // Añadir packageCategory
       };
       
       createSponsorMutation.mutate(formattedData);
@@ -573,6 +578,9 @@ const SponsorsManagement = () => {
         return date.toISOString().split('T')[0]; // yyyy-MM-dd format
       };
 
+      // Encontrar el paquete seleccionado para obtener su categoría
+      const selectedPackage = packages.find((p: any) => p.name === data.packageName);
+
       const formattedData = {
         ...data,
         category: data.type, // Map 'type' to 'category' for backend compatibility
@@ -581,7 +589,8 @@ const SponsorsManagement = () => {
         eventsSponsored: Number(data.eventsSponsored) || 0,
         contractStart: formatDate(data.contractStart),
         contractEnd: formatDate(data.contractEnd),
-        renewalProbability: Number(data.renewalProbability) || 0
+        renewalProbability: Number(data.renewalProbability) || 0,
+        packageCategory: selectedPackage?.category || null // Añadir packageCategory
       };
       
       updateSponsorMutation.mutate({ id: selectedSponsor.id, data: formattedData });

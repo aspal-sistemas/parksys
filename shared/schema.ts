@@ -2778,7 +2778,8 @@ export const insertSponsorSchema = createInsertSchema(sponsors).omit({
 }).extend({
   contractValue: z.union([z.string(), z.number()]).transform(val => String(val)),
   eventsSponsored: z.union([z.string(), z.number()]).transform(val => Number(val)),
-  renewalProbability: z.union([z.string(), z.number()]).transform(val => Number(val))
+  renewalProbability: z.union([z.string(), z.number()]).transform(val => Number(val)),
+  packageCategory: z.string().optional()
 });
 
 export const insertSponsorshipCampaignSchema = createInsertSchema(sponsorshipCampaigns).omit({
