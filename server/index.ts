@@ -546,6 +546,9 @@ app.use('/api/volunteer-fields', volunteerFieldRouter);
 // Registrar la ruta especializada para habilidades de voluntarios
 app.use('/api', skillsRouter);
 
+// Registrar las rutas de conteo de visitantes
+app.use('/api', visitorCountRoutes);
+
 // ENDPOINT DIRECTO PARA SUBIDA DE IMÁGENES - PRIORITY ROUTING
 
 const imageStorage = multer.diskStorage({
