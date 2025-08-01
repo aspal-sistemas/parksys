@@ -134,12 +134,70 @@ export function registerSponsorshipRoutes(app: any, apiRouter: any, isAuthentica
   // Obtener todos los patrocinadores
   apiRouter.get('/sponsors', async (req: Request, res: Response) => {
     try {
-      const sponsorsList = await db
-        .select()
-        .from(sponsors)
-        .orderBy(desc(sponsors.createdAt));
+      console.log('🔍 Obteniendo patrocinadores...');
       
-      res.json(sponsorsList);
+      // Usar query SQL directo para mapear correctamente los campos
+      const result = await pool.query(`
+        SELECT 
+          id,
+          name,
+          category,
+          logo,
+          representative,
+          email,
+          phone,
+          address,
+          website_url,
+          status,
+          package_name,
+          package_category,
+          contract_value,
+          contract_start,
+          contract_end,
+          events_sponsored,
+          renewal_probability,
+          notes,
+          created_at,
+          updated_at
+        FROM sponsors 
+        ORDER BY created_at DESC
+      `);
+      
+      // Mapear a camelCase manualmente
+      const mappedSponsors = result.rows.map(row => ({
+        id: row.id,
+        name: row.name,
+        category: row.category,
+        logo: row.logo,
+        representative: row.representative,
+        email: row.email,
+        phone: row.phone,
+        address: row.address,
+        websiteUrl: row.website_url,
+        status: row.status,
+        packageName: row.package_name,
+        packageCategory: row.package_category,
+        contractValue: row.contract_value,
+        contractStart: row.contract_start,
+        contractEnd: row.contract_end,
+        eventsSponsored: row.events_sponsored,
+        renewalProbability: row.renewal_probability,
+        notes: row.notes,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at
+      }));
+      
+      console.log('✅ Patrocinadores encontrados:', mappedSponsors.length);
+      if (mappedSponsors.length > 0) {
+        console.log('📄 Primer patrocinador:', {
+          name: mappedSponsors[0].name,
+          packageName: mappedSponsors[0].packageName,
+          packageCategory: mappedSponsors[0].packageCategory,
+          contractValue: mappedSponsors[0].contractValue
+        });
+      }
+      
+      res.json(mappedSponsors);
     } catch (error) {
       console.error('Error al obtener patrocinadores:', error);
       res.status(500).json({ error: 'Error interno del servidor' });
