@@ -596,7 +596,8 @@ const SponsorsManagement = () => {
     return pkg || null;
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string | null) => {
+    if (!status) return "bg-gray-100 text-gray-800";
     const colors = {
       activo: "bg-green-100 text-green-800",
       potencial: "bg-blue-100 text-blue-800",
@@ -880,7 +881,7 @@ const SponsorsManagement = () => {
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  {packages.map((pkg) => (
+                                  {packages.map((pkg: any) => (
                                     <SelectItem key={pkg.id} value={pkg.name}>
                                       <div className="flex items-center justify-between w-full">
                                         <span>{pkg.name}</span>
@@ -979,7 +980,7 @@ const SponsorsManagement = () => {
 
             {/* Lista de patrocinadores */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredSponsors.map((sponsor) => (
+              {filteredSponsors.map((sponsor: any) => (
                 <Card key={sponsor.id} className="hover:shadow-md transition-shadow">
                   <CardHeader className="pb-3">
                     <div className="flex justify-between items-start">
@@ -1260,17 +1261,20 @@ const SponsorsManagement = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {packages.map((pkg) => (
+              {packages.map((pkg: any) => (
                 <Card key={pkg.id} className="hover:shadow-md transition-shadow">
                   <CardHeader>
                     <div className="flex justify-between items-start">
                       <div>
                         <CardTitle className="text-lg">{pkg.name}</CardTitle>
-                        <CardDescription>
-                          <Badge className="bg-slate-100 text-slate-800">
-                            {pkg.category}
+                        <div className="space-y-1">
+                          <Badge variant={pkg.isActive ? "default" : "secondary"}>
+                            {pkg.isActive ? "Activo" : "Inactivo"}
                           </Badge>
-                        </CardDescription>
+                          <CardDescription>
+                            <span className="text-sm text-gray-500">{pkg.category}</span>
+                          </CardDescription>
+                        </div>
                       </div>
                       <div className="text-right">
                         <div className="text-2xl font-bold text-[#00a587]">
@@ -1285,7 +1289,7 @@ const SponsorsManagement = () => {
                       <div>
                         <p className="text-sm font-semibold text-gray-700 mb-2">Beneficios:</p>
                         <div className="space-y-1">
-                          {pkg.benefits?.slice(0, 3).map((benefit, index) => (
+                          {pkg.benefits?.slice(0, 3).map((benefit: any, index: number) => (
                             <div key={index} className="flex items-center text-sm text-gray-600">
                               <CheckCircle className="h-3 w-3 mr-2 text-green-500" />
                               {benefit}
@@ -1296,10 +1300,7 @@ const SponsorsManagement = () => {
                           )}
                         </div>
                       </div>
-                      <div className="flex justify-between items-center pt-3 border-t">
-                        <Badge variant={pkg.isActive ? "default" : "secondary"}>
-                          {pkg.isActive ? "Activo" : "Inactivo"}
-                        </Badge>
+                      <div className="flex justify-end items-center pt-3 border-t">
                         <div className="flex space-x-2">
                           <Button size="sm" variant="outline" onClick={() => openViewPackage(pkg)}>
                             <Eye className="h-4 w-4 mr-1" />
@@ -1334,7 +1335,7 @@ const SponsorsManagement = () => {
           {/* Campaigns Tab */}
           <TabsContent value="campaigns" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {campaigns.map((campaign) => (
+              {campaigns.map((campaign: any) => (
                 <Card key={campaign.id} className="hover:shadow-md transition-shadow">
                   <CardHeader>
                     <div className="flex justify-between items-start">
@@ -1412,7 +1413,7 @@ const SponsorsManagement = () => {
                         {getPackageInfo(selectedSponsor.packageName)?.name || selectedSponsor.packageName}
                       </Badge>
                       <Badge className={getStatusColor(selectedSponsor.status)}>
-                        {selectedSponsor.status}
+                        {selectedSponsor.status || 'Sin estado'}
                       </Badge>
                     </div>
                   </div>
@@ -1452,7 +1453,7 @@ const SponsorsManagement = () => {
                       ${parseFloat(selectedSponsor.contractValue).toLocaleString()}
                     </div>
                     <p className="text-sm text-gray-500">
-                      {selectedSponsor.contractStart} - {selectedSponsor.contractEnd}
+                      {selectedSponsor.contractStart ? new Date(selectedSponsor.contractStart + 'T00:00:00').toLocaleDateString('es-MX') : 'No definida'} - {selectedSponsor.contractEnd ? new Date(selectedSponsor.contractEnd + 'T00:00:00').toLocaleDateString('es-MX') : 'No definida'}
                     </p>
                   </div>
                 </div>
@@ -1714,7 +1715,7 @@ const SponsorsManagement = () => {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {packages.map((pkg) => (
+                            {packages.map((pkg: any) => (
                               <SelectItem key={pkg.id} value={pkg.name}>
                                 <div className="flex items-center justify-between w-full">
                                   <span>{pkg.name}</span>
