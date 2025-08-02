@@ -131,10 +131,31 @@ export function ActivityPaymentForm({
         throw new Error(result.error.message || 'Error procesando el pago');
       }
 
-      // Payment was successful if we get here
+      // Step 3: Create registration and confirm payment in backend
+      const registrationResponse = await fetch(`/api/activities/${activity!.id}/complete-payment-registration`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          paymentIntentId: result.paymentIntent?.id,
+          customerData: participantData,
+          amount: finalAmount,
+        }),
+      });
 
-      // Payment successful
+      if (!registrationResponse.ok) {
+        throw new Error('Error completando el registro después del pago');
+      }
+
+      const registrationData = await registrationResponse.json();
+
+      // Payment successful - clear form and show success
       setProcessing(false);
+      
+      // Clear form data by resetting form
+      form.reset();
+      
       onSuccess();
 
     } catch (error: any) {

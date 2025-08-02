@@ -1,15 +1,16 @@
 import type { Express } from "express";
 import Stripe from "stripe";
 import { storage } from "../storage";
-import { activityRegistrations } from "../../shared/schema";
+import { activityRegistrations, insertActivityRegistrationSchema } from "../../shared/schema";
 import { eq } from "drizzle-orm";
+import { emailService } from "../email/emailService";
 
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
 }
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2023-10-16",
+  apiVersion: "2024-06-20",
 });
 
 export function registerActivityPaymentRoutes(app: Express) {
@@ -219,6 +220,90 @@ export function registerActivityPaymentRoutes(app: Express) {
       console.error("Error getting payment status:", error);
       res.status(500).json({ 
         error: "Error obteniendo estado del pago: " + error.message 
+      });
+    }
+  });
+
+  // Ruta nueva: Completar registro después de pago exitoso
+  app.post("/api/activities/:activityId/complete-payment-registration", async (req, res) => {
+    try {
+      const { activityId } = req.params;
+      const { paymentIntentId, customerData, amount } = req.body;
+
+      // Verificar el payment intent con Stripe
+      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+      
+      if (paymentIntent.status !== 'succeeded') {
+        return res.status(400).json({ 
+          error: "El pago no ha sido completado exitosamente" 
+        });
+      }
+
+      // Obtener datos de la actividad
+      const activity = await storage.getActivityById(parseInt(activityId));
+      if (!activity) {
+        return res.status(404).json({ error: "Actividad no encontrada" });
+      }
+
+      // Crear el registro de inscripción
+      const registrationData = {
+        activityId: parseInt(activityId),
+        participantName: customerData.fullName,
+        participantEmail: customerData.email,
+        participantPhone: customerData.phone,
+        participantAge: customerData.age || '',
+        emergencyContact: customerData.emergencyContact || '',
+        emergencyPhone: customerData.emergencyPhone || '',
+        medicalConditions: customerData.medicalConditions || '',
+        additionalNotes: customerData.additionalNotes || '',
+        status: activity.requiresApproval ? 'pending' : 'approved',
+        paymentStatus: 'paid',
+        stripePaymentIntentId: paymentIntentId,
+        stripeCustomerId: paymentIntent.customer as string || null,
+        paidAmount: (paymentIntent.amount / 100).toString(),
+        paymentDate: new Date(),
+        registrationDate: new Date()
+      };
+
+      console.log('🎯 Creando registro de inscripción con pago:', registrationData);
+
+      // Crear el registro
+      const newRegistration = await storage.createActivityRegistration(registrationData);
+
+      console.log('✅ Registro creado con ID:', newRegistration.id);
+
+      // Enviar email de confirmación de registro con pago
+      try {
+        await emailService.sendRegistrationConfirmationEmail(
+          customerData.email,
+          customerData.fullName,
+          activity,
+          {
+            registrationId: newRegistration.id,
+            paymentAmount: paymentIntent.amount / 100,
+            paymentCurrency: 'MXN',
+            paymentMethod: 'Tarjeta de crédito',
+            paymentDate: new Date()
+          }
+        );
+        console.log('✅ Email de confirmación enviado');
+      } catch (emailError) {
+        console.error('❌ Error enviando email de confirmación:', emailError);
+        // No fallar la transacción por error de email
+      }
+
+      res.json({ 
+        success: true, 
+        registration: newRegistration,
+        paymentAmount: paymentIntent.amount / 100,
+        currency: paymentIntent.currency.toUpperCase(),
+        message: 'Registro completado exitosamente con pago confirmado'
+      });
+
+    } catch (error: any) {
+      console.error("❌ Error completando registro con pago:", error);
+      res.status(500).json({ 
+        error: "Error completando el registro: " + error.message 
       });
     }
   });
