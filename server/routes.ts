@@ -25,6 +25,7 @@ import { registerMaintenanceRoutes } from "./maintenance_routes_fixed";
 import { registerAssetAssignmentRoutes } from "./asset_assignment_routes";
 import { registerSpaceReservationRoutes } from "./space-reservations-routes";
 import { registerReservableSpacesRoutes } from "./reservable-spaces-routes";
+import { ObjectStorageService } from "./objectStorage";
 import { registerTreeRoutes } from "./tree_routes";
 import { registerTreeMaintenanceRoutes } from "./tree_maintenance_routes";
 import { registerTreeInventoryRoutes } from "./tree_inventory_routes";
@@ -190,6 +191,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerSpaceReservationRoutes(app, apiRouter, isAuthenticated);
   registerReservableSpacesRoutes(app);
   registerSpacePaymentRoutes(app);
+
+  // Object Storage routes for spaces multimedia
+  app.post("/api/objects/upload", async (req, res) => {
+    try {
+      const objectStorageService = new ObjectStorageService();
+      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      res.json({ uploadURL });
+    } catch (error) {
+      console.error("Error getting upload URL:", error);
+      res.status(500).json({ error: "Error getting upload URL" });
+    }
+  });
   registerAssetImageRoutes(app, apiRouter, isAuthenticated);
   
   // Registramos las rutas del módulo de actividades
