@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { SpaceMediaManager } from "@/components/SpaceMediaManager";
 import { ArrowLeft, MapPin, Users, Clock, DollarSign } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 
@@ -45,6 +46,7 @@ export default function NewSpacePage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [createdSpaceId, setCreatedSpaceId] = useState<number | null>(null);
 
   const form = useForm<NewSpaceFormData>({
     resolver: zodResolver(newSpaceSchema),
@@ -75,21 +77,21 @@ export default function NewSpacePage() {
 
   const createSpaceMutation = useMutation({
     mutationFn: async (data: NewSpaceFormData) => {
-      return apiRequest("/api/reservable-spaces", {
-        method: "POST",
-        data: {
-          ...data,
-          parkId: parseInt(data.parkId),
-        },
+      const response = await apiRequest("POST", "/api/reservable-spaces", {
+        ...data,
+        parkId: parseInt(data.parkId),
       });
+      return await response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      if (data?.space?.id) {
+        setCreatedSpaceId(data.space.id);
+      }
       toast({
         title: "Espacio creado",
-        description: "El espacio reservable ha sido creado exitosamente",
+        description: "El espacio reservable ha sido creado exitosamente. Ahora puedes agregar imágenes y documentos.",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/reservable-spaces"] });
-      setLocation("/admin/space-reservations/spaces");
     },
     onError: (error: any) => {
       toast({
@@ -456,6 +458,39 @@ export default function NewSpacePage() {
             </Form>
           </CardContent>
         </Card>
+
+        {/* Gestión de Multimedia - Solo aparece después de crear el espacio */}
+        {createdSpaceId && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Multimedia del Espacio</CardTitle>
+              <CardDescription>
+                Agrega imágenes y documentos al espacio reservable
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <SpaceMediaManager spaceId={createdSpaceId} isEditMode={true} />
+              
+              {/* Botones de navegación después de agregar multimedia */}
+              <div className="flex justify-end gap-3 pt-6 border-t mt-6">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setLocation("/admin/space-reservations/spaces")}
+                >
+                  Finalizar y Volver a la Lista
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => setLocation(`/admin/space-reservations/spaces/edit/${createdSpaceId}`)}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  Continuar Editando
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </AdminLayout>
   );

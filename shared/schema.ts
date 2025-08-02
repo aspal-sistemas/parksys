@@ -3245,6 +3245,27 @@ export const spaceAvailability = pgTable("space_availability", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Imágenes de espacios reservables
+export const spaceImages = pgTable("space_images", {
+  id: serial("id").primaryKey(),
+  spaceId: integer("space_id").notNull().references(() => reservableSpaces.id, { onDelete: "cascade" }),
+  imageUrl: text("image_url").notNull(),
+  caption: text("caption"),
+  isPrimary: boolean("is_primary").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Documentos de espacios reservables
+export const spaceDocuments = pgTable("space_documents", {
+  id: serial("id").primaryKey(),
+  spaceId: integer("space_id").notNull().references(() => reservableSpaces.id, { onDelete: "cascade" }),
+  documentUrl: text("document_url").notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  fileSize: integer("file_size"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Relaciones para reservas de espacios
 export const reservableSpacesRelations = relations(reservableSpaces, ({ one, many }) => ({
   park: one(parks, {
@@ -3253,6 +3274,22 @@ export const reservableSpacesRelations = relations(reservableSpaces, ({ one, man
   }),
   reservations: many(spaceReservations),
   availability: many(spaceAvailability),
+  images: many(spaceImages),
+  documents: many(spaceDocuments),
+}));
+
+export const spaceImagesRelations = relations(spaceImages, ({ one }) => ({
+  space: one(reservableSpaces, {
+    fields: [spaceImages.spaceId],
+    references: [reservableSpaces.id],
+  }),
+}));
+
+export const spaceDocumentsRelations = relations(spaceDocuments, ({ one }) => ({
+  space: one(reservableSpaces, {
+    fields: [spaceDocuments.spaceId],
+    references: [reservableSpaces.id],
+  }),
 }));
 
 export const spaceReservationsRelations = relations(spaceReservations, ({ one }) => ({
@@ -3283,12 +3320,26 @@ export const insertSpaceReservationSchema = createInsertSchema(spaceReservations
   updatedAt: true
 });
 
+export const insertSpaceImageSchema = createInsertSchema(spaceImages).omit({
+  id: true,
+  createdAt: true
+});
+
+export const insertSpaceDocumentSchema = createInsertSchema(spaceDocuments).omit({
+  id: true,
+  createdAt: true
+});
+
 // Tipos TypeScript para reservas
 export type ReservableSpace = typeof reservableSpaces.$inferSelect;
 export type InsertReservableSpace = z.infer<typeof insertReservableSpaceSchema>;
 export type SpaceReservation = typeof spaceReservations.$inferSelect;
 export type InsertSpaceReservation = z.infer<typeof insertSpaceReservationSchema>;
 export type SpaceAvailability = typeof spaceAvailability.$inferSelect;
+export type SpaceImage = typeof spaceImages.$inferSelect;
+export type InsertSpaceImage = z.infer<typeof insertSpaceImageSchema>;
+export type SpaceDocument = typeof spaceDocuments.$inferSelect;
+export type InsertSpaceDocument = z.infer<typeof insertSpaceDocumentSchema>;
 
 // ===== SISTEMA DE CONTEO DE VISITANTES =====
 

@@ -16,6 +16,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { SpaceMediaManager } from "@/components/SpaceMediaManager";
 import { ArrowLeft, MapPin, Users, Clock, DollarSign, AlertCircle } from "lucide-react";
 
 const editSpaceSchema = z.object({
@@ -543,6 +544,19 @@ export default function EditSpacePage() {
                 </div>
               </form>
             </Form>
+          </CardContent>
+        </Card>
+
+        {/* Gestión de Multimedia */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Multimedia del Espacio</CardTitle>
+            <CardDescription>
+              Gestiona las imágenes y documentos del espacio reservable
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <SpaceMediaManager spaceId={parseInt(id)} isEditMode={true} />
           </CardContent>
         </Card>
       </div>

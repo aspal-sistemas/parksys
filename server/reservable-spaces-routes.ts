@@ -1,7 +1,9 @@
 import { Express } from "express";
 import { eq, and, desc, count, sql } from "drizzle-orm";
 import { db } from "./db";
-import { reservableSpaces, spaceReservations, parks } from "../shared/schema";
+import { reservableSpaces, spaceReservations, parks, spaceImages, spaceDocuments } from "../shared/schema";
+import { insertSpaceImageSchema, insertSpaceDocumentSchema } from "../shared/schema";
+import { ObjectStorageService } from "./objectStorage";
 
 export function registerReservableSpacesRoutes(app: Express) {
   
@@ -276,6 +278,171 @@ export function registerReservableSpacesRoutes(app: Express) {
     } catch (error) {
       console.error("Error al actualizar espacio:", error);
       res.status(500).json({ error: "Error al actualizar el espacio" });
+    }
+  });
+
+  // Ruta para obtener URL de subida de imagen/documento
+  app.post("/api/spaces/upload", async (req, res) => {
+    try {
+      const objectStorageService = new ObjectStorageService();
+      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      res.json({ uploadURL });
+    } catch (error) {
+      console.error("Error al obtener URL de subida:", error);
+      res.status(500).json({ error: "Error al obtener URL de subida" });
+    }
+  });
+
+  // Ruta para guardar imagen después de la subida
+  app.post("/api/spaces/:id/images", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { imageUrl, caption, isPrimary } = req.body;
+
+      if (!imageUrl) {
+        return res.status(400).json({ error: "imageUrl es requerido" });
+      }
+
+      const objectStorageService = new ObjectStorageService();
+      const normalizedPath = objectStorageService.normalizeObjectEntityPath(imageUrl);
+
+      // Si es imagen principal, quitar la marca de las demás
+      if (isPrimary) {
+        await db
+          .update(spaceImages)
+          .set({ isPrimary: false })
+          .where(eq(spaceImages.spaceId, parseInt(id)));
+      }
+
+      const newImage = await db
+        .insert(spaceImages)
+        .values({
+          spaceId: parseInt(id),
+          imageUrl: normalizedPath,
+          caption: caption || null,
+          isPrimary: isPrimary || false,
+        })
+        .returning();
+
+      res.json({
+        success: true,
+        image: newImage[0],
+        message: "Imagen guardada exitosamente"
+      });
+
+    } catch (error) {
+      console.error("Error al guardar imagen:", error);
+      res.status(500).json({ error: "Error al guardar la imagen" });
+    }
+  });
+
+  // Ruta para guardar documento después de la subida
+  app.post("/api/spaces/:id/documents", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { documentUrl, title, description, fileSize } = req.body;
+
+      if (!documentUrl || !title) {
+        return res.status(400).json({ error: "documentUrl y title son requeridos" });
+      }
+
+      const objectStorageService = new ObjectStorageService();
+      const normalizedPath = objectStorageService.normalizeObjectEntityPath(documentUrl);
+
+      const newDocument = await db
+        .insert(spaceDocuments)
+        .values({
+          spaceId: parseInt(id),
+          documentUrl: normalizedPath,
+          title,
+          description: description || null,
+          fileSize: fileSize || null,
+        })
+        .returning();
+
+      res.json({
+        success: true,
+        document: newDocument[0],
+        message: "Documento guardado exitosamente"
+      });
+
+    } catch (error) {
+      console.error("Error al guardar documento:", error);
+      res.status(500).json({ error: "Error al guardar el documento" });
+    }
+  });
+
+  // Ruta para obtener imágenes de un espacio
+  app.get("/api/spaces/:id/images", async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      const images = await db
+        .select()
+        .from(spaceImages)
+        .where(eq(spaceImages.spaceId, parseInt(id)))
+        .orderBy(desc(spaceImages.isPrimary), desc(spaceImages.createdAt));
+
+      res.json(images);
+    } catch (error) {
+      console.error("Error al obtener imágenes:", error);
+      res.status(500).json({ error: "Error al obtener las imágenes" });
+    }
+  });
+
+  // Ruta para obtener documentos de un espacio
+  app.get("/api/spaces/:id/documents", async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      const documents = await db
+        .select()
+        .from(spaceDocuments)
+        .where(eq(spaceDocuments.spaceId, parseInt(id)))
+        .orderBy(desc(spaceDocuments.createdAt));
+
+      res.json(documents);
+    } catch (error) {
+      console.error("Error al obtener documentos:", error);
+      res.status(500).json({ error: "Error al obtener los documentos" });
+    }
+  });
+
+  // Ruta para eliminar una imagen
+  app.delete("/api/spaces/images/:imageId", async (req, res) => {
+    try {
+      const { imageId } = req.params;
+      
+      await db
+        .delete(spaceImages)
+        .where(eq(spaceImages.id, parseInt(imageId)));
+
+      res.json({
+        success: true,
+        message: "Imagen eliminada exitosamente"
+      });
+    } catch (error) {
+      console.error("Error al eliminar imagen:", error);
+      res.status(500).json({ error: "Error al eliminar la imagen" });
+    }
+  });
+
+  // Ruta para eliminar un documento
+  app.delete("/api/spaces/documents/:documentId", async (req, res) => {
+    try {
+      const { documentId } = req.params;
+      
+      await db
+        .delete(spaceDocuments)
+        .where(eq(spaceDocuments.id, parseInt(documentId)));
+
+      res.json({
+        success: true,
+        message: "Documento eliminado exitosamente"
+      });
+    } catch (error) {
+      console.error("Error al eliminar documento:", error);
+      res.status(500).json({ error: "Error al eliminar el documento" });
     }
   });
 }
