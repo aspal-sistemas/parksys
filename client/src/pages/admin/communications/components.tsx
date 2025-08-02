@@ -35,11 +35,16 @@ import {
   TrendingUp,
   TreePine,
   FileEdit,
-  DollarSign
+  DollarSign,
+  Save,
+  X
 } from 'lucide-react';
 
 export const TemplatesSection: React.FC = () => {
   const [isNewTemplateOpen, setIsNewTemplateOpen] = useState(false);
+  const [isViewTemplateOpen, setIsViewTemplateOpen] = useState(false);
+  const [isEditTemplateOpen, setIsEditTemplateOpen] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
   const [newTemplate, setNewTemplate] = useState({
     name: '',
     category: '',
@@ -117,6 +122,25 @@ export const TemplatesSection: React.FC = () => {
       name: "Bienvenida Empleado",
       category: "Recursos Humanos",
       description: "Plantilla para dar la bienvenida a nuevos empleados del sistema de parques",
+      subject: "Bienvenido {{nombre_empleado}} - {{departamento}}",
+      htmlContent: `<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;'>
+        <h2 style='color: #00a587; text-align: center;'>¡Bienvenido al Equipo!</h2>
+        <p>Estimado/a {{nombre_empleado}},</p>
+        <p>Es un placer darte la bienvenida al departamento de <strong>{{departamento}}</strong>. Tu fecha de inicio será el <strong>{{fecha_inicio}}</strong>.</p>
+        <p>Tu supervisor directo será <strong>{{supervisor}}</strong>, quien te ayudará durante tu proceso de integración.</p>
+        <div style='background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;'>
+          <h3 style='color: #00a587; margin-top: 0;'>Próximos pasos:</h3>
+          <ul>
+            <li>Revisión de documentos de recursos humanos</li>
+            <li>Asignación de equipo de trabajo</li>
+            <li>Orientación sobre políticas y procedimientos</li>
+            <li>Presentación del equipo</li>
+          </ul>
+        </div>
+        <p>¡Estamos emocionados de tenerte en nuestro equipo!</p>
+        <p>Saludos cordiales,<br>Equipo de Recursos Humanos</p>
+      </div>`,
+      textContent: `¡Bienvenido al Equipo!\n\nEstimado/a {{nombre_empleado}},\n\nEs un placer darte la bienvenida al departamento de {{departamento}}. Tu fecha de inicio será el {{fecha_inicio}}.\n\nTu supervisor directo será {{supervisor}}, quien te ayudará durante tu proceso de integración.\n\nPróximos pasos:\n- Revisión de documentos de recursos humanos\n- Asignación de equipo de trabajo\n- Orientación sobre políticas y procedimientos\n- Presentación del equipo\n\n¡Estamos emocionados de tenerte en nuestro equipo!\n\nSaludos cordiales,\nEquipo de Recursos Humanos`,
       variables: ["{{nombre_empleado}}", "{{departamento}}", "{{fecha_inicio}}", "{{supervisor}}"],
       usage: "Automática al crear empleado",
       color: "bg-blue-500",
@@ -489,10 +513,39 @@ export const TemplatesSection: React.FC = () => {
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-gray-500">Uso: {template.usage}</span>
                       <div className="flex gap-1">
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-8 w-8 p-0"
+                          onClick={() => {
+                            setSelectedTemplate(template);
+                            setIsViewTemplateOpen(true);
+                          }}
+                        >
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-8 w-8 p-0"
+                          onClick={() => {
+                            setSelectedTemplate(template);
+                            setNewTemplate({
+                              name: template.name,
+                              category: template.category,
+                              description: template.description,
+                              subject: template.subject || '',
+                              htmlContent: template.htmlContent || '',
+                              textContent: template.textContent || '',
+                              variables: template.variables || [],
+                              newVariable: '',
+                              usage: template.usage.includes('Manual') ? 'manual' : 'automatic',
+                              module: template.category,
+                              isActive: true
+                            });
+                            setIsEditTemplateOpen(true);
+                          }}
+                        >
                           <FileEdit className="h-4 w-4" />
                         </Button>
                         <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -537,6 +590,241 @@ export const TemplatesSection: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Dialog para Ver Plantilla */}
+      <Dialog open={isViewTemplateOpen} onOpenChange={setIsViewTemplateOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Ver Plantilla: {selectedTemplate?.name}</DialogTitle>
+            <DialogDescription>
+              Detalles completos de la plantilla de email
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedTemplate && (
+            <div className="space-y-6 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium">Nombre</Label>
+                  <p className="text-sm text-gray-700">{selectedTemplate.name}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Categoría</Label>
+                  <p className="text-sm text-gray-700">{selectedTemplate.category}</p>
+                </div>
+              </div>
+              
+              <div>
+                <Label className="text-sm font-medium">Descripción</Label>
+                <p className="text-sm text-gray-700">{selectedTemplate.description}</p>
+              </div>
+              
+              <div>
+                <Label className="text-sm font-medium">Asunto del Email</Label>
+                <p className="text-sm text-gray-700 bg-gray-50 p-2 rounded">{selectedTemplate.subject}</p>
+              </div>
+              
+              <div>
+                <Label className="text-sm font-medium">Variables Disponibles</Label>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {selectedTemplate.variables?.map((variable: string, idx: number) => (
+                    <Badge key={idx} variant="secondary" className="text-xs">
+                      {variable}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium">Contenido HTML</Label>
+                  <div className="mt-2 p-3 bg-gray-50 rounded text-xs font-mono max-h-40 overflow-y-auto">
+                    {selectedTemplate.htmlContent || 'No definido'}
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Vista Previa</Label>
+                  <div 
+                    className="mt-2 p-3 border rounded max-h-40 overflow-y-auto text-sm"
+                    dangerouslySetInnerHTML={{ __html: selectedTemplate.htmlContent || 'No hay contenido para mostrar' }}
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <Label className="text-sm font-medium">Contenido de Texto</Label>
+                <div className="mt-2 p-3 bg-gray-50 rounded text-xs max-h-32 overflow-y-auto whitespace-pre-wrap">
+                  {selectedTemplate.textContent || 'No definido'}
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setIsViewTemplateOpen(false)}>
+              Cerrar
+            </Button>
+            <Button 
+              className="bg-[#00a587] hover:bg-[#067f5f]"
+              onClick={() => {
+                setIsViewTemplateOpen(false);
+                setNewTemplate({
+                  name: selectedTemplate?.name || '',
+                  category: selectedTemplate?.category || '',
+                  description: selectedTemplate?.description || '',
+                  subject: selectedTemplate?.subject || '',
+                  htmlContent: selectedTemplate?.htmlContent || '',
+                  textContent: selectedTemplate?.textContent || '',
+                  variables: selectedTemplate?.variables || [],
+                  newVariable: '',
+                  usage: selectedTemplate?.usage?.includes('Manual') ? 'manual' : 'automatic',
+                  module: selectedTemplate?.category || '',
+                  isActive: true
+                });
+                setIsEditTemplateOpen(true);
+              }}
+            >
+              <FileEdit className="h-4 w-4 mr-2" />
+              Editar
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog para Editar Plantilla */}
+      <Dialog open={isEditTemplateOpen} onOpenChange={setIsEditTemplateOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Editar Plantilla: {selectedTemplate?.name}</DialogTitle>
+            <DialogDescription>
+              Modifica los detalles de la plantilla de email
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-6 py-4">
+            {/* Información básica */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="edit-template-name">Nombre de la Plantilla</Label>
+                <Input
+                  id="edit-template-name"
+                  value={newTemplate.name}
+                  onChange={(e) => setNewTemplate({...newTemplate, name: e.target.value})}
+                  placeholder="Ej: Bienvenida Nuevo Empleado"
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-template-category">Categoría</Label>
+                <Select value={newTemplate.category} onValueChange={(value) => setNewTemplate({...newTemplate, category: value})}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar categoría" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((category) => (
+                      <SelectItem key={category} value={category}>{category}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="edit-template-description">Descripción</Label>
+              <Textarea
+                id="edit-template-description"
+                value={newTemplate.description}
+                onChange={(e) => setNewTemplate({...newTemplate, description: e.target.value})}
+                placeholder="Descripción del propósito de la plantilla..."
+                rows={3}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="edit-template-subject">Asunto del Email</Label>
+              <Input
+                id="edit-template-subject"
+                value={newTemplate.subject}
+                onChange={(e) => setNewTemplate({...newTemplate, subject: e.target.value})}
+                placeholder="Ej: Bienvenido {{nombre_empleado}} - {{empresa}}"
+              />
+            </div>
+
+            {/* Variables */}
+            <div>
+              <Label>Variables Disponibles</Label>
+              <div className="flex space-x-2 mt-2">
+                <Input
+                  value={newTemplate.newVariable}
+                  onChange={(e) => setNewTemplate({...newTemplate, newVariable: e.target.value})}
+                  placeholder="nombre_variable"
+                  onKeyPress={(e) => e.key === 'Enter' && addVariable()}
+                />
+                <Button type="button" variant="outline" onClick={addVariable}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Agregar
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-2 mt-3">
+                {newTemplate.variables.map((variable, index) => (
+                  <div key={index} className="flex items-center gap-1 bg-blue-100 text-blue-700 px-2 py-1 rounded text-sm">
+                    <span>{variable}</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-4 w-4 p-0"
+                      onClick={() => removeVariable(index)}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Contenido HTML */}
+            <div>
+              <Label htmlFor="edit-template-html">Contenido HTML</Label>
+              <Textarea
+                id="edit-template-html"
+                value={newTemplate.htmlContent}
+                onChange={(e) => setNewTemplate({...newTemplate, htmlContent: e.target.value})}
+                placeholder="<div>Contenido HTML del email...</div>"
+                rows={8}
+                className="font-mono text-sm"
+              />
+            </div>
+
+            {/* Contenido de texto */}
+            <div>
+              <Label htmlFor="edit-template-text">Contenido de Texto (Alternativo)</Label>
+              <Textarea
+                id="edit-template-text"
+                value={newTemplate.textContent}
+                onChange={(e) => setNewTemplate({...newTemplate, textContent: e.target.value})}
+                placeholder="Versión en texto plano del email..."
+                rows={6}
+              />
+            </div>
+          </div>
+          
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setIsEditTemplateOpen(false)}>
+              Cancelar
+            </Button>
+            <Button 
+              className="bg-[#00a587] hover:bg-[#067f5f]"
+              onClick={() => {
+                console.log('Guardando cambios en plantilla:', newTemplate);
+                // Aquí iría la lógica para guardar la plantilla editada
+                setIsEditTemplateOpen(false);
+              }}
+            >
+              <Save className="h-4 w-4 mr-2" />
+              Guardar Cambios
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
