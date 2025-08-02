@@ -13,8 +13,16 @@ The application uses a client-server architecture with a modern full-stack:
 - **Database**: PostgreSQL with Drizzle ORM.
 - **Authentication**: Role-based access control system.
 
-## Recent Changes (August 1, 2025)
-- **COMPLETED: Critical Email Delivery Bug Fix**:
+## Recent Changes (August 2, 2025)
+- **COMPLETED: Activity Email Templates Integration**:
+  - **Templates Added**: Created two new email templates for the Activities module:
+    - **"Confirmación de Inscripción"** (ID: 11): Automatic email sent when users register for an activity (pending approval status)
+    - **"Inscripción Aprobada"** (ID: 12): Automatic email sent when admin approves an activity registration
+  - **Content Integration**: Both templates contain the exact HTML and text content currently used by the system
+  - **Variable System**: Properly configured with all required variables (participantName, activityTitle, parkName, activityStartDate, etc.)
+  - **Admin Interface**: Templates now appear in `/admin/communications/templates` with full edit/view functionality
+  - **Categories Updated**: Added "Actividades" category to both template categories and modules lists
+- **Previous: Critical Email Delivery Bug Fix**:
   - **Root Cause Identified**: Empty email delivery caused by JSON escaping double quotes in HTML content and incorrect field mapping
   - **HTML Format Fix**: Changed all CSS styles from double quotes (`"`) to single quotes (`'`) in email generation functions to prevent JSON escaping issues
   - **Database Field Mapping Fix**: Corrected field mapping in emailQueueService.ts from `htmlContent/textContent` to `html_content/text_content` to match database schema

@@ -63,6 +63,7 @@ export const TemplatesSection: React.FC = () => {
     'Recursos Humanos',
     'Finanzas',
     'Eventos',
+    'Actividades',
     'Voluntarios',
     'Concesiones',
     'Infraestructura',
@@ -74,6 +75,7 @@ export const TemplatesSection: React.FC = () => {
     'HR',
     'Finanzas',
     'Eventos',
+    'Actividades',
     'Voluntarios',
     'Concesiones',
     'Activos',
@@ -235,6 +237,173 @@ export const TemplatesSection: React.FC = () => {
       usage: "Automática estacional",
       color: "bg-green-600",
       icon: <TreePine className="h-5 w-5" />
+    },
+    {
+      id: 11,
+      name: "Confirmación de Inscripción",
+      category: "Actividades",
+      description: "Email automático enviado cuando un usuario se inscribe a una actividad (pendiente de aprobación)",
+      subject: "✅ Confirmación de Inscripción - {{activityTitle}}",
+      htmlContent: `<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;'>
+        <div style='background-color: white; border-radius: 10px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);'>
+          <div style='text-align: center; margin-bottom: 30px;'>
+            <h1 style='color: #16a34a; margin: 0; font-size: 28px;'>🎯 ParkSys</h1>
+          </div>
+          
+          <h2 style='color: #333; text-align: center; margin-bottom: 30px;'>¡Inscripción Recibida!</h2>
+          
+          <div style='background-color: #f0f9ff; border-left: 4px solid #16a34a; padding: 20px; margin: 20px 0; border-radius: 0 8px 8px 0;'>
+            <p style='margin: 0; color: #333; font-size: 16px;'>
+              <strong>Hola {{participantName}},</strong>
+            </p>
+            <p style='margin: 10px 0 0 0; color: #666;'>
+              Hemos recibido tu inscripción para la actividad <strong>{{activityTitle}}</strong> 
+              y está siendo revisada por nuestro equipo.
+            </p>
+          </div>
+          
+          <div style='background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;'>
+            <h3 style='color: #16a34a; margin-top: 0;'>Detalles de la Actividad:</h3>
+            <ul style='list-style: none; padding: 0; margin: 0;'>
+              <li style='padding: 8px 0; border-bottom: 1px solid #e2e8f0;'><strong>📍 Actividad:</strong> {{activityTitle}}</li>
+              <li style='padding: 8px 0; border-bottom: 1px solid #e2e8f0;'><strong>🏛️ Parque:</strong> {{parkName}}</li>
+              <li style='padding: 8px 0; border-bottom: 1px solid #e2e8f0;'><strong>📅 Fecha:</strong> {{activityStartDate}}</li>
+              <li style='padding: 8px 0; border-bottom: 1px solid #e2e8f0;'><strong>⏰ Hora:</strong> {{activityStartTime}}</li>
+              <li style='padding: 8px 0;'><strong>📍 Ubicación:</strong> {{activityLocation}}</li>
+            </ul>
+          </div>
+          
+          <div style='background-color: #fef3c7; border: 1px solid #f59e0b; padding: 15px; border-radius: 8px; margin: 20px 0;'>
+            <p style='margin: 0; color: #92400e; font-size: 14px;'>
+              <strong>ℹ️ Pendiente de Aprobación:</strong> Tu inscripción será revisada y recibirás otro correo con la confirmación final.
+            </p>
+          </div>
+          
+          <div style='text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0;'>
+            <p style='color: #666; font-size: 14px; margin: 0;'>
+              Sistema de Gestión de Parques Urbanos<br>
+              Fecha de inscripción: {{registrationDate}}
+            </p>
+          </div>
+        </div>
+      </div>`,
+      textContent: `¡Inscripción Recibida!
+
+Estimado/a {{participantName}},
+
+Tu inscripción ha sido recibida exitosamente para la actividad: {{activityTitle}}
+
+DETALLES DE LA ACTIVIDAD:
+- Ubicación: {{parkName}}
+- Fecha: {{activityStartDate}}
+- Hora: {{activityStartTime}}
+- Lugar específico: {{activityLocation}}
+
+ESTADO: PENDIENTE DE APROBACIÓN
+
+Tu inscripción está pendiente de aprobación por parte de nuestro equipo.
+Recibirás otro email una vez que tu inscripción sea procesada.
+El proceso puede tomar de 1 a 3 días hábiles.
+
+¡Gracias por tu interés!
+
+Equipo de Parques y Recreación`,
+      variables: ["{{participantName}}", "{{participantEmail}}", "{{activityTitle}}", "{{parkName}}", "{{activityStartDate}}", "{{activityStartTime}}", "{{activityLocation}}", "{{registrationDate}}"],
+      usage: "Automática al inscribirse",
+      color: "bg-blue-500",
+      icon: <Mail className="h-5 w-5" />
+    },
+    {
+      id: 12,
+      name: "Inscripción Aprobada",
+      category: "Actividades", 
+      description: "Email automático enviado cuando una inscripción a actividad es aprobada por el administrador",
+      subject: "🎉 ¡Inscripción Aprobada! - {{activityTitle}}",
+      htmlContent: `<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;'>
+        <div style='background-color: white; border-radius: 10px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);'>
+          <div style='text-align: center; margin-bottom: 30px;'>
+            <h1 style='color: #16a34a; margin: 0; font-size: 28px;'>🎯 ParkSys</h1>
+          </div>
+          
+          <div style='text-align: center; margin-bottom: 30px;'>
+            <div style='font-size: 48px; margin-bottom: 15px;'>🎉</div>
+            <h2 style='color: #16a34a; margin: 0; font-size: 24px;'>¡Tu Inscripción Ha Sido Aprobada!</h2>
+          </div>
+          
+          <div style='background-color: #dcfce7; border-left: 4px solid #16a34a; padding: 20px; margin: 20px 0; border-radius: 0 8px 8px 0;'>
+            <p style='margin: 0; color: #333; font-size: 16px;'>
+              <strong>¡Excelente noticia, {{participantName}}!</strong>
+            </p>
+            <p style='margin: 10px 0 0 0; color: #666;'>
+              Tu inscripción para <strong>{{activityTitle}}</strong> ha sido aprobada oficialmente. 
+              ¡Ya tienes tu lugar reservado!
+            </p>
+          </div>
+          
+          <div style='background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;'>
+            <h3 style='color: #16a34a; margin-top: 0;'>📋 Detalles de tu Actividad:</h3>
+            <ul style='list-style: none; padding: 0; margin: 0;'>
+              <li style='padding: 10px 0; border-bottom: 1px solid #e2e8f0;'><strong>🎯 Actividad:</strong> {{activityTitle}}</li>
+              <li style='padding: 10px 0; border-bottom: 1px solid #e2e8f0;'><strong>🏛️ Parque:</strong> {{parkName}}</li>
+              <li style='padding: 10px 0; border-bottom: 1px solid #e2e8f0;'><strong>📅 Fecha:</strong> {{activityStartDate}}</li>
+              <li style='padding: 10px 0; border-bottom: 1px solid #e2e8f0;'><strong>⏰ Hora:</strong> {{activityStartTime}}</li>
+              <li style='padding: 10px 0;'><strong>📍 Ubicación:</strong> {{activityLocation}}</li>
+            </ul>
+          </div>
+          
+          <div style='background-color: #dbeafe; border: 1px solid #3b82f6; padding: 20px; border-radius: 8px; margin: 20px 0;'>
+            <h3 style='color: #1d4ed8; margin-top: 0;'>📝 Instrucciones Importantes:</h3>
+            <ul style='color: #1e40af; margin: 0; padding-left: 20px;'>
+              <li style='margin-bottom: 8px;'>Llega <strong>15 minutos antes</strong> de la hora programada</li>
+              <li style='margin-bottom: 8px;'>Trae ropa cómoda y adecuada para la actividad</li>
+              <li style='margin-bottom: 8px;'>Si tienes alguna condición médica, avísanos al llegar</li>
+              <li>En caso de cancelación, avísanos con <strong>24 horas de anticipación</strong></li>
+            </ul>
+          </div>
+          
+          <div style='background-color: #dcfce7; border: 1px solid #16a34a; padding: 15px; border-radius: 8px; margin: 20px 0; text-align: center;'>
+            <p style='margin: 0; color: #166534; font-size: 16px;'>
+              <strong>✅ Estado: CONFIRMADO</strong><br>
+              <span style='font-size: 14px;'>Aprobado el {{approvedDate}}</span>
+            </p>
+          </div>
+          
+          <div style='text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0;'>
+            <p style='color: #666; font-size: 14px; margin: 0;'>
+              ¡Nos vemos pronto!<br>
+              Sistema de Gestión de Parques Urbanos
+            </p>
+          </div>
+        </div>
+      </div>`,
+      textContent: `¡Inscripción Aprobada!
+
+¡Excelente noticia, {{participantName}}!
+
+Tu inscripción para {{activityTitle}} ha sido aprobada oficialmente. ¡Ya tienes tu lugar reservado!
+
+DETALLES DE TU ACTIVIDAD:
+- Actividad: {{activityTitle}}
+- Parque: {{parkName}}
+- Fecha: {{activityStartDate}}
+- Hora: {{activityStartTime}}
+- Ubicación: {{activityLocation}}
+
+INSTRUCCIONES IMPORTANTES:
+- Llega 15 minutos antes de la hora programada
+- Trae ropa cómoda y adecuada para la actividad
+- Si tienes alguna condición médica, avísanos al llegar
+- En caso de cancelación, avísanos con 24 horas de anticipación
+
+ESTADO: CONFIRMADO
+Aprobado el {{approvedDate}}
+
+¡Nos vemos pronto!
+Sistema de Gestión de Parques Urbanos`,
+      variables: ["{{participantName}}", "{{activityTitle}}", "{{parkName}}", "{{activityStartDate}}", "{{activityStartTime}}", "{{activityLocation}}", "{{approvedDate}}"],
+      usage: "Automática al aprobar inscripción",
+      color: "bg-green-500",
+      icon: <CheckCircle className="h-5 w-5" />
     }
   ];
 
