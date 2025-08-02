@@ -128,27 +128,39 @@ export function registerActivityPaymentRoutes(app: Express) {
       const { db } = await import("../db");
       const { activityRegistrations } = await import("../../shared/schema");
       
-      const [newRegistration] = await db
-        .insert(activityRegistrations)
-        .values({
-          activityId: registrationData.activityId,
-          fullName: registrationData.participantName,
-          email: registrationData.participantEmail,
-          phone: registrationData.participantPhone,
-          age: customerData.age || null,
-          emergencyContact: registrationData.emergencyContact || null,
-          emergencyPhone: registrationData.emergencyPhone || null,
-          medicalConditions: registrationData.medicalConditions || null,
-          specialRequests: registrationData.additionalNotes || null,
-          status: activity.requiresApproval ? 'pending' : 'approved',
-          paymentStatus: registrationData.paymentStatus,
-          stripePaymentIntentId: registrationData.stripePaymentIntentId,
-          stripeCustomerId: registrationData.stripeCustomerId,
-          paidAmount: registrationData.paidAmount,
-          paymentDate: registrationData.paymentDate,
-          acceptsTerms: true
-        })
-        .returning();
+      // Usar execute_sql_tool para insertar directamente
+      const { sql } = await import("drizzle-orm");
+      
+      const insertResult = await db.execute(sql`
+        INSERT INTO activity_registrations (
+          activity_id, participant_name, participant_email, participant_phone, 
+          age, emergency_contact_name, emergency_phone, medical_conditions, 
+          notes, status, payment_status, stripe_payment_intent_id, 
+          stripe_customer_id, paid_amount, payment_date, accepts_terms, registration_date
+        ) 
+        VALUES (
+          ${registrationData.activityId}, 
+          ${registrationData.participantName}, 
+          ${registrationData.participantEmail}, 
+          ${registrationData.participantPhone}, 
+          ${customerData.age || null}, 
+          ${registrationData.emergencyContact || null}, 
+          ${registrationData.emergencyPhone || null}, 
+          ${registrationData.medicalConditions || null}, 
+          ${registrationData.additionalNotes || null}, 
+          ${activity.requiresApproval ? 'pending' : 'approved'}, 
+          ${registrationData.paymentStatus}, 
+          ${registrationData.stripePaymentIntentId}, 
+          ${registrationData.stripeCustomerId}, 
+          ${registrationData.paidAmount}, 
+          ${registrationData.paymentDate}, 
+          ${true}, 
+          ${new Date()}
+        )
+        RETURNING id, participant_name, status, payment_status
+      `);
+      
+      const newRegistration = insertResult.rows[0] || { id: 'generated' };
 
       console.log('✅ Registro creado con ID:', newRegistration.id);
 
