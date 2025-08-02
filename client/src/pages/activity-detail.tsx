@@ -705,6 +705,7 @@ function ActivityDetailPage() {
               <Elements stripe={stripePromise}>
                 <ActivityPaymentForm
                   activityId={activityId!}
+                  activity={activity}
                   participantData={registrationData}
                   onSuccess={() => {
                     setShowPaymentDialog(false);

@@ -13,29 +13,31 @@ import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 
 interface ActivityPaymentFormProps {
-  activity: {
+  activityId: string;
+  activity?: {
     id: number;
     title: string;
     price: string | number;
-    isFree: boolean;
+    isFree?: boolean;
     isPriceRandom?: boolean;
-    parkName: string;
+    parkName?: string;
   };
-  registrationData: {
+  participantData: {
     fullName: string;
     email: string;
     phone?: string;
     additionalInfo?: string;
   };
-  onPaymentSuccess: (paymentData: any) => void;
-  onCancel: () => void;
+  onSuccess: () => void;
+  onError: (error: string) => void;
 }
 
 export function ActivityPaymentForm({ 
+  activityId,
   activity, 
-  registrationData, 
-  onPaymentSuccess, 
-  onCancel 
+  participantData, 
+  onSuccess, 
+  onError 
 }: ActivityPaymentFormProps) {
   const stripe = useStripe();
   const elements = useElements();
@@ -46,17 +48,19 @@ export function ActivityPaymentForm({
   const [paymentError, setPaymentError] = useState<string | null>(null);
 
   // Determine if this is a suggested price (random pricing)
-  const isPriceRandom = activity.isPriceRandom || false;
-  const basePrice = parseFloat(activity.price.toString());
+  const isPriceRandom = activity?.isPriceRandom || false;
+  const basePrice = parseFloat(activity?.price?.toString() || '0');
 
   // Payment processing mutation
   const createPaymentIntentMutation = useMutation({
     mutationFn: async (paymentData: any) => {
-      const response = await apiRequest(
-        'POST',
-        `/api/activities/${activity.id}/create-payment-intent`,
-        paymentData
-      );
+      const response = await fetch(`/api/activities/${activityId}/create-payment-intent`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(paymentData),
+      });
       
       if (!response.ok) {
         const error = await response.json();
@@ -68,11 +72,7 @@ export function ActivityPaymentForm({
     onError: (error: Error) => {
       setProcessing(false);
       setPaymentError(error.message);
-      toast({
-        title: "Error creando el pago",
-        description: error.message,
-        variant: "destructive",
-      });
+      onError(error.message);
     }
   });
 
@@ -109,9 +109,9 @@ export function ActivityPaymentForm({
       // Step 1: Create payment intent
       const paymentIntentData = await createPaymentIntentMutation.mutateAsync({
         customerData: {
-          fullName: registrationData.fullName,
-          email: registrationData.email,
-          phone: registrationData.phone,
+          fullName: participantData.fullName,
+          email: participantData.email,
+          phone: participantData.phone,
         },
         amount: finalAmount,
       });
@@ -123,9 +123,9 @@ export function ActivityPaymentForm({
           payment_method: {
             card: cardElement,
             billing_details: {
-              name: registrationData.fullName,
-              email: registrationData.email,
-              phone: registrationData.phone,
+              name: participantData.fullName,
+              email: participantData.email,
+              phone: participantData.phone,
             },
           },
         }
@@ -137,15 +137,12 @@ export function ActivityPaymentForm({
 
       // Payment successful
       setProcessing(false);
-      onPaymentSuccess({
-        paymentIntentId: paymentIntentData.paymentIntentId,
-        amount: finalAmount,
-        currency: 'mxn',
-      });
+      onSuccess();
 
     } catch (error: any) {
       setProcessing(false);
       setPaymentError(error.message || 'Error inesperado en el pago');
+      onError(error.message || 'Error inesperado en el pago');
     }
   };
 
@@ -153,7 +150,7 @@ export function ActivityPaymentForm({
     return `$${price.toLocaleString('es-MX')} MXN`;
   };
 
-  if (activity.isFree) {
+  if (activity?.isFree) {
     return (
       <Card>
         <CardContent className="pt-6">
@@ -182,15 +179,15 @@ export function ActivityPaymentForm({
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span>Actividad:</span>
-              <span className="font-medium">{activity.title}</span>
+              <span className="font-medium">{activity?.title}</span>
             </div>
             <div className="flex justify-between">
               <span>Ubicación:</span>
-              <span>{activity.parkName}</span>
+              <span>{activity?.parkName || 'No especificado'}</span>
             </div>
             <div className="flex justify-between">
               <span>Participante:</span>
-              <span>{registrationData.fullName}</span>
+              <span>{participantData.fullName}</span>
             </div>
             
             <Separator className="my-3" />
@@ -286,7 +283,7 @@ export function ActivityPaymentForm({
               <Button 
                 type="button" 
                 variant="outline" 
-                onClick={onCancel}
+                onClick={() => onError('Pago cancelado por el usuario')}
                 disabled={processing}
               >
                 Cancelar
