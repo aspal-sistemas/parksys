@@ -24,6 +24,7 @@ import activityImageRouter from "./activity-image-routes";
 import { registerMaintenanceRoutes } from "./maintenance_routes_fixed";
 import { registerAssetAssignmentRoutes } from "./asset_assignment_routes";
 import { registerSpaceReservationRoutes } from "./space-reservations-routes";
+import { registerReservableSpacesRoutes } from "./reservable-spaces-routes";
 import { registerTreeRoutes } from "./tree_routes";
 import { registerTreeMaintenanceRoutes } from "./tree_maintenance_routes";
 import { registerTreeInventoryRoutes } from "./tree_inventory_routes";
@@ -57,6 +58,7 @@ import advertisingRoutes from "./advertising-routes";
 import activityRegistrationsRouter from "./routes/activity-registrations";
 import paymentsRouter from "./routes/payments";
 import { registerActivityPaymentRoutes } from "./routes/activityPaymentsSimple";
+import { registerSpacePaymentRoutes } from "./routes/space-payments";
 import { registerActivityStatsRoutes } from "./routes/activity-stats";
 import { uploadAdvertising, handleAdvertisingUpload } from "./api/advertising-upload";
 import { 
@@ -186,6 +188,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerMaintenanceRoutes(app, apiRouter, isAuthenticated); // DESCOMENTADO - usado maintenance_routes_fixed.ts
   registerAssetAssignmentRoutes(app, apiRouter, isAuthenticated);
   registerSpaceReservationRoutes(app, apiRouter, isAuthenticated);
+  registerReservableSpacesRoutes(app);
+  registerSpacePaymentRoutes(app);
   registerAssetImageRoutes(app, apiRouter, isAuthenticated);
   
   // Registramos las rutas del módulo de actividades

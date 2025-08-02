@@ -37,6 +37,7 @@ const Header: React.FC = () => {
   };
 
   const isContentActive = location === '/activities' || 
+                          location === '/reservations' ||
                           location === '/events' ||
                           location === '/calendar' || 
                           location === '/concessions';
@@ -103,6 +104,10 @@ const Header: React.FC = () => {
                       <Link href="/activities"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
                         Actividades
+                      </Link>
+                      <Link href="/reservations"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">
+                        Reserva de Espacios
                       </Link>
                       <Link href="/events"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900">

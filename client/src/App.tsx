@@ -92,6 +92,11 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/activities')))}
           </Suspense>
         </Route>
+        <Route path="/reservations">
+          <Suspense fallback={<div className="p-8 text-center">Cargando espacios...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/reservations')))}
+          </Suspense>
+        </Route>
         <Route path="/events">
           <Suspense fallback={<div className="p-8 text-center">Cargando eventos...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/Events')))}
@@ -105,6 +110,11 @@ function Router() {
         <Route path="/activity/:id/payment">
           <Suspense fallback={<div className="p-8 text-center">Cargando página de pago...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/activity-payment')))}
+          </Suspense>
+        </Route>
+        <Route path="/space/:id">
+          <Suspense fallback={<div className="p-8 text-center">Cargando detalle del espacio...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/space-detail')))}
           </Suspense>
         </Route>
         <Route path="/calendar">
