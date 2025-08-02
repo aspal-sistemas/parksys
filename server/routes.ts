@@ -192,14 +192,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerReservableSpacesRoutes(app);
   registerSpacePaymentRoutes(app);
 
-  // Object Storage routes for spaces multimedia
-  app.post("/api/objects/upload", async (req, res) => {
+  // Object Storage routes for spaces multimedia (with authentication)
+  app.post("/api/objects/upload", isAuthenticated, async (req, res) => {
     try {
+      console.log("📤 [OBJECT-STORAGE] Getting upload URL for authenticated user");
       const objectStorageService = new ObjectStorageService();
       const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      console.log("📤 [OBJECT-STORAGE] Upload URL generated successfully");
       res.json({ uploadURL });
     } catch (error) {
-      console.error("Error getting upload URL:", error);
+      console.error("❌ [OBJECT-STORAGE] Error getting upload URL:", error);
       res.status(500).json({ error: "Error getting upload URL" });
     }
   });
@@ -731,16 +733,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Obtenemos los parques con sus imágenes y amenidades
       const parks = await getParksDirectly(filters);
       
-      // Respondemos con los parques completos en el formato esperado por el frontend
-      res.json({ 
-        data: parks,
-        pagination: {
-          page: 1,
-          limit: parks.length,
-          total: parks.length,
-          totalPages: 1
-        }
-      });
+      // Para el formulario de espacios, necesitamos solo el array básico
+      const simplifiedParks = parks.map(park => ({
+        id: park.id,
+        name: park.name,
+        location: park.location
+      }));
+      
+      // Respondemos con el array simple para compatibilidad con formularios
+      res.json(simplifiedParks);
     } catch (error) {
       console.error("Error al obtener parques:", error);
       res.status(500).json({ message: "Error fetching parks" });
