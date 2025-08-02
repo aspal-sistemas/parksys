@@ -94,8 +94,7 @@ import {
   Image,
   Scale,
   Monitor,
-  Grid,
-  Globe
+  Grid
 } from 'lucide-react';
 
 interface NavItemProps {
@@ -383,27 +382,7 @@ const AdminSidebarComplete: React.FC = () => {
           className="space-y-1"
         >
 
-          {/* 0. PÁGINAS PÚBLICAS */}
-          <ModuleNav 
-            title="Páginas Públicas" 
-            icon={<Globe className="h-5 w-5" />}
-            value="public"
-          >
-            <NavItem 
-              href="/public/activities" 
-              icon={<Calendar className="h-5 w-5" />}
-              active={location.startsWith('/public/activities')}
-            >
-              Catálogo de Actividades
-            </NavItem>
-            <NavItem 
-              href="/parks" 
-              icon={<Map className="h-5 w-5" />}
-              active={location === '/parks'}
-            >
-              Directorio de Parques
-            </NavItem>
-          </ModuleNav>
+
 
           {/* 1. CONFIGURACIÓN */}
           <ModuleNav 

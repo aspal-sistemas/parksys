@@ -50,7 +50,7 @@ export function SidebarSearch() {
 
     // Gestión - Actividades
     { id: 'activities-organizer', title: 'Organizador de Actividades', description: 'Panel principal de actividades', href: '/admin/organizador', module: 'Actividades', icon: <Calendar className="h-4 w-4" /> },
-    { id: 'activities-catalog', title: 'Catálogo de Actividades', description: 'Catálogo completo de actividades', href: '/admin/organizador/catalogo', module: 'Actividades', icon: <FolderOpen className="h-4 w-4" /> },
+
     { id: 'activities-calendar', title: 'Calendario de Actividades', description: 'Calendario y programación', href: '/admin/activities/calendar', module: 'Actividades', icon: <Calendar className="h-4 w-4" /> },
     { id: 'activities-categories', title: 'Categorías de Actividades', description: 'Gestión de categorías', href: '/admin/activities/categories', module: 'Actividades', icon: <FileText className="h-4 w-4" /> },
 

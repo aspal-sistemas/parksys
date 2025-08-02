@@ -119,7 +119,7 @@ function ActivityCard({ activity, viewMode }: { activity: ActivityData; viewMode
                 
                 <div className="flex items-center gap-2 text-gray-600">
                   <DollarSign className="h-4 w-4 text-yellow-600" />
-                  <span>{activity.price > 0 ? `$${activity.price}` : 'Gratis'}</span>
+                  <span>{activity.price > 0 ? `$${Number(activity.price).toLocaleString('es-MX')}` : 'Gratis'}</span>
                 </div>
               </div>
               
@@ -152,7 +152,7 @@ function ActivityCard({ activity, viewMode }: { activity: ActivityData; viewMode
                 {activity.duration && (
                   <div className="flex items-center gap-2 text-sm text-gray-600">
                     <Clock className="h-4 w-4 text-blue-600" />
-                    <span>{activity.duration} minutos</span>
+                    <span>{(activity.duration / 60).toFixed(1)} horas</span>
                   </div>
                 )}
                 
@@ -256,7 +256,7 @@ function ActivityCard({ activity, viewMode }: { activity: ActivityData; viewMode
             
             <div className="flex items-center gap-2 text-gray-600">
               <DollarSign className="h-4 w-4 text-yellow-600" />
-              <span className="text-xs font-medium">{activity.price > 0 ? `$${activity.price}` : 'Gratis'}</span>
+              <span className="text-xs font-medium">{activity.price > 0 ? `$${Number(activity.price).toLocaleString('es-MX')}` : 'Gratis'}</span>
             </div>
           </div>
           
@@ -291,7 +291,7 @@ function ActivityCard({ activity, viewMode }: { activity: ActivityData; viewMode
             {activity.duration && (
               <div className="flex items-center gap-2 text-gray-600">
                 <Clock className="h-3 w-3 text-blue-600 flex-shrink-0" />
-                <span className="text-xs">{activity.duration} min</span>
+                <span className="text-xs">{(activity.duration / 60).toFixed(1)} hrs</span>
               </div>
             )}
           </div>
