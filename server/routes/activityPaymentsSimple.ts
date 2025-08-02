@@ -13,28 +13,30 @@ export function registerActivityPaymentRoutes(app: Express) {
   // Crear payment intent para pago de actividad
   app.post("/api/activities/:activityId/create-payment-intent", async (req, res) => {
     try {
-      const { activityId } = req.params;
+      const activityId = req.params.activityId;
       const { customerData, amount } = req.body;
 
       console.log('🌟 GLOBAL POST-JSON:', req.method, req.url);
       console.log('🌟 Body parseado:', JSON.stringify(req.body, null, 2));
-      console.log('💰 Precio de actividad:', activity.price);
-      console.log('💰 Amount enviado desde frontend:', amount);
 
       // Obtener datos de la actividad
       const activities = await storage.getAllActivities();
-      const activity = activities.find(a => a.id === parseInt(activityId));
-      if (!activity) {
+      const foundActivity = activities.find((a: any) => a.id === parseInt(activityId));
+      
+      if (!foundActivity) {
         return res.status(404).json({ error: "Actividad no encontrada" });
       }
 
-      if (activity.isFree) {
+      console.log('💰 Precio de actividad:', foundActivity.price);
+      console.log('💰 Amount enviado desde frontend:', amount);
+
+      if (foundActivity.isFree) {
         return res.status(400).json({ error: "Esta actividad es gratuita" });
       }
 
       // Convertir a centavos: Si viene amount del frontend (en pesos), multiplicar por 100
       // Si no viene amount, usar el precio de la actividad y multiplicar por 100
-      const finalAmount = amount ? Math.round(amount * 100) : Math.round(parseFloat(activity.price || "0") * 100);
+      const finalAmount = amount ? Math.round(amount * 100) : Math.round(parseFloat(foundActivity.price || "0") * 100);
       
       console.log('💰 Final amount calculado (centavos):', finalAmount);
       console.log('💰 Final amount en pesos (para verificación):', finalAmount / 100);
@@ -63,9 +65,9 @@ export function registerActivityPaymentRoutes(app: Express) {
         customer: customerId,
         metadata: {
           activityId: activityId,
-          activityTitle: activity.title,
+          activityTitle: foundActivity.title,
         },
-        description: `Pago por actividad: ${activity.title}`,
+        description: `Pago por actividad: ${foundActivity.title}`,
       });
 
       res.json({ 
@@ -104,8 +106,8 @@ export function registerActivityPaymentRoutes(app: Express) {
 
       // Obtener datos de la actividad
       const activities = await storage.getAllActivities();
-      const activity = activities.find((a: any) => a.id === parseInt(activityId));
-      if (!activity) {
+      const foundActivity = activities.find((a: any) => a.id === parseInt(activityId));
+      if (!foundActivity) {
         return res.status(404).json({ error: "Actividad no encontrada" });
       }
 
@@ -120,7 +122,7 @@ export function registerActivityPaymentRoutes(app: Express) {
         emergencyPhone: customerData.emergencyPhone || '',
         medicalConditions: customerData.medicalConditions || '',
         additionalNotes: customerData.additionalNotes || '',
-        status: activity.requiresApproval ? 'pending' : 'approved',
+        status: foundActivity.requiresApproval ? 'pending' : 'approved',
         paymentStatus: 'paid',
         stripePaymentIntentId: paymentIntentId,
         stripeCustomerId: paymentIntent.customer as string || null,
@@ -155,7 +157,7 @@ export function registerActivityPaymentRoutes(app: Express) {
           ${registrationData.emergencyPhone || null}, 
           ${registrationData.medicalConditions || null}, 
           ${registrationData.additionalNotes || null}, 
-          ${activity.requiresApproval ? 'pending' : 'approved'}, 
+          ${foundActivity.requiresApproval ? 'pending' : 'approved'}, 
           ${registrationData.stripePaymentIntentId}, 
           ${registrationData.stripeCustomerId}, 
           ${registrationData.paidAmount}, 
@@ -178,11 +180,11 @@ export function registerActivityPaymentRoutes(app: Express) {
         
         const emailVariables = {
           participantName: registrationData.participantName,
-          activityTitle: activity.title,
-          parkName: activity.parkName || 'Parque Municipal',
-          activityStartDate: new Date(activity.startDate).toLocaleDateString('es-MX'),
-          activityStartTime: activity.startTime || '10:00',
-          activityLocation: activity.location || 'Por confirmar',
+          activityTitle: foundActivity.title,
+          parkName: foundActivity.parkName || 'Parque Municipal',
+          activityStartDate: new Date(foundActivity.startDate).toLocaleDateString('es-MX'),
+          activityStartTime: foundActivity.startTime || '10:00',
+          activityLocation: foundActivity.location || 'Por confirmar',
           paymentAmount: (paymentIntent.amount / 100).toFixed(2),
           stripePaymentId: paymentIntent.id,
           paymentMethod: 'Tarjeta de Crédito/Débito',

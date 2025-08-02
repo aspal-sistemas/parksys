@@ -14,6 +14,17 @@ The application uses a client-server architecture with a modern full-stack:
 - **Authentication**: Role-based access control system.
 
 ## Recent Changes (August 2, 2025)
+- **COMPLETED: Critical Stripe Payment Bug Fix - Amount Conversion Issue**:
+  - **Root Cause Identified**: Frontend sent amounts in pesos (e.g., 500.00) but backend didn't convert to centavos properly
+  - **Amount Conversion Fixed**: Backend now properly multiplies by 100 when receiving amounts from frontend
+  - **Variable Naming Conflict Resolved**: Fixed "Cannot access 'activity' before initialization" error by renaming variables consistently
+  - **Validation Added**: Added comprehensive logging to monitor amount conversion (pesos → centavos)
+  - **Minimum Amount Compliance**: Now meets Stripe's $10.00 MXN minimum requirement correctly
+  - **Testing Verified**: Payment intent creation working with correct amounts (500 pesos = 50,000 centavos)
+- **COMPLETED: Admin Header Logo Removal**:
+  - **UI Enhancement**: Removed "Bosques urbanos de Guadalajara" logo from admin pages header
+  - **Conditional Display**: Logo now only appears on public pages, not in /admin/* routes
+  - **Header Structure Fixed**: Corrected JSX structure and variable scope issues
 - **COMPLETED: Activity Email Templates Integration**:
   - **Templates Added**: Created two new email templates for the Activities module:
     - **"Confirmación de Inscripción"** (ID: 11): Automatic email sent when users register for an activity (pending approval status)
