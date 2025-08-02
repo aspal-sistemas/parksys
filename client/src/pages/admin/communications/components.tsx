@@ -37,7 +37,12 @@ import {
   FileEdit,
   DollarSign,
   Save,
-  X
+  X,
+  Grid3X3,
+  List,
+  Search,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
 export const TemplatesSection: React.FC = () => {
@@ -45,6 +50,9 @@ export const TemplatesSection: React.FC = () => {
   const [isViewTemplateOpen, setIsViewTemplateOpen] = useState(false);
   const [isEditTemplateOpen, setIsEditTemplateOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
   const [newTemplate, setNewTemplate] = useState({
     name: '',
     category: '',
@@ -404,8 +412,129 @@ Sistema de Gestión de Parques Urbanos`,
       usage: "Automática al aprobar inscripción",
       color: "bg-green-500",
       icon: <CheckCircle className="h-5 w-5" />
+    },
+    {
+      id: 13,
+      name: "Confirmación de Pago - Actividad",
+      category: "Actividades",
+      description: "Email automático enviado cuando el pago con Stripe es procesado exitosamente para una actividad",
+      subject: "💳 ¡Pago Confirmado! - {{activityTitle}}",
+      htmlContent: `<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;'>
+        <div style='background-color: white; border-radius: 10px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);'>
+          <div style='text-align: center; margin-bottom: 30px;'>
+            <h1 style='color: #16a34a; margin: 0; font-size: 28px;'>🎯 ParkSys</h1>
+          </div>
+          
+          <div style='text-align: center; margin-bottom: 30px;'>
+            <div style='font-size: 48px; margin-bottom: 15px;'>💳</div>
+            <h2 style='color: #16a34a; margin: 0; font-size: 24px;'>¡Pago Confirmado!</h2>
+          </div>
+          
+          <div style='background-color: #dcfce7; border-left: 4px solid #16a34a; padding: 20px; margin: 20px 0; border-radius: 0 8px 8px 0;'>
+            <p style='margin: 0; color: #333; font-size: 16px;'>
+              <strong>¡Perfecto, {{participantName}}!</strong>
+            </p>
+            <p style='margin: 10px 0 0 0; color: #666;'>
+              Tu pago para <strong>{{activityTitle}}</strong> ha sido procesado exitosamente. 
+              ¡Tu lugar está completamente reservado!
+            </p>
+          </div>
+          
+          <div style='background-color: #f0f9ff; padding: 20px; border-radius: 8px; margin: 20px 0;'>
+            <h3 style='color: #1d4ed8; margin-top: 0;'>💰 Detalles del Pago:</h3>
+            <ul style='list-style: none; padding: 0; margin: 0;'>
+              <li style='padding: 8px 0; border-bottom: 1px solid #e2e8f0;'><strong>💵 Monto:</strong> $\{{paymentAmount\}} MXN</li>
+              <li style='padding: 8px 0; border-bottom: 1px solid #e2e8f0;'><strong>🆔 ID de Transacción:</strong> {{stripePaymentId}}</li>
+              <li style='padding: 8px 0; border-bottom: 1px solid #e2e8f0;'><strong>💳 Método:</strong> {{paymentMethod}}</li>
+              <li style='padding: 8px 0;'><strong>📅 Fecha de Pago:</strong> {{paymentDate}}</li>
+            </ul>
+          </div>
+          
+          <div style='background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;'>
+            <h3 style='color: #16a34a; margin-top: 0;'>📋 Detalles de tu Actividad:</h3>
+            <ul style='list-style: none; padding: 0; margin: 0;'>
+              <li style='padding: 10px 0; border-bottom: 1px solid #e2e8f0;'><strong>🎯 Actividad:</strong> {{activityTitle}}</li>
+              <li style='padding: 10px 0; border-bottom: 1px solid #e2e8f0;'><strong>🏛️ Parque:</strong> {{parkName}}</li>
+              <li style='padding: 10px 0; border-bottom: 1px solid #e2e8f0;'><strong>📅 Fecha:</strong> {{activityStartDate}}</li>
+              <li style='padding: 10px 0; border-bottom: 1px solid #e2e8f0;'><strong>⏰ Hora:</strong> {{activityStartTime}}</li>
+              <li style='padding: 10px 0;'><strong>📍 Ubicación:</strong> {{activityLocation}}</li>
+            </ul>
+          </div>
+          
+          <div style='background-color: #dbeafe; border: 1px solid #3b82f6; padding: 20px; border-radius: 8px; margin: 20px 0;'>
+            <h3 style='color: #1d4ed8; margin-top: 0;'>📝 Información Importante:</h3>
+            <ul style='color: #1e40af; margin: 0; padding-left: 20px;'>
+              <li style='margin-bottom: 8px;'>Tu inscripción está <strong>confirmada automáticamente</strong> al completar el pago</li>
+              <li style='margin-bottom: 8px;'>Llega <strong>15 minutos antes</strong> de la hora programada</li>
+              <li style='margin-bottom: 8px;'>Trae ropa cómoda y adecuada para la actividad</li>
+              <li style='margin-bottom: 8px;'>Presenta este email como comprobante en caso necesario</li>
+              <li>Para cancelaciones, contacta al equipo con <strong>24 horas de anticipación</strong></li>
+            </ul>
+          </div>
+          
+          <div style='background-color: #dcfce7; border: 1px solid #16a34a; padding: 15px; border-radius: 8px; margin: 20px 0; text-align: center;'>
+            <p style='margin: 0; color: #166534; font-size: 16px;'>
+              <strong>✅ Estado: PAGADO Y CONFIRMADO</strong><br>
+              <span style='font-size: 14px;'>Procesado el {{paymentDate}}</span>
+            </p>
+          </div>
+          
+          <div style='text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0;'>
+            <p style='color: #666; font-size: 14px; margin: 0;'>
+              ¡Gracias por tu pago y nos vemos pronto!<br>
+              Sistema de Gestión de Parques Urbanos
+            </p>
+          </div>
+        </div>
+      </div>`,
+      textContent: `¡Pago Confirmado!
+
+¡Perfecto, {{participantName}}!
+
+Tu pago para {{activityTitle}} ha sido procesado exitosamente. ¡Tu lugar está completamente reservado!
+
+DETALLES DEL PAGO:
+- Monto: $\{{paymentAmount\}} MXN
+- ID de Transacción: {{stripePaymentId}}
+- Método: {{paymentMethod}}
+- Fecha de Pago: {{paymentDate}}
+
+DETALLES DE TU ACTIVIDAD:
+- Actividad: {{activityTitle}}
+- Parque: {{parkName}}
+- Fecha: {{activityStartDate}}
+- Hora: {{activityStartTime}}
+- Ubicación: {{activityLocation}}
+
+INFORMACIÓN IMPORTANTE:
+- Tu inscripción está confirmada automáticamente al completar el pago
+- Llega 15 minutos antes de la hora programada
+- Trae ropa cómoda y adecuada para la actividad
+- Presenta este email como comprobante en caso necesario
+- Para cancelaciones, contacta al equipo con 24 horas de anticipación
+
+ESTADO: PAGADO Y CONFIRMADO
+Procesado el {{paymentDate}}
+
+¡Gracias por tu pago y nos vemos pronto!
+Sistema de Gestión de Parques Urbanos`,
+      variables: ["{{participantName}}", "{{activityTitle}}", "{{parkName}}", "{{activityStartDate}}", "{{activityStartTime}}", "{{activityLocation}}", "{{paymentAmount}}", "{{stripePaymentId}}", "{{paymentMethod}}", "{{paymentDate}}"],
+      usage: "Automática al confirmar pago Stripe",
+      color: "bg-blue-600",
+      icon: <DollarSign className="h-5 w-5" />
     }
   ];
+
+  // Variables para paginación
+  const ITEMS_PER_PAGE = 10;
+  const filteredTemplates = templates.filter(template => 
+    template.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    template.category.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  const totalPages = Math.ceil(filteredTemplates.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const currentTemplates = filteredTemplates.slice(startIndex, endIndex);
 
   return (
     <div className="space-y-6">
@@ -465,13 +594,44 @@ Sistema de Gestión de Parques Urbanos`,
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span>Gestión de Plantillas</span>
-            <Dialog open={isNewTemplateOpen} onOpenChange={setIsNewTemplateOpen}>
-              <DialogTrigger asChild>
-                <Button className="bg-[#00a587] hover:bg-[#067f5f]">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Nueva Plantilla
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <Input
+                  placeholder="Buscar plantillas..."
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  className="pl-10 w-64"
+                />
+              </div>
+              <div className="flex border rounded-lg">
+                <Button
+                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('grid')}
+                  className="rounded-r-none"
+                >
+                  <Grid3X3 className="h-4 w-4" />
                 </Button>
-              </DialogTrigger>
+                <Button
+                  variant={viewMode === 'list' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('list')}
+                  className="rounded-l-none"
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+              </div>
+              <Dialog open={isNewTemplateOpen} onOpenChange={setIsNewTemplateOpen}>
+                <DialogTrigger asChild>
+                  <Button className="bg-[#00a587] hover:bg-[#067f5f]">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Nueva Plantilla
+                  </Button>
+                </DialogTrigger>
               <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Crear Nueva Plantilla de Email</DialogTitle>
@@ -638,14 +798,17 @@ Sistema de Gestión de Parques Urbanos`,
                 </div>
               </DialogContent>
             </Dialog>
+            </div>
           </CardTitle>
           <CardDescription>
             Plantillas de email especializadas para el sistema de parques urbanos
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {templates.map((template) => (
+          {/* Vista Grid */}
+          {viewMode === 'grid' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {currentTemplates.map((template) => (
               <Card key={template.id} className="border hover:shadow-md transition-shadow">
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
@@ -725,8 +888,123 @@ Sistema de Gestión de Parques Urbanos`,
                   </div>
                 </CardContent>
               </Card>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
+
+          {/* Vista Lista */}
+          {viewMode === 'list' && (
+            <div className="space-y-4">
+              {currentTemplates.map((template) => (
+                <Card key={template.id} className="border hover:shadow-md transition-shadow">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className={`p-2 rounded-lg ${template.color} text-white flex-shrink-0`}>
+                          {template.icon}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-semibold text-lg">{template.name}</h3>
+                            <Badge variant="outline" className="text-xs">
+                              {template.category}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-gray-600 mb-2">{template.description}</p>
+                          <div className="flex items-center gap-4 text-xs text-gray-500">
+                            <span>Uso: {template.usage}</span>
+                            <span>{template.variables.length} variables</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-8 w-8 p-0"
+                          onClick={() => {
+                            setSelectedTemplate(template);
+                            setIsViewTemplateOpen(true);
+                          }}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-8 w-8 p-0"
+                          onClick={() => {
+                            setSelectedTemplate(template);
+                            setNewTemplate({
+                              name: template.name,
+                              category: template.category,
+                              description: template.description,
+                              subject: template.subject || '',
+                              htmlContent: template.htmlContent || '',
+                              textContent: template.textContent || '',
+                              variables: template.variables || [],
+                              newVariable: '',
+                              usage: template.usage.includes('Manual') ? 'manual' : 'automatic',
+                              module: template.category,
+                              isActive: true
+                            });
+                            setIsEditTemplateOpen(true);
+                          }}
+                        >
+                          <FileEdit className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <Send className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+
+          {/* Paginación */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between mt-6">
+              <div className="text-sm text-gray-500">
+                Mostrando {startIndex + 1}-{Math.min(endIndex, filteredTemplates.length)} de {filteredTemplates.length} plantillas
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(currentPage - 1)}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Anterior
+                </Button>
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <Button
+                      key={page}
+                      variant={currentPage === page ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setCurrentPage(page)}
+                      className="w-8 h-8 p-0"
+                    >
+                      {page}
+                    </Button>
+                  ))}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                >
+                  Siguiente
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -1007,6 +1285,19 @@ export const QueueSection: React.FC = () => {
   const [emailPreviewOpen, setEmailPreviewOpen] = React.useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
+
+  // Filtrar y paginar templates
+  const itemsPerPage = 10;
+  const filteredTemplates = templates.filter(template => 
+    template.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    template.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    template.description.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  
+  const totalPages = Math.ceil(filteredTemplates.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentTemplates = filteredTemplates.slice(startIndex, endIndex);
 
   // Obtener emails de la cola
   React.useEffect(() => {
