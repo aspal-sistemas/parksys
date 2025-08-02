@@ -185,8 +185,9 @@ export function registerActivityPaymentRoutes(app: Express) {
         console.log('📧 Enviando email de confirmación de pago con plantilla #13:', emailVariables);
         
         await service.addToQueue({
+          to: customerData.email,
+          subject: 'Confirmación de Pago - Actividad',
           templateId: 13, // ID de la plantilla "Confirmación de Pago - Actividad"
-          recipientEmail: customerData.email,
           templateVariables: emailVariables
         });
         
