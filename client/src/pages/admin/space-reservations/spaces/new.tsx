@@ -58,9 +58,12 @@ export default function NewSpacePage() {
   });
 
   // Obtener lista de parques
-  const { data: parks = [] } = useQuery<Park[]>({
+  const { data: parksData = [], isLoading: parksLoading } = useQuery<Park[]>({
     queryKey: ["/api/parks"],
   });
+
+  // Asegurar que parks es siempre un array
+  const parks = Array.isArray(parksData) ? parksData : [];
 
   const createSpaceMutation = useMutation({
     mutationFn: async (data: NewSpaceFormData) => {
@@ -155,11 +158,17 @@ export default function NewSpacePage() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {parks.map((park) => (
-                              <SelectItem key={park.id} value={park.id.toString()}>
-                                {park.name}
-                              </SelectItem>
-                            ))}
+                            {parksLoading ? (
+                              <SelectItem value="" disabled>Cargando parques...</SelectItem>
+                            ) : parks.length > 0 ? (
+                              parks.map((park) => (
+                                <SelectItem key={park.id} value={park.id.toString()}>
+                                  {park.name}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <SelectItem value="" disabled>No hay parques disponibles</SelectItem>
+                            )}
                           </SelectContent>
                         </Select>
                         <FormMessage />
