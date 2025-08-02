@@ -166,7 +166,8 @@ export function registerActivityPaymentRoutes(app: Express) {
       // Enviar email de confirmación de pago usando la plantilla #13
       try {
         // Importar el servicio de email de comunicaciones
-        const { sendTemplateEmail } = await import("../communications/emailQueueService");
+        const emailModule = await import("../communications/emailQueueService");
+        const service = emailModule.emailQueueService;
         
         const emailVariables = {
           participantName: registrationData.participantName,
@@ -183,11 +184,11 @@ export function registerActivityPaymentRoutes(app: Express) {
 
         console.log('📧 Enviando email de confirmación de pago con plantilla #13:', emailVariables);
         
-        await sendTemplateEmail(
-          13, // ID de la plantilla "Confirmación de Pago - Actividad"
-          customerData.email,
-          emailVariables
-        );
+        await service.addToQueue({
+          templateId: 13, // ID de la plantilla "Confirmación de Pago - Actividad"
+          recipientEmail: customerData.email,
+          templateVariables: emailVariables
+        });
         
         console.log('✅ Email de confirmación de pago enviado exitosamente');
       } catch (emailError) {

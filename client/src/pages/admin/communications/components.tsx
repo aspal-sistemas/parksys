@@ -1283,6 +1283,9 @@ export const QueueSection: React.FC = () => {
   const [stats, setStats] = React.useState<any>({});
   const [selectedEmail, setSelectedEmail] = React.useState<any>(null);
   const [emailPreviewOpen, setEmailPreviewOpen] = React.useState(false);
+  const [templates, setTemplates] = React.useState<any[]>([]);
+  const [searchTerm, setSearchTerm] = React.useState('');
+  const [currentPage, setCurrentPage] = React.useState(1);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
