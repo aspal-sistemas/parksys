@@ -544,7 +544,7 @@ export const activityRegistrations = pgTable("activity_registrations", {
   allergies: text("allergies"),
   medicationsCurrently: text("medications_currently"),
   // Estado de la inscripción
-
+  status: varchar("status", { length: 20 }).default("pending"), // pending/approved/rejected
   approvedById: integer("approved_by_id"), // admin que aprobó
   approvedAt: timestamp("approved_at"),
   rejectionReason: text("rejection_reason"),

@@ -140,6 +140,7 @@ export function registerActivityPaymentRoutes(app: Express) {
           emergencyPhone: registrationData.emergencyPhone || null,
           medicalConditions: registrationData.medicalConditions || null,
           specialRequests: registrationData.additionalNotes || null,
+          status: activity.requiresApproval ? 'pending' : 'approved',
           paymentStatus: registrationData.paymentStatus,
           stripePaymentIntentId: registrationData.stripePaymentIntentId,
           stripeCustomerId: registrationData.stripeCustomerId,
