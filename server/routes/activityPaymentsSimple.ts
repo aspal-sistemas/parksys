@@ -123,39 +123,31 @@ export function registerActivityPaymentRoutes(app: Express) {
 
       console.log('🎯 Creando registro de inscripción con pago:', registrationData);
 
-      // Crear el registro usando SQL directo para evitar problemas de tipo
-      const query = `
-        INSERT INTO activity_registrations (
-          activity_id, participant_name, participant_email, participant_phone,
-          participant_age, emergency_contact, emergency_phone, medical_conditions,
-          additional_notes, status, payment_status, stripe_payment_intent_id,
-          stripe_customer_id, paid_amount, payment_date, registration_date
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
-        RETURNING *
-      `;
+      // Crear el registro usando Drizzle ORM
+      const { db } = await import("../db");
+      const { activityRegistrations } = await import("../../shared/schema");
       
-      const values = [
-        registrationData.activityId,
-        registrationData.participantName,
-        registrationData.participantEmail,
-        registrationData.participantPhone,
-        registrationData.participantAge,
-        registrationData.emergencyContact,
-        registrationData.emergencyPhone,
-        registrationData.medicalConditions,
-        registrationData.additionalNotes,
-        registrationData.status,
-        registrationData.paymentStatus,
-        registrationData.stripePaymentIntentId,
-        registrationData.stripeCustomerId,
-        registrationData.paidAmount,
-        registrationData.paymentDate,
-        registrationData.registrationDate
-      ];
-      
-      const pool = storage.getPool();
-      const result = await pool.query(query, values);
-      const newRegistration = result.rows[0];
+      const [newRegistration] = await db
+        .insert(activityRegistrations)
+        .values({
+          activityId: registrationData.activityId,
+          participantName: registrationData.participantName,
+          participantEmail: registrationData.participantEmail,
+          participantPhone: registrationData.participantPhone,
+          participantAge: registrationData.participantAge || '',
+          emergencyContact: registrationData.emergencyContact || '',
+          emergencyPhone: registrationData.emergencyPhone || '',
+          medicalConditions: registrationData.medicalConditions || '',
+          additionalNotes: registrationData.additionalNotes || '',
+          status: registrationData.status,
+          paymentStatus: registrationData.paymentStatus,
+          stripePaymentIntentId: registrationData.stripePaymentIntentId,
+          stripeCustomerId: registrationData.stripeCustomerId,
+          paidAmount: registrationData.paidAmount,
+          paymentDate: registrationData.paymentDate,
+          registrationDate: registrationData.registrationDate
+        })
+        .returning();
 
       console.log('✅ Registro creado con ID:', newRegistration.id);
 

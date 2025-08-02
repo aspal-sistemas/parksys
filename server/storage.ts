@@ -1585,11 +1585,20 @@ DatabaseStorage.prototype.getActivity = async function(id: number): Promise<any>
     console.log("🔍 specialNeeds raw:", activity.specialNeeds);
     
     if (activity.targetMarket) {
-      try {
-        activity.targetMarket = JSON.parse(activity.targetMarket);
-        console.log("✅ targetMarket parsed:", activity.targetMarket);
-      } catch (e) {
-        console.log("❌ Error parsing targetMarket:", e);
+      if (Array.isArray(activity.targetMarket)) {
+        // Ya es un array, usarlo directamente
+        console.log("✅ targetMarket is already array:", activity.targetMarket);
+      } else if (typeof activity.targetMarket === 'string') {
+        try {
+          activity.targetMarket = JSON.parse(activity.targetMarket);
+          console.log("✅ targetMarket parsed:", activity.targetMarket);
+        } catch (e) {
+          // Si falla el parsing, tratarlo como string separado por comas
+          activity.targetMarket = activity.targetMarket.split(',').map(s => s.trim()).filter(s => s.length > 0);
+          console.log("✅ targetMarket parsed as CSV:", activity.targetMarket);
+        }
+      } else {
+        console.log("❌ Error parsing targetMarket:", typeof activity.targetMarket);
         activity.targetMarket = [];
       }
     } else {
@@ -1598,11 +1607,20 @@ DatabaseStorage.prototype.getActivity = async function(id: number): Promise<any>
     }
     
     if (activity.specialNeeds) {
-      try {
-        activity.specialNeeds = JSON.parse(activity.specialNeeds);
-        console.log("✅ specialNeeds parsed:", activity.specialNeeds);
-      } catch (e) {
-        console.log("❌ Error parsing specialNeeds:", e);
+      if (Array.isArray(activity.specialNeeds)) {
+        // Ya es un array, usarlo directamente
+        console.log("✅ specialNeeds is already array:", activity.specialNeeds);
+      } else if (typeof activity.specialNeeds === 'string') {
+        try {
+          activity.specialNeeds = JSON.parse(activity.specialNeeds);
+          console.log("✅ specialNeeds parsed:", activity.specialNeeds);
+        } catch (e) {
+          // Si falla el parsing, tratarlo como string separado por comas
+          activity.specialNeeds = activity.specialNeeds.split(',').map(s => s.trim()).filter(s => s.length > 0);
+          console.log("✅ specialNeeds parsed as CSV:", activity.specialNeeds);
+        }
+      } else {
+        console.log("❌ Error parsing specialNeeds:", typeof activity.specialNeeds);
         activity.specialNeeds = [];
       }
     } else {
