@@ -683,7 +683,7 @@ function ActivityDetailPage() {
       {/* Diálogo de pago con Stripe */}
       {showPaymentDialog && registrationData && (
         <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Realizar pago</DialogTitle>
               <DialogDescription>
@@ -716,6 +716,7 @@ function ActivityDetailPage() {
                     });
                   }}
                   onError={(error) => {
+                    setShowPaymentDialog(false);
                     toast({
                       title: "Error en el pago",
                       description: error,

@@ -152,163 +152,111 @@ export function ActivityPaymentForm({
 
   if (activity?.isFree) {
     return (
-      <Card>
-        <CardContent className="pt-6">
-          <Alert>
-            <Info className="h-4 w-4" />
-            <AlertDescription>
-              Esta actividad es gratuita. No se requiere pago.
-            </AlertDescription>
-          </Alert>
-        </CardContent>
-      </Card>
+      <div className="w-full">
+        <Alert>
+          <Info className="h-4 w-4" />
+          <AlertDescription>
+            Esta actividad es gratuita. No se requiere pago.
+          </AlertDescription>
+        </Alert>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Activity Summary */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <DollarSign className="h-5 w-5" />
-            Resumen de pago
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span>Actividad:</span>
-              <span className="font-medium">{activity?.title}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Ubicación:</span>
-              <span>{activity?.parkName || 'No especificado'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Participante:</span>
-              <span>{participantData.fullName}</span>
-            </div>
-            
-            <Separator className="my-3" />
-            
-            <div className="flex justify-between items-center">
-              <span>Precio base:</span>
-              <Badge variant="outline">
-                {formatPrice(basePrice)}
-                {isPriceRandom && " (sugerido)"}
-              </Badge>
-            </div>
-            
-            {isPriceRandom && (
-              <div className="space-y-2">
-                <Label htmlFor="customAmount">Monto personalizado (opcional)</Label>
-                <Input
-                  id="customAmount"
-                  type="number"
-                  min={basePrice}
-                  step="0.01"
-                  placeholder={`Mínimo: ${formatPrice(basePrice)}`}
-                  value={customAmount}
-                  onChange={(e) => setCustomAmount(e.target.value)}
-                />
-                <p className="text-xs text-gray-600">
-                  Puedes pagar más del monto sugerido si lo deseas
-                </p>
-              </div>
+    <div className="w-full space-y-4">
+      {/* Resumen compacto */}
+      <div className="bg-gray-50 p-3 rounded-lg text-sm">
+        <div className="flex justify-between items-center mb-2">
+          <span className="font-medium">Total a pagar:</span>
+          <span className="text-lg font-bold text-green-600">
+            {formatPrice(isPriceRandom && customAmount 
+              ? parseFloat(customAmount) 
+              : basePrice
             )}
-            
-            <Separator className="my-3" />
-            
-            <div className="flex justify-between items-center font-semibold text-lg">
-              <span>Total a pagar:</span>
-              <span className="text-green-600">
-                {formatPrice(isPriceRandom && customAmount 
-                  ? parseFloat(customAmount) 
-                  : basePrice
-                )}
-              </span>
-            </div>
+          </span>
+        </div>
+        {isPriceRandom && (
+          <div className="space-y-2">
+            <Label htmlFor="customAmount" className="text-xs">Monto personalizado (opcional)</Label>
+            <Input
+              id="customAmount"
+              type="number"
+              min={basePrice}
+              step="0.01"
+              placeholder={`Mínimo: ${formatPrice(basePrice)}`}
+              value={customAmount}
+              onChange={(e) => setCustomAmount(e.target.value)}
+              className="h-8"
+            />
           </div>
-        </CardContent>
-      </Card>
+        )}
+      </div>
 
-      {/* Payment Form */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CreditCard className="h-5 w-5" />
-            Información de pago
-          </CardTitle>
-          <CardDescription>
-            Completa los datos de tu tarjeta para procesar el pago
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handlePayment} className="space-y-4">
-            {/* Card Element */}
-            <div className="p-4 border rounded-lg">
-              <CardElement
-                options={{
-                  style: {
-                    base: {
-                      fontSize: '16px',
-                      color: '#424770',
-                      '::placeholder': {
-                        color: '#aab7c4',
-                      },
+      {/* Formulario de pago compacto */}
+      <form onSubmit={handlePayment} className="space-y-4">
+        <div>
+          <Label className="text-sm font-medium mb-2 block">Información de tarjeta</Label>
+          <div className="p-3 border rounded-lg bg-white">
+            <CardElement
+              options={{
+                style: {
+                  base: {
+                    fontSize: '14px',
+                    color: '#424770',
+                    '::placeholder': {
+                      color: '#aab7c4',
                     },
                   },
-                }}
-              />
-            </div>
+                },
+              }}
+            />
+          </div>
+        </div>
 
-            {/* Payment Error */}
-            {paymentError && (
-              <Alert variant="destructive">
-                <AlertDescription>{paymentError}</AlertDescription>
-              </Alert>
+        {/* Error de pago */}
+        {paymentError && (
+          <Alert variant="destructive" className="py-2">
+            <AlertDescription className="text-sm">{paymentError}</AlertDescription>
+          </Alert>
+        )}
+
+        {/* Nota de seguridad */}
+        <div className="text-xs text-gray-600 flex items-center gap-1">
+          <Info className="h-3 w-3" />
+          Pago seguro con encriptación SSL
+        </div>
+
+        {/* Botones de acción */}
+        <div className="flex gap-2 pt-2">
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={() => onError('Pago cancelado por el usuario')}
+            disabled={processing}
+            className="flex-1 h-9"
+          >
+            Cancelar
+          </Button>
+          <Button 
+            type="submit" 
+            disabled={!stripe || processing}
+            className="flex-1 h-9"
+          >
+            {processing ? (
+              <>
+                <div className="animate-spin w-3 h-3 border-2 border-white border-t-transparent rounded-full mr-2" />
+                Procesando...
+              </>
+            ) : (
+              `Pagar ${formatPrice(isPriceRandom && customAmount 
+                ? parseFloat(customAmount) 
+                : basePrice
+              )}`
             )}
-
-            {/* Security Notice */}
-            <Alert>
-              <Info className="h-4 w-4" />
-              <AlertDescription>
-                Tu información de pago está protegida con encriptación SSL y es procesada de forma segura.
-              </AlertDescription>
-            </Alert>
-
-            {/* Action Buttons */}
-            <div className="flex justify-end space-x-2 pt-4">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => onError('Pago cancelado por el usuario')}
-                disabled={processing}
-              >
-                Cancelar
-              </Button>
-              <Button 
-                type="submit" 
-                disabled={!stripe || processing}
-                className="min-w-[120px]"
-              >
-                {processing ? (
-                  <>
-                    <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />
-                    Procesando...
-                  </>
-                ) : (
-                  `Pagar ${formatPrice(isPriceRandom && customAmount 
-                    ? parseFloat(customAmount) 
-                    : basePrice
-                  )}`
-                )}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+          </Button>
+        </div>
+      </form>
     </div>
   );
 }
