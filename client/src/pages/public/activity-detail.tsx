@@ -238,7 +238,10 @@ export default function ActivityDetailPage() {
                   
                   <div className="flex items-center">
                     <Calendar className="h-4 w-4 mr-2 text-gray-500" />
-                    {format(new Date((activity as any).startDate), 'PPP', { locale: es })}
+                    {(activity as any).startDate ? 
+                      format(new Date((activity as any).startDate), 'PPP', { locale: es }) 
+                      : 'Fecha por confirmar'
+                    }
                   </div>
                   
                   {(activity as any).startTime && (
@@ -392,7 +395,10 @@ export default function ActivityDetailPage() {
                   <div className="flex justify-between">
                     <span>Fecha límite:</span>
                     <span className="font-medium">
-                      {format(new Date((activity as any).registrationDeadline), 'PP')}
+                      {(activity as any).registrationDeadline ? 
+                        format(new Date((activity as any).registrationDeadline), 'PP', { locale: es }) 
+                        : 'Por confirmar'
+                      }
                     </span>
                   </div>
                 )}
