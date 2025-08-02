@@ -126,6 +126,12 @@ export function ActivityPaymentForm({
               name: participantData.fullName,
               email: participantData.email,
               phone: participantData.phone,
+              address: {
+                country: 'MX',
+                postal_code: '44100', // Código postal por defecto para Guadalajara
+                city: 'Guadalajara',
+                state: 'Jalisco',
+              },
             },
           },
         }
@@ -209,6 +215,7 @@ export function ActivityPaymentForm({
                     },
                   },
                 },
+                hidePostalCode: false,
               }}
             />
           </div>

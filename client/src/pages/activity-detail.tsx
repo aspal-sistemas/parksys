@@ -9,6 +9,11 @@ import { es } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
+
+// Configurar Stripe con opciones para México
+const stripeOptions = {
+  locale: 'es' as const,
+};
 import { ActivityPaymentForm } from '@/components/ActivityPaymentForm';
 import { apiRequest } from '@/lib/queryClient';
 
@@ -82,8 +87,10 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import AdSpace from '@/components/AdSpace';
 
-// Initialize Stripe
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || '');
+// Initialize Stripe with options for Mexico
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || '', {
+  locale: 'es',
+});
 
 // Schema for registration form
 const registrationSchema = z.object({
@@ -702,7 +709,10 @@ function ActivityDetailPage() {
                 </p>
               </div>
               
-              <Elements stripe={stripePromise}>
+              <Elements stripe={stripePromise} options={{
+                fonts: [{ cssSrc: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap' }],
+                locale: 'es',
+              }}>
                 <ActivityPaymentForm
                   activityId={activityId!}
                   activity={activity}
