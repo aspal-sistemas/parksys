@@ -18,6 +18,8 @@ export function registerActivityPaymentRoutes(app: Express) {
 
       console.log('🌟 GLOBAL POST-JSON:', req.method, req.url);
       console.log('🌟 Body parseado:', JSON.stringify(req.body, null, 2));
+      console.log('💰 Precio de actividad:', activity.price);
+      console.log('💰 Amount enviado desde frontend:', amount);
 
       // Obtener datos de la actividad
       const activities = await storage.getAllActivities();
@@ -30,7 +32,12 @@ export function registerActivityPaymentRoutes(app: Express) {
         return res.status(400).json({ error: "Esta actividad es gratuita" });
       }
 
-      const finalAmount = amount || Math.round(parseFloat(activity.price || "0") * 100);
+      // Convertir a centavos: Si viene amount del frontend (en pesos), multiplicar por 100
+      // Si no viene amount, usar el precio de la actividad y multiplicar por 100
+      const finalAmount = amount ? Math.round(amount * 100) : Math.round(parseFloat(activity.price || "0") * 100);
+      
+      console.log('💰 Final amount calculado (centavos):', finalAmount);
+      console.log('💰 Final amount en pesos (para verificación):', finalAmount / 100);
 
       // Crear customer en Stripe si se proporcionan datos
       let customerId;
