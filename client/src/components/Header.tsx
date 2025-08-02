@@ -52,19 +52,20 @@ const Header: React.FC = () => {
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           <div className="flex items-center">
-            {/* Logo */}
-            <Link href="/">
-              <div className="flex-shrink-0 flex items-center cursor-pointer">
-                <img 
-                  src={logoImage} 
-                  alt="Logo Bosques Urbanos de Guadalajara" 
-                  className="h-10 w-auto"
-                />
-              </div>
-            </Link>
-            
-            {/* Desktop navigation - Solo mostrar para páginas públicas */}
+            {/* Logo y navegación - Solo mostrar para páginas públicas */}
             {!isAdmin && (
+              <>
+                <Link href="/">
+                  <div className="flex-shrink-0 flex items-center cursor-pointer">
+                    <img 
+                      src={logoImage} 
+                      alt="Logo Bosques Urbanos de Guadalajara" 
+                      className="h-10 w-auto"
+                    />
+                  </div>
+                </Link>
+                
+                {/* Desktop navigation */}
               <nav className="hidden md:ml-8 md:flex md:space-x-6">
                 <Link href="/"
                   className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium ${
@@ -176,6 +177,7 @@ const Header: React.FC = () => {
                 {/* Enlace de registro de voluntarios removido */}
                 {/* Botón "Acerca de" removido del menú principal */}
               </nav>
+              </>
             )}
           </div>
           
