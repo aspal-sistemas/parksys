@@ -398,19 +398,21 @@ function ActivityDetailPage() {
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-600">Plazas disponibles:</span>
                       <span className="font-medium text-green-600">
-                        {activity.maxRegistrations ? (
-                          `${Math.max(0, activity.maxRegistrations - (registrationStats?.totalActive || 0))} de ${activity.maxRegistrations} disponibles`
-                        ) : 'Sin límite'}
+                        {registrationStats ? (
+                          `${registrationStats.availableSlots} de ${registrationStats.capacity} disponibles`
+                        ) : (
+                          activity.capacity ? `${activity.capacity} personas` : 'Sin límite'
+                        )}
                       </span>
                     </div>
                     {registrationStats && (
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-gray-600">Inscritos actuales:</span>
                         <span className="font-medium text-blue-600">
-                          {registrationStats.totalActive} personas
-                          {registrationStats.pendingCount > 0 && (
+                          {registrationStats.totalRegistrations} personas
+                          {registrationStats.pending > 0 && (
                             <span className="text-orange-500 ml-1">
-                              ({registrationStats.pendingCount} pendientes)
+                              ({registrationStats.pending} pendientes)
                             </span>
                           )}
                         </span>
@@ -557,19 +559,16 @@ function ActivityDetailPage() {
                 </div>
 
                 {/* Hora de Inicio y Finalización */}
-                {(activity?.startTime || activity?.endTime) && (
-                  <div className="flex items-center gap-3">
-                    <Clock className="h-5 w-5 text-purple-600" />
-                    <div>
-                      <p className="font-medium">Hora de Inicio y Finalización</p>
-                      <p className="text-sm text-gray-600">
-                        {activity?.startTime && `Inicio: ${activity.startTime}`}
-                        {activity?.startTime && activity?.endTime && ' • '}
-                        {activity?.endTime && `Fin: ${activity.endTime}`}
-                      </p>
-                    </div>
+                <div className="flex items-center gap-3">
+                  <Clock className="h-5 w-5 text-purple-600" />
+                  <div>
+                    <p className="font-medium">Horario</p>
+                    <p className="text-sm text-gray-600">
+                      {activity?.startTime && activity.startTime !== '00:00' ? `Inicio: ${activity.startTime}` : 'Inicio: 08:00'}
+                      {activity?.endTime && activity.endTime !== '00:00' && ` • Fin: ${activity.endTime}`}
+                    </p>
                   </div>
-                )}
+                </div>
 
                 {/* Duración */}
                 {activity?.duration && (
@@ -577,7 +576,9 @@ function ActivityDetailPage() {
                     <Clock className="h-5 w-5 text-orange-600" />
                     <div>
                       <p className="font-medium">Duración</p>
-                      <p className="text-sm text-gray-600">{activity.duration} minutos</p>
+                      <p className="text-sm text-gray-600">
+                        {Math.floor(activity.duration / 60)} horas{activity.duration % 60 > 0 && ` y ${activity.duration % 60} minutos`}
+                      </p>
                     </div>
                   </div>
                 )}
@@ -618,7 +619,7 @@ function ActivityDetailPage() {
                     <p className="text-sm text-gray-600">
                       {activity?.isFree || !activity?.price || activity.price === 0 
                         ? 'Gratuita' 
-                        : `$${activity.price} MXN`
+                        : `"$${activity.price} MXN"`
                       }
                     </p>
                   </div>

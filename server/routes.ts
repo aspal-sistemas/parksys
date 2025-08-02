@@ -57,6 +57,7 @@ import advertisingRoutes from "./advertising-routes";
 import activityRegistrationsRouter from "./routes/activity-registrations";
 import paymentsRouter from "./routes/payments";
 import { registerActivityPaymentRoutes } from "./routes/activityPaymentsSimple";
+import { registerActivityStatsRoutes } from "./routes/activity-stats";
 import { uploadAdvertising, handleAdvertisingUpload } from "./api/advertising-upload";
 import { 
   insertParkSchema, insertCommentSchema, insertIncidentSchema, 
