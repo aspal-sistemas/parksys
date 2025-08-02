@@ -164,9 +164,11 @@ const EditarActividadPage = () => {
   });
   
   // Obtener la lista de parques para el select
-  const { data: parques, isLoading: isLoadingParques } = useQuery({
+  const { data: parques, isLoading: isLoadingParques, error: parquesError } = useQuery({
     queryKey: ['/api/parks'],
   });
+  
+  // Debug eliminado - parques funcionando correctamente
   
   // Obtener la lista de instructores para el select
   const { data: instructores, isLoading: isLoadingInstructores } = useQuery({
@@ -531,11 +533,21 @@ const EditarActividadPage = () => {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {Array.isArray(parques) ? parques.map((parque: any) => (
-                            <SelectItem key={parque.id} value={parque.id.toString() || "0"}>
-                              {parque.name || "Parque sin nombre"}
+                          {isLoadingParques ? (
+                            <SelectItem value="loading" disabled>
+                              Cargando parques...
                             </SelectItem>
-                          )) : null}
+                          ) : Array.isArray(parques?.data) && parques.data.length > 0 ? (
+                            parques.data.map((parque: any) => (
+                              <SelectItem key={parque.id} value={parque.id.toString()}>
+                                {parque.name || "Parque sin nombre"}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <SelectItem value="no-parks" disabled>
+                              No hay parques disponibles
+                            </SelectItem>
+                          )}
                         </SelectContent>
                       </Select>
                       <FormMessage />
