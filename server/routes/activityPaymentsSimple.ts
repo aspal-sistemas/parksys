@@ -152,18 +152,34 @@ export function registerActivityPaymentRoutes(app: Express) {
 
       console.log('✅ Registro creado con ID:', newRegistration.id);
 
-      // Enviar email de confirmación de pago usando la plantilla profesional
+      // Enviar email de confirmación de pago usando la plantilla #13
       try {
-        await sendPaymentConfirmationEmail(
+        const { sendTemplateEmail } = await import("../email/emailQueueService");
+        
+        const emailVariables = {
+          participantName: registrationData.participantName,
+          activityTitle: activity.title,
+          parkName: activity.parkName || 'Parque Municipal',
+          activityStartDate: new Date(activity.startDate).toLocaleDateString('es-MX'),
+          activityStartTime: activity.startTime || '10:00',
+          activityLocation: activity.location || 'Por confirmar',
+          paymentAmount: (paymentIntent.amount / 100).toFixed(2),
+          stripePaymentId: paymentIntent.id,
+          paymentMethod: 'Tarjeta de Crédito/Débito',
+          paymentDate: new Date().toLocaleDateString('es-MX')
+        };
+
+        console.log('📧 Enviando email de confirmación de pago con plantilla #13:', emailVariables);
+        
+        await sendTemplateEmail(
+          13, // ID de la plantilla "Confirmación de Pago - Actividad"
           customerData.email,
-          customerData.fullName,
-          activity,
-          paymentIntent,
-          newRegistration
+          emailVariables
         );
-        console.log('✅ Email de confirmación de pago enviado');
+        
+        console.log('✅ Email de confirmación de pago enviado exitosamente');
       } catch (emailError) {
-        console.error('❌ Error enviando email de confirmación:', emailError);
+        console.error('❌ Error enviando email de confirmación de pago:', emailError);
         // No fallar la transacción por error de email
       }
 
@@ -184,158 +200,5 @@ export function registerActivityPaymentRoutes(app: Express) {
   });
 }
 
-/**
- * Función para enviar email de confirmación de pago de Stripe
- */
-async function sendPaymentConfirmationEmail(
-  email: string,
-  participantName: string,
-  activity: any,
-  paymentIntent: any,
-  registration: any
-) {
-  const currentDate = new Date().toLocaleDateString('es-MX', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long', 
-    day: 'numeric'
-  });
-
-  const activityDate = new Date(activity.startDate).toLocaleDateString('es-MX', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-
-  // Obtener método de pago de Stripe
-  let paymentMethod = 'Tarjeta de crédito';
-  if (paymentIntent.charges?.data?.[0]?.payment_method_details?.type) {
-    const type = paymentIntent.charges.data[0].payment_method_details.type;
-    paymentMethod = type === 'card' ? 'Tarjeta de crédito' : 'Otro método';
-  }
-
-  const variables = {
-    participantName,
-    activityTitle: activity.title,
-    parkName: activity.parkName || 'Parque Municipal',
-    activityStartDate: activityDate,
-    activityStartTime: activity.startTime || '10:00',
-    activityLocation: activity.location || 'Por confirmar',
-    paymentAmount: (paymentIntent.amount / 100).toFixed(2),
-    stripePaymentId: paymentIntent.id,
-    paymentMethod,
-    paymentDate: currentDate
-  };
-
-  // HTML content de la plantilla #13
-  const htmlContent = `<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;'>
-    <div style='background-color: white; border-radius: 10px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);'>
-      <div style='text-align: center; margin-bottom: 30px;'>
-        <h1 style='color: #16a34a; margin: 0; font-size: 28px;'>🎯 ParkSys</h1>
-      </div>
-      
-      <div style='text-align: center; margin-bottom: 30px;'>
-        <div style='font-size: 48px; margin-bottom: 15px;'>💳</div>
-        <h2 style='color: #16a34a; margin: 0; font-size: 24px;'>¡Pago Confirmado!</h2>
-      </div>
-      
-      <div style='background-color: #dcfce7; border-left: 4px solid #16a34a; padding: 20px; margin: 20px 0; border-radius: 0 8px 8px 0;'>
-        <p style='margin: 0; color: #333; font-size: 16px;'>
-          <strong>¡Perfecto, ${variables.participantName}!</strong>
-        </p>
-        <p style='margin: 10px 0 0 0; color: #666;'>
-          Tu pago para <strong>${variables.activityTitle}</strong> ha sido procesado exitosamente. 
-          ¡Tu lugar está completamente reservado!
-        </p>
-      </div>
-      
-      <div style='background-color: #f0f9ff; padding: 20px; border-radius: 8px; margin: 20px 0;'>
-        <h3 style='color: #1d4ed8; margin-top: 0;'>💰 Detalles del Pago:</h3>
-        <ul style='list-style: none; padding: 0; margin: 0;'>
-          <li style='padding: 8px 0; border-bottom: 1px solid #e2e8f0;'><strong>💵 Monto:</strong> $${variables.paymentAmount} MXN</li>
-          <li style='padding: 8px 0; border-bottom: 1px solid #e2e8f0;'><strong>🆔 ID de Transacción:</strong> ${variables.stripePaymentId}</li>
-          <li style='padding: 8px 0; border-bottom: 1px solid #e2e8f0;'><strong>💳 Método:</strong> ${variables.paymentMethod}</li>
-          <li style='padding: 8px 0;'><strong>📅 Fecha de Pago:</strong> ${variables.paymentDate}</li>
-        </ul>
-      </div>
-      
-      <div style='background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;'>
-        <h3 style='color: #16a34a; margin-top: 0;'>📋 Detalles de tu Actividad:</h3>
-        <ul style='list-style: none; padding: 0; margin: 0;'>
-          <li style='padding: 10px 0; border-bottom: 1px solid #e2e8f0;'><strong>🎯 Actividad:</strong> ${variables.activityTitle}</li>
-          <li style='padding: 10px 0; border-bottom: 1px solid #e2e8f0;'><strong>🏛️ Parque:</strong> ${variables.parkName}</li>
-          <li style='padding: 10px 0; border-bottom: 1px solid #e2e8f0;'><strong>📅 Fecha:</strong> ${variables.activityStartDate}</li>
-          <li style='padding: 10px 0; border-bottom: 1px solid #e2e8f0;'><strong>⏰ Hora:</strong> ${variables.activityStartTime}</li>
-          <li style='padding: 10px 0;'><strong>📍 Ubicación:</strong> ${variables.activityLocation}</li>
-        </ul>
-      </div>
-      
-      <div style='background-color: #dbeafe; border: 1px solid #3b82f6; padding: 20px; border-radius: 8px; margin: 20px 0;'>
-        <h3 style='color: #1d4ed8; margin-top: 0;'>📝 Información Importante:</h3>
-        <ul style='color: #1e40af; margin: 0; padding-left: 20px;'>
-          <li style='margin-bottom: 8px;'>Tu inscripción está <strong>confirmada automáticamente</strong> al completar el pago</li>
-          <li style='margin-bottom: 8px;'>Llega <strong>15 minutos antes</strong> de la hora programada</li>
-          <li style='margin-bottom: 8px;'>Trae ropa cómoda y adecuada para la actividad</li>
-          <li style='margin-bottom: 8px;'>Presenta este email como comprobante en caso necesario</li>
-          <li>Para cancelaciones, contacta al equipo con <strong>24 horas de anticipación</strong></li>
-        </ul>
-      </div>
-      
-      <div style='background-color: #dcfce7; border: 1px solid #16a34a; padding: 15px; border-radius: 8px; margin: 20px 0; text-align: center;'>
-        <p style='margin: 0; color: #166534; font-size: 16px;'>
-          <strong>✅ Estado: PAGADO Y CONFIRMADO</strong><br>
-          <span style='font-size: 14px;'>Procesado el ${variables.paymentDate}</span>
-        </p>
-      </div>
-      
-      <div style='text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0;'>
-        <p style='color: #666; font-size: 14px; margin: 0;'>
-          ¡Gracias por tu pago y nos vemos pronto!<br>
-          Sistema de Gestión de Parques Urbanos
-        </p>
-      </div>
-    </div>
-  </div>`;
-
-  const textContent = `¡Pago Confirmado!
-
-¡Perfecto, ${variables.participantName}!
-
-Tu pago para ${variables.activityTitle} ha sido procesado exitosamente. ¡Tu lugar está completamente reservado!
-
-DETALLES DEL PAGO:
-- Monto: $${variables.paymentAmount} MXN
-- ID de Transacción: ${variables.stripePaymentId}
-- Método: ${variables.paymentMethod}
-- Fecha de Pago: ${variables.paymentDate}
-
-DETALLES DE TU ACTIVIDAD:
-- Actividad: ${variables.activityTitle}
-- Parque: ${variables.parkName}
-- Fecha: ${variables.activityStartDate}
-- Hora: ${variables.activityStartTime}
-- Ubicación: ${variables.activityLocation}
-
-INFORMACIÓN IMPORTANTE:
-- Tu inscripción está confirmada automáticamente al completar el pago
-- Llega 15 minutos antes de la hora programada
-- Trae ropa cómoda y adecuada para la actividad
-- Presenta este email como comprobante en caso necesario
-- Para cancelaciones, contacta al equipo con 24 horas de anticipación
-
-ESTADO: PAGADO Y CONFIRMADO
-Procesado el ${variables.paymentDate}
-
-¡Gracias por tu pago y nos vemos pronto!
-Sistema de Gestión de Parques Urbanos`;
-
-  await emailService.sendEmail({
-    to: email,
-    subject: `💳 ¡Pago Confirmado! - ${variables.activityTitle}`,
-    html: htmlContent,
-    text: textContent
-  });
-
-  console.log('✅ Email de confirmación de pago Stripe enviado a:', email);
-}
+// La función sendPaymentConfirmationEmail ha sido reemplazada por el sistema de plantillas
+// Ahora se usa la plantilla #13 "Confirmación de Pago - Actividad" con sendTemplateEmail
