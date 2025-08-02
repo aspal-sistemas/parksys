@@ -153,9 +153,6 @@ export function ActivityPaymentForm({
       // Payment successful - clear form and show success
       setProcessing(false);
       
-      // Clear form data by resetting form
-      form.reset();
-      
       onSuccess();
 
     } catch (error: any) {
