@@ -159,7 +159,7 @@ export default function NewSpacePage() {
                           </FormControl>
                           <SelectContent>
                             {parksLoading ? (
-                              <SelectItem value="" disabled>Cargando parques...</SelectItem>
+                              <SelectItem value="loading" disabled>Cargando parques...</SelectItem>
                             ) : parks.length > 0 ? (
                               parks.map((park) => (
                                 <SelectItem key={park.id} value={park.id.toString()}>
@@ -167,7 +167,7 @@ export default function NewSpacePage() {
                                 </SelectItem>
                               ))
                             ) : (
-                              <SelectItem value="" disabled>No hay parques disponibles</SelectItem>
+                              <SelectItem value="no-parks" disabled>No hay parques disponibles</SelectItem>
                             )}
                           </SelectContent>
                         </Select>
