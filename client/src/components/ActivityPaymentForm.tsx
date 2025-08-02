@@ -116,20 +116,12 @@ export function ActivityPaymentForm({
         amount: finalAmount,
       });
 
-      // Step 2: Confirm payment with Stripe
-      const { error: confirmError } = await stripe.confirmCardPayment(
+      // Step 2: Confirm payment with Stripe (básico)
+      const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(
         paymentIntentData.clientSecret,
         {
           payment_method: {
             card: cardElement,
-            billing_details: {
-              name: participantData.fullName,
-              email: participantData.email,
-              phone: participantData.phone,
-              address: {
-                country: 'MX',
-              },
-            },
           },
         }
       );

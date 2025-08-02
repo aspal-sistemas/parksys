@@ -38,7 +38,6 @@ export function registerActivityPaymentRoutes(app: Express) {
           const customer = await stripe.customers.create({
             email: customerData.email,
             name: customerData.fullName,
-            phone: customerData.phone,
             metadata: {
               activityId: activityId,
               registrationId: registrationId?.toString() || 'pending'
@@ -50,17 +49,13 @@ export function registerActivityPaymentRoutes(app: Express) {
         }
       }
 
-      // Crear payment intent
+      // Crear payment intent básico
       const paymentIntent = await stripe.paymentIntents.create({
         amount,
         currency: "mxn",
-        customer: customerId,
-        payment_method_types: ['card'],
         metadata: {
           activityId: activityId,
-          registrationId: registrationId?.toString() || 'pending',
           activityTitle: activity.title,
-          parkName: activity.parkName || 'Parque Municipal'
         },
         description: `Pago por actividad: ${activity.title}`,
       });
