@@ -445,4 +445,97 @@ export function registerReservableSpacesRoutes(app: Express) {
       res.status(500).json({ error: "Error al eliminar el documento" });
     }
   });
+
+  // Rutas para object storage uploads
+  app.post("/api/objects/upload", async (req, res) => {
+    try {
+      const objectStorageService = new ObjectStorageService();
+      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      res.json({ uploadURL });
+    } catch (error) {
+      console.error("Error getting upload URL:", error);
+      res.status(500).json({ error: "Error al obtener URL de subida" });
+    }
+  });
+
+  // Ruta para agregar imagen a espacio después de upload
+  app.post("/api/spaces/:id/images", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { imageUrl, caption, isPrimary } = req.body;
+
+      if (!imageUrl) {
+        return res.status(400).json({ error: "URL de imagen es requerida" });
+      }
+
+      // Si es imagen principal, desmarcar otras como principales
+      if (isPrimary) {
+        await db
+          .update(spaceImages)
+          .set({ isPrimary: false })
+          .where(eq(spaceImages.spaceId, parseInt(id)));
+      }
+
+      const imageData = {
+        spaceId: parseInt(id),
+        imageUrl,
+        caption: caption || null,
+        isPrimary: isPrimary || false,
+        createdAt: new Date().toISOString()
+      };
+
+      const result = await db
+        .insert(spaceImages)
+        .values(imageData)
+        .returning();
+
+      res.json({ 
+        success: true, 
+        message: "Imagen agregada exitosamente",
+        image: result[0]
+      });
+    } catch (error) {
+      console.error("Error al agregar imagen:", error);
+      res.status(500).json({ error: "Error al agregar la imagen" });
+    }
+  });
+
+  // Ruta para agregar documento a espacio después de upload
+  app.post("/api/spaces/:id/documents", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { documentUrl, title, description, fileSize } = req.body;
+
+      if (!documentUrl) {
+        return res.status(400).json({ error: "URL de documento es requerida" });
+      }
+
+      if (!title) {
+        return res.status(400).json({ error: "Título es requerido" });
+      }
+
+      const documentData = {
+        spaceId: parseInt(id),
+        documentUrl,
+        title,
+        description: description || null,
+        fileSize: fileSize || null,
+        createdAt: new Date().toISOString()
+      };
+
+      const result = await db
+        .insert(spaceDocuments)
+        .values(documentData)
+        .returning();
+
+      res.json({ 
+        success: true, 
+        message: "Documento agregado exitosamente",
+        document: result[0]
+      });
+    } catch (error) {
+      console.error("Error al agregar documento:", error);
+      res.status(500).json({ error: "Error al agregar el documento" });
+    }
+  });
 }

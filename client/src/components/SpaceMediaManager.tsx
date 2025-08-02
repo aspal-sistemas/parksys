@@ -30,7 +30,7 @@ interface SpaceDocument {
 }
 
 interface SpaceMediaManagerProps {
-  spaceId?: number; // undefined para creación
+  spaceId?: number;
   isEditMode?: boolean;
 }
 
@@ -44,7 +44,6 @@ export function SpaceMediaManager({ spaceId, isEditMode = false }: SpaceMediaMan
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  // Cargar imágenes y documentos existentes
   useEffect(() => {
     if (spaceId && isEditMode) {
       loadImages();
@@ -56,7 +55,8 @@ export function SpaceMediaManager({ spaceId, isEditMode = false }: SpaceMediaMan
     if (!spaceId) return;
     try {
       const response = await apiRequest("GET", `/api/spaces/${spaceId}/images`);
-      setImages(await response.json());
+      const data = await response.json();
+      setImages(data);
     } catch (error) {
       console.error("Error al cargar imágenes:", error);
     }
@@ -66,57 +66,54 @@ export function SpaceMediaManager({ spaceId, isEditMode = false }: SpaceMediaMan
     if (!spaceId) return;
     try {
       const response = await apiRequest("GET", `/api/spaces/${spaceId}/documents`);
-      setDocuments(await response.json());
+      const data = await response.json();
+      setDocuments(data);
     } catch (error) {
       console.error("Error al cargar documentos:", error);
     }
   };
 
   const getUploadParameters = async () => {
-    const response = await apiRequest("POST", "/api/spaces/upload");
-    const data = await response.json();
-    return {
-      method: "PUT" as const,
-      url: data.uploadURL,
-    };
+    try {
+      const response = await apiRequest("POST", "/api/objects/upload");
+      const data = await response.json();
+      return {
+        method: "PUT" as const,
+        url: data.uploadURL,
+      };
+    } catch (error) {
+      console.error("Error getting upload parameters:", error);
+      throw error;
+    }
   };
 
-  const handleImageUploadComplete = async (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
-    if (!spaceId) {
-      toast({
-        title: "Error",
-        description: "Primero guarda el espacio antes de subir imágenes",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const uploadedFile = result.successful[0];
-    if (!uploadedFile?.uploadURL) return;
-
+  const handleImageUploadComplete = async (result: UploadResult) => {
+    if (!spaceId || !result.successful?.[0]?.uploadURL) return;
+    
     setLoading(true);
     try {
+      const uploadedUrl = result.successful[0].uploadURL;
+      
       const response = await apiRequest("POST", `/api/spaces/${spaceId}/images`, {
-        imageUrl: uploadedFile.uploadURL,
-        caption: newImageCaption || null,
+        imageUrl: uploadedUrl,
+        caption: newImageCaption,
         isPrimary: newImageIsPrimary,
       });
 
-      const data = await response.json();
-      if (data.success) {
+      if (response.ok) {
         await loadImages();
         setNewImageCaption("");
         setNewImageIsPrimary(false);
         toast({
-          title: "Éxito",
-          description: "Imagen subida exitosamente",
+          title: "Imagen agregada",
+          description: "La imagen se ha agregado exitosamente al espacio.",
         });
       }
     } catch (error) {
-      console.error("Error al guardar imagen:", error);
+      console.error("Error uploading image:", error);
       toast({
         title: "Error",
-        description: "Error al guardar la imagen",
+        description: "Error al agregar la imagen.",
         variant: "destructive",
       });
     } finally {
@@ -124,52 +121,34 @@ export function SpaceMediaManager({ spaceId, isEditMode = false }: SpaceMediaMan
     }
   };
 
-  const handleDocumentUploadComplete = async (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
-    if (!spaceId) {
-      toast({
-        title: "Error",
-        description: "Primero guarda el espacio antes de subir documentos",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const uploadedFile = result.successful[0];
-    if (!uploadedFile?.uploadURL) return;
-
-    if (!newDocumentTitle.trim()) {
-      toast({
-        title: "Error",
-        description: "El título del documento es requerido",
-        variant: "destructive",
-      });
-      return;
-    }
-
+  const handleDocumentUploadComplete = async (result: UploadResult) => {
+    if (!spaceId || !result.successful?.[0]?.uploadURL) return;
+    
     setLoading(true);
     try {
+      const uploadedUrl = result.successful[0].uploadURL;
+      
       const response = await apiRequest("POST", `/api/spaces/${spaceId}/documents`, {
-        documentUrl: uploadedFile.uploadURL,
+        documentUrl: uploadedUrl,
         title: newDocumentTitle,
-        description: newDocumentDescription || null,
-        fileSize: uploadedFile.size || null,
+        description: newDocumentDescription,
+        fileSize: result.successful[0].size,
       });
 
-      const data = await response.json();
-      if (data.success) {
+      if (response.ok) {
         await loadDocuments();
         setNewDocumentTitle("");
         setNewDocumentDescription("");
         toast({
-          title: "Éxito",
-          description: "Documento subido exitosamente",
+          title: "Documento agregado",
+          description: "El documento se ha agregado exitosamente al espacio.",
         });
       }
     } catch (error) {
-      console.error("Error al guardar documento:", error);
+      console.error("Error uploading document:", error);
       toast({
         title: "Error",
-        description: "Error al guardar el documento",
+        description: "Error al agregar el documento.",
         variant: "destructive",
       });
     } finally {
@@ -180,19 +159,18 @@ export function SpaceMediaManager({ spaceId, isEditMode = false }: SpaceMediaMan
   const deleteImage = async (imageId: number) => {
     try {
       const response = await apiRequest("DELETE", `/api/spaces/images/${imageId}`);
-      const data = await response.json();
-      if (data.success) {
+      if (response.ok) {
         await loadImages();
         toast({
-          title: "Éxito",
-          description: "Imagen eliminada exitosamente",
+          title: "Imagen eliminada",
+          description: "La imagen ha sido eliminada exitosamente.",
         });
       }
     } catch (error) {
-      console.error("Error al eliminar imagen:", error);
+      console.error("Error deleting image:", error);
       toast({
         title: "Error",
-        description: "Error al eliminar la imagen",
+        description: "Error al eliminar la imagen.",
         variant: "destructive",
       });
     }
@@ -201,27 +179,34 @@ export function SpaceMediaManager({ spaceId, isEditMode = false }: SpaceMediaMan
   const deleteDocument = async (documentId: number) => {
     try {
       const response = await apiRequest("DELETE", `/api/spaces/documents/${documentId}`);
-      const data = await response.json();
-      if (data.success) {
+      if (response.ok) {
         await loadDocuments();
         toast({
-          title: "Éxito",
-          description: "Documento eliminado exitosamente",
+          title: "Documento eliminado",
+          description: "El documento ha sido eliminado exitosamente.",
         });
       }
     } catch (error) {
-      console.error("Error al eliminar documento:", error);
+      console.error("Error deleting document:", error);
       toast({
         title: "Error",
-        description: "Error al eliminar el documento",
+        description: "Error al eliminar el documento.",
         variant: "destructive",
       });
     }
   };
 
+  if (!spaceId && isEditMode) {
+    return (
+      <div className="text-center p-8 text-gray-500">
+        Primero crea el espacio para poder agregar multimedia
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      {/* Gestión de Imágenes */}
+      {/* Sección de imágenes */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -230,83 +215,76 @@ export function SpaceMediaManager({ spaceId, isEditMode = false }: SpaceMediaMan
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {isEditMode && spaceId && (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="imageCaption">Descripción de la imagen (opcional)</Label>
-                  <Input
-                    id="imageCaption"
-                    value={newImageCaption}
-                    onChange={(e) => setNewImageCaption(e.target.value)}
-                    placeholder="Ej: Vista principal del espacio"
-                  />
-                </div>
-                <div className="flex items-center space-x-2 pt-6">
-                  <Checkbox
-                    id="isPrimary"
-                    checked={newImageIsPrimary}
-                    onCheckedChange={(checked) => setNewImageIsPrimary(checked as boolean)}
-                  />
-                  <Label htmlFor="isPrimary">Imagen principal</Label>
-                </div>
-              </div>
-
-              <ObjectUploader
-                maxNumberOfFiles={1}
-                maxFileSize={10485760} // 10MB
-                onGetUploadParameters={getUploadParameters}
-                onComplete={handleImageUploadComplete}
-                buttonClassName="w-full"
-              >
-                <div className="flex items-center gap-2">
-                  <Image className="w-4 h-4" />
-                  <span>Subir Imagen</span>
-                </div>
-              </ObjectUploader>
-            </>
-          )}
-
           {/* Lista de imágenes existentes */}
           {images.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {images.map((image) => (
-                <div key={image.id} className="relative border rounded-lg p-3">
-                  <div className="aspect-video bg-gray-100 rounded mb-2 overflow-hidden">
-                    <img
-                      src={image.imageUrl}
-                      alt={image.caption || "Imagen del espacio"}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
+                <div key={image.id} className="relative group">
+                  <img
+                    src={image.imageUrl}
+                    alt={image.caption || "Imagen del espacio"}
+                    className="w-full h-48 object-cover rounded-lg"
+                  />
                   {image.isPrimary && (
-                    <Badge variant="secondary" className="absolute top-1 right-1">
+                    <Badge className="absolute top-2 left-2 bg-yellow-500">
                       <Star className="w-3 h-3 mr-1" />
                       Principal
                     </Badge>
                   )}
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={() => deleteImage(image.id)}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
                   {image.caption && (
-                    <p className="text-sm text-gray-600 mb-2">{image.caption}</p>
-                  )}
-                  {isEditMode && (
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => deleteImage(image.id)}
-                      className="w-full"
-                    >
-                      <Trash2 className="w-3 h-3 mr-1" />
-                      Eliminar
-                    </Button>
+                    <p className="mt-2 text-sm text-gray-600">{image.caption}</p>
                   )}
                 </div>
               ))}
             </div>
           )}
+
+          {/* Formulario para nueva imagen */}
+          <div className="space-y-4 border-t pt-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="imageCaption">Descripción de la imagen</Label>
+                <Input
+                  id="imageCaption"
+                  value={newImageCaption}
+                  onChange={(e) => setNewImageCaption(e.target.value)}
+                  placeholder="Ej: Vista principal del espacio"
+                />
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="isPrimary"
+                  checked={newImageIsPrimary}
+                  onCheckedChange={(checked) => setNewImageIsPrimary(checked as boolean)}
+                />
+                <Label htmlFor="isPrimary">Imagen principal</Label>
+              </div>
+            </div>
+            
+            <ObjectUploader
+              maxNumberOfFiles={1}
+              maxFileSize={10 * 1024 * 1024}
+              onGetUploadParameters={getUploadParameters}
+              onComplete={handleImageUploadComplete}
+            >
+              <div className="flex items-center gap-2">
+                <Image className="w-4 h-4" />
+                Subir Imagen
+              </div>
+            </ObjectUploader>
+          </div>
         </CardContent>
       </Card>
 
-      {/* Gestión de Documentos */}
+      {/* Sección de documentos */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -315,92 +293,73 @@ export function SpaceMediaManager({ spaceId, isEditMode = false }: SpaceMediaMan
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {isEditMode && spaceId && (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="documentTitle">Título del documento *</Label>
-                  <Input
-                    id="documentTitle"
-                    value={newDocumentTitle}
-                    onChange={(e) => setNewDocumentTitle(e.target.value)}
-                    placeholder="Ej: Reglamento de uso"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="documentDescription">Descripción (opcional)</Label>
-                  <Textarea
-                    id="documentDescription"
-                    value={newDocumentDescription}
-                    onChange={(e) => setNewDocumentDescription(e.target.value)}
-                    placeholder="Descripción del documento"
-                    rows={3}
-                  />
-                </div>
-              </div>
-
-              <ObjectUploader
-                maxNumberOfFiles={1}
-                maxFileSize={10485760} // 10MB
-                onGetUploadParameters={getUploadParameters}
-                onComplete={handleDocumentUploadComplete}
-                buttonClassName="w-full"
-              >
-                <div className="flex items-center gap-2">
-                  <FileText className="w-4 h-4" />
-                  <span>Subir Documento (PDF)</span>
-                </div>
-              </ObjectUploader>
-            </>
-          )}
-
           {/* Lista de documentos existentes */}
           {documents.length > 0 && (
             <div className="space-y-3">
               {documents.map((document) => (
                 <div key={document.id} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex-1">
+                  <div>
                     <h4 className="font-medium">{document.title}</h4>
                     {document.description && (
                       <p className="text-sm text-gray-600">{document.description}</p>
                     )}
                     {document.fileSize && (
-                      <p className="text-xs text-gray-500">
-                        Tamaño: {(document.fileSize / 1024 / 1024).toFixed(2)} MB
+                      <p className="text-xs text-gray-400">
+                        {Math.round(document.fileSize / 1024)} KB
                       </p>
                     )}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => window.open(document.documentUrl, "_blank")}
-                    >
-                      Ver
-                    </Button>
-                    {isEditMode && (
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => deleteDocument(document.id)}
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
-                    )}
-                  </div>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => deleteDocument(document.id)}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
                 </div>
               ))}
             </div>
           )}
+
+          {/* Formulario para nuevo documento */}
+          <div className="space-y-4 border-t pt-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="documentTitle">Título del documento *</Label>
+                <Input
+                  id="documentTitle"
+                  value={newDocumentTitle}
+                  onChange={(e) => setNewDocumentTitle(e.target.value)}
+                  placeholder="Ej: Reglamento del espacio"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="documentDescription">Descripción</Label>
+                <Textarea
+                  id="documentDescription"
+                  value={newDocumentDescription}
+                  onChange={(e) => setNewDocumentDescription(e.target.value)}
+                  placeholder="Descripción opcional del documento"
+                  rows={1}
+                />
+              </div>
+            </div>
+            
+            <ObjectUploader
+              maxNumberOfFiles={1}
+              maxFileSize={20 * 1024 * 1024}
+              onGetUploadParameters={getUploadParameters}
+              onComplete={handleDocumentUploadComplete}
+            >
+              <div className="flex items-center gap-2">
+                <FileText className="w-4 h-4" />
+                Subir Documento PDF
+              </div>
+            </ObjectUploader>
+          </div>
         </CardContent>
       </Card>
-
-      {!isEditMode && (
-        <p className="text-sm text-gray-500 text-center">
-          Las imágenes y documentos se pueden agregar después de crear el espacio
-        </p>
-      )}
     </div>
   );
 }
