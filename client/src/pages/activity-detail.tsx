@@ -1,9 +1,16 @@
 import React, { useState } from 'react';
 import { useParams, useLocation } from 'wouter';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
+import { ActivityPaymentForm } from '@/components/ActivityPaymentForm';
+import { apiRequest } from '@/lib/queryClient';
 
 interface ActivityData {
   id: number;
@@ -57,21 +64,51 @@ import {
   User,
   Activity,
   Tag,
-  Info
+  Info,
+  Mail,
+  Phone,
+  CreditCard,
+  CheckCircle,
+  AlertCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import AdSpace from '@/components/AdSpace';
+
+// Initialize Stripe
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || '');
+
+// Schema for registration form
+const registrationSchema = z.object({
+  fullName: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
+  email: z.string().email('Ingresa un email válido'),
+  phone: z.string().min(10, 'El teléfono debe tener al menos 10 dígitos').optional(),
+  additionalInfo: z.string().optional(),
+});
+
+type RegistrationFormData = z.infer<typeof registrationSchema>;
 
 function ActivityDetailPage() {
   const params = useParams();
   const [, setLocation] = useLocation();
   const activityId = params.id;
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  // Estado del formulario de inscripción
+  // Estados para modales y flujo de pago
+  const [showRegistrationDialog, setShowRegistrationDialog] = useState(false);
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+  const [registrationData, setRegistrationData] = useState<RegistrationFormData | null>(null);
+  const [registrationStep, setRegistrationStep] = useState<'form' | 'payment' | 'success'>('form');
+
+  // Estado del formulario de inscripción (legacy)
   const [formData, setFormData] = useState({
     participantName: '',
     participantEmail: '',
@@ -79,6 +116,17 @@ function ActivityDetailPage() {
     notes: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Formulario para inscripciones con React Hook Form
+  const form = useForm<RegistrationFormData>({
+    resolver: zodResolver(registrationSchema),
+    defaultValues: {
+      fullName: '',
+      email: '',
+      phone: '',
+      additionalInfo: '',
+    },
+  });
 
   const { data: activity, isLoading, error } = useQuery<ActivityData>({
     queryKey: [`/api/activities/${activityId}`],
@@ -96,7 +144,51 @@ function ActivityDetailPage() {
     enabled: !!activityId,
   });
 
-  // Mutación para enviar inscripción
+  // Mutación para inscripción con Stripe
+  const registerMutation = useMutation({
+    mutationFn: async (data: RegistrationFormData) => {
+      const response = await apiRequest(
+        'POST',
+        `/api/activities/${activityId}/register`,
+        { data }
+      );
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Error al registrarse');
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: [`/api/activities/${activityId}`] });
+      
+      if (activity && (activity as any).isFree) {
+        // Actividad gratuita - mostrar éxito directamente
+        setRegistrationStep('success');
+        toast({
+          title: "¡Registro exitoso!",
+          description: activity && (activity as any).requiresApproval 
+            ? "Tu registro está pendiente de aprobación. Recibirás una confirmación por email."
+            : "Te has registrado exitosamente a la actividad.",
+        });
+      } else {
+        // Actividad de pago - proceder al pago
+        setRegistrationStep('payment');
+        setShowPaymentDialog(true);
+        setShowRegistrationDialog(false);
+      }
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error al registrarse",
+        description: error.message,
+        variant: "destructive"
+      });
+    },
+  });
+
+  // Mutación para enviar inscripción (legacy)
   const registrationMutation = useMutation({
     mutationFn: async (registrationData: any) => {
       const response = await fetch('/api/activity-registrations', {
@@ -140,7 +232,7 @@ function ActivityDetailPage() {
     }
   });
 
-  // Manejar cambios en el formulario
+  // Funciones de manejo (legacy - conservar por compatibilidad)
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -149,29 +241,9 @@ function ActivityDetailPage() {
     }));
   };
 
-  // Manejar envío del formulario
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.participantName || !formData.participantEmail || !formData.participantPhone) {
-      toast({
-        title: "Error",
-        description: "Por favor completa todos los campos obligatorios",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    const registrationData = {
-      activityId: parseInt(activityId!),
-      participantName: formData.participantName,
-      participantEmail: formData.participantEmail,
-      participantPhone: formData.participantPhone,
-      notes: formData.notes || null,
-      acceptsTerms: true
-    };
-
-    registrationMutation.mutate(registrationData);
+    setShowRegistrationDialog(true);
   };
 
   if (isLoading) {
@@ -383,12 +455,15 @@ function ActivityDetailPage() {
                     </div>
 
                     <Button 
-                      type="submit" 
-                      disabled={registrationMutation.isPending}
-                      className="w-full bg-green-600 hover:bg-green-700 text-white disabled:opacity-50"
+                      type="button"
+                      onClick={() => setShowRegistrationDialog(true)}
+                      className="w-full bg-green-600 hover:bg-green-700 text-white"
                     >
                       <Calendar className="h-4 w-4 mr-2" />
-                      {registrationMutation.isPending ? 'Inscribiendo...' : 'Inscribirme a la actividad'}
+                      {activity?.isFree || !activity?.price || activity.price === 0 
+                        ? 'Inscribirse gratis'
+                        : `Inscribirse - $${activity.price} MXN`
+                      }
                     </Button>
                   </form>
 
@@ -574,6 +649,156 @@ function ActivityDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Diálogo de registro */}
+      <Dialog open={showRegistrationDialog} onOpenChange={setShowRegistrationDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Registro para "{activity?.title}"</DialogTitle>
+            <DialogDescription>
+              Completa tus datos para registrarte en esta actividad
+            </DialogDescription>
+          </DialogHeader>
+          
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit((data) => {
+              setRegistrationData(data);
+              registerMutation.mutate(data);
+            })} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="fullName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nombre completo</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Tu nombre completo" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input placeholder="tu@email.com" type="email" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Teléfono (opcional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Tu número de teléfono" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="additionalInfo"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Información adicional (opcional)</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Cualquier información adicional relevante" 
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <div className="flex gap-2 pt-4">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setShowRegistrationDialog(false)}
+                  className="flex-1"
+                >
+                  Cancelar
+                </Button>
+                <Button 
+                  type="submit" 
+                  disabled={registerMutation.isPending}
+                  className="flex-1"
+                >
+                  {registerMutation.isPending ? (
+                    'Procesando...'
+                  ) : activity?.isFree || !activity?.price || activity.price === 0 ? (
+                    'Registrarse'
+                  ) : (
+                    'Continuar al pago'
+                  )}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Diálogo de pago con Stripe */}
+      {showPaymentDialog && registrationData && (
+        <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Realizar pago</DialogTitle>
+              <DialogDescription>
+                Completa tu pago para confirmar tu inscripción
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h4 className="font-medium">{activity?.title}</h4>
+                <p className="text-sm text-gray-600">
+                  Participante: {registrationData.fullName}
+                </p>
+                <p className="text-lg font-bold text-green-600 mt-2">
+                  ${activity?.price} MXN
+                </p>
+              </div>
+              
+              <Elements stripe={stripePromise}>
+                <ActivityPaymentForm
+                  activityId={activityId!}
+                  participantData={registrationData}
+                  onSuccess={() => {
+                    setShowPaymentDialog(false);
+                    setRegistrationStep('success');
+                    toast({
+                      title: "¡Pago exitoso!",
+                      description: "Tu inscripción ha sido confirmada. Recibirás un email de confirmación.",
+                    });
+                  }}
+                  onError={(error) => {
+                    toast({
+                      title: "Error en el pago",
+                      description: error,
+                      variant: "destructive",
+                    });
+                  }}
+                />
+              </Elements>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
