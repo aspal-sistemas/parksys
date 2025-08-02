@@ -243,7 +243,33 @@ function ActivityDetailPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setShowRegistrationDialog(true);
+    
+    if (!formData.participantName || !formData.participantEmail || !formData.participantPhone) {
+      toast({
+        title: "Error",
+        description: "Por favor completa todos los campos obligatorios",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Preparar datos de registro
+    const registrationFormData: RegistrationFormData = {
+      fullName: formData.participantName,
+      email: formData.participantEmail,
+      phone: formData.participantPhone,
+      additionalInfo: formData.notes || '',
+    };
+
+    setRegistrationData(registrationFormData);
+
+    if (activity?.isFree || !activity?.price || activity.price === 0) {
+      // Actividad gratuita - registrar directamente
+      registerMutation.mutate(registrationFormData);
+    } else {
+      // Actividad de pago - ir directamente al pago
+      setShowPaymentDialog(true);
+    }
   };
 
   if (isLoading) {
@@ -455,14 +481,16 @@ function ActivityDetailPage() {
                     </div>
 
                     <Button 
-                      type="button"
-                      onClick={() => setShowRegistrationDialog(true)}
-                      className="w-full bg-green-600 hover:bg-green-700 text-white"
+                      type="submit" 
+                      disabled={registrationMutation.isPending || registerMutation.isPending}
+                      className="w-full bg-green-600 hover:bg-green-700 text-white disabled:opacity-50"
                     >
                       <Calendar className="h-4 w-4 mr-2" />
-                      {activity?.isFree || !activity?.price || activity.price === 0 
-                        ? 'Inscribirse gratis'
-                        : `Inscribirse - $${activity.price} MXN`
+                      {(registrationMutation.isPending || registerMutation.isPending) ? 'Procesando...' : 
+                        (activity?.isFree || !activity?.price || activity.price === 0 
+                          ? 'Inscribirse gratis'
+                          : `Inscribirse - $${activity.price} MXN`
+                        )
                       }
                     </Button>
                   </form>
@@ -650,107 +678,7 @@ function ActivityDetailPage() {
         </div>
       </div>
 
-      {/* Diálogo de registro */}
-      <Dialog open={showRegistrationDialog} onOpenChange={setShowRegistrationDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Registro para "{activity?.title}"</DialogTitle>
-            <DialogDescription>
-              Completa tus datos para registrarte en esta actividad
-            </DialogDescription>
-          </DialogHeader>
-          
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit((data) => {
-              setRegistrationData(data);
-              registerMutation.mutate(data);
-            })} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="fullName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nombre completo</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Tu nombre completo" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input placeholder="tu@email.com" type="email" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="phone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Teléfono (opcional)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Tu número de teléfono" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="additionalInfo"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Información adicional (opcional)</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="Cualquier información adicional relevante" 
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <div className="flex gap-2 pt-4">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => setShowRegistrationDialog(false)}
-                  className="flex-1"
-                >
-                  Cancelar
-                </Button>
-                <Button 
-                  type="submit" 
-                  disabled={registerMutation.isPending}
-                  className="flex-1"
-                >
-                  {registerMutation.isPending ? (
-                    'Procesando...'
-                  ) : activity?.isFree || !activity?.price || activity.price === 0 ? (
-                    'Registrarse'
-                  ) : (
-                    'Continuar al pago'
-                  )}
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
+
 
       {/* Diálogo de pago con Stripe */}
       {showPaymentDialog && registrationData && (
@@ -767,7 +695,7 @@ function ActivityDetailPage() {
               <div className="bg-gray-50 p-4 rounded-lg">
                 <h4 className="font-medium">{activity?.title}</h4>
                 <p className="text-sm text-gray-600">
-                  Participante: {registrationData.fullName}
+                  Participante: {registrationData?.fullName}
                 </p>
                 <p className="text-lg font-bold text-green-600 mt-2">
                   ${activity?.price} MXN
