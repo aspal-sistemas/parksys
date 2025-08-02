@@ -116,8 +116,8 @@ export function ActivityPaymentForm({
         amount: finalAmount,
       });
 
-      // Step 2: Confirm payment with Stripe (básico)
-      const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(
+      // Step 2: Confirm payment with Stripe
+      const result = await stripe.confirmCardPayment(
         paymentIntentData.clientSecret,
         {
           payment_method: {
@@ -125,10 +125,13 @@ export function ActivityPaymentForm({
           },
         }
       );
-
-      if (confirmError) {
-        throw new Error(confirmError.message);
+      
+      if (result.error) {
+        console.error('Stripe error:', result.error);
+        throw new Error(result.error.message || 'Error procesando el pago');
       }
+
+      // Payment was successful if we get here
 
       // Payment successful
       setProcessing(false);
