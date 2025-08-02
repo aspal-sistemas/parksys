@@ -55,9 +55,7 @@ export function registerActivityPaymentRoutes(app: Express) {
         amount,
         currency: "mxn",
         customer: customerId,
-        automatic_payment_methods: {
-          enabled: true,
-        },
+        payment_method_types: ['card'],
         metadata: {
           activityId: activityId,
           registrationId: registrationId?.toString() || 'pending',
@@ -65,7 +63,6 @@ export function registerActivityPaymentRoutes(app: Express) {
           parkName: activity.parkName || 'Parque Municipal'
         },
         description: `Pago por actividad: ${activity.title}`,
-        setup_future_usage: 'off_session',
       });
 
       // Si ya existe un registro, actualizar con el payment intent

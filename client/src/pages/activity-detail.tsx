@@ -710,7 +710,6 @@ function ActivityDetailPage() {
               </div>
               
               <Elements stripe={stripePromise} options={{
-                fonts: [{ cssSrc: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap' }],
                 locale: 'es',
               }}>
                 <ActivityPaymentForm
