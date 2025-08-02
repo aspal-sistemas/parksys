@@ -16,6 +16,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { ArrowLeft, MapPin, Users, Clock, DollarSign } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 
 const newSpaceSchema = z.object({
   name: z.string().min(1, "El nombre es obligatorio"),
@@ -24,10 +25,13 @@ const newSpaceSchema = z.object({
   spaceType: z.string().min(1, "Debe seleccionar un tipo de espacio"),
   capacity: z.number().min(1, "La capacidad debe ser mayor a 0"),
   hourlyRate: z.number().min(0, "La tarifa debe ser mayor o igual a 0"),
+  minimumHours: z.number().min(1, "Las horas mínimas deben ser mayor a 0"),
+  maximumHours: z.number().min(1, "Las horas máximas deben ser mayor a 0"),
   amenities: z.string().optional(),
-  reservationRules: z.string().optional(),
-  location: z.string().optional(),
-  isActive: z.boolean().default(true),
+  rules: z.string().optional(),
+  isActive: z.boolean(),
+  requiresApproval: z.boolean(),
+  advanceBookingDays: z.number().min(1, "Los días de anticipación deben ser mayor a 0"),
 });
 
 type NewSpaceFormData = z.infer<typeof newSpaceSchema>;
@@ -48,12 +52,16 @@ export default function NewSpacePage() {
       name: "",
       description: "",
       parkId: "",
+      spaceType: "",
       capacity: 1,
       hourlyRate: 0,
+      minimumHours: 1,
+      maximumHours: 8,
       amenities: "",
-      reservationRules: "",
-      location: "",
+      rules: "",
       isActive: true,
+      requiresApproval: false,
+      advanceBookingDays: 30,
     },
   });
 
@@ -93,6 +101,16 @@ export default function NewSpacePage() {
   });
 
   const onSubmit = (data: NewSpaceFormData) => {
+    // Validar que las horas máximas sean mayores que las mínimas
+    if (data.maximumHours <= data.minimumHours) {
+      toast({
+        title: "Error de validación",
+        description: "Las horas máximas deben ser mayores que las horas mínimas",
+        variant: "destructive",
+      });
+      return;
+    }
+
     createSpaceMutation.mutate(data);
   };
 
@@ -223,8 +241,8 @@ export default function NewSpacePage() {
                   )}
                 />
 
-                {/* Detalles Operativos */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Capacidad y Tarifas */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
                     control={form.control}
                     name="capacity"
@@ -232,12 +250,12 @@ export default function NewSpacePage() {
                       <FormItem>
                         <FormLabel className="flex items-center gap-2">
                           <Users className="w-4 h-4" />
-                          Capacidad
+                          Capacidad Máxima
                         </FormLabel>
                         <FormControl>
                           <Input 
                             type="number" 
-                            placeholder="50"
+                            placeholder="50" 
                             {...field}
                             onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                           />
@@ -254,13 +272,13 @@ export default function NewSpacePage() {
                       <FormItem>
                         <FormLabel className="flex items-center gap-2">
                           <DollarSign className="w-4 h-4" />
-                          Tarifa por Hora ($)
+                          Tarifa por Hora (MXN)
                         </FormLabel>
                         <FormControl>
                           <Input 
                             type="number" 
                             step="0.01"
-                            placeholder="250.00"
+                            placeholder="250.00" 
                             {...field}
                             onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                           />
@@ -272,12 +290,61 @@ export default function NewSpacePage() {
 
                   <FormField
                     control={form.control}
-                    name="location"
+                    name="minimumHours"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Ubicación</FormLabel>
+                        <FormLabel className="flex items-center gap-2">
+                          <Clock className="w-4 h-4" />
+                          Horas Mínimas de Reserva
+                        </FormLabel>
                         <FormControl>
-                          <Input placeholder="Ej: Sector Norte" {...field} />
+                          <Input 
+                            type="number" 
+                            placeholder="2" 
+                            {...field}
+                            onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="maximumHours"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center gap-2">
+                          <Clock className="w-4 h-4" />
+                          Horas Máximas de Reserva
+                        </FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            placeholder="8" 
+                            {...field}
+                            onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="advanceBookingDays"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Días de Anticipación para Reserva</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            placeholder="30" 
+                            {...field}
+                            onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -285,40 +352,84 @@ export default function NewSpacePage() {
                   />
                 </div>
 
-                {/* Amenidades y Reglas */}
+                {/* Amenidades */}
+                <FormField
+                  control={form.control}
+                  name="amenities"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Amenidades Incluidas</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Ej: Electricidad, agua potable, mesas, sillas, estacionamiento..."
+                          className="min-h-[80px]"
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Reglas */}
+                <FormField
+                  control={form.control}
+                  name="rules"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Reglas y Restricciones</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Ej: Prohibido el consumo de alcohol, música hasta las 20:00 hrs..."
+                          className="min-h-[80px]"
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Configuraciones */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
                     control={form.control}
-                    name="amenities"
+                    name="isActive"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Amenidades Incluidas</FormLabel>
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-base">Espacio Activo</FormLabel>
+                          <div className="text-sm text-gray-600">
+                            El espacio estará disponible para reservas públicas
+                          </div>
+                        </div>
                         <FormControl>
-                          <Textarea 
-                            placeholder="Ej: Mesas, sillas, asador, toma de corriente..."
-                            rows={3}
-                            {...field} 
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
                           />
                         </FormControl>
-                        <FormMessage />
                       </FormItem>
                     )}
                   />
 
                   <FormField
                     control={form.control}
-                    name="reservationRules"
+                    name="requiresApproval"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Reglas de Reservación</FormLabel>
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-base">Requiere Aprobación</FormLabel>
+                          <div className="text-sm text-gray-600">
+                            Las reservas deben ser aprobadas manualmente
+                          </div>
+                        </div>
                         <FormControl>
-                          <Textarea 
-                            placeholder="Ej: Reservar con 24h de anticipación, máximo 4 horas..."
-                            rows={3}
-                            {...field} 
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
                           />
                         </FormControl>
-                        <FormMessage />
                       </FormItem>
                     )}
                   />
