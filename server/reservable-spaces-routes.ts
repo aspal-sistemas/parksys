@@ -235,4 +235,47 @@ export function registerReservableSpacesRoutes(app: Express) {
       res.status(500).json({ error: "Error al crear la reserva" });
     }
   });
+
+  // Actualizar un espacio reservable
+  app.put("/api/reservable-spaces/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updateData = req.body;
+
+      console.log(`🔧 Actualizando espacio ${id} con datos:`, updateData);
+
+      // Validar que el espacio existe
+      const existingSpace = await db
+        .select()
+        .from(reservableSpaces)
+        .where(eq(reservableSpaces.id, parseInt(id)))
+        .limit(1);
+
+      if (existingSpace.length === 0) {
+        return res.status(404).json({ error: "Espacio no encontrado" });
+      }
+
+      // Actualizar el espacio
+      const updatedSpace = await db
+        .update(reservableSpaces)
+        .set({
+          ...updateData,
+          updatedAt: new Date()
+        })
+        .where(eq(reservableSpaces.id, parseInt(id)))
+        .returning();
+
+      console.log(`✅ Espacio ${id} actualizado exitosamente`);
+
+      res.json({
+        success: true,
+        space: updatedSpace[0],
+        message: "Espacio actualizado exitosamente"
+      });
+
+    } catch (error) {
+      console.error("Error al actualizar espacio:", error);
+      res.status(500).json({ error: "Error al actualizar el espacio" });
+    }
+  });
 }
