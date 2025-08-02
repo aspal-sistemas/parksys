@@ -157,7 +157,7 @@ function ActivityDetailPage() {
       const response = await apiRequest(
         'POST',
         `/api/activities/${activityId}/register`,
-        { data }
+        data
       );
       
       if (!response.ok) {
@@ -398,21 +398,21 @@ function ActivityDetailPage() {
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-600">Plazas disponibles:</span>
                       <span className="font-medium text-green-600">
-                        {registrationStats ? (
-                          `${registrationStats.availableSlots} de ${registrationStats.capacity} disponibles`
+                        {registrationStats && typeof registrationStats === 'object' && 'availableSlots' in registrationStats ? (
+                          `${(registrationStats as any).availableSlots} de ${(registrationStats as any).capacity} disponibles`
                         ) : (
                           activity.capacity ? `${activity.capacity} personas` : 'Sin límite'
                         )}
                       </span>
                     </div>
-                    {registrationStats && (
+                    {registrationStats && typeof registrationStats === 'object' && 'totalRegistrations' in registrationStats && (
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-gray-600">Inscritos actuales:</span>
                         <span className="font-medium text-blue-600">
-                          {registrationStats.totalRegistrations} personas
-                          {registrationStats.pending > 0 && (
+                          {(registrationStats as any).totalRegistrations} personas
+                          {(registrationStats as any).pending > 0 && (
                             <span className="text-orange-500 ml-1">
-                              ({registrationStats.pending} pendientes)
+                              ({(registrationStats as any).pending} pendientes)
                             </span>
                           )}
                         </span>

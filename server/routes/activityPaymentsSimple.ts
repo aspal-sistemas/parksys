@@ -165,7 +165,8 @@ export function registerActivityPaymentRoutes(app: Express) {
 
       // Enviar email de confirmación de pago usando la plantilla #13
       try {
-        const { sendTemplateEmail } = await import("../email/emailQueueService");
+        // Importar el servicio de email de comunicaciones
+        const { sendTemplateEmail } = await import("../communications/emailQueueService");
         
         const emailVariables = {
           participantName: registrationData.participantName,
