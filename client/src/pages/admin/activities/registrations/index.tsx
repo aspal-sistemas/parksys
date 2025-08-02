@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Checkbox } from '@/components/ui/checkbox';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
 import { queryClient } from '@/lib/queryClient';
@@ -15,7 +17,7 @@ import {
   Calendar, MapPin, Clock, CheckCircle, XCircle, 
   AlertCircle, Eye, Mail, Phone, Grid3X3, List,
   ChevronLeft, ChevronRight, BarChart3, DollarSign,
-  TrendingUp, Target
+  TrendingUp, Target, Trash2, X
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -96,6 +98,10 @@ const ActivityRegistrationsPage = () => {
   const [activeTab, setActiveTab] = useState('registrations');
   const [summaryViewMode, setSummaryViewMode] = useState<'cards' | 'table'>('cards');
   const [summaryCurrentPage, setSummaryCurrentPage] = useState(1);
+  const [selectedRegistrations, setSelectedRegistrations] = useState<number[]>([]);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [registrationToDelete, setRegistrationToDelete] = useState<number | null>(null);
+  const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false);
   const ITEMS_PER_PAGE = 10;
   const itemsPerPage = 10;
 
@@ -176,6 +182,72 @@ const ActivityRegistrationsPage = () => {
     }
   });
 
+  // Mutación para eliminar inscripción individual
+  const deleteMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await fetch(`/api/activity-registrations/${id}`, {
+        method: 'DELETE',
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Error al eliminar inscripción');
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: 'Inscripción eliminada',
+        description: data.message
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/activity-registrations'] });
+      setRegistrationToDelete(null);
+      setIsDeleteDialogOpen(false);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive'
+      });
+    }
+  });
+
+  // Mutación para eliminación en lote
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (registrationIds: number[]) => {
+      const response = await fetch('/api/activity-registrations/bulk-delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ registrationIds })
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Error al eliminar inscripciones');
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: 'Inscripciones eliminadas',
+        description: data.message
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/activity-registrations'] });
+      setSelectedRegistrations([]);
+      setIsBulkDeleteDialogOpen(false);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive'
+      });
+    }
+  });
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'approved':
@@ -218,6 +290,46 @@ const ActivityRegistrationsPage = () => {
   const viewRegistrationDetail = (registration: ActivityRegistration) => {
     setSelectedRegistration(registration);
     setIsDetailModalOpen(true);
+  };
+
+  // Funciones para manejo de selección múltiple
+  const handleSelectRegistration = (registrationId: number, checked: boolean) => {
+    if (checked) {
+      setSelectedRegistrations(prev => [...prev, registrationId]);
+    } else {
+      setSelectedRegistrations(prev => prev.filter(id => id !== registrationId));
+    }
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedRegistrations(displayedRegistrations.map((reg: ActivityRegistration) => reg.id));
+    } else {
+      setSelectedRegistrations([]);
+    }
+  };
+
+  const isAllSelected = displayedRegistrations.length > 0 && selectedRegistrations.length === displayedRegistrations.length;
+  const isIndeterminate = selectedRegistrations.length > 0 && selectedRegistrations.length < displayedRegistrations.length;
+
+  // Funciones para eliminación
+  const handleDeleteRegistration = (id: number) => {
+    setRegistrationToDelete(id);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (registrationToDelete) {
+      deleteMutation.mutate(registrationToDelete);
+    }
+  };
+
+  const handleBulkDelete = () => {
+    setIsBulkDeleteDialogOpen(true);
+  };
+
+  const confirmBulkDelete = () => {
+    bulkDeleteMutation.mutate(selectedRegistrations);
   };
 
   if (isLoading) {
@@ -402,11 +514,43 @@ const ActivityRegistrationsPage = () => {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Inscripciones de Actividades</CardTitle>
-                <CardDescription>
-                  Gestiona las solicitudes de inscripción de los ciudadanos ({registrations.length} total)
-                </CardDescription>
+              <div className="flex items-center gap-4">
+                <div>
+                  <CardTitle>Inscripciones de Actividades</CardTitle>
+                  <CardDescription>
+                    Gestiona las solicitudes de inscripción de los ciudadanos ({registrations.length} total)
+                  </CardDescription>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                {/* Seleccionar todo */}
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="select-all"
+                    checked={isAllSelected}
+                    ref={(el) => {
+                      if (el) el.indeterminate = isIndeterminate;
+                    }}
+                    onCheckedChange={handleSelectAll}
+                  />
+                  <label htmlFor="select-all" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    Seleccionar todo
+                  </label>
+                </div>
+                
+                {/* Botón de eliminación en lote */}
+                {selectedRegistrations.length > 0 && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleBulkDelete}
+                    disabled={bulkDeleteMutation.isPending}
+                    className="flex items-center gap-2"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Eliminar ({selectedRegistrations.length})
+                  </Button>
+                )}
               </div>
             </div>
           </CardHeader>
@@ -426,18 +570,34 @@ const ActivityRegistrationsPage = () => {
                       <Card key={registration.id} className="hover:shadow-md transition-shadow">
                         <CardContent className="p-4">
                           <div className="flex items-start justify-between mb-3">
-                            <div className="flex-1">
-                              <h3 className="font-semibold text-lg">{registration.participantName}</h3>
-                              <p className="text-sm text-gray-600">{registration.participantEmail}</p>
+                            <div className="flex items-start gap-3 flex-1">
+                              <Checkbox
+                                checked={selectedRegistrations.includes(registration.id)}
+                                onCheckedChange={(checked) => handleSelectRegistration(registration.id, checked as boolean)}
+                              />
+                              <div className="flex-1">
+                                <h3 className="font-semibold text-lg">{registration.participantName}</h3>
+                                <p className="text-sm text-gray-600">{registration.participantEmail}</p>
+                              </div>
                             </div>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => viewRegistrationDetail(registration)}
-                              className="h-8 w-8 p-0"
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
+                            <div className="flex items-center gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => viewRegistrationDetail(registration)}
+                                className="h-8 w-8 p-0"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDeleteRegistration(registration.id)}
+                                className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </div>
                           
                           <div className="space-y-2 text-sm text-gray-600">
@@ -1106,6 +1266,52 @@ const ActivityRegistrationsPage = () => {
             )}
           </TabsContent>
         </Tabs>
+
+        {/* Modal de confirmación para eliminación individual */}
+        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>¿Eliminar inscripción?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Esta acción eliminará permanentemente la inscripción seleccionada. Esta acción no se puede deshacer.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={confirmDelete}
+                disabled={deleteMutation.isPending}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                {deleteMutation.isPending ? 'Eliminando...' : 'Eliminar'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Modal de confirmación para eliminación en lote */}
+        <AlertDialog open={isBulkDeleteDialogOpen} onOpenChange={setIsBulkDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>¿Eliminar {selectedRegistrations.length} inscripciones?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Esta acción eliminará permanentemente las {selectedRegistrations.length} inscripciones seleccionadas. 
+                Esta acción no se puede deshacer.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={confirmBulkDelete}
+                disabled={bulkDeleteMutation.isPending}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                {bulkDeleteMutation.isPending ? 'Eliminando...' : `Eliminar ${selectedRegistrations.length} inscripciones`}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
       </div>
     </AdminLayout>
   );

@@ -639,22 +639,111 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Eliminar inscripción
+// Eliminar inscripción individual
 router.delete('/:id', async (req, res) => {
   try {
-    const { id } = req.params;
+    const registrationId = parseInt(req.params.id);
+    
+    if (!registrationId) {
+      return res.status(400).json({ error: 'ID de inscripción requerido' });
+    }
 
-    const result = await sql(`
-      DELETE FROM activity_registrations WHERE id = $1 RETURNING *
-    `, [id]);
+    // Verificar que la inscripción existe y obtener detalles
+    const existingRegistration = await sql`
+      SELECT ar.*, a.title as activity_title 
+      FROM activity_registrations ar
+      LEFT JOIN activities a ON ar.activity_id = a.id
+      WHERE ar.id = ${registrationId}
+    `;
 
-    if (result.length === 0) {
+    if (existingRegistration.length === 0) {
       return res.status(404).json({ error: 'Inscripción no encontrada' });
     }
 
-    res.json({ message: 'Inscripción eliminada exitosamente' });
+    const registration = existingRegistration[0];
+
+    // Eliminar la inscripción
+    await sql`DELETE FROM activity_registrations WHERE id = ${registrationId}`;
+
+    console.log(`🗑️ Inscripción eliminada: ID ${registrationId} - ${registration.participant_name} (${registration.activity_title})`);
+    
+    res.json({ 
+      success: true, 
+      message: 'Inscripción eliminada exitosamente',
+      deletedRegistration: {
+        id: registration.id,
+        participantName: registration.participant_name,
+        participantEmail: registration.participant_email,
+        activityTitle: registration.activity_title
+      }
+    });
   } catch (error) {
-    console.error('Error al eliminar inscripción:', error);
+    console.error('Error eliminando inscripción:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// Eliminar inscripciones en lote
+router.post('/bulk-delete', async (req, res) => {
+  try {
+    const { registrationIds } = req.body;
+    
+    if (!registrationIds || !Array.isArray(registrationIds) || registrationIds.length === 0) {
+      return res.status(400).json({ error: 'Lista de IDs de inscripciones requerida' });
+    }
+
+    // Convertir IDs a enteros y filtrar valores inválidos
+    const validIds = registrationIds
+      .map(id => parseInt(id))
+      .filter(id => !isNaN(id) && id > 0);
+
+    if (validIds.length === 0) {
+      return res.status(400).json({ error: 'No se proporcionaron IDs válidos' });
+    }
+
+    // Verificar que todas las inscripciones existen y obtener detalles
+    const existingRegistrations = await sql`
+      SELECT ar.id, ar.participant_name, ar.participant_email, a.title as activity_title
+      FROM activity_registrations ar
+      LEFT JOIN activities a ON ar.activity_id = a.id
+      WHERE ar.id = ANY(${validIds})
+    `;
+
+    if (existingRegistrations.length === 0) {
+      return res.status(404).json({ error: 'No se encontraron inscripciones con los IDs proporcionados' });
+    }
+
+    if (existingRegistrations.length !== validIds.length) {
+      const foundIds = existingRegistrations.map(r => r.id);
+      const notFoundIds = validIds.filter(id => !foundIds.includes(id));
+      console.log(`⚠️ Algunas inscripciones no fueron encontradas: ${notFoundIds.join(', ')}`);
+    }
+
+    // Eliminar las inscripciones encontradas
+    const foundIds = existingRegistrations.map(r => r.id);
+    const deleteResult = await sql`
+      DELETE FROM activity_registrations 
+      WHERE id = ANY(${foundIds})
+      RETURNING id, participant_name
+    `;
+
+    console.log(`🗑️ Eliminación en lote completada: ${deleteResult.length} inscripciones eliminadas`);
+    console.log('📋 Inscripciones eliminadas:', existingRegistrations.map(r => `${r.participant_name} (${r.activity_title})`).join(', '));
+    
+    res.json({ 
+      success: true, 
+      message: `${deleteResult.length} inscripciones eliminadas exitosamente`,
+      deletedCount: deleteResult.length,
+      requestedCount: validIds.length,
+      deletedRegistrations: existingRegistrations.map(r => ({
+        id: r.id,
+        participantName: r.participant_name,
+        participantEmail: r.participant_email,
+        activityTitle: r.activity_title
+      }))
+    });
+  } catch (error) {
+    console.error('Error en eliminación en lote:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
