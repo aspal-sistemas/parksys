@@ -57,7 +57,7 @@ export default function PublicActivitiesPage() {
   }) : [];
 
   const handleActivityClick = (activityId: number) => {
-    setLocation(`/public/activities/${activityId}`);
+    setLocation(`/activities/${activityId}`);
   };
 
   const getAvailableSlots = (activity: any) => {

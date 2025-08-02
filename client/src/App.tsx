@@ -1137,13 +1137,13 @@ function Router() {
         </Route>
 
         {/* Rutas públicas para ciudadanos */}
-        <Route path="/public/activities">
+        <Route path="/activities">
           <Suspense fallback={<div className="p-8 text-center">Cargando actividades públicas...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/public/activities')))}
           </Suspense>
         </Route>
         
-        <Route path="/public/activities/:id">
+        <Route path="/activities/:id">
           <Suspense fallback={<div className="p-8 text-center">Cargando detalles de actividad...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/public/activity-detail')))}
           </Suspense>

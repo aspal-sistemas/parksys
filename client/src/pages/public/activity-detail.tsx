@@ -63,7 +63,7 @@ export default function ActivityDetailPage() {
 
   // Fetch activity details
   const { data: activity, isLoading, error } = useQuery({
-    queryKey: ['/api/activities', activityId],
+    queryKey: [`/api/activities/${activityId}`],
     enabled: activityId > 0,
   });
 
@@ -179,7 +179,7 @@ export default function ActivityDetailPage() {
             <p className="text-gray-600 mb-4">
               La actividad que buscas no existe o no está disponible para inscripciones.
             </p>
-            <Button onClick={() => setLocation('/public/activities')}>
+            <Button onClick={() => setLocation('/activities')}>
               <ArrowLeft className="mr-2 h-4 w-4" />
               Volver a actividades
             </Button>
@@ -201,7 +201,7 @@ export default function ActivityDetailPage() {
         <div className="container mx-auto px-4 py-6">
           <Button 
             variant="outline" 
-            onClick={() => setLocation('/public/activities')}
+            onClick={() => setLocation('/activities')}
             className="mb-4"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
