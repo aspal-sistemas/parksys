@@ -135,7 +135,7 @@ export function registerActivityPaymentRoutes(app: Express) {
         INSERT INTO activity_registrations (
           activity_id, participant_name, participant_email, participant_phone, 
           age, emergency_contact_name, emergency_phone, medical_conditions, 
-          notes, status, payment_status, stripe_payment_intent_id, 
+          notes, status, stripe_payment_intent_id, 
           stripe_customer_id, paid_amount, payment_date, accepts_terms, registration_date
         ) 
         VALUES (
@@ -149,7 +149,6 @@ export function registerActivityPaymentRoutes(app: Express) {
           ${registrationData.medicalConditions || null}, 
           ${registrationData.additionalNotes || null}, 
           ${activity.requiresApproval ? 'pending' : 'approved'}, 
-          ${registrationData.paymentStatus}, 
           ${registrationData.stripePaymentIntentId}, 
           ${registrationData.stripeCustomerId}, 
           ${registrationData.paidAmount}, 
@@ -157,7 +156,7 @@ export function registerActivityPaymentRoutes(app: Express) {
           ${true}, 
           ${new Date()}
         )
-        RETURNING id, participant_name, status, payment_status
+        RETURNING id, participant_name, status
       `);
       
       const newRegistration = insertResult.rows[0] || { id: 'generated' };
