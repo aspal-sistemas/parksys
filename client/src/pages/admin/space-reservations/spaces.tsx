@@ -71,9 +71,9 @@ export default function ReservableSpacesPage() {
   });
 
   const { data: parksResponse } = useQuery({
-    queryKey: ['/api/parks'],
+    queryKey: ['/api/parks?simple=true'],
     queryFn: async () => {
-      const response = await fetch('/api/parks');
+      const response = await fetch('/api/parks?simple=true');
       if (!response.ok) {
         throw new Error('Error al cargar los parques');
       }

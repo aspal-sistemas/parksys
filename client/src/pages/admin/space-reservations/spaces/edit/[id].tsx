@@ -93,7 +93,7 @@ export default function EditSpacePage() {
 
   // Obtener lista de parques
   const { data: parksData = [], isLoading: parksLoading } = useQuery<Park[]>({
-    queryKey: ["/api/parks"],
+    queryKey: ["/api/parks?simple=true"],
   });
 
   // Asegurar que parks es siempre un array

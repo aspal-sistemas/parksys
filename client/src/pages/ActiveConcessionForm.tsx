@@ -73,9 +73,9 @@ function ActiveConcessionForm() {
   });
 
   const { data: parksData } = useQuery({
-    queryKey: ['/api/parks'],
+    queryKey: ['/api/parks?simple=true'],
     queryFn: async () => {
-      const response = await fetch('/api/parks');
+      const response = await fetch('/api/parks?simple=true');
       if (!response.ok) throw new Error('Error fetching parks');
       return response.json();
     }

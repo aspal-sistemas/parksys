@@ -69,7 +69,7 @@ export default function VolunteerRegistration() {
 
   // Obtener parques para el select
   const { data: parks } = useQuery({
-    queryKey: ['/api/parks'],
+    queryKey: ['/api/parks?simple=true'],
     retry: false,
   });
 
