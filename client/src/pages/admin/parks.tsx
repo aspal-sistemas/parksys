@@ -101,11 +101,11 @@ const AdminParksContent = () => {
 
   // Fetch all parks with simplified configuration
   const { 
-    data: parksResponse, 
+    data: parks = [], 
     isLoading: isLoadingParks,
     isError: isErrorParks,
     refetch: refetchParks
-  } = useQuery<{data: Park[], pagination: any}>({
+  } = useQuery<Park[]>({
     queryKey: ['/api/parks'],
     refetchOnWindowFocus: false,
     refetchInterval: false,
@@ -113,8 +113,6 @@ const AdminParksContent = () => {
     retry: 1,
     suspense: false, // Explicitly disable suspense
   });
-
-  const parks = parksResponse?.data || [];
 
   // Fetch municipalities for filter
   const { 
@@ -345,7 +343,7 @@ const AdminParksContent = () => {
                       </div>
                       <div className="flex items-center">
                         <Package className="h-4 w-4 mr-1" />
-                        <span>{park.area.toLocaleString()} m²</span>
+                        <span>{park.area ? park.area.toLocaleString() : 'N/A'} m²</span>
                       </div>
                       <Badge variant="secondary">
                         {getParkTypeLabel(park.parkType)}
@@ -427,7 +425,7 @@ const AdminParksContent = () => {
                 
                 <div className="flex items-center text-sm text-gray-600">
                   <Package className="h-4 w-4 mr-2" />
-                  <span>{park.area.toLocaleString()} m²</span>
+                  <span>{park.area ? park.area.toLocaleString() : 'N/A'} m²</span>
                 </div>
                 
                 {park.description && (

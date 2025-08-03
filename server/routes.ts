@@ -733,15 +733,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Obtenemos los parques con sus imágenes y amenidades
       const parks = await getParksDirectly(filters);
       
-      // Para el formulario de espacios, necesitamos solo el array básico
-      const simplifiedParks = parks.map(park => ({
-        id: park.id,
-        name: park.name,
-        location: park.location
-      }));
-      
-      // Respondemos con el array simple para compatibilidad con formularios
-      res.json(simplifiedParks);
+      // Si la consulta viene específicamente para formularios (tiene parámetro 'simple'), devolver solo id y name
+      if (req.query.simple === 'true') {
+        const simplifiedParks = parks.map(park => ({
+          id: park.id,
+          name: park.name,
+          location: park.location
+        }));
+        res.json(simplifiedParks);
+      } else {
+        // Para la administración, devolver datos completos
+        res.json(parks);
+      }
     } catch (error) {
       console.error("Error al obtener parques:", error);
       res.status(500).json({ message: "Error fetching parks" });
