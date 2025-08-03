@@ -45,8 +45,8 @@ export function registerReservableSpacesRoutes(app: Express) {
     }
   });
 
-  // Obtener un espacio reservable específico
-  app.get("/api/reservable-spaces/:id", async (req, res) => {
+  // Obtener un espacio reservable específico (dos rutas para compatibilidad)
+  const getSpaceById = async (req: any, res: any) => {
     try {
       const { id } = req.params;
       
@@ -87,7 +87,11 @@ export function registerReservableSpacesRoutes(app: Express) {
       console.error("Error al obtener detalles del espacio:", error);
       res.status(500).json({ error: "Error al obtener detalles del espacio" });
     }
-  });
+  };
+
+  // Registrar ambas rutas para compatibilidad
+  app.get("/api/reservable-spaces/:id", getSpaceById);
+  app.get("/api/spaces/:id", getSpaceById);
 
   // Obtener reservas existentes para un espacio específico
   app.get("/api/space-reservations/space/:id", async (req, res) => {
