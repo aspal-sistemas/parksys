@@ -208,73 +208,7 @@ const AdminDashboard: React.FC = () => {
         </Card>
       </div>
 
-      {/* NUEVA SECCIÓN: Sistema de Roles y Permisos - INTEGRACIÓN AVANZADA */}
-      <div className="grid gap-6 md:grid-cols-3 mb-8">
-        <Card className="bg-gradient-to-br from-indigo-50 to-blue-50 border-indigo-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-indigo-800">
-              Sistema de Roles
-            </CardTitle>
-            <Shield className="h-5 w-5 text-indigo-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-indigo-900">{SYSTEM_ROLES.length}</div>
-            <div className="flex items-center mt-2">
-              <UserCheck className="h-4 w-4 text-indigo-600 mr-1" />
-              <span className="text-sm text-indigo-600 font-medium">{totalActiveUsers} usuarios activos</span>
-            </div>
-            <Progress value={averageActivity} className="mt-3" />
-            <p className="text-xs text-indigo-700 mt-1">{averageActivity}% actividad promedio</p>
-          </CardContent>
-        </Card>
 
-        <Card className="bg-gradient-to-br from-rose-50 to-pink-50 border-rose-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-rose-800">
-              Mi Rol Actual
-            </CardTitle>
-            <Crown className="h-5 w-5 text-rose-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="mb-3">
-              <RoleBadge roleId={permissions.userRole} showLevel={true} size="lg" />
-            </div>
-            <div className="text-sm text-rose-700">
-              <div className="flex items-center justify-between mb-1">
-                <span>Nivel de acceso:</span>
-                <span className="font-medium">{permissions.roleLevel}/10</span>
-              </div>
-              <Progress value={permissions.roleLevel * 10} className="mt-2" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gradient-to-br from-emerald-50 to-green-50 border-emerald-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-emerald-800">
-              Permisos Activos
-            </CardTitle>
-            <Lock className="h-5 w-5 text-emerald-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-emerald-900">7</div>
-            <div className="flex items-center mt-2">
-              <SettingsIcon className="h-4 w-4 text-emerald-600 mr-1" />
-              <span className="text-sm text-emerald-600 font-medium">Módulos disponibles</span>
-            </div>
-            <div className="mt-3 space-y-1">
-              {['Gestión', 'Finanzas', 'RH'].slice(0, 3).map((module) => (
-                <div key={module} className="flex items-center justify-between text-xs">
-                  <span className="text-emerald-700">{module}</span>
-                  <Badge variant="outline" className="text-emerald-600 border-emerald-300">
-                    Admin
-                  </Badge>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
 
       {/* Gráficas principales */}
       <div className="grid gap-6 md:grid-cols-3 mb-8">
@@ -421,6 +355,69 @@ const AdminDashboard: React.FC = () => {
                 <Tooltip />
               </PieChart>
             </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Sistema de Roles - Información secundaria justo antes de indicadores críticos */}
+      <div className="grid gap-6 md:grid-cols-3 mb-6">
+        <Card className="bg-gradient-to-br from-indigo-50 to-blue-50 border-indigo-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-indigo-800">
+              Sistema de Roles
+            </CardTitle>
+            <Shield className="h-5 w-5 text-indigo-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-indigo-900">{SYSTEM_ROLES.length}</div>
+            <div className="flex items-center mt-2">
+              <UserCheck className="h-4 w-4 text-indigo-600 mr-1" />
+              <span className="text-sm text-indigo-600 font-medium">{totalActiveUsers} usuarios</span>
+            </div>
+            <Progress value={averageActivity} className="mt-3" />
+            <p className="text-xs text-indigo-700 mt-1">{averageActivity}% actividad</p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-rose-50 to-pink-50 border-rose-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-rose-800">
+              Mi Rol
+            </CardTitle>
+            <Crown className="h-5 w-5 text-rose-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="mb-2">
+              <RoleBadge roleId={permissions.userRole} size="sm" />
+            </div>
+            <div className="text-sm text-rose-700">
+              <div className="flex items-center justify-between mb-1">
+                <span>Nivel:</span>
+                <span className="font-medium">{permissions.roleLevel}/10</span>
+              </div>
+              <Progress value={permissions.roleLevel * 10} className="mt-2" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-emerald-50 to-green-50 border-emerald-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-emerald-800">
+              Permisos
+            </CardTitle>
+            <Lock className="h-5 w-5 text-emerald-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-emerald-900">7</div>
+            <div className="flex items-center mt-2">
+              <SettingsIcon className="h-4 w-4 text-emerald-600 mr-1" />
+              <span className="text-sm text-emerald-600 font-medium">Módulos</span>
+            </div>
+            <div className="mt-2">
+              <Badge variant="outline" className="text-emerald-600 border-emerald-300 text-xs">
+                Admin completo
+              </Badge>
+            </div>
           </CardContent>
         </Card>
       </div>
