@@ -6,16 +6,70 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { 
   Lock, Shield, Settings, Search, Filter,
-  Grid, List, Eye, Edit, Users, BarChart
+  Grid, List, Eye, Edit, Users, BarChart, Info,
+  Crown, UserCog, UserCheck, User, Briefcase,
+  GraduationCap, HeadphonesIcon, Coffee, HardHat
 } from 'lucide-react';
 import { Link } from 'wouter';
+
+// Definiciones de roles y matriz de permisos
+const mockRoles = [
+  { id: 'super-admin', name: 'Super Admin', level: 10, description: 'Acceso total al sistema', color: 'bg-red-500', icon: Crown },
+  { id: 'admin-sistema', name: 'Admin Sistema', level: 9, description: 'Administrador completo', color: 'bg-orange-500', icon: Shield },
+  { id: 'admin-parques', name: 'Admin Parques', level: 8, description: 'Administrador de parques', color: 'bg-yellow-500', icon: UserCog },
+  { id: 'coordinador', name: 'Coordinador', level: 7, description: 'Coordinador de área', color: 'bg-green-500', icon: Users },
+  { id: 'supervisor', name: 'Supervisor', level: 6, description: 'Supervisor operativo', color: 'bg-blue-500', icon: UserCheck },
+  { id: 'operador-senior', name: 'Operador Senior', level: 5, description: 'Operador con experiencia', color: 'bg-indigo-500', icon: Briefcase },
+  { id: 'operador', name: 'Operador', level: 4, description: 'Operador estándar', color: 'bg-purple-500', icon: User },
+  { id: 'asistente', name: 'Asistente', level: 3, description: 'Asistente administrativo', color: 'bg-pink-500', icon: GraduationCap },
+  { id: 'invitado', name: 'Invitado', level: 2, description: 'Acceso de invitado', color: 'bg-gray-500', icon: Coffee },
+  { id: 'consultor', name: 'Consultor', level: 1, description: 'Consultor externo', color: 'bg-slate-500', icon: HardHat }
+];
 
 // Componente principal de gestión de permisos
 export default function PermissionsManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  // Matriz de permisos - sincronizada con localStorage
+  const [permissionMatrix, setPermissionMatrix] = useState<Record<string, Record<string, boolean>>>(() => {
+    const saved = localStorage.getItem('admin-roles-permission-matrix');
+    return saved ? JSON.parse(saved) : {};
+  });
+
+  // Escuchar cambios en localStorage para sincronizar entre pestañas
+  React.useEffect(() => {
+    const handleStorageChange = () => {
+      const saved = localStorage.getItem('admin-roles-permission-matrix');
+      if (saved) {
+        setPermissionMatrix(JSON.parse(saved));
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Polling para detectar cambios en la misma pestaña
+    const interval = setInterval(() => {
+      const saved = localStorage.getItem('admin-roles-permission-matrix');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setPermissionMatrix(current => {
+          // Solo actualizar si hay cambios
+          if (JSON.stringify(current) !== JSON.stringify(parsed)) {
+            return parsed;
+          }
+          return current;
+        });
+      }
+    }, 1000);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, []);
 
   // Datos simulados de módulos y permisos
   const modulePermissions = [
@@ -291,11 +345,56 @@ export default function PermissionsManagement() {
                       ))}
                       {module.permissions.length > 3 && (
                         <div className="text-center pt-2">
-                          <Link href={`/admin-roles/permissions/modules/${module.id}`}>
-                            <Button variant="ghost" size="sm">
-                              Ver todos ({module.permissions.length - 3} más)
-                            </Button>
-                          </Link>
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button variant="ghost" size="sm">
+                                Ver todos ({module.permissions.length - 3} más)
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-2xl">
+                              <DialogHeader>
+                                <DialogTitle className="flex items-center gap-2">
+                                  {module.icon}
+                                  Permisos de {module.name}
+                                </DialogTitle>
+                                <DialogDescription>
+                                  Lista completa de permisos disponibles para el módulo {module.name}
+                                </DialogDescription>
+                              </DialogHeader>
+                              <div className="space-y-4 max-h-[400px] overflow-y-auto">
+                                {['read', 'write', 'admin'].map((type) => {
+                                  const typePermissions = module.permissions.filter(p => p.type === type);
+                                  if (typePermissions.length === 0) return null;
+                                  
+                                  return (
+                                    <div key={type}>
+                                      <h4 className="font-medium mb-2 flex items-center gap-2">
+                                        <Badge className={getPermissionTypeColor(type)}>
+                                          {getPermissionTypeLabel(type)}
+                                        </Badge>
+                                        ({typePermissions.length} permisos)
+                                      </h4>
+                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                        {typePermissions.map((permission) => (
+                                          <div key={permission.id} className="p-3 bg-gray-50 rounded-lg">
+                                            <p className="font-medium text-sm">{permission.name}</p>
+                                            <p className="text-xs text-gray-600">ID: {permission.id}</p>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                              <div className="flex justify-end pt-4">
+                                <Link href="/admin-roles/permissions/matrix">
+                                  <Button>
+                                    Configurar en Matriz
+                                  </Button>
+                                </Link>
+                              </div>
+                            </DialogContent>
+                          </Dialog>
                         </div>
                       )}
                     </div>
@@ -353,16 +452,65 @@ export default function PermissionsManagement() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-8">
-                  <Lock className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                  <p className="text-gray-600">
-                    Funcionalidad disponible después de crear la matriz de permisos
-                  </p>
-                  <Link href="/admin-roles/permissions/matrix">
-                    <Button className="mt-4">
-                      Ir a Matriz de Permisos
-                    </Button>
-                  </Link>
+                <div className="space-y-6">
+                  {mockRoles.map((role) => (
+                    <div key={role.id} className="border rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className={`p-2 rounded-lg ${role.color} text-white`}>
+                            <role.icon className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-lg">{role.name}</h3>
+                            <p className="text-sm text-gray-600">Nivel {role.level} • {role.description}</p>
+                          </div>
+                        </div>
+                        <Badge variant="outline">
+                          {Object.values(permissionMatrix[role.id] || {}).filter(Boolean).length} permisos
+                        </Badge>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        {['read', 'write', 'admin'].map((type) => {
+                          const typePermissions = modulePermissions.flatMap(module => 
+                            module.permissions.filter(p => p.type === type && permissionMatrix[role.id]?.[p.id])
+                          );
+                          
+                          if (typePermissions.length === 0) return null;
+                          
+                          return (
+                            <div key={type}>
+                              <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                                <Badge className={getPermissionTypeColor(type)}>
+                                  {getPermissionTypeLabel(type)}
+                                </Badge>
+                                ({typePermissions.length})
+                              </h4>
+                              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                                {typePermissions.map((permission) => (
+                                  <div key={permission.id} className="text-xs bg-gray-50 px-2 py-1 rounded">
+                                    {permission.name}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        })}
+                        
+                        {Object.values(permissionMatrix[role.id] || {}).filter(Boolean).length === 0 && (
+                          <div className="text-center py-4 text-gray-500">
+                            <Lock className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                            <p>No hay permisos asignados</p>
+                            <Link href="/admin-roles/permissions/matrix">
+                              <Button size="sm" variant="outline" className="mt-2">
+                                Configurar Permisos
+                              </Button>
+                            </Link>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>

@@ -132,7 +132,10 @@ const mockPermissions: Permission[] = [
 ];
 
 export default function PermissionMatrix() {
-  const [permissionMatrix, setPermissionMatrix] = useState<PermissionMatrix>({});
+  const [permissionMatrix, setPermissionMatrix] = useState<PermissionMatrix>(() => {
+    const saved = localStorage.getItem('admin-roles-permission-matrix');
+    return saved ? JSON.parse(saved) : {};
+  });
   const [filter, setFilter] = useState<'all' | 'read' | 'write' | 'admin'>('all');
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -162,13 +165,16 @@ export default function PermissionMatrix() {
 
   // Función para alternar permiso
   const togglePermission = (roleId: string, permissionId: string) => {
-    setPermissionMatrix(prev => ({
-      ...prev,
+    const newMatrix = {
+      ...permissionMatrix,
       [roleId]: {
-        ...prev[roleId],
-        [permissionId]: !prev[roleId]?.[permissionId]
+        ...permissionMatrix[roleId],
+        [permissionId]: !permissionMatrix[roleId]?.[permissionId]
       }
-    }));
+    };
+    setPermissionMatrix(newMatrix);
+    // Guardar en localStorage para sincronización
+    localStorage.setItem('admin-roles-permission-matrix', JSON.stringify(newMatrix));
   };
 
   // Función para verificar si un permiso está activo
@@ -194,6 +200,7 @@ export default function PermissionMatrix() {
   const applyTemplate = (template: 'hierarchical' | 'clear') => {
     if (template === 'clear') {
       setPermissionMatrix({});
+      localStorage.setItem('admin-roles-permission-matrix', JSON.stringify({}));
       return;
     }
 
@@ -230,6 +237,8 @@ export default function PermissionMatrix() {
     });
 
     setPermissionMatrix(newMatrix);
+    // Guardar en localStorage para sincronización
+    localStorage.setItem('admin-roles-permission-matrix', JSON.stringify(newMatrix));
     toast({
       title: "Plantilla aplicada",
       description: "Se han asignado permisos según la jerarquía de roles.",
