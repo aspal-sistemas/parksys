@@ -1163,6 +1163,53 @@ function Router() {
 
 
         
+        {/* RUTAS DEL MÓDULO DE ROLES Y PERMISOS - DESARROLLO INDEPENDIENTE */}
+        <Route path="/admin-roles">
+          <Suspense fallback={<div className="p-8 text-center">Cargando sistema de roles...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin-roles')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin-roles/roles">
+          <Suspense fallback={<div className="p-8 text-center">Cargando gestión de roles...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin-roles/roles')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin-roles/roles/create">
+          <Suspense fallback={<div className="p-8 text-center">Cargando formulario de nuevo rol...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin-roles/roles/create')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin-roles/permissions">
+          <Suspense fallback={<div className="p-8 text-center">Cargando gestión de permisos...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin-roles/permissions')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin-roles/permissions/matrix">
+          <Suspense fallback={<div className="p-8 text-center">Cargando matriz de permisos...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin-roles/permissions/matrix')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin-roles/users">
+          <Suspense fallback={<div className="p-8 text-center">Cargando gestión de usuarios...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin-roles/users')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin-roles/settings">
+          <Suspense fallback={<div className="p-8 text-center">Cargando configuración del sistema...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin-roles/settings')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin-roles/reports">
+          <Suspense fallback={<div className="p-8 text-center">Cargando reportes y auditoría...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin-roles/reports')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin-roles/testing">
+          <Suspense fallback={<div className="p-8 text-center">Cargando herramientas de testing...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin-roles/testing')))}
+          </Suspense>
+        </Route>
+
         <Route component={NotFound} />
         </Switch>
       </div>
