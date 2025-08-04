@@ -28,6 +28,78 @@ interface UserPreferences {
   availableNotifications: NotificationPreference[];
 }
 
+// Lista completa de notificaciones disponibles
+const DEFAULT_NOTIFICATIONS: NotificationPreference[] = [
+  // Notificaciones de Sistema
+  { key: 'system_updates', label: 'Actualizaciones del Sistema', description: 'Notificaciones sobre actualizaciones y mantenimiento del sistema' },
+  { key: 'system_backup', label: 'Respaldos del Sistema', description: 'Alertas sobre el estado de los respaldos automáticos' },
+  { key: 'system_errors', label: 'Errores del Sistema', description: 'Notificaciones críticas sobre errores del sistema' },
+  
+  // Notificaciones de Actividades
+  { key: 'activities_new', label: 'Nuevas Actividades', description: 'Cuando se registra una nueva actividad en el sistema' },
+  { key: 'activities_registration', label: 'Inscripciones a Actividades', description: 'Cuando alguien se inscribe a una actividad' },
+  { key: 'activities_cancellation', label: 'Cancelaciones de Actividades', description: 'Cuando se cancela una actividad programada' },
+  { key: 'activities_reminder', label: 'Recordatorios de Actividades', description: 'Recordatorios automáticos antes de actividades' },
+  
+  // Notificaciones de Voluntarios
+  { key: 'volunteers_new', label: 'Nuevos Voluntarios', description: 'Cuando se registra un nuevo voluntario' },
+  { key: 'volunteers_assignment', label: 'Asignaciones de Voluntarios', description: 'Cuando se asigna un voluntario a una actividad' },
+  { key: 'volunteers_evaluation', label: 'Evaluaciones de Voluntarios', description: 'Recordatorios para evaluar voluntarios' },
+  { key: 'volunteers_recognition', label: 'Reconocimientos', description: 'Notificaciones sobre reconocimientos otorgados' },
+  
+  // Notificaciones de Mantenimiento
+  { key: 'maintenance_scheduled', label: 'Mantenimiento Programado', description: 'Notificaciones sobre mantenimiento programado' },
+  { key: 'maintenance_completed', label: 'Mantenimiento Completado', description: 'Cuando se completa una tarea de mantenimiento' },
+  { key: 'maintenance_overdue', label: 'Mantenimiento Vencido', description: 'Alertas sobre mantenimiento vencido' },
+  { key: 'maintenance_emergency', label: 'Mantenimiento de Emergencia', description: 'Notificaciones urgentes de mantenimiento' },
+  
+  // Notificaciones de Incidentes
+  { key: 'incidents_new', label: 'Nuevos Incidentes', description: 'Cuando se reporta un nuevo incidente' },
+  { key: 'incidents_assigned', label: 'Incidentes Asignados', description: 'Cuando se te asigna un incidente' },
+  { key: 'incidents_resolved', label: 'Incidentes Resueltos', description: 'Cuando se resuelve un incidente' },
+  { key: 'incidents_escalated', label: 'Incidentes Escalados', description: 'Cuando un incidente se escala' },
+  
+  // Notificaciones Financieras
+  { key: 'finance_budget_alerts', label: 'Alertas de Presupuesto', description: 'Cuando se excede un límite presupuestario' },
+  { key: 'finance_payments', label: 'Pagos Procesados', description: 'Confirmaciones de pagos procesados' },
+  { key: 'finance_reports', label: 'Reportes Financieros', description: 'Cuando están listos los reportes financieros' },
+  { key: 'finance_approvals', label: 'Aprobaciones Financieras', description: 'Solicitudes que requieren aprobación financiera' },
+  
+  // Notificaciones de Recursos Humanos
+  { key: 'hr_new_employee', label: 'Nuevos Empleados', description: 'Cuando se registra un nuevo empleado' },
+  { key: 'hr_payroll', label: 'Nómina Procesada', description: 'Confirmaciones de procesamiento de nómina' },
+  { key: 'hr_vacation_requests', label: 'Solicitudes de Vacaciones', description: 'Nuevas solicitudes de vacaciones' },
+  { key: 'hr_evaluations', label: 'Evaluaciones de Desempeño', description: 'Recordatorios de evaluaciones pendientes' },
+  
+  // Notificaciones de Eventos
+  { key: 'events_new', label: 'Nuevos Eventos', description: 'Cuando se programa un nuevo evento' },
+  { key: 'events_registration', label: 'Registro a Eventos', description: 'Cuando alguien se registra a un evento' },
+  { key: 'events_reminder', label: 'Recordatorios de Eventos', description: 'Recordatorios automáticos de eventos próximos' },
+  { key: 'events_cancellation', label: 'Cancelación de Eventos', description: 'Cuando se cancela un evento' },
+  
+  // Notificaciones de Comunicación
+  { key: 'communications_messages', label: 'Mensajes Directos', description: 'Mensajes directos de otros usuarios' },
+  { key: 'communications_announcements', label: 'Anuncios Generales', description: 'Anuncios importantes del sistema' },
+  { key: 'communications_newsletters', label: 'Boletines Informativos', description: 'Boletines periódicos del sistema' },
+  
+  // Notificaciones de Feedback
+  { key: 'feedback', label: '📋 Sistema de Retroalimentación', description: 'Configuración principal para todas las notificaciones de feedback del sistema' },
+  { key: 'feedback_share_enabled', label: '  └─ Compartir Experiencia', description: 'Invitaciones para compartir experiencias en actividades y servicios' },
+  { key: 'feedback_report_problem_enabled', label: '  └─ Reportar Problemas', description: 'Solicitudes para reportar problemas o incidencias detectadas' },
+  { key: 'feedback_suggest_improvement_enabled', label: '  └─ Sugerir Mejoras', description: 'Invitaciones para sugerir mejoras en servicios y procesos' },
+  { key: 'feedback_propose_event_enabled', label: '  └─ Proponer Eventos', description: 'Oportunidades para proponer nuevos eventos y actividades' },
+  
+  // Notificaciones de Seguridad
+  { key: 'security_login_alerts', label: 'Alertas de Inicio de Sesión', description: 'Notificaciones sobre inicios de sesión sospechosos' },
+  { key: 'security_password_changes', label: 'Cambios de Contraseña', description: 'Confirmaciones de cambios de contraseña' },
+  { key: 'security_access_violations', label: 'Violaciones de Acceso', description: 'Intentos de acceso no autorizados' },
+  
+  // Notificaciones de Inventario
+  { key: 'inventory_low_stock', label: 'Stock Bajo', description: 'Alertas cuando el inventario está bajo' },
+  { key: 'inventory_new_items', label: 'Nuevos Elementos', description: 'Cuando se agregan nuevos elementos al inventario' },
+  { key: 'inventory_assignments', label: 'Asignaciones de Inventario', description: 'Cuando se asignan elementos del inventario' }
+];
+
 interface PreferenceSummary {
   role: string;
   total_users: number;
@@ -64,10 +136,35 @@ export default function NotificationPreferences() {
   });
 
   // Obtener preferencias del usuario seleccionado
-  const { data: userPreferences, isLoading: preferencesLoading } = useQuery<UserPreferences>({
+  const { data: userPreferences, isLoading: preferencesLoading, error: preferencesError } = useQuery<UserPreferences>({
     queryKey: [`/api/users/${selectedUserId}/notification-preferences`],
     enabled: !!selectedUserId,
   });
+
+  // Crear datos simulados cuando la API no está disponible
+  const mockUserPreferences: UserPreferences | null = selectedUserId && usersData ? {
+    userId: selectedUserId,
+    role: usersData.find((u: any) => u.id === selectedUserId)?.role || 'admin',
+    fullName: usersData.find((u: any) => u.id === selectedUserId)?.fullName || usersData.find((u: any) => u.id === selectedUserId)?.name || 'Usuario',
+    email: usersData.find((u: any) => u.id === selectedUserId)?.email || 'email@example.com',
+    preferences: {
+      // Establecer algunas preferencias por defecto
+      system_updates: true,
+      activities_new: true,
+      volunteers_new: true,
+      maintenance_scheduled: true,
+      incidents_new: true,
+      feedback: true,
+      feedback_share_enabled: false,
+      feedback_report_problem_enabled: true,
+      feedback_suggest_improvement_enabled: true,
+      feedback_propose_event_enabled: false,
+    },
+    availableNotifications: DEFAULT_NOTIFICATIONS
+  } : null;
+
+  // Usar datos reales si están disponibles, sino usar datos simulados
+  const effectiveUserPreferences = userPreferences || (preferencesError ? mockUserPreferences : null);
 
   // Obtener resumen de preferencias por rol
   const { data: summaryData, error: summaryError } = useQuery<{ summary: PreferenceSummary[] }>({
@@ -112,15 +209,25 @@ export default function NotificationPreferences() {
   }, [usersData, selectedUserId]);
 
   const handlePreferenceChange = (key: string, value: boolean) => {
-    if (!userPreferences) return;
+    if (!effectiveUserPreferences) return;
+    
+    // Si estamos en modo demo (API no disponible), actualizar preferencias localmente
+    if (preferencesError && mockUserPreferences) {
+      mockUserPreferences.preferences[key] = value;
+      toast({
+        title: "Preferencia actualizada",
+        description: `${key} ${value ? 'activada' : 'desactivada'} (modo demo)`,
+      });
+      return;
+    }
     
     const updatedPreferences = {
-      ...userPreferences.preferences,
+      ...effectiveUserPreferences.preferences,
       [key]: value,
     };
     
     updatePreferencesMutation.mutate({
-      userId: userPreferences.userId,
+      userId: effectiveUserPreferences.userId,
       preferences: updatedPreferences,
     });
   };
@@ -260,7 +367,7 @@ export default function NotificationPreferences() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">Todos los roles</SelectItem>
-                        {availableRoles.map((role) => (
+                        {availableRoles.map((role: string) => (
                           <SelectItem key={role} value={role}>
                             {getRoleLabel(role)}
                           </SelectItem>
@@ -342,25 +449,26 @@ export default function NotificationPreferences() {
                       <p className="mt-2 text-sm text-gray-500">Cargando preferencias...</p>
                     </CardContent>
                   </Card>
-                ) : userPreferences ? (
+                ) : effectiveUserPreferences ? (
                   <Card>
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Settings className="h-5 w-5" />
-                        Preferencias de {userPreferences.fullName || 'Usuario'}
+                        Preferencias de {effectiveUserPreferences.fullName || 'Usuario'}
+                        {preferencesError && <Badge variant="outline" className="ml-2">Modo Demo</Badge>}
                       </CardTitle>
                       <CardDescription>
                         <div className="flex items-center gap-2">
                           <Mail className="h-4 w-4" />
-                          {userPreferences.email}
-                          <Badge className={getRoleColor(userPreferences.role)} variant="secondary">
-                            {getRoleLabel(userPreferences.role)}
+                          {effectiveUserPreferences.email}
+                          <Badge className={getRoleColor(effectiveUserPreferences.role)} variant="secondary">
+                            {getRoleLabel(effectiveUserPreferences.role)}
                           </Badge>
                         </div>
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      {userPreferences.availableNotifications?.map((notification, index) => {
+                      {effectiveUserPreferences?.availableNotifications?.map((notification, index) => {
                         // Detectar si es una notificación granular de feedback
                         const isFeedbackSubNotification = notification.key.startsWith('feedback_');
                         const isFeedbackMain = notification.key === 'feedback';
@@ -393,18 +501,20 @@ export default function NotificationPreferences() {
                                 </p>
                               </div>
                               <Switch
-                                checked={userPreferences.preferences?.[notification.key] || false}
+                                checked={effectiveUserPreferences?.preferences?.[notification.key] || false}
                                 onCheckedChange={(checked) => handlePreferenceChange(notification.key, checked)}
                                 disabled={updatePreferencesMutation.isPending}
                                 className={isFeedbackSubNotification ? "scale-90" : ""}
                               />
                             </div>
-                            {index < (userPreferences.availableNotifications?.length || 0) - 1 && (
+                            {index < (effectiveUserPreferences?.availableNotifications?.length || 0) - 1 && (
                               <Separator className="mt-4" />
                             )}
                           </div>
                         );
-                      }) || (
+                      }) || []}
+                      
+                      {(!effectiveUserPreferences?.availableNotifications || effectiveUserPreferences.availableNotifications.length === 0) && (
                         <div className="p-4 text-center text-gray-500">
                           <AlertTriangle className="h-8 w-8 mx-auto mb-2 text-gray-400" />
                           <p>No hay preferencias de notificación disponibles para este usuario</p>
