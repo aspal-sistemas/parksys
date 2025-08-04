@@ -180,7 +180,7 @@ export default function NotificationPreferences() {
   });
 
   // Obtener roles únicos para el filtro
-  const availableRoles = [...new Set(relevantUsers.map((user: any) => user.role))];
+  const availableRoles = Array.from(new Set(relevantUsers.map((user: any) => user.role)));
 
   // Limpiar filtros
   const clearFilters = () => {

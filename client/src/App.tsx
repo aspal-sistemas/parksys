@@ -369,8 +369,8 @@ function Router() {
           </Suspense>
         </Route>
         <Route path="/admin/users/notifications">
-          <Suspense fallback={<div className="p-8 text-center">Cargando notificaciones...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/users/notifications')))}
+          <Suspense fallback={<div className="p-8 text-center">Cargando preferencias de notificaciones...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/settings/NotificationPreferences')))}
           </Suspense>
         </Route>
         <Route path="/admin/login" component={AdminLogin} />
