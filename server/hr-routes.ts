@@ -26,23 +26,25 @@ export function registerHRRoutes(app: any, apiRouter: Router, isAuthenticated: a
   // Obtener todos los empleados - Para el sistema de vacaciones
   apiRouter.get("/employees", async (req: Request, res: Response) => {
     try {
-      // Consultar directamente la tabla employees usando SQL
-      const result = await pool.query(`
-        SELECT 
-          id,
-          full_name as "fullName",
-          email,
-          position,
-          department
-        FROM employees
-        ORDER BY full_name ASC
-      `);
+      console.log("🔍 Obteniendo empleados desde la tabla employees...");
       
-      console.log(`Encontrados ${result.rows.length} empleados desde tabla employees`);
-      res.json(result.rows);
+      // Usar Drizzle ORM en lugar de SQL crudo
+      const employeesList = await db
+        .select({
+          id: employees.id,
+          fullName: employees.fullName,
+          email: employees.email,
+          position: employees.position,
+          department: employees.department
+        })
+        .from(employees)
+        .orderBy(employees.fullName);
+      
+      console.log(`✅ Encontrados ${employeesList.length} empleados desde tabla employees`);
+      res.json(employeesList);
     } catch (error) {
-      console.error("Error al obtener empleados:", error);
-      res.status(500).json({ error: "Error interno del servidor" });
+      console.error("❌ Error al obtener empleados:", error);
+      res.status(500).json({ error: "Error interno del servidor", details: error instanceof Error ? error.message : 'Unknown error' });
     }
   });
 

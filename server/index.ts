@@ -1212,7 +1212,19 @@ async function initializeDatabaseAsync() {
   registerActivityPaymentRoutes(app);
   console.log("✅ Rutas principales registradas");
 
-  // Registrar rutas críticas básicas
+  // Registrar rutas críticas básicas - HR routes primero
+  try {
+    const { registerHRRoutes } = await import("./hr-routes");
+    const hrRouter = express.Router();
+    hrRouter.use(express.json({ limit: '50mb' }));
+    hrRouter.use(express.urlencoded({ extended: true, limit: '50mb' }));
+    registerHRRoutes(app, hrRouter, (req: Request, res: Response, next: NextFunction) => next());
+    app.use("/api/hr", hrRouter);
+    console.log("✅ HR routes registered");
+  } catch (error) {
+    console.error("❌ Error registering HR routes:", error);
+  }
+
   try {
     const { registerTimeOffRoutes } = await import("./time-off-routes");
     const timeOffRouter = express.Router();
@@ -1322,20 +1334,7 @@ async function initializeDatabaseAsync() {
   
   let appServer: any;
 
-  // Register basic HR routes in background
-  setTimeout(async () => {
-    try {
-      const { registerHRRoutes } = await import("./hr-routes");
-      const hrRouter = express.Router();
-      hrRouter.use(express.json({ limit: '50mb' }));
-      hrRouter.use(express.urlencoded({ extended: true, limit: '50mb' }));
-      registerHRRoutes(app, hrRouter, (req: Request, res: Response, next: NextFunction) => next());
-      app.use("/api/hr", hrRouter);
-      console.log("✅ HR routes registered");
-    } catch (error) {
-      console.error("❌ Error registering HR routes:", error);
-    }
-  }, 3000);
+  // HR routes now registered earlier in the process
 
   // Forzar modo producción para resolver problemas con proxy de Replit
   console.log("🔧 Configurando servidor para resolver problemas de proxy de Replit...");
