@@ -1210,6 +1210,28 @@ function Router() {
           </Suspense>
         </Route>
 
+        {/* NUEVAS RUTAS: Sistema de Roles Avanzado Integrado */}
+        <Route path="/admin/roles">
+          <Suspense fallback={<div className="p-8 text-center">Cargando gestión de roles...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/roles')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/permissions/matrix">
+          <Suspense fallback={<div className="p-8 text-center">Cargando matriz de permisos...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/permissions/matrix')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/role-assignments">
+          <Suspense fallback={<div className="p-8 text-center">Cargando asignación de usuarios...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/role-assignments')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/role-audits">
+          <Suspense fallback={<div className="p-8 text-center">Cargando auditoría de roles...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/role-audits')))}
+          </Suspense>
+        </Route>
+
         <Route component={NotFound} />
         </Switch>
       </div>

@@ -291,6 +291,7 @@ const AdminSidebarComplete: React.FC = () => {
     if (location.startsWith('/admin/events') || location.startsWith('/admin/eventos-ambu')) return 'eventos';
     if (location.startsWith('/admin/space-reservations')) return 'reservas';
     if (location.startsWith('/admin/amenities')) return 'amenidades';
+    if (location.startsWith('/admin/roles') || location.startsWith('/admin/permissions') || location.startsWith('/admin/role-')) return 'roles-sistema';
     return null;
   };
   
@@ -341,7 +342,7 @@ const AdminSidebarComplete: React.FC = () => {
     // Otros módulos
     if (location.startsWith('/admin/users') || location.startsWith('/admin/permissions') || location.startsWith('/admin/settings')) return ['system'];
     if (location.startsWith('/admin/hr')) return ['hr'];
-    if (location.startsWith('/admin/security')) return ['security'];
+    if (location.startsWith('/admin/security') || location.startsWith('/admin/roles') || location.startsWith('/admin/role-assignments') || location.startsWith('/admin/role-audits')) return ['security'];
     if (location.startsWith('/admin/documents') || location.startsWith('/admin/comments')) return ['system'];
     return []; // Sin módulos abiertos por defecto
   };
@@ -1213,7 +1214,7 @@ const AdminSidebarComplete: React.FC = () => {
 
 
 
-          {/* 8. SEGURIDAD */}
+          {/* 8. SEGURIDAD - SISTEMA AVANZADO DE ROLES INTEGRADO */}
           <ModuleNav 
             title="Seguridad" 
             icon={<Shield className="h-5 w-5" />}
@@ -1226,6 +1227,45 @@ const AdminSidebarComplete: React.FC = () => {
             >
               Dashboard
             </NavItem>
+            
+            {/* NUEVA SECCIÓN: Sistema de Roles Avanzado */}
+            <CollapsibleSubmenu
+              id="roles-sistema"
+              title="Sistema de Roles"
+              icon={<UserCog className="h-4 w-4" />}
+              isExpanded={expandedSubmenus.includes('roles-sistema')}
+              onToggle={toggleSubmenu}
+            >
+              <NavItem 
+                href="/admin/roles" 
+                icon={<Shield className="h-4 w-4" />}
+                active={location === '/admin/roles'}
+              >
+                Gestión de Roles
+              </NavItem>
+              <NavItem 
+                href="/admin/permissions/matrix" 
+                icon={<Grid className="h-4 w-4" />}
+                active={location === '/admin/permissions/matrix'}
+              >
+                Matriz de Permisos
+              </NavItem>
+              <NavItem 
+                href="/admin/role-assignments" 
+                icon={<UserCheck className="h-4 w-4" />}
+                active={location === '/admin/role-assignments'}
+              >
+                Asignación de Usuarios
+              </NavItem>
+              <NavItem 
+                href="/admin/role-audits" 
+                icon={<Activity className="h-4 w-4" />}
+                active={location === '/admin/role-audits'}
+              >
+                Auditoría de Roles
+              </NavItem>
+            </CollapsibleSubmenu>
+
             <NavItem 
               href="/admin/security/password" 
               icon={<Lock className="h-5 w-5" />}
@@ -1238,7 +1278,7 @@ const AdminSidebarComplete: React.FC = () => {
               icon={<ClipboardList className="h-5 w-5" />}
               active={location === '/admin/security/audit'}
             >
-              Auditoría
+              Auditoría General
             </NavItem>
             <NavItem 
               href="/admin/security/settings" 
