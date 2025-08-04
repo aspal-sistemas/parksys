@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { RoleBadge, SYSTEM_ROLES } from '@/components/RoleBadge';
 import { usePermissions } from '@/components/RoleGuard';
@@ -13,6 +14,9 @@ import {
   Shield, Users, Settings, Search, Plus, Edit, Trash2, Crown, Star, 
   Filter, BarChart, Activity, Eye, UserCog, Grid, CheckCircle
 } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { toast } from '@/hooks/use-toast';
 
 // Datos simulados de usuarios por rol
 const ROLE_USAGE_DATA = [
@@ -201,17 +205,175 @@ const RolesManagement: React.FC = () => {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center gap-2 justify-end">
-                        <Button variant="ghost" size="sm">
-                          <Eye className="h-4 w-4" />
-                        </Button>
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-lg">
+                            <DialogHeader>
+                              <DialogTitle>Detalles del Rol</DialogTitle>
+                              <DialogDescription>
+                                Información completa del rol {role.displayName}
+                              </DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                              <div>
+                                <Label className="text-sm font-medium">Rol</Label>
+                                <div className="mt-1">
+                                  <RoleBadge roleId={role.id} showIcon={true} />
+                                </div>
+                              </div>
+                              <div>
+                                <Label className="text-sm font-medium">Descripción</Label>
+                                <p className="text-sm text-gray-600">{role.description}</p>
+                              </div>
+                              <div>
+                                <Label className="text-sm font-medium">Nivel Jerárquico</Label>
+                                <p className="text-sm text-gray-600">Nivel {role.level} de 7</p>
+                              </div>
+                              <div>
+                                <Label className="text-sm font-medium">Usuarios Asignados</Label>
+                                <p className="text-sm text-gray-600">{usage?.userCount || 0} usuarios totales</p>
+                              </div>
+                              <div>
+                                <Label className="text-sm font-medium">Usuarios Activos</Label>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <span className="text-sm text-gray-600">{usage?.activeUsers || 0} usuarios</span>
+                                  <Progress value={activityPercent} className="w-24" />
+                                  <span className="text-xs text-gray-500">{activityPercent}%</span>
+                                </div>
+                              </div>
+                              <div>
+                                <Label className="text-sm font-medium">Última Actividad</Label>
+                                <p className="text-sm text-gray-600">{usage?.lastActivity || 'N/A'}</p>
+                              </div>
+                              <div>
+                                <Label className="text-sm font-medium">Estado</Label>
+                                <div className="mt-1">
+                                  <Badge variant="outline" className="text-green-600 border-green-300">
+                                    <CheckCircle className="h-3 w-3 mr-1" />
+                                    Activo
+                                  </Badge>
+                                </div>
+                              </div>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                        
                         {permissions.canWrite('Seguridad') && (
-                          <Button variant="ghost" size="sm">
-                            <Edit className="h-4 w-4" />
-                          </Button>
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button variant="ghost" size="sm">
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-md">
+                              <DialogHeader>
+                                <DialogTitle>Editar Rol</DialogTitle>
+                                <DialogDescription>
+                                  Modifica las propiedades del rol {role.displayName}
+                                </DialogDescription>
+                              </DialogHeader>
+                              <div className="space-y-4">
+                                <div>
+                                  <Label className="text-sm font-medium">Descripción</Label>
+                                  <Input defaultValue={role.description} />
+                                </div>
+                                <div>
+                                  <Label className="text-sm font-medium">Estado</Label>
+                                  <Select defaultValue="active">
+                                    <SelectTrigger>
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="active">Activo</SelectItem>
+                                      <SelectItem value="inactive">Inactivo</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                                <div>
+                                  <Label className="text-sm font-medium">Configuración Avanzada</Label>
+                                  <p className="text-xs text-gray-500 mb-2">Los niveles jerárquicos no se pueden modificar</p>
+                                  <div className="bg-gray-50 p-3 rounded-lg">
+                                    <div className="text-sm">
+                                      <span className="font-medium">Nivel:</span> {role.level}/7<br />
+                                      <span className="font-medium">ID:</span> {role.id}
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="flex justify-end gap-2 pt-4">
+                                  <Button variant="outline">
+                                    Cancelar
+                                  </Button>
+                                  <Button onClick={() => {
+                                    toast({
+                                      title: "Rol actualizado",
+                                      description: "Los cambios se han guardado exitosamente",
+                                    });
+                                  }}>
+                                    Guardar Cambios
+                                  </Button>
+                                </div>
+                              </div>
+                            </DialogContent>
+                          </Dialog>
                         )}
-                        <Button variant="ghost" size="sm">
-                          <BarChart className="h-4 w-4" />
-                        </Button>
+                        
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                              <BarChart className="h-4 w-4" />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-lg">
+                            <DialogHeader>
+                              <DialogTitle>Estadísticas del Rol</DialogTitle>
+                              <DialogDescription>
+                                Métricas y análisis de uso del rol {role.displayName}
+                              </DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                              <div className="grid grid-cols-2 gap-4">
+                                <Card>
+                                  <CardContent className="pt-6">
+                                    <div className="text-2xl font-bold">{usage?.userCount || 0}</div>
+                                    <p className="text-xs text-muted-foreground">Usuarios Totales</p>
+                                  </CardContent>
+                                </Card>
+                                <Card>
+                                  <CardContent className="pt-6">
+                                    <div className="text-2xl font-bold">{usage?.activeUsers || 0}</div>
+                                    <p className="text-xs text-muted-foreground">Usuarios Activos</p>
+                                  </CardContent>
+                                </Card>
+                              </div>
+                              
+                              <div>
+                                <Label className="text-sm font-medium">Tasa de Actividad</Label>
+                                <div className="mt-2">
+                                  <Progress value={activityPercent} className="w-full" />
+                                  <p className="text-xs text-gray-500 mt-1">{activityPercent}% de usuarios activos</p>
+                                </div>
+                              </div>
+                              
+                              <div>
+                                <Label className="text-sm font-medium">Última Actividad</Label>
+                                <p className="text-sm text-gray-600">{usage?.lastActivity || 'Sin actividad reciente'}</p>
+                              </div>
+                              
+                              <div>
+                                <Label className="text-sm font-medium">Nivel de Acceso</Label>
+                                <div className="mt-1">
+                                  <Badge variant="outline" className="font-mono">
+                                    Nivel {role.level} - {role.level <= 2 ? 'Alto' : role.level <= 4 ? 'Medio' : 'Básico'}
+                                  </Badge>
+                                </div>
+                              </div>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
                       </div>
                     </TableCell>
                   </TableRow>

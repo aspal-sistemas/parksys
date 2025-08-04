@@ -13,6 +13,8 @@ import {
   Activity, Shield, Clock, User, Eye, Download, Filter, Search,
   CheckCircle, XCircle, AlertTriangle, Info, Edit, UserCog, Grid
 } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 
 // Datos simulados de auditoría de roles
 const AUDIT_LOGS = [
@@ -146,6 +148,8 @@ const RoleAudits: React.FC = () => {
   const [selectedAction, setSelectedAction] = useState('all');
   const [selectedSeverity, setSelectedSeverity] = useState('all');
   const [selectedModule, setSelectedModule] = useState('all');
+  const [viewingLog, setViewingLog] = useState<any>(null);
+  const [editingLog, setEditingLog] = useState<any>(null);
   const permissions = usePermissions();
 
   const filteredLogs = AUDIT_LOGS.filter(log => {
@@ -409,9 +413,135 @@ const RoleAudits: React.FC = () => {
                     )}
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="sm">
-                      <Eye className="h-4 w-4" />
-                    </Button>
+                    <div className="flex items-center gap-2 justify-end">
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-lg">
+                          <DialogHeader>
+                            <DialogTitle>Detalles del Evento de Auditoría</DialogTitle>
+                            <DialogDescription>
+                              Información completa del registro de auditoría #{log.id}
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div>
+                              <Label className="text-sm font-medium">Fecha y Hora</Label>
+                              <p className="text-sm text-gray-600">{new Date(log.timestamp).toLocaleString()}</p>
+                            </div>
+                            <div>
+                              <Label className="text-sm font-medium">Tipo de Acción</Label>
+                              <div className="flex items-center gap-2 mt-1">
+                                {getActionIcon(log.action)}
+                                <span className="text-sm">{getActionLabel(log.action)}</span>
+                              </div>
+                            </div>
+                            {log.user && (
+                              <div>
+                                <Label className="text-sm font-medium">Usuario Afectado</Label>
+                                <p className="text-sm text-gray-600">{log.user} (ID: {log.userId})</p>
+                              </div>
+                            )}
+                            <div>
+                              <Label className="text-sm font-medium">Ejecutado Por</Label>
+                              <p className="text-sm text-gray-600">{log.performedBy} {log.performedById > 0 && `(ID: ${log.performedById})`}</p>
+                            </div>
+                            <div>
+                              <Label className="text-sm font-medium">Descripción</Label>
+                              <p className="text-sm text-gray-600">{log.description}</p>
+                            </div>
+                            <div>
+                              <Label className="text-sm font-medium">Severidad</Label>
+                              <div className="mt-1">
+                                <Badge className={getSeverityColor(log.severity)}>
+                                  {log.severity === 'high' && <AlertTriangle className="h-3 w-3 mr-1" />}
+                                  {log.severity === 'medium' && <Info className="h-3 w-3 mr-1" />}
+                                  {log.severity === 'low' && <CheckCircle className="h-3 w-3 mr-1" />}
+                                  {log.severity.toUpperCase()}
+                                </Badge>
+                              </div>
+                            </div>
+                            {log.module && (
+                              <div>
+                                <Label className="text-sm font-medium">Módulo</Label>
+                                <div className="mt-1">
+                                  <Badge variant="outline">{log.module}</Badge>
+                                </div>
+                              </div>
+                            )}
+                            {log.fromRole && log.toRole && (
+                              <div>
+                                <Label className="text-sm font-medium">Cambio de Rol</Label>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <RoleBadge roleId={log.fromRole} size="sm" />
+                                  <span>→</span>
+                                  <RoleBadge roleId={log.toRole} size="sm" />
+                                </div>
+                              </div>
+                            )}
+                            {log.ipAddress && (
+                              <div>
+                                <Label className="text-sm font-medium">Dirección IP</Label>
+                                <p className="text-sm text-gray-600 font-mono">{log.ipAddress}</p>
+                              </div>
+                            )}
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                      
+                      {permissions.canWrite('Seguridad') && (
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-md">
+                            <DialogHeader>
+                              <DialogTitle>Editar Registro de Auditoría</DialogTitle>
+                              <DialogDescription>
+                                Modifica información adicional del evento de auditoría
+                              </DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                              <div>
+                                <Label className="text-sm font-medium">Notas Adicionales</Label>
+                                <Input defaultValue="" placeholder="Agregar comentarios o notas..." />
+                              </div>
+                              <div>
+                                <Label className="text-sm font-medium">Clasificación</Label>
+                                <Select defaultValue={log.severity}>
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="low">Baja</SelectItem>
+                                    <SelectItem value="medium">Media</SelectItem>
+                                    <SelectItem value="high">Alta</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div className="flex justify-end gap-2 pt-4">
+                                <Button variant="outline">
+                                  Cancelar
+                                </Button>
+                                <Button onClick={() => {
+                                  toast({
+                                    title: "Registro actualizado",
+                                    description: "Los cambios se han guardado en el log de auditoría",
+                                  });
+                                }}>
+                                  Guardar
+                                </Button>
+                              </div>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

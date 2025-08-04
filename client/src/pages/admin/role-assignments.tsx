@@ -13,8 +13,10 @@ import { Link } from 'wouter';
 import { 
   UserCog, Users, Search, Filter, Plus, Edit, Shield, Star, 
   CheckCircle, XCircle, Clock, ArrowUpDown, Download, Upload,
-  UserPlus, UserMinus, RotateCcw, Activity
+  UserPlus, UserMinus, RotateCcw, Activity, Eye
 } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
 
 // Datos simulados de usuarios del sistema
@@ -34,6 +36,8 @@ const RoleAssignments: React.FC = () => {
   const [selectedRole, setSelectedRole] = useState<string>('all');
   const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
   const [selectedNewRole, setSelectedNewRole] = useState<string>('');
+  const [editingUser, setEditingUser] = useState<any>(null);
+  const [viewingUser, setViewingUser] = useState<any>(null);
   const permissions = usePermissions();
 
   const filteredUsers = MOCK_USERS.filter(user => 
@@ -291,24 +295,130 @@ const RoleAssignments: React.FC = () => {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center gap-2 justify-end">
-                      <Select
-                        value={user.currentRole}
-                        onValueChange={(newRole) => handleSingleRoleChange(user.id, newRole)}
-                        disabled={!permissions.canWrite('Seguridad')}
-                      >
-                        <SelectTrigger className="w-32">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {SYSTEM_ROLES.map(role => (
-                            <SelectItem key={role.id} value={role.id}>
-                              <div className="flex items-center gap-1">
-                                <RoleBadge roleId={role.id} size="sm" />
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-md">
+                          <DialogHeader>
+                            <DialogTitle>Detalles del Usuario</DialogTitle>
+                            <DialogDescription>
+                              Información completa del perfil del usuario
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div>
+                              <Label className="text-sm font-medium">Nombre Completo</Label>
+                              <p className="text-sm text-gray-600">{user.name}</p>
+                            </div>
+                            <div>
+                              <Label className="text-sm font-medium">Correo Electrónico</Label>
+                              <p className="text-sm text-gray-600">{user.email}</p>
+                            </div>
+                            <div>
+                              <Label className="text-sm font-medium">Rol Actual</Label>
+                              <div className="mt-1">
+                                <RoleBadge roleId={user.currentRole} />
                               </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                            </div>
+                            <div>
+                              <Label className="text-sm font-medium">Departamento</Label>
+                              <p className="text-sm text-gray-600">{user.department}</p>
+                            </div>
+                            <div>
+                              <Label className="text-sm font-medium">Estado</Label>
+                              <div className="mt-1">
+                                <Badge variant={user.status === 'active' ? 'default' : 'secondary'}>
+                                  {user.status === 'active' ? 'Activo' : 'Inactivo'}
+                                </Badge>
+                              </div>
+                            </div>
+                            <div>
+                              <Label className="text-sm font-medium">Última Conexión</Label>
+                              <p className="text-sm text-gray-600">{user.lastLogin}</p>
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                      
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-md">
+                          <DialogHeader>
+                            <DialogTitle>Editar Usuario</DialogTitle>
+                            <DialogDescription>
+                              Modifica la información del usuario y sus asignaciones
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div>
+                              <Label className="text-sm font-medium">Rol</Label>
+                              <Select defaultValue={user.currentRole}>
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {SYSTEM_ROLES.map(role => (
+                                    <SelectItem key={role.id} value={role.id}>
+                                      <div className="flex items-center gap-2">
+                                        <RoleBadge roleId={role.id} size="sm" showText={false} />
+                                        {role.displayName}
+                                      </div>
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div>
+                              <Label className="text-sm font-medium">Departamento</Label>
+                              <Select defaultValue={user.department}>
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="Dirección General">Dirección General</SelectItem>
+                                  <SelectItem value="Parques y Jardines">Parques y Jardines</SelectItem>
+                                  <SelectItem value="Actividades Recreativas">Actividades Recreativas</SelectItem>
+                                  <SelectItem value="Administración">Administración</SelectItem>
+                                  <SelectItem value="Operaciones">Operaciones</SelectItem>
+                                  <SelectItem value="Auditoría">Auditoría</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div>
+                              <Label className="text-sm font-medium">Estado</Label>
+                              <Select defaultValue={user.status}>
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="active">Activo</SelectItem>
+                                  <SelectItem value="inactive">Inactivo</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="flex justify-end gap-2 pt-4">
+                              <Button variant="outline">
+                                Cancelar
+                              </Button>
+                              <Button onClick={() => {
+                                toast({
+                                  title: "Usuario actualizado",
+                                  description: "Los cambios se han guardado exitosamente",
+                                });
+                              }}>
+                                Guardar Cambios
+                              </Button>
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
                     </div>
                   </TableCell>
                 </TableRow>

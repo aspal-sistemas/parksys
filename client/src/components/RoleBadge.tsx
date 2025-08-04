@@ -88,6 +88,7 @@ interface RoleBadgeProps {
   roleId: string;
   showLevel?: boolean;
   showIcon?: boolean;
+  showText?: boolean;
   size?: 'sm' | 'md' | 'lg';
   variant?: 'default' | 'outline' | 'secondary';
   className?: string;
@@ -97,6 +98,7 @@ export const RoleBadge: React.FC<RoleBadgeProps> = ({
   roleId,
   showLevel = false,
   showIcon = true,
+  showText = true,
   size = 'md',
   variant = 'default',
   className
@@ -107,12 +109,26 @@ export const RoleBadge: React.FC<RoleBadgeProps> = ({
     return (
       <Badge variant="outline" className={cn("text-gray-500", className)}>
         <Users className="w-3 h-3 mr-1" />
-        Rol desconocido
+        {showText && "Rol desconocido"}
       </Badge>
     );
   }
 
   const Icon = role.icon;
+  
+  // Para solo icono (tabla limpia)
+  if (!showText) {
+    return (
+      <div className={cn(
+        "inline-flex items-center justify-center rounded text-white",
+        role.color,
+        size === 'sm' ? 'w-6 h-6' : size === 'lg' ? 'w-10 h-10' : 'w-8 h-8',
+        className
+      )}>
+        <Icon className={size === 'sm' ? 'w-3 h-3' : size === 'lg' ? 'w-5 h-5' : 'w-4 h-4'} />
+      </div>
+    );
+  }
   
   const sizeClasses = {
     sm: 'text-xs px-2 py-1',

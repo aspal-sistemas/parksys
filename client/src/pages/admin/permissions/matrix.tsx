@@ -3,7 +3,7 @@ import AdminLayout from '@/components/AdminLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RoleBadge, SYSTEM_ROLES } from '@/components/RoleBadge';
 import { DEFAULT_ROLE_PERMISSIONS, SYSTEM_MODULES, usePermissions } from '@/components/RoleGuard';
@@ -46,6 +46,16 @@ const PermissionsMatrix: React.FC = () => {
   }, [permissions, hasChanges]);
 
   const updatePermission = (roleId: string, module: string, permissionType: 'read' | 'write' | 'admin', enabled: boolean) => {
+    // Proteger Super Admin - no puede editarse
+    if (roleId === 'super-admin') {
+      toast({
+        title: "Protección de Super Admin",
+        description: "Los permisos de Super Admin no pueden modificarse",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (!userPermissions.canAdmin('Seguridad')) {
       toast({
         title: "Sin permisos",
@@ -60,11 +70,11 @@ const PermissionsMatrix: React.FC = () => {
       if (!newPermissions[roleId]) {
         newPermissions[roleId] = {} as any;
       }
-      if (!newPermissions[roleId][module]) {
-        newPermissions[roleId][module] = [];
+      if (!newPermissions[roleId][module as keyof typeof newPermissions[roleId]]) {
+        (newPermissions[roleId] as any)[module] = [];
       }
 
-      const currentPerms = [...newPermissions[roleId][module]];
+      const currentPerms = [...(newPermissions[roleId] as any)[module]];
       if (enabled) {
         if (!currentPerms.includes(permissionType)) {
           currentPerms.push(permissionType);
@@ -76,21 +86,21 @@ const PermissionsMatrix: React.FC = () => {
         }
       }
 
-      newPermissions[roleId][module] = currentPerms;
+      (newPermissions[roleId] as any)[module] = currentPerms;
       return newPermissions;
     });
     setHasChanges(true);
   };
 
   const hasPermission = (roleId: string, module: string, permissionType: 'read' | 'write' | 'admin'): boolean => {
-    return permissions[roleId]?.[module]?.includes(permissionType) || false;
+    return (permissions[roleId] as any)?.[module]?.includes(permissionType) || false;
   };
 
   const getPermissionCount = (roleId: string): number => {
     let count = 0;
     SYSTEM_MODULES.forEach(module => {
-      if (permissions[roleId]?.[module]) {
-        count += permissions[roleId][module].length;
+      if ((permissions[roleId] as any)?.[module]) {
+        count += (permissions[roleId] as any)[module].length;
       }
     });
     return count;
@@ -266,30 +276,30 @@ const PermissionsMatrix: React.FC = () => {
                         <div className="flex flex-col gap-2">
                           {/* Read Permission */}
                           <div className="flex items-center justify-center gap-1">
-                            <Switch
+                            <Checkbox
                               checked={hasPermission(role.id, module, 'read')}
-                              onCheckedChange={(checked) => updatePermission(role.id, module, 'read', checked)}
-                              disabled={!userPermissions.canAdmin('Seguridad')}
+                              onCheckedChange={(checked) => updatePermission(role.id, module, 'read', !!checked)}
+                              disabled={!userPermissions.canAdmin('Seguridad') || role.id === 'super-admin'}
                             />
                             <span className="text-xs text-gray-600">R</span>
                           </div>
                           
                           {/* Write Permission */}
                           <div className="flex items-center justify-center gap-1">
-                            <Switch
+                            <Checkbox
                               checked={hasPermission(role.id, module, 'write')}
-                              onCheckedChange={(checked) => updatePermission(role.id, module, 'write', checked)}
-                              disabled={!userPermissions.canAdmin('Seguridad')}
+                              onCheckedChange={(checked) => updatePermission(role.id, module, 'write', !!checked)}
+                              disabled={!userPermissions.canAdmin('Seguridad') || role.id === 'super-admin'}
                             />
                             <span className="text-xs text-gray-600">W</span>
                           </div>
                           
                           {/* Admin Permission */}
                           <div className="flex items-center justify-center gap-1">
-                            <Switch
+                            <Checkbox
                               checked={hasPermission(role.id, module, 'admin')}
-                              onCheckedChange={(checked) => updatePermission(role.id, module, 'admin', checked)}
-                              disabled={!userPermissions.canAdmin('Seguridad')}
+                              onCheckedChange={(checked) => updatePermission(role.id, module, 'admin', !!checked)}
+                              disabled={!userPermissions.canAdmin('Seguridad') || role.id === 'super-admin'}
                             />
                             <span className="text-xs text-gray-600">A</span>
                           </div>
