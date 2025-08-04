@@ -293,7 +293,7 @@ export default function TreeSpecies() {
 
   // Extraer los datos de la respuesta
   const treeSpecies = treeSpeciesResponse?.data || [];
-  const parks = parksResponse?.data || [];
+  const parks = parksResponse || [];
   const parkSpeciesAssignments = parkSpeciesResponse?.data || [];
 
   // Filtrar especies

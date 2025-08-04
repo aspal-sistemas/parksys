@@ -324,10 +324,10 @@ function ActivitiesPage() {
   });
 
   // Obtener parques para filtros
-  const { data: parksResponse } = useQuery<{data: any[], pagination: any}>({
+  const { data: parksResponse } = useQuery<any[]>({
     queryKey: ['/api/parks'],
   });
-  const parksData = parksResponse?.data || [];
+  const parksData = parksResponse || [];
 
   const filteredActivities = useMemo(() => {
     if (!Array.isArray(activitiesData)) return [];
