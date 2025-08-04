@@ -10,23 +10,18 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { 
   Lock, Shield, Settings, Search, Filter,
   Grid, List, Eye, Edit, Users, BarChart, Info,
-  Crown, UserCog, UserCheck, User, Briefcase,
-  GraduationCap, HeadphonesIcon, Coffee, HardHat
+  Crown, Star, Gem, Zap, Award
 } from 'lucide-react';
 import { Link } from 'wouter';
 
-// Definiciones de roles y matriz de permisos
 const mockRoles = [
   { id: 'super-admin', name: 'Super Admin', level: 10, description: 'Acceso total al sistema', color: 'bg-red-500', icon: Crown },
-  { id: 'admin-sistema', name: 'Admin Sistema', level: 9, description: 'Administrador completo', color: 'bg-orange-500', icon: Shield },
-  { id: 'admin-parques', name: 'Admin Parques', level: 8, description: 'Administrador de parques', color: 'bg-yellow-500', icon: UserCog },
-  { id: 'coordinador', name: 'Coordinador', level: 7, description: 'Coordinador de área', color: 'bg-green-500', icon: Users },
-  { id: 'supervisor', name: 'Supervisor', level: 6, description: 'Supervisor operativo', color: 'bg-blue-500', icon: UserCheck },
-  { id: 'operador-senior', name: 'Operador Senior', level: 5, description: 'Operador con experiencia', color: 'bg-indigo-500', icon: Briefcase },
-  { id: 'operador', name: 'Operador', level: 4, description: 'Operador estándar', color: 'bg-purple-500', icon: User },
-  { id: 'asistente', name: 'Asistente', level: 3, description: 'Asistente administrativo', color: 'bg-pink-500', icon: GraduationCap },
-  { id: 'invitado', name: 'Invitado', level: 2, description: 'Acceso de invitado', color: 'bg-gray-500', icon: Coffee },
-  { id: 'consultor', name: 'Consultor', level: 1, description: 'Consultor externo', color: 'bg-slate-500', icon: HardHat }
+  { id: 'director-general', name: 'Director General', level: 9, description: 'Director general del sistema', color: 'bg-purple-500', icon: Star },
+  { id: 'coordinador-parques', name: 'Coord. Parques', level: 8, description: 'Coordinador de parques urbanos', color: 'bg-green-500', icon: Gem },
+  { id: 'coordinador-actividades', name: 'Coord. Actividades', level: 7, description: 'Coordinador de actividades', color: 'bg-blue-500', icon: Zap },
+  { id: 'admin-financiero', name: 'Admin Financiero', level: 6, description: 'Administrador financiero', color: 'bg-yellow-500', icon: BarChart },
+  { id: 'operador-parque', name: 'Operador', level: 4, description: 'Operador de parque', color: 'bg-orange-500', icon: Award },
+  { id: 'consultor-auditor', name: 'Consultor', level: 1, description: 'Consultor auditor externo', color: 'bg-gray-500', icon: Eye }
 ];
 
 // Componente principal de gestión de permisos
