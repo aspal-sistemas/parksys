@@ -268,7 +268,7 @@ const UserDetail: React.FC<{
   });
 
   // Cargar roles del sistema jerárquico
-  const { data: roles = [] } = useQuery({
+  const { data: roles = [] } = useQuery<any[]>({
     queryKey: ['/api/roles'],
     refetchOnWindowFocus: false,
     staleTime: 10 * 60 * 1000, // 10 minutos
@@ -1081,16 +1081,16 @@ const AdminUsers = () => {
       if (statusFilter !== 'all') {
         switch (statusFilter) {
           case 'admin':
-            matchesStatus = user.roleId && [1, 2].includes(user.roleId); // Super Admin, Admin General
+            matchesStatus = user.roleId && [1, 2].includes(Number(user.roleId)); // Super Admin, Admin General
             break;
           case 'staff':
-            matchesStatus = user.roleId && [3, 4, 5].includes(user.roleId); // Coordinador, Supervisor, Técnico
+            matchesStatus = user.roleId && [3, 4, 5].includes(Number(user.roleId)); // Coordinador, Supervisor, Técnico
             break;
           case 'community':
-            matchesStatus = user.roleId && user.roleId === 6; // Operador de Campo
+            matchesStatus = user.roleId && Number(user.roleId) === 6; // Operador de Campo
             break;
           case 'business':
-            matchesStatus = user.roleId && user.roleId === 7; // Consultor Auditor
+            matchesStatus = user.roleId && Number(user.roleId) === 7; // Consultor Auditor
             break;
           case 'active':
             matchesStatus = user.createdAt ? new Date(user.createdAt) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) : false;
@@ -1457,7 +1457,7 @@ const AdminUsers = () => {
                     </div>
                   </TableCell>
                   <TableCell>{user.email}</TableCell>
-                  <TableCell>{user.fullName || `${user.firstName || ''} ${user.lastName || ''}`}</TableCell>
+                  <TableCell>{user.fullName || 'Sin nombre'}</TableCell>
                   <TableCell>{getRoleBadge(user)}</TableCell>
                   <TableCell>{formatDate(user.createdAt)}</TableCell>
                   <TableCell className="text-right">
@@ -1587,8 +1587,8 @@ const AdminUsers = () => {
       {/* Delete confirmation dialog */}
       <ConfirmDialog
         isOpen={showDeleteConfirm}
-        title={tUsers('deleteUser')}
-        message={`${t('messages.deleteConfirm')} ${userToDelete?.username}?`}
+        title="Eliminar Usuario"
+        message={`¿Estás seguro de que deseas eliminar al usuario ${userToDelete?.username}?`}
         onConfirm={handleDeleteUser}
         onCancel={() => setShowDeleteConfirm(false)}
         isLoading={deleteUserMutation.isPending}
