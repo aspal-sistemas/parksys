@@ -433,18 +433,41 @@ export class DatabaseStorage implements IStorage {
 
   async deleteUser(id: number): Promise<boolean> {
     try {
-      // Eliminar todas las referencias que apuntan al usuario
-      // Solo eliminar de tablas que realmente existen
-      await db.execute(sql`DELETE FROM time_off_requests WHERE employee_id IN (SELECT id FROM employees WHERE user_id = ${id})`);
-      // await db.execute(sql`DELETE FROM payroll WHERE employee_id IN (SELECT id FROM employees WHERE user_id = ${id})`); // Tabla no existe
-      await db.execute(sql`DELETE FROM employees WHERE user_id = ${id}`);
+      console.log(`🗑️ Iniciando eliminación del usuario ${id}...`);
       
-      // Ahora eliminar el usuario de la tabla users
+      // Eliminar todas las referencias que apuntan al usuario
+      // Orden importante: eliminar dependencias antes que las tablas padre
+      
+      // 1. Eliminar de time_off_requests (referencias a employees)
+      await db.execute(sql`DELETE FROM time_off_requests WHERE employee_id IN (SELECT id FROM employees WHERE user_id = ${id})`);
+      console.log(`✅ Referencias de time_off_requests eliminadas para usuario ${id}`);
+      
+      // 2. Eliminar de employees
+      await db.execute(sql`DELETE FROM employees WHERE user_id = ${id}`);
+      console.log(`✅ Registro de employees eliminado para usuario ${id}`);
+      
+      // 3. Eliminar de instructors (nueva dependencia detectada)
+      await db.execute(sql`DELETE FROM instructors WHERE user_id = ${id}`);
+      console.log(`✅ Registro de instructors eliminado para usuario ${id}`);
+      
+      // 4. Eliminar de concessionaire_profiles (nueva dependencia detectada)
+      await db.execute(sql`DELETE FROM concessionaire_profiles WHERE user_id = ${id}`);
+      console.log(`✅ Registro de concessionaire_profiles eliminado para usuario ${id}`);
+      
+      // 5. Eliminar de volunteers (si la tabla existe)
+      try {
+        await db.execute(sql`DELETE FROM volunteers WHERE user_id = ${id}`);
+        console.log(`✅ Registro de volunteers eliminado para usuario ${id}`);
+      } catch (error) {
+        console.log(`ℹ️ Tabla volunteers no existe o no tiene dependencias para usuario ${id}`);
+      }
+      
+      // 6. Finalmente eliminar el usuario de la tabla users
       const result = await db.delete(users).where(eq(users.id, id));
-      console.log(`✅ Usuario ${id} eliminado exitosamente`);
+      console.log(`✅ Usuario ${id} eliminado exitosamente de la tabla users`);
       return true;
     } catch (error) {
-      console.error(`Error al eliminar usuario ${id}:`, error);
+      console.error(`❌ Error al eliminar usuario ${id}:`, error);
       throw error;
     }
   }
