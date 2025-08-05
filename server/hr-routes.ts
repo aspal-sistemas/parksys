@@ -190,18 +190,61 @@ export function registerHRRoutes(app: any, apiRouter: Router, isAuthenticated: a
     try {
       const { id } = req.params;
 
+      // Verificar si el empleado tiene user_id (empleado migrado)
+      const checkResult = await pool.query(`
+        SELECT id, user_id, full_name FROM employees WHERE id = $1
+      `, [id]);
+
+      if (checkResult.rows.length === 0) {
+        return res.status(404).json({ error: "Empleado no encontrado" });
+      }
+
+      const employee = checkResult.rows[0];
+
+      // Si tiene user_id, necesitamos manejar la eliminación de forma especial
+      if (employee.user_id) {
+        console.log(`🚨 Empleado migrado detectado: ${employee.full_name} (user_id: ${employee.user_id})`);
+        
+        // Opción 1: Solo desactivar el empleado en lugar de eliminarlo
+        const updateResult = await pool.query(`
+          UPDATE employees SET 
+            status = 'inactive',
+            updated_at = CURRENT_TIMESTAMP
+          WHERE id = $1 
+          RETURNING *
+        `, [id]);
+
+        return res.json({ 
+          message: "Empleado migrado desactivado (no se puede eliminar por tener usuario asociado)",
+          employee: updateResult.rows[0],
+          action: "deactivated"
+        });
+      }
+
+      // Si no tiene user_id, eliminación normal
       const result = await pool.query(`
         DELETE FROM employees WHERE id = $1 RETURNING *
       `, [id]);
 
-      if (result.rows.length === 0) {
-        return res.status(404).json({ error: "Empleado no encontrado" });
-      }
-
-      res.json({ message: "Empleado eliminado exitosamente" });
+      res.json({ 
+        message: "Empleado eliminado exitosamente",
+        action: "deleted"
+      });
     } catch (error) {
       console.error("❌ Error al eliminar empleado:", error);
-      res.status(500).json({ error: "Error interno del servidor", details: error instanceof Error ? error.message : 'Unknown error' });
+      
+      // Manejar errores específicos de clave foránea
+      if (error instanceof Error && error.message.includes('foreign key constraint')) {
+        return res.status(400).json({ 
+          error: "No se puede eliminar: empleado tiene registros relacionados",
+          details: "Este empleado tiene datos asociados en otras tablas del sistema"
+        });
+      }
+      
+      res.status(500).json({ 
+        error: "Error interno del servidor", 
+        details: error instanceof Error ? error.message : 'Unknown error' 
+      });
     }
   });
 

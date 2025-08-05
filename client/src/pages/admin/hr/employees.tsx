@@ -272,22 +272,31 @@ export default function Employees() {
         method: 'DELETE'
       });
 
+      const data = await response.json();
+
       if (response.ok) {
-        toast({
-          title: "Empleado eliminado",
-          description: "El empleado ha sido eliminado del sistema"
-        });
+        if (data.action === 'deactivated') {
+          toast({
+            title: "Empleado desactivado",
+            description: "El empleado migrado ha sido desactivado (no se puede eliminar por tener usuario asociado)"
+          });
+        } else {
+          toast({
+            title: "Empleado eliminado",
+            description: "El empleado ha sido eliminado del sistema"
+          });
+        }
         setIsDeleteEmployeeOpen(false);
         // Recargar empleados
         const loadResponse = await fetch('/api/hr/employees');
         if (loadResponse.ok) {
-          const data = await loadResponse.json();
-          setEmployees(data);
+          const employeesData = await loadResponse.json();
+          setEmployees(employeesData);
         }
       } else {
         toast({
           title: "Error",
-          description: "No se pudo eliminar el empleado",
+          description: data.error || "No se pudo eliminar el empleado",
           variant: "destructive"
         });
       }
@@ -316,7 +325,25 @@ export default function Employees() {
               </div>
               
               <div className="flex items-center gap-3">
-                <Button onClick={() => setIsCreateEmployeeOpen(true)} className="flex items-center gap-2">
+                <Button onClick={() => {
+                  // Limpiar formulario antes de abrir modal nuevo
+                  setNewEmployeeForm({
+                    fullName: '',
+                    email: '',
+                    phone: '',
+                    position: '',
+                    department: '',
+                    salary: '',
+                    hireDate: '',
+                    workSchedule: '',
+                    address: '',
+                    emergencyContact: '',
+                    emergencyPhone: '',
+                    education: '',
+                    status: 'active'
+                  });
+                  setIsCreateEmployeeOpen(true);
+                }} className="flex items-center gap-2">
                   <UserPlus className="h-4 w-4" />
                   Nuevo Empleado
                 </Button>
@@ -1122,7 +1149,12 @@ export default function Employees() {
                 </div>
                 <div className="bg-red-50 border border-red-200 rounded-lg p-3">
                   <p className="text-red-800 text-sm font-medium">⚠️ Esta acción no se puede deshacer</p>
-                  <p className="text-red-700 text-sm">El empleado será eliminado permanentemente del sistema.</p>
+                  <p className="text-red-700 text-sm">
+                    {selectedEmployee.employeeCode?.startsWith('ADMIN') ? 
+                      'Los empleados migrados serán desactivados (no eliminados) por tener usuario asociado.' :
+                      'El empleado será eliminado permanentemente del sistema.'
+                    }
+                  </p>
                 </div>
                 <div className="flex justify-end gap-3">
                   <Button 
