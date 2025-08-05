@@ -351,11 +351,11 @@ export class DatabaseStorage implements IStorage {
       // Usar consulta SQL directa para evitar problemas con Drizzle
       const result = await db.execute(
         sql`SELECT id, username, email, full_name as "fullName", 
-            first_name as "firstName", last_name as "lastName",
             role, role_id as "roleId", municipality_id as "municipalityId",
             created_at as "createdAt", updated_at as "updatedAt",
             is_active as "isActive", last_login as "lastLogin",
-            department, position
+            department, position, phone, gender, birth_date as "birthDate",
+            bio, profile_image_url as "profileImageUrl"
             FROM users 
             ORDER BY id`
       );
