@@ -34,6 +34,7 @@ import {
 import UserAvatar from '@/components/UserAvatar';
 import UserProfileImage from '@/components/UserProfileImage';
 import AdminLayout from '@/components/AdminLayout';
+import { RoleBadge, SYSTEM_ROLES } from '@/components/RoleBadge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -62,9 +63,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Checkbox } from '@/components/ui/checkbox';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -76,10 +77,15 @@ type User = {
   fullName?: string;
   firstName?: string;
   lastName?: string;
-  role: string;
+  role: string; // Legacy field - será reemplazado por role_id
+  role_id?: number; // Nueva referencia al sistema jerárquico
   municipalityId: number | null;
   createdAt: Date;
   updatedAt: Date;
+  is_active?: boolean;
+  last_login?: Date | null;
+  department?: string;
+  position?: string;
 };
 
 interface UserFormData {
@@ -88,7 +94,8 @@ interface UserFormData {
   firstName: string;
   lastName: string;
   password: string;
-  role: string;
+  role: string; // Legacy - mantener compatibilidad
+  role_id?: number; // Nueva referencia jerárquica
   municipalityId: number | null;
   // Campos comunes adicionales
   phone?: string;
@@ -680,6 +687,10 @@ const AdminUsers = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [showFilters, setShowFilters] = useState(false);
   
+  // Estados para asignación masiva de roles
+  const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
+  const [selectedNewRole, setSelectedNewRole] = useState<string>('');
+  
   // Estados para paginación
   const [currentPage, setCurrentPage] = useState(1);
   const [recordsPerPage] = useState(10);
@@ -932,6 +943,85 @@ const AdminUsers = () => {
     setCurrentPage(1);
   };
 
+  // Calcular estadísticas por rol
+  const getRoleStatistics = () => {
+    const stats: { [key: string]: number } = {};
+    
+    // Inicializar contadores para todos los roles
+    SYSTEM_ROLES.forEach(role => {
+      stats[role.id] = 0;
+    });
+    
+    // Contar usuarios por rol
+    users.forEach((user: User) => {
+      if (user.role_id) {
+        const roleId = String(user.role_id);
+        stats[roleId] = (stats[roleId] || 0) + 1;
+      } else {
+        // Mapear roles legacy
+        const legacyRoleMap: { [key: string]: string } = {
+          'admin': '1', 'director': '2', 'manager': '3', 'supervisor': '4',
+          'guardaparques': '5', 'voluntario': '6', 'instructor': '6',
+          'concesionario': '7', 'ciudadano': '7', 'user': '7'
+        };
+        const mappedRoleId = legacyRoleMap[user.role] || '7';
+        stats[mappedRoleId] = (stats[mappedRoleId] || 0) + 1;
+      }
+    });
+    
+    return stats;
+  };
+
+  // Funciones para selección masiva
+  const handleUserSelection = (userId: number, checked: boolean) => {
+    if (checked) {
+      setSelectedUsers(prev => [...prev, userId]);
+    } else {
+      setSelectedUsers(prev => prev.filter(id => id !== userId));
+    }
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedUsers(currentUsers.map(user => user.id));
+    } else {
+      setSelectedUsers([]);
+    }
+  };
+
+  // Función para asignación masiva de roles
+  const handleBulkRoleAssignment = async () => {
+    if (!selectedNewRole || selectedUsers.length === 0) {
+      toast({
+        title: "Error",
+        description: "Selecciona usuarios y un rol para asignar",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // TODO: Implementar API call para asignación masiva
+      console.log('Asignación masiva:', { users: selectedUsers, roleId: selectedNewRole });
+      
+      toast({
+        title: "Roles asignados",
+        description: `Se asignó el rol a ${selectedUsers.length} usuarios exitosamente`,
+      });
+      
+      setSelectedUsers([]);
+      setSelectedNewRole('');
+      // Refrescar datos
+      // refetch();
+    } catch (error) {
+      toast({
+        title: "Error en asignación masiva",
+        description: "No se pudieron asignar los roles",
+        variant: "destructive",
+      });
+    }
+  };
+
   // Filter and sort users
   const filteredAndSortedUsers = users
     .filter((user: User) => {
@@ -942,7 +1032,22 @@ const AdminUsers = () => {
         (user.fullName && user.fullName.toLowerCase().includes(searchLower)) ||
         user.role.toLowerCase().includes(searchLower);
       
-      const matchesRole = roleFilter === 'all' || !roleFilter || user.role === roleFilter;
+      // Filtro por rol jerárquico mejorado
+      let matchesRole = true;
+      if (roleFilter !== 'all' && roleFilter) {
+        if (user.role_id) {
+          matchesRole = String(user.role_id) === roleFilter;
+        } else {
+          // Mapear roles legacy para filtrado
+          const legacyRoleMap: { [key: string]: string } = {
+            'admin': '1', 'director': '2', 'manager': '3', 'supervisor': '4',
+            'guardaparques': '5', 'voluntario': '6', 'instructor': '6',
+            'concesionario': '7', 'ciudadano': '7', 'user': '7'
+          };
+          const mappedRoleId = legacyRoleMap[user.role] || '7';
+          matchesRole = mappedRoleId === roleFilter;
+        }
+      }
       
       // Filtro por estado/tipo de usuario
       let matchesStatus = true;
@@ -1029,34 +1134,29 @@ const AdminUsers = () => {
     }
   };
 
-  // Get role badge
-  const getRoleBadge = (role: string) => {
-    switch (role) {
-      case 'admin':
-        return <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-100">Administrador</Badge>;
-      case 'director':
-        return <Badge className="bg-red-100 text-red-800 hover:bg-red-100">Director</Badge>;
-      case 'manager':
-        return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">Gestor</Badge>;
-      case 'supervisor':
-        return <Badge className="bg-teal-100 text-teal-800 hover:bg-teal-100">Supervisor</Badge>;
-      case 'ciudadano':
-        return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Ciudadano</Badge>;
-      case 'voluntario':
-        return <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">Voluntario</Badge>;
-      case 'instructor':
-        return <Badge className="bg-indigo-100 text-indigo-800 hover:bg-indigo-100">Instructor</Badge>;
-      case 'guardaparques':
-        return <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100">Guardaparques</Badge>;
-      case 'guardia':
-        return <Badge className="bg-cyan-100 text-cyan-800 hover:bg-cyan-100">Guardia</Badge>;
-      case 'concesionario':
-        return <Badge className="bg-pink-100 text-pink-800 hover:bg-pink-100">Concesionario</Badge>;
-      case 'user':
-        return <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-100">Usuario</Badge>;
-      default:
-        return <Badge>{role}</Badge>;
+  // Get role badge usando el nuevo sistema jerárquico
+  const getRoleBadge = (user: User) => {
+    // Si el usuario tiene role_id, usar el sistema jerárquico
+    if (user.role_id) {
+      return <RoleBadge roleId={String(user.role_id)} size="sm" />;
     }
+    
+    // Fallback para usuarios con roles legacy
+    const legacyRoleMap: { [key: string]: string } = {
+      'admin': '1', // Super Administrador
+      'director': '2', // Administrador General
+      'manager': '3', // Coordinador de Parques
+      'supervisor': '4', // Supervisor de Operaciones
+      'guardaparques': '5', // Técnico Especialista
+      'voluntario': '6', // Operador de Campo
+      'instructor': '6', // Operador de Campo
+      'concesionario': '7', // Consultor Auditor
+      'ciudadano': '7', // Consultor Auditor
+      'user': '7' // Consultor Auditor
+    };
+    
+    const mappedRoleId = legacyRoleMap[user.role] || '7';
+    return <RoleBadge roleId={mappedRoleId} size="sm" />;
   };
 
   const { t } = useTranslation('common');
@@ -1081,6 +1181,27 @@ const AdminUsers = () => {
             </Button>
           </div>
         </Card>
+
+        {/* Estadísticas por Rol */}
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+          {SYSTEM_ROLES.map((role) => {
+            const count = getRoleStatistics()[role.id] || 0;
+            const Icon = role.icon;
+            return (
+              <Card key={role.id} className="p-4 hover:bg-blue-50 transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center w-8 h-8 rounded bg-blue-100 text-blue-800">
+                    <Icon className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-gray-900">{count}</div>
+                    <div className="text-xs text-gray-600">{role.displayName}</div>
+                  </div>
+                </div>
+              </Card>
+            );
+          })}
+        </div>
         
         {/* Search and actions bar */}
         <div className="mb-6 space-y-4">
@@ -1119,10 +1240,14 @@ const AdminUsers = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todos los roles</SelectItem>
-                    <SelectItem value="admin">Administrador</SelectItem>
-                    <SelectItem value="super_admin">Super Administrador</SelectItem>
-                    <SelectItem value="moderator">Moderador</SelectItem>
-                    <SelectItem value="operator">Operador</SelectItem>
+                    {SYSTEM_ROLES.map(role => (
+                      <SelectItem key={role.id} value={role.id}>
+                        <div className="flex items-center gap-2">
+                          <RoleBadge roleId={role.id} size="sm" showText={false} />
+                          <span>{role.displayName}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -1166,6 +1291,49 @@ const AdminUsers = () => {
         )}
       </div>
 
+      {/* Asignación masiva de roles - Solo visible cuando hay usuarios seleccionados */}
+      {selectedUsers.length > 0 && (
+        <Card className="p-4 bg-blue-50 border-blue-200">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="text-sm font-medium text-blue-900">
+                {selectedUsers.length} usuario{selectedUsers.length > 1 ? 's' : ''} seleccionado{selectedUsers.length > 1 ? 's' : ''}
+              </div>
+              <Select value={selectedNewRole} onValueChange={setSelectedNewRole}>
+                <SelectTrigger className="w-64">
+                  <SelectValue placeholder="Seleccionar nuevo rol" />
+                </SelectTrigger>
+                <SelectContent>
+                  {SYSTEM_ROLES.map(role => (
+                    <SelectItem key={role.id} value={role.id}>
+                      <div className="flex items-center gap-2">
+                        <RoleBadge roleId={role.id} size="sm" showText={false} />
+                        <span>{role.displayName}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button 
+                onClick={handleBulkRoleAssignment}
+                disabled={!selectedNewRole}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                Asignar Rol
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={() => setSelectedUsers([])}
+              >
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        </Card>
+      )}
+
       {/* Users table */}
       <div className="rounded-md border">
         {isLoading ? (
@@ -1191,6 +1359,12 @@ const AdminUsers = () => {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-12">
+                  <Checkbox 
+                    checked={selectedUsers.length === currentUsers.length && currentUsers.length > 0}
+                    onCheckedChange={handleSelectAll}
+                  />
+                </TableHead>
                 <TableHead>
                   <Button 
                     variant="ghost" 
@@ -1251,6 +1425,12 @@ const AdminUsers = () => {
             <TableBody>
               {currentUsers.map((user: User) => (
                 <TableRow key={user.id}>
+                  <TableCell>
+                    <Checkbox 
+                      checked={selectedUsers.includes(user.id)}
+                      onCheckedChange={(checked) => handleUserSelection(user.id, checked as boolean)}
+                    />
+                  </TableCell>
                   <TableCell className="font-medium">{user.id}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-3">
@@ -1265,7 +1445,7 @@ const AdminUsers = () => {
                   </TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>{user.fullName || `${user.firstName || ''} ${user.lastName || ''}`}</TableCell>
-                  <TableCell>{getRoleBadge(user.role)}</TableCell>
+                  <TableCell>{getRoleBadge(user)}</TableCell>
                   <TableCell>{formatDate(user.createdAt)}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">

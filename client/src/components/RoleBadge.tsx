@@ -17,69 +17,69 @@ export interface Role {
   icon: React.ComponentType<any>;
 }
 
-// Sistema de 7 roles jerárquicos sincronizado
+// Sistema de 7 roles jerárquicos sincronizado con BD
 export const SYSTEM_ROLES: Role[] = [
   {
-    id: 'super-admin',
+    id: '1', // Super Administrador
     name: 'super-admin',
-    displayName: 'Super Admin',
-    level: 10,
+    displayName: 'Super Administrador',
+    level: 1,
     description: 'Acceso total al sistema',
-    color: 'bg-red-500',
+    color: 'bg-blue-100 text-blue-800', // Color unificado estilo actual
     icon: Crown
   },
   {
-    id: 'director-general',
-    name: 'director-general',
-    displayName: 'Director General',
-    level: 9,
-    description: 'Director general del sistema',
-    color: 'bg-purple-500',
+    id: '2', // Administrador General
+    name: 'admin-general',
+    displayName: 'Administrador General',
+    level: 2,
+    description: 'Administrador general del sistema',
+    color: 'bg-blue-100 text-blue-800',
     icon: Star
   },
   {
-    id: 'coordinador-parques',
+    id: '3', // Coordinador de Parques
     name: 'coordinador-parques',
-    displayName: 'Coord. Parques',
-    level: 8,
+    displayName: 'Coordinador de Parques',
+    level: 3,
     description: 'Coordinador de parques urbanos',
-    color: 'bg-green-500',
+    color: 'bg-blue-100 text-blue-800',
     icon: Gem
   },
   {
-    id: 'coordinador-actividades',
-    name: 'coordinador-actividades',
-    displayName: 'Coord. Actividades',
-    level: 7,
-    description: 'Coordinador de actividades',
-    color: 'bg-blue-500',
+    id: '4', // Supervisor de Operaciones
+    name: 'supervisor-operaciones',
+    displayName: 'Supervisor de Operaciones',
+    level: 4,
+    description: 'Supervisor de operaciones de campo',
+    color: 'bg-blue-100 text-blue-800',
     icon: Zap
   },
   {
-    id: 'admin-financiero',
-    name: 'admin-financiero',
-    displayName: 'Admin Financiero',
-    level: 6,
-    description: 'Administrador financiero',
-    color: 'bg-yellow-500',
+    id: '5', // Técnico Especialista
+    name: 'tecnico-especialista',
+    displayName: 'Técnico Especialista',
+    level: 5,
+    description: 'Técnico especialista en áreas',
+    color: 'bg-blue-100 text-blue-800',
     icon: BarChart
   },
   {
-    id: 'operador-parque',
-    name: 'operador-parque',
-    displayName: 'Operador',
-    level: 4,
-    description: 'Operador de parque',
-    color: 'bg-orange-500',
+    id: '6', // Operador de Campo
+    name: 'operador-campo',
+    displayName: 'Operador de Campo',
+    level: 6,
+    description: 'Operador de campo',
+    color: 'bg-blue-100 text-blue-800',
     icon: Award
   },
   {
-    id: 'consultor-auditor',
+    id: '7', // Consultor Auditor
     name: 'consultor-auditor',
-    displayName: 'Consultor',
-    level: 1,
+    displayName: 'Consultor Auditor',
+    level: 7,
     description: 'Consultor auditor externo',
-    color: 'bg-gray-500',
+    color: 'bg-blue-100 text-blue-800',
     icon: Eye
   }
 ];
@@ -103,12 +103,12 @@ export const RoleBadge: React.FC<RoleBadgeProps> = ({
   variant = 'default',
   className
 }) => {
-  const role = SYSTEM_ROLES.find(r => r.id === roleId);
+  const role = SYSTEM_ROLES.find(r => r.id === roleId || r.id === String(roleId));
   
   if (!role) {
     return (
-      <Badge variant="outline" className={cn("text-gray-500", className)}>
-        <Users className="w-3 h-3 mr-1" />
+      <Badge variant="outline" className={cn("bg-gray-100 text-gray-800 hover:bg-gray-100", className)}>
+        <Users className={cn("mr-1", size === 'sm' ? "w-3 h-3" : "w-4 h-4")} />
         {showText && "Rol desconocido"}
       </Badge>
     );
@@ -120,7 +120,7 @@ export const RoleBadge: React.FC<RoleBadgeProps> = ({
   if (!showText) {
     return (
       <div className={cn(
-        "inline-flex items-center justify-center rounded text-white",
+        "inline-flex items-center justify-center rounded",
         role.color,
         size === 'sm' ? 'w-6 h-6' : size === 'lg' ? 'w-10 h-10' : 'w-8 h-8',
         className
@@ -142,24 +142,17 @@ export const RoleBadge: React.FC<RoleBadgeProps> = ({
     lg: 'w-4 h-4'
   };
 
-  const badgeColor = variant === 'default' 
-    ? `${role.color} text-white hover:${role.color}/80` 
-    : variant === 'outline'
-    ? `border-2 border-current text-${role.color.replace('bg-', '')}-600`
-    : '';
-
   return (
     <Badge 
-      variant={variant}
       className={cn(
         sizeClasses[size],
-        badgeColor,
-        "font-medium flex items-center gap-1 transition-colors",
+        role.color,
+        "hover:bg-blue-100 font-medium flex items-center gap-1 transition-colors",
         className
       )}
     >
       {showIcon && <Icon className={iconSizes[size]} />}
-      <span>{role.name.toUpperCase()}</span>
+      <span>{role.displayName}</span>
       {showLevel && (
         <span className="ml-1 text-xs opacity-80">
           (N{role.level})
@@ -215,7 +208,7 @@ export const RoleBadgeWithText: React.FC<{
         "font-medium",
         size === 'sm' ? 'text-xs' : size === 'lg' ? 'text-base' : 'text-sm'
       )}>
-        {role.name.toUpperCase()}
+        {role.displayName}
       </span>
     </div>
   );
