@@ -75,24 +75,35 @@ type User = {
   username: string;
   email: string;
   fullName?: string;
-  firstName?: string;
-  lastName?: string;
-  role: string; // Legacy field - será reemplazado por role_id
-  role_id?: number; // Nueva referencia al sistema jerárquico
+  roleId: number; // Campo principal del JOIN con roles
+  roleName?: string; // Nombre del rol del JOIN
+  roleLevel?: number; // Nivel del rol del JOIN
   municipalityId: number | null;
   createdAt: Date;
   updatedAt: Date;
-  is_active?: boolean;
-  last_login?: Date | null;
+  isActive?: boolean;
+  lastLogin?: Date | null;
   department?: string;
   position?: string;
+  phone?: string;
+  gender?: string;
+  birthDate?: string;
+  bio?: string;
+  profileImageUrl?: string;
+  // Campos adicionales que pueden existir según el rol
+  experience?: string;
+  specialties?: string[];
+  address?: string;
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
+  preferredParkId?: number;
+  legalConsent?: boolean;
 };
 
 interface UserFormData {
   username: string;
   email: string;
-  firstName: string;
-  lastName: string;
+  fullName: string;
   password: string;
   role: string; // Legacy - mantener compatibilidad
   role_id?: number; // Nueva referencia jerárquica
@@ -163,8 +174,7 @@ const UserDetail: React.FC<{
     // Información básica de la cuenta
     username: user?.username || '',
     email: user?.email || '',
-    firstName: user?.firstName || user?.fullName?.split(' ')[0] || '',
-    lastName: user?.lastName || user?.fullName?.split(' ').slice(1).join(' ') || '',
+    fullName: user?.fullName || '',
     password: '',
     municipalityId: user?.municipalityId || null,
     
@@ -414,25 +424,15 @@ const UserDetail: React.FC<{
           <div className="space-y-4 pt-6 border-t border-gray-200">
             <h3 className="font-medium text-lg">Información de Cuenta</h3>
             
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label htmlFor="firstName" className="text-sm font-medium">Nombre</label>
-                <Input
-                  id="firstName"
-                  value={userData.firstName}
-                  onChange={(e) => handleChange('firstName', e.target.value)}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="lastName" className="text-sm font-medium">Apellido</label>
-                <Input
-                  id="lastName"
-                  value={userData.lastName}
-                  onChange={(e) => handleChange('lastName', e.target.value)}
-                  required
-                />
-              </div>
+            <div className="space-y-2">
+              <label htmlFor="fullName" className="text-sm font-medium">Nombre Completo</label>
+              <Input
+                id="fullName"
+                value={userData.fullName}
+                onChange={(e) => handleChange('fullName', e.target.value)}
+                required
+                placeholder="Ej: Juan Pérez García"
+              />
             </div>
             
             <div className="space-y-2">
@@ -485,7 +485,7 @@ const UserDetail: React.FC<{
                         <UserProfileImage 
                           userId={editingUserId} 
                           role={userData.role} 
-                          name={`${userData.firstName} ${userData.lastName}`}
+                          name={userData.fullName || 'Usuario'}
                           size="xl"
                           className="w-32 h-32 border border-gray-300"
                         />

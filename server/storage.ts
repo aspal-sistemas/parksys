@@ -398,21 +398,15 @@ export class DatabaseStorage implements IStorage {
         username: userData.username,
         email: userData.email,
         password: userData.password,
-        role: userData.role,
+        roleId: userData.role ? parseInt(userData.role) : 1, // Convertir role string a role_id
         fullName: userData.fullName,
-        firstName: userData.firstName,
-        lastName: userData.lastName,
         municipalityId: userData.municipalityId,
         phone: userData.phone || null,
         gender: userData.gender || null,
         birthDate: userData.birthDate ? new Date(userData.birthDate) : null,
         bio: userData.bio || null,
         profileImageUrl: userData.profileImageUrl || null,
-        address: userData.address || null,
-        emergencyContactName: userData.emergencyContactName || null,
-        emergencyContactPhone: userData.emergencyContactPhone || null,
-        preferredParkId: userData.preferredParkId || null,
-        legalConsent: userData.legalConsent || false
+        isActive: true // Por defecto activo
       }).returning();
       return newUser;
     } catch (error) {
@@ -439,6 +433,13 @@ export class DatabaseStorage implements IStorage {
 
   async deleteUser(id: number): Promise<boolean> {
     try {
+      // Primero eliminar registros relacionados en cascada
+      await db.execute(sql`DELETE FROM employees WHERE user_id = ${id}`);
+      await db.execute(sql`DELETE FROM instructors WHERE user_id = ${id}`);
+      await db.execute(sql`DELETE FROM volunteers WHERE user_id = ${id}`);
+      await db.execute(sql`DELETE FROM concessionaires WHERE user_id = ${id}`);
+      
+      // Ahora eliminar el usuario
       const result = await db.delete(users).where(eq(users.id, id));
       return true;
     } catch (error) {
