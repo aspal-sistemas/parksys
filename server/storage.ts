@@ -348,16 +348,19 @@ export class DatabaseStorage implements IStorage {
   
   async getUsers(): Promise<any[]> {
     try {
-      // Usar consulta SQL directa para evitar problemas con Drizzle
+      // Usar consulta SQL directa con JOIN para obtener información de roles
       const result = await db.execute(
-        sql`SELECT id, username, email, full_name as "fullName", 
-            role, role_id as "roleId", municipality_id as "municipalityId",
-            created_at as "createdAt", updated_at as "updatedAt",
-            is_active as "isActive", last_login as "lastLogin",
-            department, position, phone, gender, birth_date as "birthDate",
-            bio, profile_image_url as "profileImageUrl"
-            FROM users 
-            ORDER BY id`
+        sql`SELECT u.id, u.username, u.email, u.full_name as "fullName", 
+            u.role_id as "roleId", r.name as "roleName", r.level as "roleLevel",
+            u.municipality_id as "municipalityId",
+            u.created_at as "createdAt", u.updated_at as "updatedAt",
+            u.is_active as "isActive", u.last_login as "lastLogin",
+            u.department, u.position, u.phone, u.gender, 
+            u.birth_date as "birthDate", u.bio, 
+            u.profile_image_url as "profileImageUrl"
+            FROM users u
+            LEFT JOIN roles r ON u.role_id = r.id
+            ORDER BY u.id`
       );
       
       console.log(`Total usuarios obtenidos del storage: ${result.rows.length}`);
@@ -366,8 +369,9 @@ export class DatabaseStorage implements IStorage {
       if (result.rows.length > 0) {
         console.log('🔍 Primer usuario del storage:', {
           id: result.rows[0].id,
-          role: result.rows[0].role,
-          roleId: result.rows[0].roleId
+          roleId: result.rows[0].roleId,
+          roleName: result.rows[0].roleName,
+          roleLevel: result.rows[0].roleLevel
         });
       }
       

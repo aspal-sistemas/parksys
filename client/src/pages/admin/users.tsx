@@ -157,8 +157,8 @@ const UserDetail: React.FC<{
   editingUserId?: number | null;
 }> = ({ user, isNew, onClose, onSave, isSaving, editingUserId }) => {
   const [userData, setUserData] = useState<UserFormData>({
-    // Elegir rol es el primer paso
-    role: user?.role || 'admin',
+    // Elegir rol es el primer paso - ahora usar roleId
+    role: user?.roleId ? String(user.roleId) : '1',
     
     // Información básica de la cuenta
     username: user?.username || '',
@@ -192,7 +192,7 @@ const UserDetail: React.FC<{
 
   // Efecto para cargar y sincronizar los datos del voluntario desde la API
   useEffect(() => {
-    if (user && user.role === 'voluntario' && editingUserId) {
+    if (user && user.roleId === 6 && editingUserId) { // roleId 6 = Operador de Campo (voluntarios)
       console.log("🔥 DATOS RECIBIDOS DEL USUARIO:", user);
       
       // Usar un efecto asíncrono para cargar los datos adicionales del voluntario
@@ -954,24 +954,23 @@ const AdminUsers = () => {
     
     console.log('🔍 Debug: Total usuarios para estadísticas:', users.length);
     
-    // Contar usuarios por rol
-    users.forEach((user: User, index) => {
-      console.log(`🔍 Debug Usuario ${index + 1}:`, { id: user.id, role: user.role, role_id: user.role_id });
+    // Contar usuarios por rol - ahora usando roleId del JOIN con roles
+    users.forEach((user: any, index) => {
+      console.log(`🔍 Debug Usuario ${index + 1}:`, { 
+        id: user.id, 
+        roleId: user.roleId, 
+        roleName: user.roleName, 
+        roleLevel: user.roleLevel 
+      });
       
-      if (user.role_id) {
-        const roleId = String(user.role_id);
+      if (user.roleId) {
+        const roleId = String(user.roleId);
         stats[roleId] = (stats[roleId] || 0) + 1;
-        console.log(`✅ Rol ID encontrado: ${roleId}, Contador: ${stats[roleId]}`);
+        console.log(`✅ Rol ID encontrado: ${roleId} (${user.roleName}), Contador: ${stats[roleId]}`);
       } else {
-        // Mapear roles legacy
-        const legacyRoleMap: { [key: string]: string } = {
-          'admin': '1', 'director': '2', 'manager': '3', 'supervisor': '4',
-          'guardaparques': '5', 'voluntario': '6', 'instructor': '6',
-          'concesionario': '7', 'ciudadano': '7', 'user': '7'
-        };
-        const mappedRoleId = legacyRoleMap[user.role] || '7';
-        stats[mappedRoleId] = (stats[mappedRoleId] || 0) + 1;
-        console.log(`🔄 Rol legacy mapeado: ${user.role} → ${mappedRoleId}, Contador: ${stats[mappedRoleId]}`);
+        // Fallback para usuarios sin roleId (no debería ocurrir ahora)
+        stats['7'] = (stats['7'] || 0) + 1;
+        console.log(`⚠️ Usuario sin roleId, asignado a rol 7, Contador: ${stats['7']}`);
       }
     });
     
@@ -1037,40 +1036,30 @@ const AdminUsers = () => {
         user.username.toLowerCase().includes(searchLower) ||
         user.email.toLowerCase().includes(searchLower) ||
         (user.fullName && user.fullName.toLowerCase().includes(searchLower)) ||
-        user.role.toLowerCase().includes(searchLower);
+        (user.roleName && user.roleName.toLowerCase().includes(searchLower));
       
       // Filtro por rol jerárquico mejorado
       let matchesRole = true;
       if (roleFilter !== 'all' && roleFilter) {
-        if (user.role_id) {
-          matchesRole = String(user.role_id) === roleFilter;
-        } else {
-          // Mapear roles legacy para filtrado
-          const legacyRoleMap: { [key: string]: string } = {
-            'admin': '1', 'director': '2', 'manager': '3', 'supervisor': '4',
-            'guardaparques': '5', 'voluntario': '6', 'instructor': '6',
-            'concesionario': '7', 'ciudadano': '7', 'user': '7'
-          };
-          const mappedRoleId = legacyRoleMap[user.role] || '7';
-          matchesRole = mappedRoleId === roleFilter;
-        }
+        // Usar roleId del JOIN con roles
+        matchesRole = user.roleId ? String(user.roleId) === roleFilter : false;
       }
       
-      // Filtro por estado/tipo de usuario
+      // Filtro por estado/tipo de usuario - ahora usando roleId
       let matchesStatus = true;
       if (statusFilter !== 'all') {
         switch (statusFilter) {
           case 'admin':
-            matchesStatus = ['admin', 'director'].includes(user.role);
+            matchesStatus = user.roleId && [1, 2].includes(user.roleId); // Super Admin, Admin General
             break;
           case 'staff':
-            matchesStatus = ['manager', 'supervisor', 'guardaparques', 'guardia'].includes(user.role);
+            matchesStatus = user.roleId && [3, 4, 5].includes(user.roleId); // Coordinador, Supervisor, Técnico
             break;
           case 'community':
-            matchesStatus = ['voluntario', 'instructor', 'ciudadano'].includes(user.role);
+            matchesStatus = user.roleId && user.roleId === 6; // Operador de Campo
             break;
           case 'business':
-            matchesStatus = user.role === 'concesionario';
+            matchesStatus = user.roleId && user.roleId === 7; // Consultor Auditor
             break;
           case 'active':
             matchesStatus = user.createdAt ? new Date(user.createdAt) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) : false;
@@ -1142,28 +1131,14 @@ const AdminUsers = () => {
   };
 
   // Get role badge usando el nuevo sistema jerárquico
-  const getRoleBadge = (user: User) => {
-    // Si el usuario tiene role_id, usar el sistema jerárquico
-    if (user.role_id) {
-      return <RoleBadge roleId={String(user.role_id)} size="sm" />;
+  const getRoleBadge = (user: any) => {
+    // Ahora usamos roleId directamente del JOIN con la tabla roles
+    if (user.roleId) {
+      return <RoleBadge roleId={String(user.roleId)} size="sm" />;
     }
     
-    // Fallback para usuarios con roles legacy
-    const legacyRoleMap: { [key: string]: string } = {
-      'admin': '1', // Super Administrador
-      'director': '2', // Administrador General
-      'manager': '3', // Coordinador de Parques
-      'supervisor': '4', // Supervisor de Operaciones
-      'guardaparques': '5', // Técnico Especialista
-      'voluntario': '6', // Operador de Campo
-      'instructor': '6', // Operador de Campo
-      'concesionario': '7', // Consultor Auditor
-      'ciudadano': '7', // Consultor Auditor
-      'user': '7' // Consultor Auditor
-    };
-    
-    const mappedRoleId = legacyRoleMap[user.role] || '7';
-    return <RoleBadge roleId={mappedRoleId} size="sm" />;
+    // Fallback para usuarios sin roleId (no debería ocurrir)
+    return <RoleBadge roleId="7" size="sm" />;
   };
 
   const { t } = useTranslation('common');
