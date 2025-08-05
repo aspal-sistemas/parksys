@@ -34,7 +34,7 @@ const RolesManagement: React.FC = () => {
   const permissions = usePermissions();
   
   const filteredRoles = SYSTEM_ROLES.filter(role => 
-    role.displayName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    role.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     role.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -175,7 +175,6 @@ const RolesManagement: React.FC = () => {
                       <div className="flex items-center gap-3">
                         <RoleBadge roleId={role.id} showIcon={true} />
                         <div>
-                          <div className="font-medium">{role.displayName}</div>
                           <div className="text-sm text-gray-500">{role.description}</div>
                         </div>
                       </div>
@@ -215,7 +214,7 @@ const RolesManagement: React.FC = () => {
                             <DialogHeader>
                               <DialogTitle>Detalles del Rol</DialogTitle>
                               <DialogDescription>
-                                Información completa del rol {role.displayName}
+                                Información completa del rol {role.name}
                               </DialogDescription>
                             </DialogHeader>
                             <div className="space-y-4">
@@ -273,7 +272,7 @@ const RolesManagement: React.FC = () => {
                               <DialogHeader>
                                 <DialogTitle>Editar Rol</DialogTitle>
                                 <DialogDescription>
-                                  Modifica las propiedades del rol {role.displayName}
+                                  Modifica las propiedades del rol {role.name}
                                 </DialogDescription>
                               </DialogHeader>
                               <div className="space-y-4">
@@ -331,7 +330,7 @@ const RolesManagement: React.FC = () => {
                             <DialogHeader>
                               <DialogTitle>Estadísticas del Rol</DialogTitle>
                               <DialogDescription>
-                                Métricas y análisis de uso del rol {role.displayName}
+                                Métricas y análisis de uso del rol {role.name}
                               </DialogDescription>
                             </DialogHeader>
                             <div className="space-y-4">

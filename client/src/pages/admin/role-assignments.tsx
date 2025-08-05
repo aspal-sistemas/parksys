@@ -363,10 +363,7 @@ const RoleAssignments: React.FC = () => {
                                 <SelectContent>
                                   {SYSTEM_ROLES.map(role => (
                                     <SelectItem key={role.id} value={role.id}>
-                                      <div className="flex items-center gap-2">
-                                        <RoleBadge roleId={role.id} size="sm" showText={false} />
-                                        {role.displayName}
-                                      </div>
+                                      <RoleBadge roleId={role.id} size="sm" showText={false} />
                                     </SelectItem>
                                   ))}
                                 </SelectContent>

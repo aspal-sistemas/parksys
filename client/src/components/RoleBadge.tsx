@@ -159,7 +159,7 @@ export const RoleBadge: React.FC<RoleBadgeProps> = ({
       )}
     >
       {showIcon && <Icon className={iconSizes[size]} />}
-      <span>{role.displayName}</span>
+      <span>{role.name.toUpperCase()}</span>
       {showLevel && (
         <span className="ml-1 text-xs opacity-80">
           (N{role.level})
