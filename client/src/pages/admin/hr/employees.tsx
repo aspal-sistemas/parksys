@@ -276,9 +276,12 @@ export default function Employees() {
 
       if (response.ok) {
         if (data.action === 'deactivated') {
+          const reasonText = data.reason || "tener registros relacionados";
+          const details = data.relationDetails ? data.relationDetails.join(', ') : '';
+          
           toast({
             title: "Empleado desactivado",
-            description: "El empleado migrado ha sido desactivado (no se puede eliminar por tener usuario asociado)"
+            description: `El empleado ha sido desactivado por ${reasonText}${details ? `. Tiene: ${details}` : ''}`
           });
         } else {
           toast({
@@ -1147,13 +1150,13 @@ export default function Employees() {
                   <p className="text-sm text-gray-600">{selectedEmployee.position}</p>
                   <p className="text-sm text-gray-600">{selectedEmployee.department}</p>
                 </div>
-                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                  <p className="text-red-800 text-sm font-medium">⚠️ Esta acción no se puede deshacer</p>
-                  <p className="text-red-700 text-sm">
-                    {selectedEmployee.employeeCode?.startsWith('ADMIN') ? 
-                      'Los empleados migrados serán desactivados (no eliminados) por tener usuario asociado.' :
-                      'El empleado será eliminado permanentemente del sistema.'
-                    }
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                  <p className="text-yellow-800 text-sm font-medium">⚠️ Importante</p>
+                  <p className="text-yellow-700 text-sm">
+                    Si el empleado tiene registros relacionados (nómina, vacaciones, tiempo), será <strong>desactivado</strong> en lugar de eliminado para preservar la integridad de los datos.
+                  </p>
+                  <p className="text-yellow-700 text-sm mt-1">
+                    Solo los empleados sin registros relacionados pueden ser eliminados permanentemente.
                   </p>
                 </div>
                 <div className="flex justify-end gap-3">

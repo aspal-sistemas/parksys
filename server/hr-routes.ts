@@ -190,9 +190,9 @@ export function registerHRRoutes(app: any, apiRouter: Router, isAuthenticated: a
     try {
       const { id } = req.params;
 
-      // Verificar si el empleado tiene user_id (empleado migrado)
+      // Verificar si el empleado existe y obtener sus datos
       const checkResult = await pool.query(`
-        SELECT id, user_id, full_name FROM employees WHERE id = $1
+        SELECT id, user_id, full_name, employee_code FROM employees WHERE id = $1
       `, [id]);
 
       if (checkResult.rows.length === 0) {
@@ -201,11 +201,39 @@ export function registerHRRoutes(app: any, apiRouter: Router, isAuthenticated: a
 
       const employee = checkResult.rows[0];
 
-      // Si tiene user_id, necesitamos manejar la eliminación de forma especial
-      if (employee.user_id) {
-        console.log(`🚨 Empleado migrado detectado: ${employee.full_name} (user_id: ${employee.user_id})`);
+      // Verificar si tiene registros relacionados en otras tablas
+      const relationsCheck = await pool.query(`
+        SELECT 
+          (SELECT COUNT(*) FROM payroll_details WHERE employee_id = $1) as payroll_records,
+          (SELECT COUNT(*) FROM time_off_requests WHERE employee_id = $1) as vacation_records,
+          (SELECT COUNT(*) FROM time_records WHERE employee_id = $1) as time_records,
+          (SELECT COUNT(*) FROM vacation_balances WHERE employee_id = $1) as vacation_balances,
+          (SELECT COUNT(*) FROM work_schedules WHERE employee_id = $1) as work_schedules,
+          (SELECT COUNT(*) FROM daily_time_sheets WHERE employee_id = $1) as time_sheets,
+          (SELECT COUNT(*) FROM payroll_receipts WHERE employee_id = $1) as payroll_receipts
+      `, [id]);
+
+      const relations = relationsCheck.rows[0];
+      const totalRelations = Object.values(relations).reduce((sum: number, count: any) => sum + parseInt(count), 0);
+
+      console.log(`🔍 Verificando empleado ${employee.full_name}:`);
+      console.log(`   - Registros de nómina: ${relations.payroll_records}`);
+      console.log(`   - Solicitudes de vacaciones: ${relations.vacation_records}`);
+      console.log(`   - Registros de tiempo: ${relations.time_records}`);
+      console.log(`   - Balances de vacaciones: ${relations.vacation_balances}`);
+      console.log(`   - Horarios de trabajo: ${relations.work_schedules}`);
+      console.log(`   - Hojas de tiempo: ${relations.time_sheets}`);
+      console.log(`   - Recibos de nómina: ${relations.payroll_receipts}`);
+      console.log(`   - Total relaciones: ${totalRelations}`);
+
+      // Si tiene user_id O registros relacionados, desactivar en lugar de eliminar
+      if (employee.user_id || totalRelations > 0) {
+        let reason = [];
+        if (employee.user_id) reason.push("tiene usuario asociado");
+        if (totalRelations > 0) reason.push(`tiene ${totalRelations} registros relacionados en el sistema`);
         
-        // Opción 1: Solo desactivar el empleado en lugar de eliminarlo
+        console.log(`🚨 Empleado NO se puede eliminar: ${reason.join(' y ')}`);
+        
         const updateResult = await pool.query(`
           UPDATE employees SET 
             status = 'inactive',
@@ -214,14 +242,27 @@ export function registerHRRoutes(app: any, apiRouter: Router, isAuthenticated: a
           RETURNING *
         `, [id]);
 
+        const relationDetails = [];
+        if (relations.payroll_records > 0) relationDetails.push(`${relations.payroll_records} registros de nómina`);
+        if (relations.vacation_records > 0) relationDetails.push(`${relations.vacation_records} solicitudes de vacaciones`);
+        if (relations.time_records > 0) relationDetails.push(`${relations.time_records} registros de tiempo`);
+        if (relations.vacation_balances > 0) relationDetails.push(`${relations.vacation_balances} balances de vacaciones`);
+        if (relations.work_schedules > 0) relationDetails.push(`${relations.work_schedules} horarios`);
+        if (relations.time_sheets > 0) relationDetails.push(`${relations.time_sheets} hojas de tiempo`);
+        if (relations.payroll_receipts > 0) relationDetails.push(`${relations.payroll_receipts} recibos de nómina`);
+
         return res.json({ 
-          message: "Empleado migrado desactivado (no se puede eliminar por tener usuario asociado)",
+          message: `Empleado desactivado (no se puede eliminar por ${reason.join(' y ')})`,
           employee: updateResult.rows[0],
-          action: "deactivated"
+          action: "deactivated",
+          reason: reason.join(' y '),
+          relationDetails: relationDetails
         });
       }
 
-      // Si no tiene user_id, eliminación normal
+      // Si no tiene user_id ni registros relacionados, permitir eliminación
+      console.log(`✅ Empleado ${employee.full_name} se puede eliminar (sin registros relacionados)`);
+      
       const result = await pool.query(`
         DELETE FROM employees WHERE id = $1 RETURNING *
       `, [id]);
@@ -237,7 +278,7 @@ export function registerHRRoutes(app: any, apiRouter: Router, isAuthenticated: a
       if (error instanceof Error && error.message.includes('foreign key constraint')) {
         return res.status(400).json({ 
           error: "No se puede eliminar: empleado tiene registros relacionados",
-          details: "Este empleado tiene datos asociados en otras tablas del sistema"
+          details: "Este empleado tiene datos asociados en el sistema de RH, nómina o control de tiempo"
         });
       }
       
