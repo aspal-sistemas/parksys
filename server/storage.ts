@@ -348,37 +348,30 @@ export class DatabaseStorage implements IStorage {
   
   async getUsers(): Promise<any[]> {
     try {
-      // Obtener TODOS los usuarios para la página de administración
-      const result = await db.select({
-        id: users.id,
-        username: users.username,
-        email: users.email,
-        fullName: users.fullName,
-        firstName: users.firstName,
-        lastName: users.lastName,
-        role: users.role,
-        roleId: users.roleId,  // Asegurar que se incluya role_id
-        municipalityId: users.municipalityId,
-        createdAt: users.createdAt,
-        updatedAt: users.updatedAt,
-        isActive: users.isActive,
-        lastLogin: users.lastLogin,
-        department: users.department,
-        position: users.position
-      }).from(users)
-        .orderBy(users.id);
-      console.log(`Total usuarios obtenidos del storage: ${result.length}`);
+      // Usar consulta SQL directa para evitar problemas con Drizzle
+      const result = await db.execute(
+        sql`SELECT id, username, email, full_name as "fullName", 
+            first_name as "firstName", last_name as "lastName",
+            role, role_id as "roleId", municipality_id as "municipalityId",
+            created_at as "createdAt", updated_at as "updatedAt",
+            is_active as "isActive", last_login as "lastLogin",
+            department, position
+            FROM users 
+            ORDER BY id`
+      );
+      
+      console.log(`Total usuarios obtenidos del storage: ${result.rows.length}`);
       
       // Debug: log primeros usuarios para verificar roleId
-      if (result.length > 0) {
+      if (result.rows.length > 0) {
         console.log('🔍 Primer usuario del storage:', {
-          id: result[0].id,
-          role: result[0].role,
-          roleId: result[0].roleId
+          id: result.rows[0].id,
+          role: result.rows[0].role,
+          roleId: result.rows[0].roleId
         });
       }
       
-      return result;
+      return result.rows;
     } catch (error) {
       console.error("Error al obtener usuarios:", error);
       return [];
