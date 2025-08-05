@@ -433,9 +433,13 @@ export class DatabaseStorage implements IStorage {
 
   async deleteUser(id: number): Promise<boolean> {
     try {
-      // Simplemente eliminar el usuario de la tabla users
-      // Las tablas instructors, volunteers, employees son independientes
-      // y no tienen relación directa con la tabla users
+      // Eliminar todas las referencias que apuntan al usuario
+      // Primero buscamos qué tablas referencian al usuario
+      await db.execute(sql`DELETE FROM time_off_requests WHERE employee_id IN (SELECT id FROM employees WHERE user_id = ${id})`);
+      await db.execute(sql`DELETE FROM payroll WHERE employee_id IN (SELECT id FROM employees WHERE user_id = ${id})`);
+      await db.execute(sql`DELETE FROM employees WHERE user_id = ${id}`);
+      
+      // Ahora eliminar el usuario de la tabla users
       const result = await db.delete(users).where(eq(users.id, id));
       console.log(`✅ Usuario ${id} eliminado exitosamente`);
       return true;

@@ -12,11 +12,20 @@ import { syncInstructorProfileWithUser } from './syncInstructorProfile';
 const createUserSchema = z.object({
   username: z.string().min(3, "El nombre de usuario debe tener al menos 3 caracteres"),
   email: z.string().email("Email inválido"),
-  firstName: z.string().min(1, "El nombre es requerido"),
-  lastName: z.string().min(1, "El apellido es requerido"),
+  fullName: z.string().min(1, "El nombre completo es requerido"),
   password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
-  role: z.enum(['admin', 'super_admin', 'moderator', 'operator', 'director', 'manager', 'supervisor', 'ciudadano', 'voluntario', 'instructor', 'user', 'guardaparques', 'guardia', 'concesionario']),
-  municipalityId: z.number().nullable(),
+  role: z.string().min(1, "El rol es requerido"), // Ahora acepta roleId como string
+  municipalityId: z.number().nullable().optional(),
+  phone: z.string().optional(),
+  gender: z.enum(['masculino', 'femenino', 'no_especificar']).optional(),
+  birthDate: z.string().nullable().optional(),
+  bio: z.string().optional(),
+  profileImageUrl: z.string().optional(),
+  address: z.string().optional(),
+  emergencyContactName: z.string().optional(),
+  emergencyContactPhone: z.string().optional(),
+  preferredParkId: z.number().nullable().optional(),
+  legalConsent: z.boolean().optional(),
 });
 
 // Esquema para validar la actualización de un usuario
@@ -344,7 +353,7 @@ export function registerUserRoutes(app: any, apiRouter: Router) {
         console.log("Datos que se enviarán a createUser:", {
           ...userData,
           password: "[REDACTED]",
-          fullName: `${userData.firstName} ${userData.lastName}`
+          roleId: Number(userData.role) // Convertir role string a roleId
         });
         
         try {
@@ -353,11 +362,9 @@ export function registerUserRoutes(app: any, apiRouter: Router) {
             username: userData.username,
             email: userData.email,
             password: hashedPassword,
-            role: userData.role,
-            firstName: userData.firstName,
-            lastName: userData.lastName,
-            fullName: `${userData.firstName} ${userData.lastName}`,
-            municipalityId: userData.municipalityId,
+            roleId: Number(userData.role), // Convertir role a roleId numérico
+            fullName: userData.fullName,
+            municipalityId: userData.municipalityId || null,
             phone: userData.phone || null,
             gender: userData.gender || null,
             birthDate: userData.birthDate || null,
@@ -386,13 +393,13 @@ export function registerUserRoutes(app: any, apiRouter: Router) {
             console.log(`Imagen de perfil guardada en caché para usuario ${newUser.id}: ${userData.profileImageUrl}`);
           }
           
-          // Si el usuario tiene rol de voluntario, sincronizar con la tabla de voluntarios
-          if (newUser.role === 'voluntario') {
+          // Si el usuario tiene rol de voluntario (roleId 6), sincronizar con la tabla de voluntarios
+          if (newUser.roleId === 6) {
             await syncUserWithVolunteerTable(newUser, req.body);
           }
           
-          // Si el usuario tiene rol de concesionario, crear automáticamente el perfil de concesionario
-          if (newUser.role === 'concesionario') {
+          // Si el usuario tiene rol de concesionario (roleId 7), crear automáticamente el perfil de concesionario
+          if (newUser.roleId === 7) {
             await syncUserWithConcessionaireTable(newUser, req.body);
           }
           
