@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { RoleBadge } from '@/components/RoleBadge';
+import { RoleBadge, RoleBadgeWithText } from '@/components/RoleBadge';
 import { usePermissions } from '@/components/RoleGuard';
 import { Link } from 'wouter';
 import { 
@@ -372,9 +372,9 @@ const RoleAudits: React.FC = () => {
                     <div className="space-y-1">
                       {log.fromRole && log.toRole && (
                         <div className="flex items-center gap-2 text-sm">
-                          <RoleBadge roleId={log.fromRole} size="sm" />
+                          <RoleBadgeWithText roleId={log.fromRole} size="sm" />
                           <span>→</span>
-                          <RoleBadge roleId={log.toRole} size="sm" />
+                          <RoleBadgeWithText roleId={log.toRole} size="sm" />
                         </div>
                       )}
                       {log.permission && (
@@ -477,9 +477,9 @@ const RoleAudits: React.FC = () => {
                               <div>
                                 <Label className="text-sm font-medium">Cambio de Rol</Label>
                                 <div className="flex items-center gap-2 mt-1">
-                                  <RoleBadge roleId={log.fromRole} size="sm" />
+                                  <RoleBadgeWithText roleId={log.fromRole} size="sm" />
                                   <span>→</span>
-                                  <RoleBadge roleId={log.toRole} size="sm" />
+                                  <RoleBadgeWithText roleId={log.toRole} size="sm" />
                                 </div>
                               </div>
                             )}

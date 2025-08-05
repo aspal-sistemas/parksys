@@ -142,7 +142,7 @@ const PermissionsMatrix: React.FC = () => {
                 <SelectItem value="all">Todos los roles</SelectItem>
                 {SYSTEM_ROLES.map(role => (
                   <SelectItem key={role.id} value={role.id}>
-                    <RoleBadge roleId={role.id} size="sm" />
+                    <RoleBadgeWithText roleId={role.id} size="sm" />
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -265,7 +265,7 @@ const PermissionsMatrix: React.FC = () => {
                   <tr key={role.id} className="hover:bg-gray-50">
                     <td className="p-3 border-b">
                       <div className="flex items-center gap-3">
-                        <RoleBadge roleId={role.id} showLevel={true} />
+                        <RoleBadgeWithText roleId={role.id} />
                         <div className="text-xs text-gray-500">
                           Nivel {role.level}
                         </div>

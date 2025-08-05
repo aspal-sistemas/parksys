@@ -13,8 +13,19 @@ The application uses a client-server architecture with a modern full-stack:
 - **Database**: PostgreSQL with Drizzle ORM.
 - **Authentication**: Role-based access control system.
 
-## Recent Changes (August 4, 2025)
-- **COMPLETED: Full Integration of Advanced Role Management System**:
+## Recent Changes (August 5, 2025)
+- **COMPLETED: Role Badge UI Simplification**:
+  - **Badge Format Standardization**: Badges now display only colored circular icons without internal text
+  - **Text Separation**: Role names appear as separate text labels beside the icon badges
+  - **RoleBadgeWithText Component**: Created new component that renders icon-only badges with uppercase text labels positioned alongside
+  - **System-Wide Implementation**: Updated all role management pages to use simplified badge format:
+    - Role Assignments page: Icon badges + separate text for user roles and role selection dropdowns
+    - Permissions Matrix: Icon badges + text for role headers and filters
+    - Role Management: Icon badges + text for role listing and role display
+    - Role Audits: Icon badges + text for role change tracking and audit details
+  - **UI Consistency**: Maintained existing color schemes while achieving clean, minimal badge design
+  - **Format Example**: Circular colored icon badge + "SUPER-ADMIN" text label (all uppercase)
+- **Previous: Full Integration of Advanced Role Management System**:
   - **Dashboard Layout Optimization**: Moved role information cards to secondary position above critical indicators (per user request to deprioritize role information)
   - **Complete System Integration**: Successfully integrated advanced role system into main /admin system with sidebar, pages, and routing
   - **Sidebar Enhancement**: Added "Sistema de Roles" section to Security module maintaining accordion functionality and existing color schemes
