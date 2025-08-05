@@ -1209,6 +1209,43 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin-roles/testing')))}
           </Suspense>
         </Route>
+        
+        {/* Dashboards por módulo - admin-roles */}
+        <Route path="/admin-roles/dashboard/configuracion">
+          <Suspense fallback={<div className="p-8 text-center">Cargando dashboard de configuración...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin-roles/dashboard/configuracion')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin-roles/dashboard/gestion">
+          <Suspense fallback={<div className="p-8 text-center">Cargando dashboard de gestión...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin-roles/dashboard/gestion')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin-roles/dashboard/operaciones">
+          <Suspense fallback={<div className="p-8 text-center">Cargando dashboard de operaciones...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin-roles/dashboard/operaciones')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin-roles/dashboard/finanzas">
+          <Suspense fallback={<div className="p-8 text-center">Cargando dashboard de finanzas...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin-roles/dashboard/finanzas')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin-roles/dashboard/marketing">
+          <Suspense fallback={<div className="p-8 text-center">Cargando dashboard de marketing...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin-roles/dashboard/marketing')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin-roles/dashboard/recursos-humanos">
+          <Suspense fallback={<div className="p-8 text-center">Cargando dashboard de recursos humanos...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin-roles/dashboard/recursos-humanos')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin-roles/dashboard/seguridad">
+          <Suspense fallback={<div className="p-8 text-center">Cargando dashboard de seguridad...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin-roles/dashboard/seguridad')))}
+          </Suspense>
+        </Route>
 
         {/* NUEVAS RUTAS: Sistema de Roles Avanzado Integrado */}
         <Route path="/admin/roles">

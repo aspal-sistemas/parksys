@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import AdminLayout from '@/components/AdminLayout';
+import { DynamicAdminLayout } from '@/components/DynamicAdminLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -238,7 +238,7 @@ export default function RolesManagement() {
   };
 
   return (
-    <AdminLayout>
+    <DynamicAdminLayout>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -447,6 +447,6 @@ export default function RolesManagement() {
           </Card>
         </div>
       </div>
-    </AdminLayout>
+    </DynamicAdminLayout>
   );
 }

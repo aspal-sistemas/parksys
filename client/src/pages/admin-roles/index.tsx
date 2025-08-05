@@ -1,294 +1,276 @@
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
-import AdminLayout from '@/components/AdminLayout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { 
-  Shield, Users, Settings, BarChart, 
-  UserCheck, Lock, Activity, Plus,
-  Eye, Edit, FileText, AlertCircle
-} from 'lucide-react';
 import { Link } from 'wouter';
+import { DynamicAdminLayout } from '@/components/DynamicAdminLayout';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { 
+  Shield, Users, Settings, Eye, UserCog, BarChart3, 
+  TreePine, Building2, Calendar, CreditCard, MessageSquare, 
+  Activity, Home, ArrowRight
+} from 'lucide-react';
 
-// Dashboard principal del módulo de roles
-export default function AdminRolesDashboard() {
-  const { data: roleStats } = useQuery({
-    queryKey: ['/api/admin-roles/stats'],
-    enabled: false // Deshabilitado por ahora
-  });
-
-  // Datos simulados para desarrollo
-  const mockStats = {
-    totalRoles: 10,
-    activeUsers: 45,
-    pendingAssignments: 3,
-    recentActivity: 12
-  };
-
-  const moduleCards = [
-    {
-      title: "Gestión de Roles",
-      description: "Crear, editar y administrar roles del sistema",
-      icon: Shield,
-      path: "/admin-roles/roles",
-      color: "bg-blue-500",
-      count: mockStats.totalRoles
-    },
-    {
-      title: "Asignación de Usuarios",
-      description: "Asignar roles a usuarios y gestionar permisos",
-      icon: UserCheck,
-      path: "/admin-roles/users",
-      color: "bg-green-500",
-      count: mockStats.activeUsers
-    },
-    {
-      title: "Matriz de Permisos",
-      description: "Visualizar y configurar permisos por módulo",
-      icon: Lock,
-      path: "/admin-roles/permissions",
-      color: "bg-purple-500",
-      count: "7 módulos"
-    },
-    {
-      title: "Configuración",
-      description: "Configurar políticas y plantillas del sistema",
-      icon: Settings,
-      path: "/admin-roles/settings",
-      color: "bg-orange-500",
-      count: "4 políticas"
-    },
-    {
-      title: "Reportes y Auditoría",
-      description: "Analizar uso y actividad del sistema de roles",
-      icon: BarChart,
-      path: "/admin-roles/reports",
-      color: "bg-teal-500",
-      count: mockStats.recentActivity
-    },
-    {
-      title: "Testing y Simulación",
-      description: "Probar configuraciones y simular escenarios",
-      icon: Activity,
-      path: "/admin-roles/testing",
-      color: "bg-indigo-500",
-      count: "3 escenarios"
-    }
-  ];
-
-  const quickActions = [
-    {
-      title: "Crear Nuevo Rol",
-      description: "Definir un nuevo rol con permisos específicos",
-      icon: Plus,
-      path: "/admin-roles/roles/create",
-      variant: "default"
-    },
-    {
-      title: "Asignar Roles Masivamente",
-      description: "Asignar roles a múltiples usuarios",
-      icon: Users,
-      path: "/admin-roles/users/bulk-assign",
-      variant: "outline"
-    },
-    {
-      title: "Ver Matriz de Permisos",
-      description: "Visualizar todos los permisos por rol",
-      icon: Eye,
-      path: "/admin-roles/permissions/matrix",
-      variant: "outline"
-    }
-  ];
-
-  const recentActivity = [
-    {
-      id: 1,
-      action: "Rol 'Coordinador de Parques' creado",
-      user: "Admin Sistema",
-      time: "Hace 2 horas",
-      type: "create"
-    },
-    {
-      id: 2,
-      action: "Permisos actualizados para 'Operador'",
-      user: "Director General",
-      time: "Hace 4 horas",
-      type: "update"
-    },
-    {
-      id: 3,
-      action: "Usuario 'Juan Pérez' asignado como 'Instructor'",
-      user: "Coordinador RH",
-      time: "Hace 6 horas",
-      type: "assign"
-    }
-  ];
-
+export default function AdminRolesIndex() {
   return (
-    <AdminLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">
-              Sistema de Roles y Permisos
-            </h1>
-            <p className="text-gray-600 mt-2">
-              Módulo independiente para desarrollo y testing del sistema de roles
-            </p>
-          </div>
-          <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
-            <AlertCircle className="w-4 h-4 mr-1" />
-            Módulo en Desarrollo
-          </Badge>
-        </div>
+    <DynamicAdminLayout 
+      title="Sistema de Roles - Entorno de Pruebas" 
+      subtitle="Explore y pruebe el sistema de roles dinámico con diferentes niveles de acceso"
+    >
+      <div className="space-y-8">
+        {/* Información del sistema */}
+        <Card className="border-blue-200 bg-blue-50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-blue-800">
+              <Shield className="h-5 w-5" />
+              Bienvenido al Sistema de Roles Dinámico
+            </CardTitle>
+            <CardDescription className="text-blue-700">
+              Este entorno le permite probar el sistema de permisos basado en roles con 7 niveles jerárquicos. 
+              Utilice el selector de roles en la esquina superior derecha para cambiar entre diferentes vistas de usuario.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-2 flex-wrap">
+              <Badge variant="outline" className="text-blue-700 border-blue-300">
+                <Eye className="h-3 w-3 mr-1" />
+                Modo Vista Previa
+              </Badge>
+              <Badge variant="outline" className="text-green-700 border-green-300">
+                7 Roles Disponibles
+              </Badge>
+              <Badge variant="outline" className="text-purple-700 border-purple-300">
+                Sidebar Dinámico
+              </Badge>
+            </div>
+          </CardContent>
+        </Card>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Total Roles</p>
-                  <p className="text-3xl font-bold text-gray-900">{mockStats.totalRoles}</p>
-                </div>
-                <Shield className="h-8 w-8 text-blue-500" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Usuarios Activos</p>
-                  <p className="text-3xl font-bold text-gray-900">{mockStats.activeUsers}</p>
-                </div>
-                <Users className="h-8 w-8 text-green-500" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Asignaciones Pendientes</p>
-                  <p className="text-3xl font-bold text-gray-900">{mockStats.pendingAssignments}</p>
-                </div>
-                <UserCheck className="h-8 w-8 text-orange-500" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Actividad Reciente</p>
-                  <p className="text-3xl font-bold text-gray-900">{mockStats.recentActivity}</p>
-                </div>
-                <Activity className="h-8 w-8 text-purple-500" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Module Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {moduleCards.map((card, index) => (
-            <Card key={index} className="hover:shadow-lg transition-shadow cursor-pointer">
-              <Link href={card.path}>
+        {/* Dashboards por módulo */}
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Dashboards por Módulo</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <Link href="/admin-roles/dashboard/configuracion">
+              <Card className="cursor-pointer hover:shadow-lg transition-shadow">
                 <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <div className={`p-2 rounded-lg ${card.color} text-white`}>
-                      <card.icon className="h-6 w-6" />
-                    </div>
-                    <Badge variant="secondary">{card.count}</Badge>
-                  </div>
-                  <CardTitle className="text-lg">{card.title}</CardTitle>
-                  <CardDescription>{card.description}</CardDescription>
+                  <CardTitle className="flex items-center gap-2 text-gray-600">
+                    <Settings className="h-5 w-5" />
+                    Configuración
+                  </CardTitle>
+                  <CardDescription>
+                    Panel de control del sistema y configuraciones generales
+                  </CardDescription>
                 </CardHeader>
-              </Link>
-            </Card>
-          ))}
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-200">
+                      Sistema
+                    </Badge>
+                    <ArrowRight className="h-4 w-4 text-gray-400" />
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link href="/admin-roles/dashboard/gestion">
+              <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-blue-600">
+                    <UserCog className="h-5 w-5" />
+                    Gestión
+                  </CardTitle>
+                  <CardDescription>
+                    Parques, actividades, voluntarios y gestión operativa
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-200">
+                      Operaciones
+                    </Badge>
+                    <ArrowRight className="h-4 w-4 text-gray-400" />
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link href="/admin-roles/dashboard/operaciones">
+              <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-green-600">
+                    <Building2 className="h-5 w-5" />
+                    Operaciones
+                  </CardTitle>
+                  <CardDescription>
+                    Eventos, concesiones y operaciones de parques
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <Badge className="bg-green-100 text-green-700 hover:bg-green-200">
+                      Eventos
+                    </Badge>
+                    <ArrowRight className="h-4 w-4 text-gray-400" />
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link href="/admin-roles/dashboard/finanzas">
+              <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-purple-600">
+                    <CreditCard className="h-5 w-5" />
+                    Finanzas
+                  </CardTitle>
+                  <CardDescription>
+                    Presupuestos, gastos, ingresos y patrocinios
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-200">
+                      Económico
+                    </Badge>
+                    <ArrowRight className="h-4 w-4 text-gray-400" />
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link href="/admin-roles/dashboard/marketing">
+              <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-orange-600">
+                    <MessageSquare className="h-5 w-5" />
+                    Marketing
+                  </CardTitle>
+                  <CardDescription>
+                    Comunicaciones, campañas y espacios publicitarios
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <Badge className="bg-orange-100 text-orange-700 hover:bg-orange-200">
+                      Promoción
+                    </Badge>
+                    <ArrowRight className="h-4 w-4 text-gray-400" />
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link href="/admin-roles/dashboard/recursos-humanos">
+              <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-teal-600">
+                    <Users className="h-5 w-5" />
+                    Recursos Humanos
+                  </CardTitle>
+                  <CardDescription>
+                    Empleados, nómina, vacaciones y control de asistencia
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <Badge className="bg-teal-100 text-teal-700 hover:bg-teal-200">
+                      Personal
+                    </Badge>
+                    <ArrowRight className="h-4 w-4 text-gray-400" />
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link href="/admin-roles/dashboard/seguridad">
+              <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-red-600">
+                    <Shield className="h-5 w-5" />
+                    Seguridad
+                  </CardTitle>
+                  <CardDescription>
+                    Roles, permisos, usuarios y auditoría del sistema
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <Badge className="bg-red-100 text-red-700 hover:bg-red-200">
+                      Control Acceso
+                    </Badge>
+                    <ArrowRight className="h-4 w-4 text-gray-400" />
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          </div>
         </div>
 
-        {/* Quick Actions and Recent Activity */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Quick Actions */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Plus className="h-5 w-5" />
-                Acciones Rápidas
-              </CardTitle>
-              <CardDescription>
-                Ejecutar acciones comunes del sistema de roles
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {quickActions.map((action, index) => (
-                <div key={index} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
-                  <div className="flex items-center gap-3">
-                    <action.icon className="h-5 w-5 text-gray-600" />
-                    <div>
-                      <p className="font-medium text-gray-900">{action.title}</p>
-                      <p className="text-sm text-gray-600">{action.description}</p>
-                    </div>
-                  </div>
-                  <Link href={action.path}>
-                    <Button variant={action.variant as any} size="sm">
-                      Ir
-                    </Button>
-                  </Link>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+        {/* Herramientas de gestión */}
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Herramientas de Gestión</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Link href="/admin-roles/users">
+              <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="h-5 w-5 text-blue-600" />
+                    Usuarios del Sistema
+                  </CardTitle>
+                  <CardDescription>
+                    Gestione usuarios y asigne roles específicos
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            </Link>
 
-          {/* Recent Activity */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                Actividad Reciente
-              </CardTitle>
-              <CardDescription>
-                Últimas acciones realizadas en el sistema
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {recentActivity.map((activity) => (
-                <div key={activity.id} className="flex items-start gap-3 p-3 border rounded-lg">
-                  <div className={`p-1 rounded-full ${
-                    activity.type === 'create' ? 'bg-green-100' :
-                    activity.type === 'update' ? 'bg-blue-100' : 'bg-purple-100'
-                  }`}>
-                    {activity.type === 'create' ? (
-                      <Plus className="h-3 w-3 text-green-600" />
-                    ) : activity.type === 'update' ? (
-                      <Edit className="h-3 w-3 text-blue-600" />
-                    ) : (
-                      <UserCheck className="h-3 w-3 text-purple-600" />
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-900">{activity.action}</p>
-                    <p className="text-xs text-gray-600">{activity.user} • {activity.time}</p>
-                  </div>
-                </div>
-              ))}
-              <Link href="/admin-roles/reports/audit">
-                <Button variant="outline" size="sm" className="w-full">
-                  Ver Registro Completo
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
+            <Link href="/admin-roles/roles">
+              <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Shield className="h-5 w-5 text-green-600" />
+                    Gestión de Roles
+                  </CardTitle>
+                  <CardDescription>
+                    Crear, editar y administrar roles del sistema
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            </Link>
+
+            <Link href="/admin-roles/permissions/matrix">
+              <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart3 className="h-5 w-5 text-purple-600" />
+                    Matriz de Permisos
+                  </CardTitle>
+                  <CardDescription>
+                    Configure permisos granulares por módulo
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            </Link>
+          </div>
         </div>
+
+        {/* Instrucciones de uso */}
+        <Card className="border-green-200 bg-green-50">
+          <CardHeader>
+            <CardTitle className="text-green-800">
+              🚀 Instrucciones de Uso
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-green-700">
+            <ol className="list-decimal list-inside space-y-2">
+              <li>Use el <strong>selector de roles</strong> en la esquina superior derecha para cambiar entre diferentes niveles de usuario</li>
+              <li>Observe cómo el <strong>sidebar cambia dinámicamente</strong> según los permisos del rol seleccionado</li>
+              <li>Explore los <strong>dashboards específicos</strong> de cada módulo haciendo clic en los elementos del sidebar</li>
+              <li>Pruebe las <strong>herramientas de gestión</strong> para administrar usuarios, roles y permisos</li>
+              <li>Cada rol tiene diferentes <strong>niveles de acceso</strong> desde Super Admin hasta Consultor Auditor</li>
+            </ol>
+          </CardContent>
+        </Card>
       </div>
-    </AdminLayout>
+    </DynamicAdminLayout>
   );
 }
