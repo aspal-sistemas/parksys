@@ -494,10 +494,15 @@ export class DatabaseStorage implements IStorage {
       // 7. concessionaire_profiles ya no tiene user_id en la nueva arquitectura
       console.log(`ℹ️ concessionaire_profiles es ahora independiente, no hay user_id que eliminar`);
       
-      // 8. Actualizar active_concessions - cambiar concessionaire_id de usuario a NULL 
-      // ya que ahora debería apuntar a concessionaire_profiles.id
+      // 8. Manejar todas las referencias críticas a users.id
       await db.execute(sql`UPDATE active_concessions SET concessionaire_id = NULL WHERE concessionaire_id = ${id}`);
-      console.log(`✅ Referencias de active_concessions actualizadas para usuario ${id}`);
+      await db.execute(sql`UPDATE incidents SET assigned_to_user_id = NULL WHERE assigned_to_user_id = ${id}`);
+      await db.execute(sql`UPDATE incident_assignments SET assigned_to_user_id = NULL WHERE assigned_to_user_id = ${id}`);
+      await db.execute(sql`UPDATE incident_assignments SET assigned_by_user_id = NULL WHERE assigned_by_user_id = ${id}`);
+      await db.execute(sql`UPDATE park_feedback SET assigned_to = NULL WHERE assigned_to = ${id}`);
+      await db.execute(sql`UPDATE vacation_requests SET employee_id = NULL WHERE employee_id = ${id}`);
+      await db.execute(sql`UPDATE vacation_requests SET requested_by = NULL WHERE requested_by = ${id}`);
+      console.log(`✅ Todas las referencias críticas actualizadas para usuario ${id}`);
 
       // Nota: instructors, volunteers ya no tienen user_id en la nueva arquitectura
       

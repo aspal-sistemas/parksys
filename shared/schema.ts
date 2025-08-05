@@ -439,8 +439,7 @@ export const users = pgTable("users", {
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
   email: text("email").notNull(),
-  role: text("role").notNull().default("admin"), // Mantener por compatibilidad
-  roleId: integer("role_id").references(() => roles.id), // Nueva referencia a roles
+  roleId: integer("role_id").references(() => roles.id), // Referencia a roles
   fullName: text("full_name").notNull(),
   municipalityId: integer("municipality_id"),
   phone: text("phone"),
