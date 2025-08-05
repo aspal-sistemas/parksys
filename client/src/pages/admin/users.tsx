@@ -952,11 +952,16 @@ const AdminUsers = () => {
       stats[role.id] = 0;
     });
     
+    console.log('🔍 Debug: Total usuarios para estadísticas:', users.length);
+    
     // Contar usuarios por rol
-    users.forEach((user: User) => {
+    users.forEach((user: User, index) => {
+      console.log(`🔍 Debug Usuario ${index + 1}:`, { id: user.id, role: user.role, role_id: user.role_id });
+      
       if (user.role_id) {
         const roleId = String(user.role_id);
         stats[roleId] = (stats[roleId] || 0) + 1;
+        console.log(`✅ Rol ID encontrado: ${roleId}, Contador: ${stats[roleId]}`);
       } else {
         // Mapear roles legacy
         const legacyRoleMap: { [key: string]: string } = {
@@ -966,9 +971,11 @@ const AdminUsers = () => {
         };
         const mappedRoleId = legacyRoleMap[user.role] || '7';
         stats[mappedRoleId] = (stats[mappedRoleId] || 0) + 1;
+        console.log(`🔄 Rol legacy mapeado: ${user.role} → ${mappedRoleId}, Contador: ${stats[mappedRoleId]}`);
       }
     });
     
+    console.log('📊 Estadísticas finales por rol:', stats);
     return stats;
   };
 
