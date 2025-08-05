@@ -11,35 +11,32 @@ import * as schema from "../shared/schema";
  * @param isAuthenticated Middleware de autenticación
  */
 export function registerConcessionairesRoutes(app: any, apiRouter: Router, isAuthenticated: any) {
-  // Obtener todos los concesionarios
+  // Obtener todos los concesionarios desde concessionaire_profiles (catálogo independiente)
   apiRouter.get("/concessionaires", async (req: Request, res: Response) => {
     try {
-      const users = await db.query.users.findMany({
-        where: eq(schema.users.role, "concessionaire"),
-        with: {
-          concessionaireProfile: true
-        }
-      });
+      console.log("🏪 Obteniendo concesionarios desde concessionaire_profiles...");
+      const concessionaires = await db.select().from(schema.concessionaireProfiles);
       
       // Formatear la respuesta para que coincida con lo que espera el frontend
-      const formattedConcessionaires = users.map(user => ({
-        id: user.id,
-        name: user.fullName, // El frontend espera 'name' pero tenemos 'fullName'
-        fullName: user.fullName,
-        username: user.username,
-        email: user.email,
-        phone: user.phone,
-        type: user.concessionaireProfile?.type || 'persona_fisica',
-        rfc: user.concessionaireProfile?.rfc || '',
-        tax_address: user.concessionaireProfile?.taxAddress || '',
-        legal_representative: user.concessionaireProfile?.legalRepresentative || '',
-        status: user.concessionaireProfile?.status || 'pendiente',
-        registration_date: user.concessionaireProfile?.registrationDate || user.createdAt,
-        notes: user.concessionaireProfile?.notes || '',
-        created_at: user.createdAt,
-        updated_at: user.updatedAt
+      const formattedConcessionaires = concessionaires.map(concessionaire => ({
+        id: concessionaire.id,
+        name: concessionaire.businessName || concessionaire.contactPerson || `RFC: ${concessionaire.rfc}`,
+        type: concessionaire.type || 'persona_fisica',
+        rfc: concessionaire.rfc || '',
+        tax_address: concessionaire.taxAddress || '',
+        legal_representative: concessionaire.legalRepresentative || '',
+        business_name: concessionaire.businessName || '',
+        contact_person: concessionaire.contactPerson || '',
+        email: concessionaire.email || '',
+        phone: concessionaire.phone || '',
+        status: concessionaire.status || 'pendiente',
+        registration_date: concessionaire.registrationDate,
+        notes: concessionaire.notes || '',
+        created_at: concessionaire.createdAt,
+        updated_at: concessionaire.updatedAt
       }));
       
+      console.log(`✅ Concesionarios encontrados: ${formattedConcessionaires.length}`);
       res.json(formattedConcessionaires);
     } catch (error) {
       console.error("Error al obtener concesionarios:", error);

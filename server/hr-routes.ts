@@ -28,17 +28,17 @@ export function registerHRRoutes(app: any, apiRouter: Router, isAuthenticated: a
     try {
       console.log("🔍 Obteniendo empleados desde la tabla employees...");
       
-      // Usar Drizzle ORM en lugar de SQL crudo
+      // Usar Drizzle ORM - corregir nombres de campos según esquema real
       const employeesList = await db
         .select({
           id: employees.id,
-          fullName: employees.fullName,
-          email: employees.email,
+          fullName: sql`COALESCE(${employees.fullName}, 'Sin nombre')`.as('full_name'),
+          email: sql`COALESCE(${employees.email}, 'Sin email')`.as('email'),
           position: employees.position,
           department: employees.department
         })
         .from(employees)
-        .orderBy(employees.fullName);
+        .orderBy(employees.id);
       
       console.log(`✅ Encontrados ${employeesList.length} empleados desde tabla employees`);
       res.json(employeesList);
