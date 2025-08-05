@@ -491,13 +491,13 @@ export class DatabaseStorage implements IStorage {
       await db.execute(sql`DELETE FROM employees WHERE user_id = ${id}`);
       console.log(`✅ Registro de employees eliminado para usuario ${id}`);
       
-      // 7. Eliminar de concessionaire_profiles si existe
-      try {
-        await db.execute(sql`DELETE FROM concessionaire_profiles WHERE user_id = ${id}`);
-        console.log(`✅ Registro de concessionaire_profiles eliminado para usuario ${id}`);
-      } catch (error) {
-        console.log(`ℹ️ No hay dependencias de concessionaire_profiles para usuario ${id}`);
-      }
+      // 7. concessionaire_profiles ya no tiene user_id en la nueva arquitectura
+      console.log(`ℹ️ concessionaire_profiles es ahora independiente, no hay user_id que eliminar`);
+      
+      // 8. Actualizar active_concessions - cambiar concessionaire_id de usuario a NULL 
+      // ya que ahora debería apuntar a concessionaire_profiles.id
+      await db.execute(sql`UPDATE active_concessions SET concessionaire_id = NULL WHERE concessionaire_id = ${id}`);
+      console.log(`✅ Referencias de active_concessions actualizadas para usuario ${id}`);
 
       // Nota: instructors, volunteers ya no tienen user_id en la nueva arquitectura
       

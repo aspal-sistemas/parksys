@@ -911,12 +911,15 @@ export const insertVolunteerRecognitionSchema = createInsertSchema(volunteerReco
   updatedAt: true
 });
 
-// Perfiles de concesionarios
+// Perfiles de concesionarios - Catálogo independiente sin user_id
 export const concessionaireProfiles = pgTable("concessionaire_profiles", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id),
   type: varchar("type", { length: 50 }).notNull(), // persona_fisica, persona_moral
   rfc: varchar("rfc", { length: 20 }).notNull().unique(),
+  businessName: varchar("business_name", { length: 200 }),
+  contactPerson: varchar("contact_person", { length: 200 }),
+  email: varchar("email", { length: 255 }),
+  phone: varchar("phone", { length: 20 }),
   taxAddress: text("tax_address").notNull(),
   legalRepresentative: varchar("legal_representative", { length: 200 }),
   registrationDate: date("registration_date").notNull().defaultNow(),
@@ -938,7 +941,7 @@ export const insertConcessionaireProfileSchema = createInsertSchema(concessionai
 // Documentos de concesionarios
 export const concessionaireDocuments = pgTable("concessionaire_documents", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id),
+  concessionaireProfileId: integer("concessionaire_profile_id").notNull().references(() => concessionaireProfiles.id),
   documentType: varchar("document_type", { length: 50 }).notNull(), // rfc, identificacion, acta_constitutiva, poder_notarial, etc.
   documentName: varchar("document_name", { length: 200 }).notNull(),
   documentUrl: varchar("document_url", { length: 255 }).notNull(),
@@ -946,7 +949,7 @@ export const concessionaireDocuments = pgTable("concessionaire_documents", {
   expiryDate: date("expiry_date"),
   isVerified: boolean("is_verified").default(false),
   verificationDate: timestamp("verification_date"),
-  verifiedById: integer("verified_by_id"),
+  verifiedById: integer("verified_by_id").references(() => users.id),
   notes: text("notes"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
@@ -962,29 +965,26 @@ export const insertConcessionaireDocumentSchema = createInsertSchema(concessiona
 });
 
 // Relaciones para las tablas de concesionarios
-export const concessionaireProfilesRelations = relations(concessionaireProfiles, ({ one, many }) => ({
-  user: one(users, {
-    fields: [concessionaireProfiles.userId],
-    references: [users.id]
-  })
+export const concessionaireProfilesRelations = relations(concessionaireProfiles, ({ many }) => ({
+  documents: many(concessionaireDocuments)
 }));
 
 export const concessionaireDocumentsRelations = relations(concessionaireDocuments, ({ one }) => ({
-  user: one(users, {
-    fields: [concessionaireDocuments.userId],
+  concessionaireProfile: one(concessionaireProfiles, {
+    fields: [concessionaireDocuments.concessionaireProfileId],
+    references: [concessionaireProfiles.id]
+  }),
+  verifiedBy: one(users, {
+    fields: [concessionaireDocuments.verifiedById],
     references: [users.id]
   })
 }));
 
-// Relaciones de usuarios - incluyendo perfiles de concesionarios y roles
+// Relaciones de usuarios - solo roles, sin conexión directa a concessionaires
 export const usersRelations = relations(users, ({ one, many }) => ({
   userRole: one(roles, {
     fields: [users.roleId],
     references: [roles.id],
-  }),
-  concessionaireProfile: one(concessionaireProfiles, {
-    fields: [users.id],
-    references: [concessionaireProfiles.userId]
   })
 }));
 
