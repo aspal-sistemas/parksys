@@ -398,7 +398,7 @@ export class DatabaseStorage implements IStorage {
         username: userData.username,
         email: userData.email,
         password: userData.password,
-        roleId: userData.role ? parseInt(userData.role) : 1, // Convertir role string a role_id
+        roleId: userData.roleId || (userData.role ? parseInt(userData.role) : 1), // Usar roleId directamente
         fullName: userData.fullName,
         municipalityId: userData.municipalityId,
         phone: userData.phone || null,
@@ -434,9 +434,9 @@ export class DatabaseStorage implements IStorage {
   async deleteUser(id: number): Promise<boolean> {
     try {
       // Eliminar todas las referencias que apuntan al usuario
-      // Primero buscamos qué tablas referencian al usuario
+      // Solo eliminar de tablas que realmente existen
       await db.execute(sql`DELETE FROM time_off_requests WHERE employee_id IN (SELECT id FROM employees WHERE user_id = ${id})`);
-      await db.execute(sql`DELETE FROM payroll WHERE employee_id IN (SELECT id FROM employees WHERE user_id = ${id})`);
+      // await db.execute(sql`DELETE FROM payroll WHERE employee_id IN (SELECT id FROM employees WHERE user_id = ${id})`); // Tabla no existe
       await db.execute(sql`DELETE FROM employees WHERE user_id = ${id}`);
       
       // Ahora eliminar el usuario de la tabla users
