@@ -316,7 +316,7 @@ export default function RolesManagement() {
                   <TableRow key={role.id}>
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg ${role.badge.color} ${role.badge.textColor}`}>
+                        <div className={`inline-flex items-center justify-center rounded text-white w-8 h-8 ${role.badge.color}`}>
                           {role.badge.icon}
                         </div>
                         <div>

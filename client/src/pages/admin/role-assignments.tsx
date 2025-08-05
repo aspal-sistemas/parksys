@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { RoleBadge, SYSTEM_ROLES } from '@/components/RoleBadge';
+import { RoleBadge, RoleBadgeWithText, SYSTEM_ROLES } from '@/components/RoleBadge';
 import { usePermissions } from '@/components/RoleGuard';
 import { Link } from 'wouter';
 import { 
@@ -267,7 +267,7 @@ const RoleAssignments: React.FC = () => {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <RoleBadge roleId={user.currentRole} />
+                    <RoleBadgeWithText roleId={user.currentRole} />
                   </TableCell>
                   <TableCell>
                     <span className="text-sm">{user.department}</span>
@@ -363,7 +363,7 @@ const RoleAssignments: React.FC = () => {
                                 <SelectContent>
                                   {SYSTEM_ROLES.map(role => (
                                     <SelectItem key={role.id} value={role.id}>
-                                      <RoleBadge roleId={role.id} size="sm" showText={false} />
+                                      <RoleBadgeWithText roleId={role.id} size="sm" />
                                     </SelectItem>
                                   ))}
                                 </SelectContent>

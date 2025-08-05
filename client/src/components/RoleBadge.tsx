@@ -189,4 +189,36 @@ export const isRoleHigherThan = (roleId1: string, roleId2: string): boolean => {
   return role1.level > role2.level;
 };
 
+// Componente helper para mostrar badge con icono + texto separado
+export const RoleBadgeWithText: React.FC<{
+  roleId: string;
+  size?: 'sm' | 'md' | 'lg';
+  className?: string;
+}> = ({ roleId, size = 'md', className }) => {
+  const role = SYSTEM_ROLES.find(r => r.id === roleId);
+  
+  if (!role) {
+    return (
+      <div className={cn("flex items-center gap-2", className)}>
+        <Badge variant="outline" className="text-gray-500">
+          <Users className="w-3 h-3" />
+        </Badge>
+        <span className="text-sm text-gray-500">Rol desconocido</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className={cn("flex items-center gap-2", className)}>
+      <RoleBadge roleId={roleId} showText={false} size={size} />
+      <span className={cn(
+        "font-medium",
+        size === 'sm' ? 'text-xs' : size === 'lg' ? 'text-base' : 'text-sm'
+      )}>
+        {role.name.toUpperCase()}
+      </span>
+    </div>
+  );
+};
+
 export default RoleBadge;

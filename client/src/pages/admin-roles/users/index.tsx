@@ -388,9 +388,11 @@ export default function UsersManagement() {
                   <SelectItem value="all">Todos los roles</SelectItem>
                   {mockRoles.map((role) => (
                     <SelectItem key={role.id} value={role.id}>
-                      <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg ${role.badge.color} text-white text-xs`}>
-                        {role.badge.icon}
-                        <span>{role.name.toUpperCase()}</span>
+                      <div className="flex items-center gap-2">
+                        <div className={`inline-flex items-center justify-center rounded text-white w-6 h-6 ${role.badge.color}`}>
+                          {role.badge.icon}
+                        </div>
+                        <span className="text-xs font-medium">{role.name.toUpperCase()}</span>
                       </div>
                     </SelectItem>
                   ))}
@@ -461,9 +463,11 @@ export default function UsersManagement() {
                       <div className="flex flex-wrap gap-1">
                         {user.roles.length > 0 ? (
                           user.roles.map((role) => (
-                            <div key={role.id} className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg ${role.badge.color} text-white text-xs`}>
-                              {role.badge.icon}
-                              <span>{role.name.toUpperCase()}</span>
+                            <div key={role.id} className="flex items-center gap-2">
+                              <div className={`inline-flex items-center justify-center rounded text-white w-6 h-6 ${role.badge.color}`}>
+                                {role.badge.icon}
+                              </div>
+                              <span className="text-xs font-medium">{role.name.toUpperCase()}</span>
                             </div>
                           ))
                         ) : (

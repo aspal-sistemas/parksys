@@ -361,7 +361,7 @@ export default function PermissionMatrix() {
                     {mockRoles.map((role) => (
                       <th key={role.id} className="p-3 text-center border-b font-medium min-w-[120px]">
                         <div className="flex flex-col items-center gap-2">
-                          <div className={`p-2 rounded-lg ${role.badge.color} text-white`}>
+                          <div className={`inline-flex items-center justify-center rounded text-white w-8 h-8 ${role.badge.color}`}>
                             {role.badge.icon}
                           </div>
                           <div className="text-center">

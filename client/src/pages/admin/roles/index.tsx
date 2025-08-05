@@ -7,7 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { RoleBadge, SYSTEM_ROLES } from '@/components/RoleBadge';
+import { RoleBadge, RoleBadgeWithText, SYSTEM_ROLES } from '@/components/RoleBadge';
 import { usePermissions } from '@/components/RoleGuard';
 import { Link } from 'wouter';
 import { 
@@ -173,7 +173,7 @@ const RolesManagement: React.FC = () => {
                   <TableRow key={role.id}>
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        <RoleBadge roleId={role.id} showIcon={true} />
+                        <RoleBadgeWithText roleId={role.id} />
                         <div>
                           <div className="text-sm text-gray-500">{role.description}</div>
                         </div>

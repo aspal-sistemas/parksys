@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { RoleBadge, SYSTEM_ROLES } from '@/components/RoleBadge';
+import { RoleBadge, RoleBadgeWithText, SYSTEM_ROLES } from '@/components/RoleBadge';
 import { DEFAULT_ROLE_PERMISSIONS, SYSTEM_MODULES, usePermissions } from '@/components/RoleGuard';
 import { Link } from 'wouter';
 import { 
