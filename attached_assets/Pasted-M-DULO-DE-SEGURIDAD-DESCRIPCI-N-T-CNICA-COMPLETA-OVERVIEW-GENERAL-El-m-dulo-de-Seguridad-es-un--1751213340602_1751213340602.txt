@@ -1,0 +1,264 @@
+MÓDULO DE SEGURIDAD - DESCRIPCIÓN TÉCNICA COMPLETA
+📋 OVERVIEW GENERAL
+El módulo de Seguridad es un sistema integral de gestión de seguridad corporativa que incluye 3 submódulos principales:
+
+Cambiar Contraseña - Gestión de contraseñas de usuarios
+Mi Actividad - Historial personal de actividades
+Admin Seguridad - Panel administrativo de seguridad
+🏗️ ARQUITECTURA DE BASE DE DATOS
+Tablas Principales:
+-- Tabla de logs de auditoría
+audit_logs {
+  id: serial PRIMARY KEY,
+  user_id: integer,
+  username: text,
+  action: text,
+  ip_address: text,
+  user_agent: text,
+  success: boolean,
+  details: jsonb,
+  timestamp: timestamp
+}
+-- Intentos de login
+login_attempts {
+  id: serial PRIMARY KEY,
+  username: text NOT NULL,
+  ip_address: text NOT NULL,
+  user_agent: text,
+  success: boolean NOT NULL,
+  failure_reason: text,
+  attempted_at: timestamp DEFAULT NOW()
+}
+-- Bloqueos de cuenta
+account_lockouts {
+  id: serial PRIMARY KEY,
+  username: text NOT NULL,
+  ip_address: text NOT NULL,
+  locked_at: timestamp DEFAULT NOW(),
+  locked_until: timestamp NOT NULL,
+  attempt_count: integer NOT NULL,
+  is_active: boolean DEFAULT true
+}
+-- Tokens de recuperación de contraseña
+password_reset_tokens {
+  id: serial PRIMARY KEY,
+  user_id: integer REFERENCES users(id),
+  token: text NOT NULL UNIQUE,
+  email: text NOT NULL,
+  expires_at: timestamp NOT NULL,
+  is_used: boolean DEFAULT false,
+  created_at: timestamp DEFAULT NOW()
+}
+-- Logs de actividad de usuario
+user_activity_logs {
+  id: serial PRIMARY KEY,
+  user_id: integer,
+  username: text,
+  action: text,
+  ip_address: text,
+  user_agent: text,
+  details: jsonb,
+  success: boolean,
+  timestamp: timestamp DEFAULT NOW()
+}
+🔧 BACKEND - SERVICIOS Y APIS
+SecurityService (Clase Principal)
+Configuración de seguridad:
+
+const SECURITY_CONFIG = {
+  MAX_LOGIN_ATTEMPTS: 5,
+  LOCKOUT_DURATION_MINUTES: 15,
+  PASSWORD_RESET_TOKEN_EXPIRY_MINUTES: 30,
+  MIN_PASSWORD_LENGTH: 8,
+  PASSWORD_HISTORY_COUNT: 5,
+  SESSION_TIMEOUT_MINUTES: 120
+};
+Funcionalidades Principales:
+1. Límite de Intentos de Login
+
+Registra intentos exitosos/fallidos
+Bloqueo automático después de 5 intentos fallidos
+Bloqueo temporal de 15 minutos
+Detección de IP sospechosas
+2. Política de Contraseñas Robustas
+
+Mínimo 8 caracteres
+Mayúsculas, minúsculas, números, caracteres especiales
+Validación contra contraseñas comunes
+Hash con bcrypt (12 salt rounds)
+3. Auditoría de Accesos
+
+Registro completo de todas las actividades
+Tracking de IP, User Agent, timestamp
+Detalles JSON para contexto adicional
+4. Recuperación de Contraseñas
+
+Tokens criptográficos únicos
+Expiración en 30 minutos
+Validación y marcado como usado
+Endpoints API:
+// Actividad personal
+GET /api/security/activity
+- Paginación: page, limit
+- Filtrado por usuario autenticado
+- Ordenado por timestamp DESC
+// Cambio de contraseña
+POST /api/auth/change-password
+Body: { currentPassword, newPassword }
+- Validación de contraseña actual
+- Validación de política de contraseñas
+- Hash y actualización segura
+// Estadísticas admin (solo admin)
+GET /api/admin/security/stats?days=30
+- Total de logins
+- Logins fallidos
+- Tasa de éxito
+- Usuarios activos
+- Cuentas bloqueadas
+// Actividad sospechosa (solo admin)
+GET /api/admin/security/suspicious-activity?hours=24
+- Intentos fallidos recientes
+- Patrones sospechosos de IP
+- Actividades no exitosas
+// Desbloquear cuenta (solo admin)
+POST /api/admin/unlock-account
+Body: { username }
+- Desactivar bloqueos activos
+- Notificación de desbloqueo
+🎨 FRONTEND - COMPONENTES Y PÁGINAS
+1. CAMBIAR CONTRASEÑA (/security/change-password)
+Características:
+
+Formulario con 3 campos: contraseña actual, nueva, confirmar
+Botones de mostrar/ocultar contraseña en todos los campos
+Indicador de fortaleza de contraseña (débil/medio/fuerte)
+Validación en tiempo real
+Mensajes de error específicos
+Funcionalidades:
+
+// Validación de fortaleza
+const calculatePasswordStrength = (password: string) => {
+  let score = 0;
+  if (password.length >= 8) score++;
+  if (/[A-Z]/.test(password)) score++;
+  if (/[a-z]/.test(password)) score++;
+  if (/\d/.test(password)) score++;
+  if (/[^A-Za-z0-9]/.test(password)) score++;
+  
+  return score < 3 ? 'weak' : score < 5 ? 'medium' : 'strong';
+};
+2. MI ACTIVIDAD (/security/activity)
+Características:
+
+Lista paginada del historial personal
+10 registros por página
+Iconos específicos por tipo de actividad:
+🟢 Login exitoso
+🔵 Logout
+🟣 Cambio de contraseña
+🔴 Login fallido
+⚫ Otras actividades
+Información mostrada:
+
+Acción realizada
+Fecha y hora
+Estado (éxito/fallo)
+IP Address
+User Agent (navegador)
+Detalles adicionales
+3. ADMIN SEGURIDAD (/admin/security)
+Panel Administrativo con 3 pestañas:
+
+Pestaña 1: Estadísticas
+
+Tarjetas con métricas principales:
+Total de logins (últimos 30 días)
+Logins fallidos
+Tasa de éxito
+Usuarios activos
+Cuentas bloqueadas
+Pestaña 2: Actividad Sospechosa
+
+Lista de actividades no exitosas (últimas 24h)
+Filtros por tiempo
+Información detallada:
+Usuario
+Acción
+IP Address
+Timestamp
+Razón del fallo
+Pestaña 3: Gestión de Cuentas
+
+Herramienta para desbloquear cuentas manualmente
+Input de username
+Botón de desbloqueo
+Confirmación de acción
+🔒 CARACTERÍSTICAS DE SEGURIDAD AVANZADAS
+1. Detección de Patrones Sospechosos
+Multiple intentos fallidos desde misma IP
+Intentos de login fuera de horario habitual
+Cambios de contraseña frecuentes
+Accesos desde ubicaciones inusuales
+2. Sistema de Bloqueos Inteligente
+Bloqueo progresivo (5, 15, 30 minutos)
+Limpieza automática de bloqueos expirados
+Desbloqueo manual por administradores
+3. Auditoría Completa
+Registro de TODAS las acciones del sistema
+Metadatos completos (IP, navegador, timestamp)
+Detalles contextuales en formato JSON
+Retención configurable de logs
+4. Notificaciones de Seguridad
+Email de cambio de contraseña
+Alertas de bloqueo de cuenta
+Notificaciones de actividad sospechosa
+🚦 PERMISOS Y ROLES
+// Navegación del módulo
+menuItems = [
+  { 
+    id: "change-password", 
+    label: "Cambiar Contraseña", 
+    path: "/security/change-password", 
+    permissions: [] // Todos los usuarios
+  },
+  { 
+    id: "security-activity", 
+    label: "Mi Actividad", 
+    path: "/security/activity", 
+    permissions: [] // Todos los usuarios
+  },
+  { 
+    id: "admin-security", 
+    label: "Admin Seguridad", 
+    path: "/admin/security", 
+    permissions: ["admin.security", "admin.all", "all"] // Solo admin
+  }
+]
+📊 FLUJO DE DATOS TÍPICO
+Cambio de Contraseña:
+Usuario ingresa contraseña actual + nueva contraseña
+Backend valida contraseña actual con bcrypt
+Nueva contraseña se valida contra políticas
+Hash de nueva contraseña con bcrypt
+Actualización en base de datos
+Log de actividad registrado
+Email de notificación (opcional)
+Consulta de Actividad:
+Frontend solicita actividades con paginación
+Backend consulta audit_logs filtrando por user_id
+Retorna datos paginados con metadatos
+Frontend renderiza con iconos apropiados
+Dashboard Admin:
+Consulta estadísticas agregadas
+Consulta actividades sospechosas
+Renderiza métricas en tiempo real
+Herramientas de gestión disponibles
+🛠️ TECNOLOGÍAS UTILIZADAS
+Backend: Node.js + Express + TypeScript
+Base de Datos: PostgreSQL con Drizzle ORM
+Autenticación: JWT + bcrypt
+Frontend: React + TypeScript + shadcn/ui
+Validación: Zod schemas
+Estado: TanStack Query
+Routing: Wouter
+Estilo: Tailwind CSS

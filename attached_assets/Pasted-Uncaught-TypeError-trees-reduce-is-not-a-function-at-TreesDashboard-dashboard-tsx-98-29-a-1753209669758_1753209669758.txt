@@ -1,0 +1,41 @@
+Uncaught TypeError: trees.reduce is not a function
+    at TreesDashboard (dashboard.tsx:98:29)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=2a2b1869:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=2a2b1869:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=2a2b1869:15924:22)
+    at HTMLUnknownElement.callCallback2 (chunk-SKRUXVEK.js?v=2a2b1869:3674:22)
+    at Object.invokeGuardedCallbackDev (chunk-SKRUXVEK.js?v=2a2b1869:3699:24)
+    at invokeGuardedCallback (chunk-SKRUXVEK.js?v=2a2b1869:3733:39)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=2a2b1869:19765:15)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=2a2b1869:19198:20)
+    at workLoopSync (chunk-SKRUXVEK.js?v=2a2b1869:19137:13)Understand this error
+Console.js:61 The above error occurred in the <TreesDashboard> component:
+
+    at TreesDashboard (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/src/pages/admin/trees/dashboard.tsx:41:80)
+    at Suspense
+    at Route (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=2a2b1869:338:16)
+    at Switch (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=2a2b1869:394:17)
+    at div
+    at Router (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/src/App.tsx?v=aGnfBtJ7bMOYVzmCdN0ps:52:22)
+    at Provider (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-GBY3YEWR.js?v=2a2b1869:38:15)
+    at TooltipProvider (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=2a2b1869:64:5)
+    at ProfileCompletionProvider (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/src/components/ProfileCompletionContext.tsx:169:45)
+    at QueryClientProvider (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=2a2b1869:2881:3)
+    at App
+    at V (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/next-themes.js?v=2a2b1869:44:25)
+    at J (https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/next-themes.js?v=2a2b1869:42:18)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+Mt.forEach.n.<computed> @ Console.js:61Understand this error
+chunk-SKRUXVEK.js?v=2a2b1869:9129 Uncaught TypeError: trees.reduce is not a function
+    at TreesDashboard (dashboard.tsx:98:29)
+    at renderWithHooks (chunk-SKRUXVEK.js?v=2a2b1869:11548:26)
+    at updateFunctionComponent (chunk-SKRUXVEK.js?v=2a2b1869:14582:28)
+    at beginWork (chunk-SKRUXVEK.js?v=2a2b1869:15924:22)
+    at beginWork$1 (chunk-SKRUXVEK.js?v=2a2b1869:19753:22)
+    at performUnitOfWork (chunk-SKRUXVEK.js?v=2a2b1869:19198:20)
+    at workLoopSync (chunk-SKRUXVEK.js?v=2a2b1869:19137:13)
+    at renderRootSync (chunk-SKRUXVEK.js?v=2a2b1869:19116:15)
+    at recoverFromConcurrentError (chunk-SKRUXVEK.js?v=2a2b1869:18736:28)
+    at performSyncWorkOnRoot (chunk-SKRUXVEK.js?v=2a2b1869:18879:28)Understand this error

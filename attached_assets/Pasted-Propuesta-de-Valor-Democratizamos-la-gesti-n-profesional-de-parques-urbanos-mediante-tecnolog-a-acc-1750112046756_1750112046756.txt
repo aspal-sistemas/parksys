@@ -1,0 +1,182 @@
+Propuesta de Valor
+"Democratizamos la gestión profesional de parques urbanos mediante tecnología accesible, permitiendo que cualquier municipio, sin importar su tamaño o presupuesto, pueda ofrecer espacios públicos de calidad a sus ciudadanos."
+💳 Estructura de Planes y Precios
+1. PLAN COMMUNITY (Freemium)
+Precio: $0 USD/mes
+Ideal para: Municipios pequeños, pruebas piloto
+Incluye:
+
+1 parque
+3 usuarios administradores
+Módulos básicos:
+
+Gestión de parques
+Incidentes (máx. 50/mes)
+Actividades básicas
+Dashboard simple
+
+
+Soporte por email
+Actualizaciones de seguridad
+Logo del software visible
+
+Limitaciones:
+
+Sin módulos avanzados
+Sin API
+Datos exportables con marca de agua
+Backup mensual
+
+2. PLAN STARTER
+Precio: $149 USD/mes o $1,490/año (2 meses gratis)
+Ideal para: Municipios hasta 50,000 habitantes
+Incluye:
+
+Hasta 5 parques
+10 usuarios (cualquier rol)
+Todos los módulos básicos
+Módulos adicionales:
+
+Finanzas básico
+Voluntariado
+Mantenimiento
+
+
+API REST (1,000 calls/día)
+Soporte por email prioritario
+Backup semanal
+Exportación sin marca de agua
+
+3. PLAN PROFESSIONAL
+Precio: $399 USD/mes o $3,990/año
+Ideal para: Ciudades medianas (50k-250k habitantes)
+Incluye:
+
+Hasta 20 parques
+50 usuarios
+Todos los módulos disponibles
+Características premium:
+
+IA para mantenimiento predictivo
+Analytics avanzado
+Integración WhatsApp Business
+Multi-idioma
+White label parcial (logos propios)
+
+
+API REST (10,000 calls/día)
+Soporte por chat en vivo
+Backup diario
+Training inicial (8 horas)
+
+4. PLAN ENTERPRISE
+Precio: $999 USD/mes o $9,990/año
+Ideal para: Grandes ciudades (250k+ habitantes)
+Incluye:
+
+Parques ilimitados
+Usuarios ilimitados
+Todo lo del Plan Professional
+Adicionales:
+
+White label completo
+Servidor dedicado opcional
+API ilimitada
+Integraciones personalizadas
+SLA 99.9%
+
+
+Account Manager dedicado
+Soporte 24/7
+Training ilimitado
+Consultoría trimestral
+
+5. PLAN GOBIERNO
+Precio: Cotización personalizada
+Ideal para: Estados, países, consorcios municipales
+Incluye:
+
+Multi-tenencia para múltiples municipios
+Infraestructura on-premise opcional
+Desarrollo de features exclusivas
+Integración con sistemas gubernamentales
+Compliance específico del país
+Equipo de soporte dedicado
+
+📦 Modelo por Módulos (Add-ons)
+Módulos Premium (precio mensual por módulo)
+MóduloStarterProfessionalEnterpriseArbolado Urbano Avanzado$49$39$29Gestión de Concesiones$39$29$19Sostenibilidad y ODS$59$49$39Participación Ciudadana$69$59$49IoT y Sensores$99$89$79Realidad Aumentada$79$69$59
+Paquetes de Módulos
+
+Paquete Ecológico: Arbolado + Sostenibilidad = 20% descuento
+Paquete Ciudadano: Participación + AR = 25% descuento
+Paquete Completo: Todos los módulos = 35% descuento
+
+👥 Modelo por Usuarios Adicionales
+PlanUsuarios incluidosCosto por usuario adicional/mesStarter10$5Professional50$3EnterpriseIlimitados$0
+Tipos de usuario y pricing
+
+Administrador: Tarifa completa
+Gestor: Tarifa completa
+Instructor: 50% de la tarifa
+Voluntario: Gratis
+Solo lectura: Gratis
+
+🏢 White Label
+Opciones de White Label
+1. White Label Básico - $199/mes adicional
+
+Logo personalizado
+Colores corporativos
+URL personalizada (tuparque.sistemaparques.com)
+Emails con tu marca
+
+2. White Label Completo - $499/mes adicional
+
+Todo lo anterior más:
+Dominio propio (tuparque.com)
+App móvil con tu marca
+Personalización completa de UI
+Sin menciones al software original
+
+3. White Label Enterprise - Cotización
+
+Código fuente con licencia
+Desarrollo personalizado
+Infraestructura propia
+Soporte para modificaciones
+
+💼 Servicios de Consultoría
+1. Implementación Básica
+Precio: $1,500 USD (único pago)
+
+Configuración inicial
+Migración de datos básica
+Training remoto (16 horas)
+Soporte 30 días post-implementación
+
+2. Implementación Profesional
+Precio: $5,000 USD
+
+Todo lo básico más:
+Consultoría de procesos
+Migración compleja de datos
+Training presencial (40 horas)
+Personalización de workflows
+Soporte 90 días
+
+3. Transformación Digital
+Precio: $15,000+ USD
+
+Análisis completo de procesos
+Reingeniería organizacional
+Implementación por fases
+Change management
+Training continuo (6 meses)
+KPIs y métricas de éxito
+
+4. Servicios Recurrentes
+
+Administración delegada: $500/mes - Nosotros operamos el sistema
+Consultoría mensual: $300/mes - 4 horas de consultoría
+Training continuo: $200/mes - 2 sesiones grupales

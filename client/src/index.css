@@ -1,0 +1,253 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .menu-icon {
+    @apply text-green-500;
+  }
+  
+  /* Line clamp utilities */
+  .line-clamp-1 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+  }
+  
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+  
+  .line-clamp-3 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+  
+  /* Leaflet map styles and fixes */
+  .leaflet-container {
+    z-index: 1 !important;
+    height: 100% !important;
+    width: 100% !important;
+    background: #f0f0f0;
+  }
+  
+  .leaflet-control-container {
+    z-index: 10 !important;
+  }
+  
+  .leaflet-tile {
+    max-width: none !important;
+  }
+  
+  .leaflet-tile-pane {
+    z-index: 2 !important;
+  }
+  
+  .leaflet-marker-pane {
+    z-index: 6 !important;
+  }
+  
+  .leaflet-popup-pane {
+    z-index: 7 !important;
+  }
+  
+  /* Ensure dropdowns appear above map */
+  [data-radix-select-content] {
+    z-index: 60 !important;
+  }
+  
+  [data-radix-popper-content-wrapper] {
+    z-index: 60 !important;
+  }
+  
+  /* SOLUCIÓN DEFINITIVA PARA ÁREA BLANCA EXTRA EN PÁGINAS DE EDICIÓN */
+  body, html, #root {
+    min-height: 100vh !important;
+    height: auto !important;
+    overflow-x: hidden !important;
+  }
+  
+  /* Eliminar altura mínima problemática en AdminLayout */
+  .flex.bg-gray-50,
+  .flex.h-screen.overflow-hidden,
+  .flex-1.flex.flex-col.overflow-hidden,
+  main.flex-1.overflow-y-auto {
+    min-height: auto !important;
+    height: auto !important;
+    flex: none !important;
+    overflow: visible !important;
+  }
+  
+  /* Control específico para contenedores de edición */
+  div[style*="minHeight: 'auto'"],
+  div[style*="height: 'auto'"] {
+    min-height: auto !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+  
+  /* Anular cualquier espacio extra después del contenido */
+  .space-y-6::after,
+  .max-w-6xl::after,
+  .mx-auto::after {
+    display: none !important;
+  }
+  
+  /* Solución específica para páginas de edición de parques */
+  .park-edit-page {
+    height: auto !important;
+    min-height: 100vh !important;
+    position: relative !important;
+  }
+  
+  /* Sidebar completamente fijo - no se mueve con scroll */
+  .park-edit-page .fixed {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    height: 100vh !important;
+    z-index: 1000 !important;
+  }
+  
+  /* Control específico para el contenedor principal de edición */
+  .park-edit-content {
+    height: fit-content !important;
+    min-height: auto !important;
+    padding-bottom: 2rem !important;
+  }
+  
+  /* Eliminar espacio extra en formularios de parques */
+  .park-form-container {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  
+  .park-form-container::after {
+    display: none !important;
+    content: none !important;
+  }
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 20 14.3% 4.1%;
+    --muted: 60 4.8% 95.9%;
+    --muted-foreground: 25 5.3% 44.7%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 20 14.3% 4.1%;
+    --card: 0 0% 100%;
+    --card-foreground: 20 14.3% 4.1%;
+    --border: 20 5.9% 90%;
+    --input: 20 5.9% 90%;
+    --primary: 167 100% 33%; /* #00a587 - Parques de México primary */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 206 26% 59%; /* #8498a5 - Parques de México gray */
+    --secondary-foreground: 0 0% 100%;
+    --accent: 167 100% 20%; /* #067f5f - Parques de México dark green */
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 60 9.1% 97.8%;
+    --ring: 167 100% 33%;
+    --radius: 0.5rem;
+
+    /* Chart colors - Parques de México palette */
+    --chart-1: 167 100% 33%; /* #00a587 */
+    --chart-2: 167 100% 20%; /* #067f5f */
+    --chart-3: 73 62% 59%; /* #bcd256 */
+    --chart-4: 206 26% 59%; /* #8498a5 */
+    --chart-5: 167 50% 45%; /* complementary */
+
+    /* Sidebar colors - Parques de México theme */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 20 14.3% 4.1%;
+    --sidebar-primary: 167 100% 33%; /* #00a587 */
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 167 100% 20%; /* #067f5f */
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 20 5.9% 90%;
+    --sidebar-ring: 167 100% 33%;
+  }
+
+  .dark {
+    --background: 240 10% 4%;
+    --foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --popover: 240 10% 4%;
+    --popover-foreground: 0 0% 98%;
+    --card: 240 10% 4%;
+    --card-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --primary: 167 100% 33%; /* #00a587 - Parques de México primary */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 206 26% 59%; /* #8498a5 - Parques de México gray */
+    --secondary-foreground: 0 0% 100%;
+    --accent: 167 100% 20%; /* #067f5f - Parques de México dark green */
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --ring: 240 4.9% 83.9%;
+
+    /* Sidebar colors - Parques de México theme in dark mode */
+    --sidebar-background: 240 10% 4%; 
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 167 100% 33%; /* #00a587 */
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 167 100% 20%; /* #067f5f */
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 240 4.9% 83.9%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold;
+  }
+}
+
+/* Custom styles for map and park components */
+.map-container {
+  height: calc(100vh - 4rem);
+}
+
+@media (max-width: 768px) {
+  .map-container {
+    height: 40vh;
+  }
+}
+
+.sidebar {
+  height: calc(100vh - 4rem);
+  overflow-y: auto;
+}
+
+.park-card:hover {
+  transform: translateY(-2px);
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.amenity-icon {
+  @apply inline-flex items-center justify-center;
+  width: 24px;
+  height: 24px;
+}

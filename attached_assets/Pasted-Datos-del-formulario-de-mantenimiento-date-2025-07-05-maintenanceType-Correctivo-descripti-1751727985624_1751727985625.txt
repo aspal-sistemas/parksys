@@ -1,0 +1,59 @@
+Datos del formulario de mantenimiento: {date: '2025-07-05', maintenanceType: 'Correctivo', description: 'Aqyi va la descripción', cost: 12345, performedBy: 'Luis Romahn', …}
+Console.js:61 Estado del formulario: {}
+Console.js:61 Enviando mantenimiento: {date: '2025-07-05', maintenanceType: 'Correctivo', description: 'Aqyi va la descripción', cost: 12345, performedBy: 'Luis Romahn', …}
+Console.js:61 🌐 [API REQUEST] POST /api/assets/16/maintenances
+queryClient.ts:121  POST https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/api/assets/16/maintenances 500 (Internal Server Error)
+window.fetch @ Network.js:219
+apiRequest @ queryClient.ts:121
+mutationFn @ [id].tsx:397
+fn @ @tanstack_react-query.js?v=d9acbbb7:1203
+run @ @tanstack_react-query.js?v=d9acbbb7:500
+start @ @tanstack_react-query.js?v=d9acbbb7:542
+execute @ @tanstack_react-query.js?v=d9acbbb7:1239
+await in execute
+mutate @ @tanstack_react-query.js?v=d9acbbb7:2655
+(anonymous) @ @tanstack_react-query.js?v=d9acbbb7:3371
+handleMaintenanceSubmit @ [id].tsx:476
+(anonymous) @ chunk-L5SG6GRX.js?v=d9acbbb7:1465
+await in (anonymous)
+callCallback2 @ chunk-SKRUXVEK.js?v=d9acbbb7:3674
+invokeGuardedCallbackDev @ chunk-SKRUXVEK.js?v=d9acbbb7:3699
+invokeGuardedCallback @ chunk-SKRUXVEK.js?v=d9acbbb7:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-SKRUXVEK.js?v=d9acbbb7:3736
+executeDispatch @ chunk-SKRUXVEK.js?v=d9acbbb7:7014
+processDispatchQueueItemsInOrder @ chunk-SKRUXVEK.js?v=d9acbbb7:7034
+processDispatchQueue @ chunk-SKRUXVEK.js?v=d9acbbb7:7043
+dispatchEventsForPlugins @ chunk-SKRUXVEK.js?v=d9acbbb7:7051
+(anonymous) @ chunk-SKRUXVEK.js?v=d9acbbb7:7174
+batchedUpdates$1 @ chunk-SKRUXVEK.js?v=d9acbbb7:18913
+batchedUpdates @ chunk-SKRUXVEK.js?v=d9acbbb7:3579
+dispatchEventForPluginEventSystem @ chunk-SKRUXVEK.js?v=d9acbbb7:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-SKRUXVEK.js?v=d9acbbb7:5478
+dispatchEvent @ chunk-SKRUXVEK.js?v=d9acbbb7:5472
+dispatchDiscreteEvent @ chunk-SKRUXVEK.js?v=d9acbbb7:5449Understand this error
+Console.js:61 Error al registrar mantenimiento: Error: {"error":"Error interno del servidor"}
+    at apiRequest (queryClient.ts:143:11)
+Mt.forEach.n.<computed> @ Console.js:61
+onError @ [id].tsx:419
+execute @ @tanstack_react-query.js?v=d9acbbb7:1268
+await in execute
+mutate @ @tanstack_react-query.js?v=d9acbbb7:2655
+(anonymous) @ @tanstack_react-query.js?v=d9acbbb7:3371
+handleMaintenanceSubmit @ [id].tsx:476
+(anonymous) @ chunk-L5SG6GRX.js?v=d9acbbb7:1465
+await in (anonymous)
+callCallback2 @ chunk-SKRUXVEK.js?v=d9acbbb7:3674
+invokeGuardedCallbackDev @ chunk-SKRUXVEK.js?v=d9acbbb7:3699
+invokeGuardedCallback @ chunk-SKRUXVEK.js?v=d9acbbb7:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-SKRUXVEK.js?v=d9acbbb7:3736
+executeDispatch @ chunk-SKRUXVEK.js?v=d9acbbb7:7014
+processDispatchQueueItemsInOrder @ chunk-SKRUXVEK.js?v=d9acbbb7:7034
+processDispatchQueue @ chunk-SKRUXVEK.js?v=d9acbbb7:7043
+dispatchEventsForPlugins @ chunk-SKRUXVEK.js?v=d9acbbb7:7051
+(anonymous) @ chunk-SKRUXVEK.js?v=d9acbbb7:7174
+batchedUpdates$1 @ chunk-SKRUXVEK.js?v=d9acbbb7:18913
+batchedUpdates @ chunk-SKRUXVEK.js?v=d9acbbb7:3579
+dispatchEventForPluginEventSystem @ chunk-SKRUXVEK.js?v=d9acbbb7:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-SKRUXVEK.js?v=d9acbbb7:5478
+dispatchEvent @ chunk-SKRUXVEK.js?v=d9acbbb7:5472
+dispatchDiscreteEvent @ chunk-SKRUXVEK.js?v=d9acbbb7:5449Understand this error

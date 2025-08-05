@@ -1,0 +1,19 @@
+📋 Health check endpoints available:
+  GET /        - Main health check
+  GET /health  - Health status
+  GET /healthz - Simple OK response
+  GET /readiness - Readiness probe
+  GET /liveness - Liveness probe
+  GET /api/status - API status
+  GET /api/health - API health
+Uncaught Exception: Error: listen EADDRINUSE: address already in use 0.0.0.0:5000
+    at Server.setupListenHandle [as _listen2] (node:net:1908:16)
+    at listenInCluster (node:net:1965:12)
+    at doListen (node:net:2139:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:83:21) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 5000
+}

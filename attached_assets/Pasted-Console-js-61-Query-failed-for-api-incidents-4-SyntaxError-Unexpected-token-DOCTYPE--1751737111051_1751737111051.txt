@@ -1,0 +1,59 @@
+Console.js:61 Query failed for: /api/incidents/4 SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+Mt.forEach.n.<computed> @ Console.js:61
+(anonymous) @ queryClient.ts:210
+await in (anonymous)
+fetchFn @ @tanstack_react-query.js?v=016459d6:850
+run @ @tanstack_react-query.js?v=016459d6:500
+start @ @tanstack_react-query.js?v=016459d6:542
+fetch @ @tanstack_react-query.js?v=016459d6:937
+executeFetch_fn @ @tanstack_react-query.js?v=016459d6:2244
+onSubscribe @ @tanstack_react-query.js?v=016459d6:1948
+subscribe @ @tanstack_react-query.js?v=016459d6:24
+(anonymous) @ @tanstack_react-query.js?v=016459d6:3093
+subscribeToStore @ chunk-SKRUXVEK.js?v=016459d6:11984
+commitHookEffectListMount @ chunk-SKRUXVEK.js?v=016459d6:16915
+commitPassiveMountOnFiber @ chunk-SKRUXVEK.js?v=016459d6:18156
+commitPassiveMountEffects_complete @ chunk-SKRUXVEK.js?v=016459d6:18129
+commitPassiveMountEffects_begin @ chunk-SKRUXVEK.js?v=016459d6:18119
+commitPassiveMountEffects @ chunk-SKRUXVEK.js?v=016459d6:18109
+flushPassiveEffectsImpl @ chunk-SKRUXVEK.js?v=016459d6:19490
+flushPassiveEffects @ chunk-SKRUXVEK.js?v=016459d6:19447
+performSyncWorkOnRoot @ chunk-SKRUXVEK.js?v=016459d6:18868
+flushSyncCallbacks @ chunk-SKRUXVEK.js?v=016459d6:9119
+commitRootImpl @ chunk-SKRUXVEK.js?v=016459d6:19432
+commitRoot @ chunk-SKRUXVEK.js?v=016459d6:19277
+finishConcurrentRender @ chunk-SKRUXVEK.js?v=016459d6:18805
+performConcurrentWorkOnRoot @ chunk-SKRUXVEK.js?v=016459d6:18718
+workLoop @ chunk-SKRUXVEK.js?v=016459d6:197
+flushWork @ chunk-SKRUXVEK.js?v=016459d6:176
+performWorkUntilDeadline @ chunk-SKRUXVEK.js?v=016459d6:384Understand this error
+Console.js:61 Query failed for: /api/incidents/4/comments SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+Mt.forEach.n.<computed> @ Console.js:61
+(anonymous) @ queryClient.ts:210
+await in (anonymous)
+fetchFn @ @tanstack_react-query.js?v=016459d6:850
+run @ @tanstack_react-query.js?v=016459d6:500
+start @ @tanstack_react-query.js?v=016459d6:542
+fetch @ @tanstack_react-query.js?v=016459d6:937
+executeFetch_fn @ @tanstack_react-query.js?v=016459d6:2244
+onSubscribe @ @tanstack_react-query.js?v=016459d6:1948
+subscribe @ @tanstack_react-query.js?v=016459d6:24
+(anonymous) @ @tanstack_react-query.js?v=016459d6:3093
+subscribeToStore @ chunk-SKRUXVEK.js?v=016459d6:11984
+commitHookEffectListMount @ chunk-SKRUXVEK.js?v=016459d6:16915
+commitPassiveMountOnFiber @ chunk-SKRUXVEK.js?v=016459d6:18156
+commitPassiveMountEffects_complete @ chunk-SKRUXVEK.js?v=016459d6:18129
+commitPassiveMountEffects_begin @ chunk-SKRUXVEK.js?v=016459d6:18119
+commitPassiveMountEffects @ chunk-SKRUXVEK.js?v=016459d6:18109
+flushPassiveEffectsImpl @ chunk-SKRUXVEK.js?v=016459d6:19490
+flushPassiveEffects @ chunk-SKRUXVEK.js?v=016459d6:19447
+performSyncWorkOnRoot @ chunk-SKRUXVEK.js?v=016459d6:18868
+flushSyncCallbacks @ chunk-SKRUXVEK.js?v=016459d6:9119
+commitRootImpl @ chunk-SKRUXVEK.js?v=016459d6:19432
+commitRoot @ chunk-SKRUXVEK.js?v=016459d6:19277
+finishConcurrentRender @ chunk-SKRUXVEK.js?v=016459d6:18805
+performConcurrentWorkOnRoot @ chunk-SKRUXVEK.js?v=016459d6:18718
+workLoop @ chunk-SKRUXVEK.js?v=016459d6:197
+flushWork @ chunk-SKRUXVEK.js?v=016459d6:176
+performWorkUntilDeadline @ chunk-SKRUXVEK.js?v=016459d6:384Understand this error
+Console.js:61 Query failed for: /api/incidents/4/history SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON

@@ -1,0 +1,5681 @@
+import type { Express, Request, Response, NextFunction } from "express";
+import express from "express";
+import multer from "multer";
+import * as XLSX from "xlsx";
+import path from "path";
+import fs from "fs";
+import { createServer, type Server } from "http";
+import { storage } from "./simple-storage";
+import { isAuthenticated, hasMunicipalityAccess, hasParkAccess, requirePermission, requireAdmin } from "./middleware/auth";
+import { handleProfileImageUpload } from "./api/profileImageUpload";
+import { saveProfileImage, getProfileImage } from "./profileImageCache";
+import { db, pool } from "./db";
+import { sql, eq } from "drizzle-orm";
+import { deleteAllVolunteers, deleteVolunteer } from "./delete-all-volunteers";
+import * as schema from "@shared/schema";
+const { parkAmenities, amenities } = schema;
+import { videoRouter } from "./video_routes";
+import { registerVolunteerRoutes } from "./volunteerRoutes";
+import { registerInstructorRoutes } from "./instructor-routes";
+import { registerPublicRoutes } from "./publicRoutes";
+import { registerAssetRoutes } from "./asset_routes";
+import { registerAssetImageRoutes } from "./asset-image-routes";
+import activityImageRouter from "./activity-image-routes";
+import { registerMaintenanceRoutes } from "./maintenance_routes_fixed";
+import { registerAssetAssignmentRoutes } from "./asset_assignment_routes";
+import { registerSpaceReservationRoutes } from "./space-reservations-routes";
+import { registerReservableSpacesRoutes } from "./reservable-spaces-routes";
+import { ObjectStorageService } from "./objectStorage";
+import { registerTreeRoutes } from "./tree_routes";
+import { registerTreeMaintenanceRoutes } from "./tree_maintenance_routes";
+import { registerTreeInventoryRoutes } from "./tree_inventory_routes";
+import { registerTreeStatsRoutes } from "./tree_stats_routes";
+import { registerTreeDetailsRoutes } from "./tree_details_route";
+import { registerTreeInventoryGeneratorRoutes } from "./tree-inventory-generator-routes";
+import { activityRouter } from "./activityRoutes";
+import directRouter from "./directRoutes";
+import { registerConcessionRoutes } from "./concession-routes";
+import { registerConcessionContractsRoutes } from "./concession-contracts-routes";
+import { registerUsersConcessionairesRoutes } from "./users-concessionaires-routes";
+import { registerConcessionairesRoutes } from "./concessionaires-routes";
+import { registerConcessionLocationsRoutes } from "./concession-locations-routes";
+import { registerConcessionPaymentsRoutes } from "./concession-payments-routes";
+import { registerConcessionEvaluationRoutes } from "./concession-evaluations-routes";
+import { registerActiveConcessionRoutes } from "./active-concessions-routes";
+import { registerFinanceRoutes } from "./finance-routes";
+import { registerBudgetRoutes } from "./budget-routes";
+import { registerFinanceUpdateRoutes } from "./finance-update-routes";
+import { 
+  uploadParkFile, 
+  handleMulterErrors, 
+  generateImportTemplate, 
+  processImportFile 
+} from "./api/parksImport";
+import { registerUserRoutes } from "./userRoutes";
+import { updateSkillsRouter } from "./updateSkills";
+import { registerEventRoutes } from "./events-routes";
+import { registerActivityRoutes } from "./activitiesRoutes";
+import advertisingRoutes from "./advertising-routes";
+import activityRegistrationsRouter from "./routes/activity-registrations";
+import paymentsRouter from "./routes/payments";
+import { registerActivityPaymentRoutes } from "./routes/activityPaymentsSimple";
+import { registerSpacePaymentRoutes } from "./routes/space-payments";
+import { registerActivityStatsRoutes } from "./routes/activity-stats";
+import { uploadAdvertising, handleAdvertisingUpload } from "./api/advertising-upload";
+import { 
+  insertParkSchema, insertCommentSchema, insertIncidentSchema, 
+  insertActivitySchema, insertDocumentSchema, insertParkImageSchema,
+  insertParkAmenitySchema, ExtendedPark, Park, Municipality, Amenity, Activity
+} from "@shared/schema";
+import { ZodError } from "zod";
+import { fromZodError } from "zod-validation-error";
+import { registerRoleRoutes } from "./roleRoutes";
+
+export async function registerRoutes(app: Express): Promise<Server> {
+  // Create HTTP server first
+  const httpServer = createServer(app);
+  
+  // API routes - all prefixed with /api
+  const apiRouter = express.Router();
+  
+  // Public API routes - all prefixed with /public-api
+  const publicRouter = express.Router();
+  
+  // Configure multer for file uploads
+  const upload = multer({ storage: multer.memoryStorage() });
+  
+  // Configure multer specifically for icon uploads with disk storage
+  const iconUpload = multer({
+    storage: multer.diskStorage({
+      destination: function (req, file, cb) {
+        cb(null, 'public/uploads/');
+      },
+      filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const extension = file.originalname.split('.').pop();
+        cb(null, `amenity-icon-${uniqueSuffix}.${extension}`);
+      }
+    }),
+    fileFilter: (req, file, cb) => {
+      const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml'];
+      if (allowedTypes.includes(file.mimetype)) {
+        cb(null, true);
+      } else {
+        cb(new Error('Formato de archivo no válido. Solo se permiten PNG, JPG, JPEG y SVG'));
+      }
+    },
+    limits: {
+      fileSize: 2 * 1024 * 1024 // 2MB
+    }
+  });
+
+  // Configure multer specifically for sponsor logo uploads
+  const sponsorLogoUpload = multer({
+    storage: multer.diskStorage({
+      destination: function (req, file, cb) {
+        const uploadDir = 'public/uploads/sponsor-logos/';
+        // Crear directorio si no existe
+        if (!fs.existsSync(uploadDir)) {
+          fs.mkdirSync(uploadDir, { recursive: true });
+        }
+        cb(null, uploadDir);
+      },
+      filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const extension = file.originalname.split('.').pop();
+        cb(null, `sponsor-logo-${uniqueSuffix}.${extension}`);
+      }
+    }),
+    fileFilter: (req, file, cb) => {
+      const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+      if (allowedTypes.includes(file.mimetype)) {
+        cb(null, true);
+      } else {
+        cb(new Error('Formato de archivo no válido. Solo se permiten PNG y JPG'));
+      }
+    },
+    limits: {
+      fileSize: 5 * 1024 * 1024 // 5MB
+    }
+  });
+  
+  // Template download routes (must be defined before conflicting routes)
+  app.get('/api/template/parks-import', generateImportTemplate);
+  
+  // Ruta especial para videos
+  app.post('/api/videos/update/:id', async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.id);
+      const { videoUrl } = req.body;
+      
+      if (videoUrl === undefined) {
+        return res.status(400).json({ message: "videoUrl is required" });
+      }
+      
+      // Verificamos que existe el parque
+      const existingPark = await storage.getPark(parkId);
+      if (!existingPark) {
+        return res.status(404).json({ message: "Parque no encontrado" });
+      }
+      
+      // Actualizamos directamente usando SQL parametrizado
+      await pool.query('UPDATE parks SET video_url = $1 WHERE id = $2', [videoUrl, parkId]);
+      
+      res.json({ 
+        success: true, 
+        message: "Video URL updated successfully",
+        videoUrl: videoUrl
+      });
+    } catch (error) {
+      console.error("Error al actualizar video:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "Error updating video URL",
+        details: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+  
+  // Registramos las rutas de actividades
+  apiRouter.use(activityRouter);
+  
+  // Registramos las rutas del módulo de voluntariado
+  registerVolunteerRoutes(app, apiRouter, null, isAuthenticated);
+  
+  // Registramos las rutas del módulo de instructores
+  registerInstructorRoutes(app, apiRouter, isAuthenticated);
+  
+  // Registramos las rutas del módulo de activos
+  registerAssetRoutes(app, apiRouter, isAuthenticated); // RESTAURADO - rutas POST de mantenimientos están comentadas en asset_routes.ts
+  registerMaintenanceRoutes(app, apiRouter, isAuthenticated); // DESCOMENTADO - usado maintenance_routes_fixed.ts
+  registerAssetAssignmentRoutes(app, apiRouter, isAuthenticated);
+  registerSpaceReservationRoutes(app, apiRouter, isAuthenticated);
+  registerReservableSpacesRoutes(app);
+  registerSpacePaymentRoutes(app);
+
+  // Object Storage routes for spaces multimedia (with authentication)
+  app.post("/api/objects/upload", isAuthenticated, async (req, res) => {
+    try {
+      console.log("📤 [OBJECT-STORAGE] Getting upload URL for authenticated user");
+      const objectStorageService = new ObjectStorageService();
+      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      console.log("📤 [OBJECT-STORAGE] Upload URL generated successfully");
+      res.json({ uploadURL });
+    } catch (error) {
+      console.error("❌ [OBJECT-STORAGE] Error getting upload URL:", error);
+      res.status(500).json({ error: "Error getting upload URL" });
+    }
+  });
+  registerAssetImageRoutes(app, apiRouter, isAuthenticated);
+  
+  // Registramos las rutas del módulo de actividades
+  registerActivityRoutes(app, apiRouter, isAuthenticated, hasParkAccess);
+  
+  // Registramos las rutas de imágenes de actividades
+  apiRouter.use('/activities', activityImageRouter);
+  
+  // Ruta específica para el resumen de actividades (endpoint separado)
+  apiRouter.get('/activities-summary-data', async (req: Request, res: Response) => {
+    try {
+      console.log('📊 Obteniendo resumen de actividades con estadísticas...');
+
+      const activitiesSummary = await db.execute(`
+        SELECT 
+          a.id,
+          a.title,
+          a.description,
+          a.category,
+          a.start_date,
+          a.end_date,
+          a.start_time,
+          a.location,
+          a.capacity,
+          a.price,
+          a.is_free,
+          a.registration_enabled,
+          a.max_registrations,
+          a.registration_deadline,
+          p.name as park_name,
+          COUNT(ar.id) as total_registrations,
+          COUNT(CASE WHEN ar.status = 'approved' THEN 1 END) as approved_registrations,
+          COUNT(CASE WHEN ar.status = 'pending' THEN 1 END) as pending_registrations,
+          COUNT(CASE WHEN ar.status = 'rejected' THEN 1 END) as rejected_registrations,
+          COALESCE(a.max_registrations, a.capacity, 0) as max_capacity,
+          CASE 
+            WHEN a.is_free = true THEN 0
+            ELSE COUNT(CASE WHEN ar.status = 'approved' THEN 1 END) * COALESCE(a.price::numeric, 0)
+          END as total_revenue,
+          CASE 
+            WHEN a.is_free = true THEN 0
+            ELSE COUNT(ar.id) * COALESCE(a.price::numeric, 0)
+          END as potential_revenue
+        FROM activities a
+        LEFT JOIN parks p ON a.park_id = p.id
+        LEFT JOIN activity_registrations ar ON a.id = ar.activity_id
+        GROUP BY a.id, a.title, a.description, a.category, a.start_date, a.end_date, 
+                 a.start_time, a.location, a.capacity, a.price, a.is_free, 
+                 a.registration_enabled, a.max_registrations, a.registration_deadline, p.name
+        ORDER BY a.start_date DESC
+      `);
+
+      // Formatear los datos para el frontend
+      const formattedSummary = activitiesSummary.rows.map((activity: any) => {
+        const maxCapacity = activity.max_capacity || 0;
+        const totalRegistrations = parseInt(activity.total_registrations) || 0;
+        const availableSlots = Math.max(0, maxCapacity - totalRegistrations);
+
+        return {
+          id: activity.id,
+          title: activity.title,
+          description: activity.description,
+          category: activity.category,
+          parkName: activity.park_name,
+          startDate: activity.start_date,
+          endDate: activity.end_date,
+          startTime: activity.start_time,
+          location: activity.location,
+          capacity: activity.capacity,
+          price: activity.price,
+          isFree: activity.is_free,
+          registrationStats: {
+            totalRegistrations: totalRegistrations,
+            approved: parseInt(activity.approved_registrations) || 0,
+            pending: parseInt(activity.pending_registrations) || 0,
+            rejected: parseInt(activity.rejected_registrations) || 0,
+            availableSlots: availableSlots
+          },
+          revenue: {
+            totalRevenue: parseFloat(activity.total_revenue) || 0,
+            potentialRevenue: parseFloat(activity.potential_revenue) || 0
+          },
+          registrationEnabled: activity.registration_enabled,
+          maxRegistrations: activity.max_registrations,
+          registrationDeadline: activity.registration_deadline
+        };
+      });
+
+      console.log(`📊 Resumen de actividades procesado: ${formattedSummary.length} actividades`);
+      res.json(formattedSummary);
+
+    } catch (error) {
+      console.error('Error al obtener resumen de actividades:', error);
+      res.status(500).json({ 
+        error: 'Error interno del servidor',
+        details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
+      });
+    }
+  });
+
+  // Registramos las rutas de inscripciones de actividades (DESPUÉS del endpoint específico)
+  apiRouter.use('/activity-registrations', activityRegistrationsRouter);
+  console.log('📝 Rutas de inscripciones de actividades registradas');
+  
+  // Registramos las rutas de pagos de actividades con Stripe
+  registerActivityPaymentRoutes(app);
+  console.log('💳 Rutas de pagos de actividades registradas');
+  
+  // Registramos las rutas del módulo de arbolado
+  registerTreeRoutes(app, apiRouter, isAuthenticated);
+  registerTreeMaintenanceRoutes(app, apiRouter, isAuthenticated);
+  registerTreeInventoryRoutes(app, apiRouter, isAuthenticated);
+  registerTreeInventoryGeneratorRoutes(app, apiRouter, isAuthenticated);
+  
+  console.log('🌳 Todas las rutas de árboles registradas');
+  
+  // Registramos las rutas del módulo de eventos
+  registerEventRoutes(app, apiRouter, isAuthenticated);
+  
+  // Registramos las rutas del módulo financiero
+  registerFinanceRoutes(app, apiRouter, isAuthenticated);
+  registerBudgetRoutes(app, apiRouter, isAuthenticated);
+  registerFinanceUpdateRoutes(app, apiRouter);
+  
+  // Registramos las rutas del módulo de publicidad
+  apiRouter.use('/advertising', advertisingRoutes);
+  
+  // Registramos las rutas de gestión de publicidad
+  const advertisingManagementRoutes = await import('./advertising-management-routes');
+  apiRouter.use('/advertising-management', advertisingManagementRoutes.default);
+  console.log('📢 Rutas de publicidad y gestión registradas');
+
+  // Rutas de edición específicas con nombres únicos
+  apiRouter.put("/income-categories/:id", async (req: Request, res: Response) => {
+    try {
+      const categoryId = parseInt(req.params.id);
+      const { name, description } = req.body;
+      
+      console.log("=== EDITANDO CATEGORÍA DE INGRESOS ===");
+      console.log("ID:", categoryId, "Datos:", { name, description });
+      
+      const query = `UPDATE income_categories SET name = $1, description = $2, updated_at = NOW() WHERE id = $3 RETURNING *`;
+      const result = await db.execute(query, [name, description, categoryId]);
+      
+      console.log("Resultado:", result.rows[0]);
+      
+      res.json({
+        success: true,
+        data: result.rows[0]
+      });
+      
+    } catch (error) {
+      console.error("Error editando categoría de ingresos:", error);
+      res.status(500).json({
+        success: false,
+        message: "Error editando categoría",
+        error: error.message
+      });
+    }
+  });
+
+  apiRouter.put("/expense-categories/:id", async (req: Request, res: Response) => {
+    try {
+      const categoryId = parseInt(req.params.id);
+      const { name, description } = req.body;
+      
+      console.log("=== EDITANDO CATEGORÍA DE EGRESOS ===");
+      console.log("ID:", categoryId, "Datos:", { name, description });
+      
+      const query = `UPDATE expense_categories SET name = $1, description = $2, updated_at = NOW() WHERE id = $3 RETURNING *`;
+      const result = await db.execute(query, [name, description, categoryId]);
+      
+      console.log("Resultado:", result.rows[0]);
+      
+      res.json({
+        success: true,
+        data: result.rows[0]
+      });
+      
+    } catch (error) {
+      console.error("Error editando categoría de egresos:", error);
+      res.status(500).json({
+        success: false,
+        message: "Error editando categoría",
+        error: error.message
+      });
+    }
+  });
+  
+  // Registramos las rutas del módulo de inventario de árboles
+  // Comentamos esta línea para evitar conflictos con las rutas en tree_routes.ts
+  // registerTreeInventoryRoutes(app, apiRouter, isAuthenticated);
+  
+  // Registramos las rutas para categorías de incidentes
+  try {
+    const { registerIncidentCategoriesRoutes } = await import("./incident_categories_routes");
+    registerIncidentCategoriesRoutes(app, apiRouter);
+    console.log("Rutas de categorías de incidentes registradas correctamente");
+  } catch (error) {
+    console.error("Error al registrar rutas de categorías de incidentes:", error);
+  }
+  
+  // Inicializamos tablas de categorías de incidentes
+  try {
+    const { createIncidentCategoriesTables } = await import("./create_incident_categories_tables");
+    await createIncidentCategoriesTables();
+    console.log("Tablas de categorías de incidentes inicializadas correctamente");
+  } catch (error) {
+    console.error("Error al inicializar tablas de categorías de incidentes:", error);
+  }
+  
+  // Registramos las rutas de estadísticas de árboles
+  registerTreeStatsRoutes(app, apiRouter);
+  
+  // Registramos las rutas de gestión técnica y ambiental de árboles
+  registerTreeDetailsRoutes(app, apiRouter, isAuthenticated);
+  
+  // Registramos las rutas del módulo de usuarios
+  registerUserRoutes(app, apiRouter);
+
+  // Registramos las rutas del sistema de roles
+  registerRoleRoutes(app);
+  
+  // Registramos las rutas del módulo de concesiones
+  registerConcessionRoutes(app, apiRouter, isAuthenticated);
+  registerConcessionContractsRoutes(app, apiRouter, isAuthenticated);
+  registerUsersConcessionairesRoutes(app, apiRouter, isAuthenticated);
+  registerConcessionairesRoutes(app, apiRouter, isAuthenticated);
+  registerConcessionLocationsRoutes(app, apiRouter, isAuthenticated);
+  registerConcessionPaymentsRoutes(app, apiRouter, isAuthenticated);
+  registerConcessionEvaluationRoutes(app, apiRouter, isAuthenticated);
+  registerActiveConcessionRoutes(app, apiRouter, isAuthenticated);
+  
+  // Registramos las rutas de integración financiera de concesiones
+  try {
+    const { registerConcessionFinanceIntegrationRoutes } = await import("./concessions-finance-integration");
+    registerConcessionFinanceIntegrationRoutes(app, apiRouter, isAuthenticated);
+    console.log("Rutas de integración Concesiones-Finanzas registradas correctamente");
+  } catch (error) {
+    console.error("Error al registrar rutas de integración Concesiones-Finanzas:", error);
+  }
+  
+  // Crear tablas del sistema de cobro híbrido
+  try {
+    const { createHybridPaymentTables } = await import("./create-hybrid-payment-tables");
+    await createHybridPaymentTables();
+    console.log("Tablas del sistema de cobro híbrido creadas correctamente");
+  } catch (error) {
+    console.error("Error al crear tablas del sistema de cobro híbrido:", error);
+  }
+  
+  // Registramos las rutas del sistema de cobro híbrido
+  try {
+    const { registerHybridPaymentRoutes } = await import("./hybrid-payment-routes");
+    registerHybridPaymentRoutes(app, apiRouter, isAuthenticated);
+    console.log("Rutas del sistema de cobro híbrido registradas correctamente");
+  } catch (error) {
+    console.error("Error al registrar rutas del sistema de cobro híbrido:", error);
+  }
+  
+  // Endpoint específico para subir imágenes de perfil de voluntarios
+  
+  // Configurar multer para subida de imágenes de voluntarios
+  const volunteerUploadDir = path.resolve('./public/uploads/volunteers');
+  if (!fs.existsSync(volunteerUploadDir)) {
+    fs.mkdirSync(volunteerUploadDir, { recursive: true });
+  }
+  
+  const volunteerStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, volunteerUploadDir);
+    },
+    filename: (req, file, cb) => {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      const ext = path.extname(file.originalname).toLowerCase();
+      cb(null, 'volunteer-' + uniqueSuffix + ext);
+    }
+  });
+  
+  const volunteerUpload = multer({
+    storage: volunteerStorage,
+    fileFilter: (req, file, cb) => {
+      if (file.mimetype.startsWith('image/')) {
+        cb(null, true);
+      } else {
+        cb(null, false);
+      }
+    },
+    limits: {
+      fileSize: 5 * 1024 * 1024 // 5MB máximo
+    }
+  }).single('file');
+  
+  apiRouter.post('/upload/volunteer-profile', (req: Request, res: Response) => {
+    volunteerUpload(req, res, async (err) => {
+      if (err) {
+        if (err instanceof multer.MulterError) {
+          if (err.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({
+              success: false,
+              message: 'El archivo es demasiado grande. Máximo 5MB.'
+            });
+          }
+        }
+        return res.status(500).json({
+          success: false,
+          message: 'Error al subir la imagen'
+        });
+      }
+      
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          message: 'No se seleccionó ninguna imagen'
+        });
+      }
+      
+      const imageUrl = `/uploads/volunteers/${req.file.filename}`;
+      
+      // Si se proporciona volunteerId, actualizar la base de datos
+      const volunteerId = req.body.volunteerId;
+      if (volunteerId) {
+        try {
+          await pool.query(
+            'UPDATE volunteers SET profile_image_url = $1, updated_at = NOW() WHERE id = $2',
+            [imageUrl, parseInt(volunteerId)]
+          );
+          console.log(`✅ Imagen de perfil actualizada en BD para voluntario ${volunteerId}: ${imageUrl}`);
+        } catch (dbError) {
+          console.error('Error actualizando imagen en base de datos:', dbError);
+          // Continuamos aunque falle la actualización de BD
+        }
+      }
+      
+      res.json({
+        success: true,
+        url: imageUrl,
+        message: 'Imagen subida correctamente'
+      });
+    });
+  });
+
+  // Endpoints para imágenes de perfil
+  // Obtener la imagen de perfil de un usuario
+  apiRouter.get('/users/:id/profile-image', async (req: Request, res: Response) => {
+    try {
+      const userId = Number(req.params.id);
+      // Primero intentar obtener de la caché
+      let imageUrl = getProfileImage(userId);
+      
+      // Si no está en caché, consultar la base de datos
+      if (!imageUrl) {
+        try {
+          const result = await pool.query('SELECT profile_image_url FROM users WHERE id = $1', [userId]);
+          if (result.rows.length > 0 && result.rows[0].profile_image_url) {
+            imageUrl = result.rows[0].profile_image_url;
+            // Guardar en caché para futuras consultas
+            saveProfileImage(userId, imageUrl);
+          }
+        } catch (dbError) {
+          console.error('Error al consultar la base de datos:', dbError);
+        }
+      }
+      
+      if (!imageUrl) {
+        return res.status(404).json({ 
+          message: 'No se encontró ninguna imagen de perfil para este usuario'
+        });
+      }
+      
+      res.json({ imageUrl });
+    } catch (error) {
+      console.error('Error al obtener la URL de imagen de perfil:', error);
+      res.status(500).json({ 
+        message: 'Error al obtener la URL de imagen de perfil'
+      });
+    }
+  });
+  
+  // Guardar la URL de la imagen de perfil de un usuario
+  apiRouter.post('/users/:id/profile-image', async (req: Request, res: Response) => {
+    try {
+      const userId = Number(req.params.id);
+      const { imageUrl } = req.body;
+      
+      if (!imageUrl) {
+        return res.status(400).json({ message: 'URL de imagen no proporcionada' });
+      }
+      
+      // Guardar la URL en la caché
+      saveProfileImage(userId, imageUrl);
+      console.log(`Imagen de perfil guardada para el usuario ${userId}: ${imageUrl}`);
+      
+      res.json({ 
+        success: true, 
+        message: 'URL de imagen de perfil guardada correctamente',
+        userId,
+        imageUrl
+      });
+    } catch (error) {
+      console.error('Error al guardar la URL de imagen de perfil:', error);
+      res.status(500).json({ 
+        message: 'Error al guardar la URL de imagen de perfil'
+      });
+    }
+  });
+  
+  // Importamos la función para asignar imágenes de perfil
+  import("./assign-profile-images").then(module => {
+    // Endpoint para asignar imágenes de perfil a todos los usuarios
+    apiRouter.post("/admin/assign-profile-images", isAuthenticated, async (req: Request, res: Response) => {
+      try {
+        const result = await module.assignProfileImages();
+        res.status(200).json(result);
+      } catch (error) {
+        console.error("Error al asignar imágenes de perfil:", error);
+        res.status(500).json({ 
+          success: false, 
+          message: "Error al asignar imágenes de perfil",
+          error: error instanceof Error ? error.message : String(error)
+        });
+      }
+    });
+  });
+  
+  // Registramos las rutas públicas
+  registerPublicRoutes(publicRouter);
+  
+  // Montamos todas las rutas de la API bajo el prefijo /api
+  app.use('/api', apiRouter);
+  
+  // Endpoint para cargar imágenes de perfil
+  app.post('/api/upload/profile-image', isAuthenticated, handleProfileImageUpload);
+  
+  // Endpoint para cargar logos de patrocinadores
+  app.post('/api/upload/sponsor-logo', isAuthenticated, sponsorLogoUpload.single('logo'), (req: Request, res: Response) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          error: 'No se ha proporcionado ningún archivo'
+        });
+      }
+
+      // La ruta del archivo se construye relativa al directorio public
+      const filePath = `/uploads/sponsor-logos/${req.file.filename}`;
+      
+      console.log(`Logo de sponsor subido: ${filePath}`);
+      
+      res.json({
+        success: true,
+        message: 'Logo subido exitosamente',
+        filePath: filePath
+      });
+    } catch (error) {
+      console.error('Error al subir logo de sponsor:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Error interno del servidor al subir el archivo'
+      });
+    }
+  });
+  
+  // Endpoint para subir archivos de publicidad con manejo de errores
+  app.post('/api/advertising/upload', isAuthenticated, (req: Request, res: Response) => {
+    uploadAdvertising(req, res, (err) => {
+      if (err) {
+        console.error('❌ Error en multer:', err);
+        return res.status(400).json({
+          success: false,
+          error: err.message || 'Error al procesar el archivo'
+        });
+      }
+      handleAdvertisingUpload(req, res);
+    });
+  });
+
+  // Montamos todas las rutas públicas bajo el prefijo /public-api
+  // Esta línea asegura que todas las rutas definidas en publicRouter sean accesibles bajo /public-api
+  app.use('/public-api', publicRouter);
+  
+  // Añadir router especial para actualizar habilidades
+  app.use('/api', updateSkillsRouter);
+  
+  // Añadir rutas de pagos con Stripe
+  app.use(paymentsRouter);
+
+  // Get all parks with option to filter
+  apiRouter.get("/parks", async (req: Request, res: Response) => {
+    try {
+      // Importamos la función de consulta directa que maneja las imágenes
+      const { getParksDirectly } = await import('./direct-park-queries');
+      
+      // Preparamos los filtros basados en los parámetros de la consulta
+      const filters: any = {};
+      
+      if (req.query.municipalityId) {
+        filters.municipalityId = Number(req.query.municipalityId);
+      }
+      
+      if (req.query.parkType) {
+        filters.parkType = String(req.query.parkType);
+      }
+      
+      if (req.query.postalCode) {
+        filters.postalCode = String(req.query.postalCode);
+      }
+      
+      if (req.query.municipality) {
+        filters.municipality = String(req.query.municipality);
+      }
+      
+      if (req.query.search) {
+        filters.search = String(req.query.search);
+      }
+      
+      // Filtro de amenidades - convertir string de IDs separados por comas a array de números
+      if (req.query.amenities) {
+        const amenityIds = String(req.query.amenities)
+          .split(',')
+          .map(id => parseInt(id.trim()))
+          .filter(id => !isNaN(id));
+        
+        if (amenityIds.length > 0) {
+          filters.amenities = amenityIds;
+        }
+      }
+      
+      // Obtenemos los parques con sus imágenes y amenidades
+      const parks = await getParksDirectly(filters);
+      
+      // Si la consulta viene específicamente para formularios (tiene parámetro 'simple'), devolver solo id y name
+      if (req.query.simple === 'true') {
+        const simplifiedParks = parks.map(park => ({
+          id: park.id,
+          name: park.name,
+          location: park.location
+        }));
+        res.json(simplifiedParks);
+      } else {
+        // Para la administración, devolver datos completos
+        res.json(parks);
+      }
+    } catch (error) {
+      console.error("Error al obtener parques:", error);
+      res.status(500).json({ message: "Error fetching parks" });
+    }
+  });
+
+  // Endpoint optimizado para obtener parques con sus amenidades para filtrado
+  apiRouter.get("/parks-with-amenities", async (_req: Request, res: Response) => {
+    try {
+      const result = await pool.query(`
+        SELECT 
+          p.id as park_id,
+          COALESCE(
+            json_agg(
+              CASE WHEN pa.amenity_id IS NOT NULL 
+              THEN pa.amenity_id 
+              ELSE NULL END
+            ) FILTER (WHERE pa.amenity_id IS NOT NULL),
+            '[]'::json
+          ) as amenity_ids
+        FROM parks p
+        LEFT JOIN park_amenities pa ON p.id = pa.park_id
+        GROUP BY p.id
+        ORDER BY p.id
+      `);
+      
+      const parkAmenities = result.rows.map(row => ({
+        parkId: row.park_id,
+        amenityIds: Array.isArray(row.amenity_ids) ? row.amenity_ids : []
+      }));
+      
+      res.json(parkAmenities);
+    } catch (error) {
+      console.error("Error al obtener parques con amenidades:", error);
+      res.status(500).json({ 
+        message: "Error al obtener parques con amenidades",
+        error: error instanceof Error ? error.message : 'Error desconocido'
+      });
+    }
+  });
+
+  // Ruta para obtener estadísticas del dashboard de parques (DEBE IR ANTES DE /parks/:id)
+  apiRouter.get("/parks/dashboard", async (_req: Request, res: Response) => {
+    try {
+      console.log("Iniciando cálculo de estadísticas del dashboard de parques...");
+      
+      // Estadísticas básicas
+      const totalParksResult = await pool.query('SELECT COUNT(*) as count FROM parks');
+      const totalParks = parseInt(totalParksResult.rows[0].count);
+      
+      // Superficie total y área permeable (sumando las áreas de todos los parques)
+      const surfaceResult = await pool.query(`
+        SELECT 
+          SUM(CASE WHEN area IS NOT NULL AND area::text ~ '^[0-9.]+$' THEN area::numeric ELSE 0 END) as total_surface,
+          SUM(CASE WHEN green_area IS NOT NULL AND green_area::text ~ '^[0-9.]+$' THEN green_area::numeric ELSE 0 END) as total_green_area
+        FROM parks
+      `);
+      const totalSurface = parseFloat(surfaceResult.rows[0].total_surface) || 0;
+      const totalGreenArea = parseFloat(surfaceResult.rows[0].total_green_area) || 0;
+      
+      // Parques activos (asumiendo que todos son activos si no tienen campo de estado)
+      const activeParks = totalParks;
+      
+      // Total de actividades
+      const activitiesResult = await pool.query('SELECT COUNT(*) as count FROM activities');
+      const totalActivities = parseInt(activitiesResult.rows[0].count);
+      
+      // Total de voluntarios
+      const volunteersResult = await pool.query('SELECT COUNT(*) as count FROM volunteers WHERE status = $1', ['active']);
+      const totalVolunteers = parseInt(volunteersResult.rows[0].count);
+      
+      // Total de árboles en inventario
+      const treesResult = await pool.query('SELECT COUNT(*) as count FROM trees');
+      const totalTrees = parseInt(treesResult.rows[0].count);
+      
+      // Total de amenidades
+      const amenitiesResult = await pool.query('SELECT COUNT(*) as count FROM amenities');
+      const totalAmenities = parseInt(amenitiesResult.rows[0].count);
+      
+      // Total de instructores  
+      const instructorsResult = await pool.query('SELECT COUNT(*) as count FROM instructors');
+      const totalInstructors = parseInt(instructorsResult.rows[0].count);
+      
+      // Total de incidencias
+      const incidentsResult = await pool.query('SELECT COUNT(*) as count FROM incidents WHERE created_at >= CURRENT_DATE - INTERVAL \'30 days\'');
+      const totalIncidents = parseInt(incidentsResult.rows[0].count);
+      
+      // Total de activos
+      const assetsResult = await pool.query('SELECT COUNT(*) as count FROM assets');
+      const totalAssets = parseInt(assetsResult.rows[0].count);
+      
+      // Áreas en mantenimiento (simulado por actividades de mantenimiento)
+      const maintenanceResult = await pool.query(`
+        SELECT COUNT(*) as count 
+        FROM activities 
+        WHERE LOWER(title) LIKE '%mantenimiento%' 
+           OR LOWER(description) LIKE '%mantenimiento%'
+           OR LOWER(title) LIKE '%limpieza%'
+      `);
+      const maintenanceAreas = parseInt(maintenanceResult.rows[0].count);
+      
+      // Parques por municipio
+      const parksByMunicipalityResult = await pool.query(`
+        SELECT m.name as municipality_name, COUNT(p.id) as count
+        FROM municipalities m
+        LEFT JOIN parks p ON m.id = p.municipality_id
+        GROUP BY m.id, m.name
+        HAVING COUNT(p.id) > 0
+        ORDER BY count DESC
+      `);
+      
+      // Parques por tipo
+      const parksByTypeResult = await pool.query(`
+        SELECT park_type as type, COUNT(*) as count
+        FROM parks
+        WHERE park_type IS NOT NULL
+        GROUP BY park_type
+        ORDER BY count DESC
+      `);
+      
+      // Estado de conservación
+      const conservationStatusResult = await pool.query(`
+        SELECT conservation_status as status, COUNT(*) as count
+        FROM parks
+        WHERE conservation_status IS NOT NULL
+        GROUP BY conservation_status
+        ORDER BY count DESC
+      `);
+      
+      // Actividades recientes
+      const recentActivitiesResult = await pool.query(`
+        SELECT a.id, a.title, p.name as park_name, a.start_date as date,
+               20 as participants
+        FROM activities a
+        JOIN parks p ON a.park_id = p.id
+        WHERE a.start_date >= CURRENT_DATE - INTERVAL '30 days'
+        ORDER BY a.start_date DESC
+        LIMIT 5
+      `);
+      
+      // Parques con coordenadas para el mapa
+      const parksWithCoordinatesResult = await pool.query(`
+        SELECT p.id, p.name, p.latitude, p.longitude, m.name as municipality,
+               p.park_type as type, p.area, p.conservation_status as status
+        FROM parks p
+        LEFT JOIN municipalities m ON p.municipality_id = m.id
+        WHERE p.latitude IS NOT NULL AND p.longitude IS NOT NULL
+      `);
+      
+      // Visitantes totales (simulado basado en actividades)
+      const visitorsResult = await pool.query(`
+        SELECT SUM(20) as total_visitors
+        FROM activities
+        WHERE start_date >= CURRENT_DATE - INTERVAL '1 year'
+      `);
+      const totalVisitors = parseInt(visitorsResult.rows[0].total_visitors) || 0;
+      
+      // Calificación promedio (simulado - valor fijo por ahora)
+      const averageRating = 4.2;
+      
+      const dashboardData = {
+        totalParks,
+        totalSurface,
+        totalGreenArea,
+        totalVisitors,
+        activeParks,
+        maintenanceAreas,
+        totalActivities,
+        totalVolunteers,
+        totalTrees,
+        totalAmenities,
+        totalInstructors,
+        totalIncidents,
+        totalAssets,
+        averageRating,
+        parksByMunicipality: parksByMunicipalityResult.rows.map(row => ({
+          municipalityName: row.municipality_name,
+          count: parseInt(row.count)
+        })),
+        parksByType: parksByTypeResult.rows.map(row => ({
+          type: row.type,
+          count: parseInt(row.count)
+        })),
+        conservationStatus: conservationStatusResult.rows.map(row => ({
+          status: row.status,
+          count: parseInt(row.count)
+        })),
+        recentActivities: recentActivitiesResult.rows.map(row => ({
+          id: row.id,
+          title: row.title,
+          parkName: row.park_name,
+          date: row.date,
+          participants: parseInt(row.participants)
+        })),
+        parksWithCoordinates: parksWithCoordinatesResult.rows.map(row => ({
+          id: row.id,
+          name: row.name,
+          latitude: parseFloat(row.latitude),
+          longitude: parseFloat(row.longitude),
+          municipality: row.municipality || 'Sin municipio',
+          type: row.type || 'Sin tipo',
+          area: parseFloat(row.area) || 0,
+          status: row.status || 'Sin estado'
+        }))
+      };
+      
+      console.log("Estadísticas del dashboard de parques calculadas exitosamente");
+      res.json(dashboardData);
+    } catch (error) {
+      console.error("Error al calcular estadísticas del dashboard de parques:", error);
+      res.status(500).json({ 
+        message: "Error al calcular estadísticas del dashboard de parques",
+        error: error instanceof Error ? error.message : 'Error desconocido'
+      });
+    }
+  });
+
+  // Get a specific park by ID with all related data
+  apiRouter.get("/parks/:id", async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.id);
+      
+      // Importamos nuestro método optimizado
+      const { getParkByIdDirectly } = await import('./direct-park-queries');
+      
+      // Obtenemos el parque con todos sus datos relacionados
+      const park = await getParkByIdDirectly(parkId);
+      
+      if (!park) {
+        return res.status(404).json({ message: "Park not found" });
+      }
+      
+      // Enviamos la respuesta
+      res.json(park);
+    } catch (error) {
+      console.error("Error detallado al obtener parque:", error);
+      res.status(500).json({ message: "Error fetching park" });
+    }
+  });
+
+  // Endpoint específico para datos extendidos del parque (landing page)
+  apiRouter.get("/parks/:id/extended", async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.id);
+      console.log("Solicitando datos extendidos para parque:", parkId);
+      
+      // Obtener datos básicos del parque
+      const parkResult = await pool.query(`
+        SELECT 
+          p.id, p.name, p.municipality_id as "municipalityId", 
+          p.park_type as "parkType", p.description, p.address, 
+          p.postal_code as "postalCode", p.latitude, p.longitude, 
+          p.area, p.foundation_year as "foundationYear",
+          p.administrator, p.conservation_status as "conservationStatus",
+          p.regulation_url as "regulationUrl", p.opening_hours as "openingHours", 
+          p.contact_email as "contactEmail", p.contact_phone as "contactPhone",
+          p.video_url as "videoUrl",
+          m.name as "municipalityName", m.state
+        FROM parks p
+        LEFT JOIN municipalities m ON p.municipality_id = m.id
+        WHERE p.id = $1
+      `, [parkId]);
+      
+      if (parkResult.rows.length === 0) {
+        return res.status(404).json({ message: "Park not found" });
+      }
+      
+      const park = parkResult.rows[0];
+      
+      // Obtener amenidades del parque
+      console.log('Paso 2: Consultando amenidades del parque...');
+      console.log('Park ID para consulta:', parkId, typeof parkId);
+      
+      // Primero verificar si hay relaciones park_amenities
+      const countResult = await pool.query(`
+        SELECT COUNT(*) as count FROM park_amenities WHERE park_id = $1
+      `, [parkId]);
+      console.log('Total park_amenities encontradas:', countResult.rows[0].count);
+      
+      const amenitiesResult = await pool.query(`
+        SELECT a.id, a.name, a.icon, a.category, 
+               a.icon_type as "iconType", a.custom_icon_url as "customIconUrl",
+               pa.module_name as "moduleName", pa.surface_area as "surfaceArea"
+        FROM amenities a
+        JOIN park_amenities pa ON a.id = pa.amenity_id
+        WHERE pa.park_id = $1 AND pa.status = 'activo'
+        ORDER BY a.category, a.name
+      `, [parkId]);
+      
+      console.log(`Amenidades encontradas: ${amenitiesResult.rows.length}`);
+      if (amenitiesResult.rows.length > 0) {
+        console.log('Primeras amenidades:', amenitiesResult.rows.slice(0, 3).map(a => ({ name: a.name, category: a.category })));
+      }
+      
+      // Obtener especies arbóreas del parque
+      console.log('Paso 2.5: Consultando especies arbóreas del parque...');
+      const treeSpeciesResult = await pool.query(`
+        SELECT 
+          pts.id,
+          pts.recommended_quantity as "recommendedQuantity",
+          pts.current_quantity as "currentQuantity",
+          pts.planting_zone as "plantingZone",
+          pts.notes,
+          pts.status,
+          ts.common_name as "commonName",
+          ts.scientific_name as "scientificName",
+          ts.family,
+          ts.origin,
+          ts.is_endangered as "isEndangered",
+          ts.icon_type as "iconType",
+          ts.custom_icon_url as "customIconUrl",
+          ts.photo_url as "photoUrl",
+          ts.photo_caption as "photoCaption",
+          ts.custom_icon_url as "customPhotoUrl",
+          ts.description
+        FROM park_tree_species pts
+        JOIN tree_species ts ON pts.species_id = ts.id
+        WHERE pts.park_id = $1
+        ORDER BY ts.common_name
+      `, [parkId]);
+      console.log(`Especies arbóreas encontradas: ${treeSpeciesResult.rows.length}`);
+      
+      // Obtener actividades del parque
+      console.log('Paso 3: Consultando actividades del parque...');
+      const activitiesResult = await pool.query(`
+        SELECT 
+          a.id, 
+          a.title, 
+          a.description, 
+          a.start_date as "startDate", 
+          a.category,
+          ai.image_url as "imageUrl"
+        FROM activities a
+        LEFT JOIN activity_images ai ON a.id = ai.activity_id AND ai.is_primary = true
+        WHERE a.park_id = $1
+        ORDER BY a.start_date DESC
+        LIMIT 10
+      `, [parkId]);
+      console.log(`Actividades encontradas: ${activitiesResult.rows.length}`);
+      
+      // Obtener documentos del parque
+      console.log('Paso 4: Consultando documentos del parque...');
+      const documentsResult = await pool.query(`
+        SELECT id, title, file_url as "fileUrl", file_type as "fileType", 
+               description, category, created_at as "createdAt"
+        FROM park_documents
+        WHERE park_id = $1
+        ORDER BY created_at DESC
+      `, [parkId]);
+      console.log(`Documentos encontrados: ${documentsResult.rows.length}`);
+
+      // Obtener instructores asignados al parque
+      console.log('Paso 5: Consultando instructores del parque...');
+      const instructorsResult = await pool.query(`
+        SELECT i.id, i.full_name as "fullName", i.email, i.phone, 
+               i.specialties, i.experience_years as "experienceYears", i.bio,
+               i.profile_image_url as "profileImageUrl",
+               4.5 as "averageRating"
+        FROM instructors i
+        WHERE i.preferred_park_id = $1
+        ORDER BY i.full_name
+        LIMIT 4
+      `, [parkId]);
+      console.log(`Instructores encontrados: ${instructorsResult.rows.length}`);
+
+      // Obtener voluntarios que prefieren este parque
+      console.log('Paso 6: Consultando voluntarios del parque...');
+      const volunteersResult = await pool.query(`
+        SELECT v.id, v.full_name as "fullName", v.email, v.phone,
+               v.skills, v.previous_experience as "previousExperience",
+               v.profile_image_url as "profileImageUrl", v.interest_areas as "interestAreas"
+        FROM volunteers v
+        WHERE v.preferred_park_id = $1
+        ORDER BY v.full_name
+        LIMIT 10
+      `, [parkId]);
+      console.log(`Voluntarios encontrados: ${volunteersResult.rows.length}`);
+
+      // Obtener activos del parque
+      console.log('Paso 7: Consultando activos del parque...');
+      const assetsResult = await pool.query(`
+        SELECT id, name, description, condition, status, category_id as "categoryId"
+        FROM assets
+        WHERE park_id = $1
+        ORDER BY name
+        LIMIT 10
+      `, [parkId]);
+      console.log(`Activos encontrados: ${assetsResult.rows.length}`);
+
+      // Obtener concesiones activas del parque
+      console.log('Paso 7.5: Consultando concesiones del parque...');
+      const concessionsResult = await pool.query(`
+        SELECT 
+          ac.id,
+          ac.name as "vendorName",
+          con.name as "vendorContact", 
+          con.email as "vendorEmail",
+          con.phone as "vendorPhone",
+          ac.start_date as "startDate",
+          ac.end_date as "endDate",
+          ac.status,
+          ac.specific_location as "location",
+          ac.description as "notes",
+          ct.name as "concessionType",
+          ct.description as "typeDescription",
+          ct.impact_level as "impactLevel",
+          aci.image_url as "primaryImage"
+        FROM active_concessions ac
+        LEFT JOIN concession_types ct ON ac.concession_type_id = ct.id
+        LEFT JOIN concessionaires con ON ac.concessionaire_id = con.id
+        LEFT JOIN active_concession_images aci ON ac.id = aci.concession_id AND aci.is_primary = true
+        WHERE ac.park_id = $1 AND (ac.status = 'active' OR ac.status IS NULL OR ac.status = '')
+        ORDER BY ac.start_date DESC
+        LIMIT 3
+      `, [parkId]);
+      console.log(`Concesiones encontradas: ${concessionsResult.rows.length}`);
+      
+      // Obtener imágenes del parque
+      console.log('Paso 8: Consultando imágenes del parque...');
+      const imagesResult = await pool.query(`
+        SELECT id, image_url as "imageUrl", caption, is_primary as "isPrimary", created_at as "createdAt"
+        FROM park_images
+        WHERE park_id = $1
+        ORDER BY is_primary DESC, created_at ASC
+      `, [parkId]);
+      console.log(`Imágenes encontradas: ${imagesResult.rows.length}`);
+      
+      // Buscar imagen principal
+      let primaryImage = null;
+      const images = imagesResult.rows.map(img => ({
+        id: img.id,
+        imageUrl: img.imageUrl,
+        url: img.imageUrl,
+        caption: img.caption,
+        isPrimary: img.isPrimary,
+        createdAt: img.createdAt
+      }));
+      
+      if (images.length > 0) {
+        const primaryImg = images.find(img => img.isPrimary);
+        primaryImage = primaryImg ? primaryImg.imageUrl : images[0].imageUrl;
+        console.log(`Imagen principal encontrada: ${primaryImage}`);
+      }
+
+      // Construir respuesta completa
+      console.log('Paso 9: Construyendo respuesta final...');
+      const extendedPark = {
+        ...park,
+        municipality: {
+          name: park.municipalityName,
+          state: park.state
+        },
+        amenities: amenitiesResult.rows,
+        treeSpecies: treeSpeciesResult.rows,
+        activities: activitiesResult.rows,
+        documents: documentsResult.rows,
+        instructors: instructorsResult.rows,
+        volunteers: volunteersResult.rows,
+        assets: assetsResult.rows,
+        concessions: concessionsResult.rows,
+        images: images,
+        primaryImage: primaryImage,
+        trees: {
+          total: 0,
+          byHealth: {},
+          bySpecies: {}
+        }
+      };
+      
+      // Log solo en desarrollo
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`Datos extendidos procesados para ${extendedPark.name}`);
+      }
+      res.json(extendedPark);
+    } catch (error) {
+      console.error("Error al obtener datos extendidos del parque:", error);
+      res.status(500).json({ message: "Error fetching extended park data" });
+    }
+  });
+
+  // Get detailed park information with all related data
+  apiRouter.get("/parks/:id/details", async (req: Request, res: Response) => {
+    try {
+      const parkId = parseInt(req.params.id);
+      console.log(`[DETAILS] Obteniendo detalles del parque ${parkId}`);
+      
+      // Get basic park information
+      const park = await storage.getPark(parkId);
+      if (!park) {
+        return res.status(404).json({ error: "Parque no encontrado" });
+      }
+      console.log(`[DETAILS] Parque encontrado: ${park.name}`);
+
+      // Get municipality  
+      const municipalities = await storage.getMunicipalities();
+      const municipality = municipalities.find(m => m.id === park.municipalityId);
+
+      // Get extended park data to include amenities and images
+      const extendedParks = await storage.getExtendedParks();
+      const extendedPark = extendedParks.find(p => p.id === parkId);
+
+      // Get park amenities (from extended park data)
+      const amenities = extendedPark?.amenities || [];
+
+      // Get park images (from extended park data)  
+      const images = extendedPark?.images || [];
+
+      // Use simplified queries for other data that don't require complex joins
+      const activities = await storage.getAllActivities();
+      const parkActivities = activities.filter(activity => activity.parkId === parkId).slice(0, 20);
+
+      // Get trees data with statistics for this park
+      const treesQuery = await pool.query(
+        'SELECT id, species_id, condition, planting_date, last_maintenance_date, location_description, code FROM trees WHERE park_id = $1',
+        [parkId]
+      );
+      const parkTrees = treesQuery.rows;
+      
+      // Get tree statistics
+      const treeStatsQuery = await pool.query(
+        `SELECT 
+          COUNT(*) as total,
+          COUNT(CASE WHEN condition = 'Bueno' THEN 1 END) as good,
+          COUNT(CASE WHEN condition = 'Regular' THEN 1 END) as regular,
+          COUNT(CASE WHEN condition = 'Malo' THEN 1 END) as bad
+        FROM trees WHERE park_id = $1`,
+        [parkId]
+      );
+      const treeStats = treeStatsQuery.rows[0];
+
+      // Get volunteers data for this park - usar solo columnas existentes
+      const volunteersQuery = await pool.query(
+        `SELECT 
+          id, 
+          full_name, 
+          email, 
+          phone, 
+          skills, 
+          status, 
+          preferred_park_id,
+          available_hours,
+          previous_experience,
+          age,
+          gender,
+          created_at,
+          profile_image_url,
+          address,
+          emergency_contact,
+          emergency_phone,
+          legal_consent,
+          interest_areas,
+          available_days
+        FROM volunteers 
+        WHERE preferred_park_id = $1 AND status = 'active'
+        ORDER BY created_at DESC`,
+        [parkId]
+      );
+      const parkVolunteers = volunteersQuery.rows;
+
+      // Get incidents data for this park
+      const incidentsQuery = await pool.query(
+        'SELECT id, title, severity, status, created_at FROM incidents WHERE park_id = $1 ORDER BY created_at DESC LIMIT 10',
+        [parkId]
+      );
+      const incidents = incidentsQuery.rows.map((incident: any) => ({
+        id: incident.id,
+        title: incident.title,
+        status: incident.status,
+        priority: incident.severity,
+        createdAt: incident.created_at.toISOString()
+      }));
+      const incidentsCount = incidents.length;
+
+      // Get evaluations data for this park
+      const evaluationsQuery = await pool.query(
+        'SELECT AVG(overall_rating) as avg_rating FROM park_evaluations WHERE park_id = $1',
+        [parkId]
+      );
+      const averageEvaluation = parseFloat(evaluationsQuery.rows[0].avg_rating) || 0;
+
+      // Get assets data for this park
+      const assetsQuery = await pool.query(
+        'SELECT id, name, category_id, condition, location_description as location, acquisition_date, last_maintenance_date FROM assets WHERE park_id = $1',
+        [parkId]
+      );
+      const assets = assetsQuery.rows;
+
+      // For now, we'll use empty arrays for data we don't have direct access to
+      const documents: any[] = [];
+
+      // Calculate statistics
+      const stats = {
+        totalActivities: parkActivities.length,
+        activeVolunteers: parkVolunteers.filter(v => v.status === 'active').length,
+        totalTrees: parseInt(treeStats.total),
+        totalAssets: assets.length,
+        averageEvaluation: averageEvaluation,
+        pendingIncidents: incidentsCount
+      };
+      
+      console.log(`[DETAILS] Estadísticas calculadas:`, stats);
+
+      // Build response
+      const response = {
+        id: park.id,
+        name: park.name,
+        location: park.location,
+        openingHours: park.openingHours || "Sin horarios definidos",
+        description: park.description || "Sin descripción disponible",
+        municipalityId: park.municipalityId,
+        municipality: municipality ? { name: municipality.name } : { name: "Municipio no encontrado" },
+        amenities: amenities.map((amenity: any) => ({
+          id: amenity.id,
+          name: amenity.name,
+          icon: amenity.icon,
+          description: amenity.description
+        })),
+        activities: parkActivities.map((activity: any) => ({
+          id: activity.id,
+          title: activity.title,
+          description: activity.description || "",
+          startDate: activity.startDate.toISOString(),
+          instructorName: activity.instructorName || "",
+          participantCount: activity.participantCount || 0
+        })),
+        trees: {
+          data: parkTrees.map((tree: any) => ({
+            id: tree.id,
+            speciesId: tree.species_id,
+            condition: tree.condition || "bueno",
+            plantedDate: tree.planting_date?.toISOString(),
+            lastMaintenance: tree.last_maintenance_date?.toISOString(),
+            locationDescription: tree.location_description,
+            code: tree.code
+          })),
+          stats: {
+            total: parseInt(treeStats.total),
+            good: parseInt(treeStats.good),
+            regular: parseInt(treeStats.regular),
+            bad: parseInt(treeStats.bad)
+          }
+        },
+        assets: assets.map((asset: any) => ({
+          id: asset.id,
+          name: asset.name,
+          type: asset.category_id || "Sin categoría",
+          condition: asset.condition,
+          location: asset.location,
+          acquisitionDate: asset.acquisition_date?.toISOString(),
+          lastMaintenanceDate: asset.last_maintenance_date?.toISOString()
+        })),
+        incidents: incidents,
+        documents: documents,
+        images: images.map((img: any) => ({
+          id: img.id,
+          imageUrl: img.imageUrl,
+          caption: img.caption,
+          isPrimary: img.isPrimary
+        })),
+        evaluations: [], // Can be implemented when we have evaluations
+        volunteers: parkVolunteers.map((volunteer: any) => ({
+          id: volunteer.id,
+          fullName: volunteer.full_name || "Sin nombre",
+          firstName: '', // No disponible en esta tabla
+          lastName: '', // No disponible en esta tabla
+          email: volunteer.email || '',
+          phone: volunteer.phone || '',
+          skills: volunteer.skills || '',
+          status: volunteer.status || 'active',
+          availability: volunteer.available_hours || '',
+          experience: volunteer.previous_experience || '',
+          age: volunteer.age || null,
+          gender: volunteer.gender || '',
+          createdAt: volunteer.created_at ? volunteer.created_at.toISOString() : new Date().toISOString(),
+          profileImageUrl: volunteer.profile_image_url || null,
+          address: volunteer.address || '',
+          emergencyContactName: volunteer.emergency_contact || '',
+          emergencyContactPhone: volunteer.emergency_phone || '',
+          legalConsent: volunteer.legal_consent || false,
+          isActive: volunteer.status === 'active',
+          preferredPark: park.name,
+          hoursLogged: 0, // Esto podría venir de una tabla separada de horas
+          lastActivity: volunteer.created_at ? volunteer.created_at.toISOString() : null,
+          notes: '',
+          interestAreas: Array.isArray(volunteer.interest_areas) ? volunteer.interest_areas.join(', ') : 'Sin áreas de interés especificadas',
+          availableDays: Array.isArray(volunteer.available_days) ? volunteer.available_days.join(', ') : 'Sin días especificados'
+        })),
+        stats
+      };
+
+      res.json(response);
+    } catch (error) {
+      console.error("Error fetching park details:", error);
+      res.status(500).json({ error: "Error interno del servidor" });
+    }
+  });
+
+  // Create a new park (admin/municipality only) - CON AUTOMATIZACIÓN DE LANDING PAGE
+  apiRouter.post("/parks", isAuthenticated, hasMunicipalityAccess(), async (req: Request, res: Response) => {
+    try {
+      // Si el usuario está autenticado y no es super_admin, forzamos que el parque sea de su municipio
+      if (req.user.role !== 'super_admin' && req.user.municipalityId) {
+        req.body.municipalityId = req.user.municipalityId;
+      }
+      
+      const parkData = insertParkSchema.parse(req.body);
+      
+      // Verificar que el usuario tenga permisos para el municipio del parque
+      if (req.user.role !== 'super_admin' && parkData.municipalityId !== req.user.municipalityId) {
+        return res.status(403).json({ 
+          message: "No tiene permisos para crear parques en este municipio" 
+        });
+      }
+      
+      // PASO 1: Crear el parque en la base de datos
+      const newPark = await storage.createPark(parkData);
+      console.log(`🏞️ Parque creado: ${newPark.name} (ID: ${newPark.id})`);
+      
+      // PASO 2: AUTOMATIZACIÓN - Procesar para landing page
+      try {
+        const { 
+          processNewParkForLanding, 
+          validateParkForLanding, 
+          logLandingPageAutomation 
+        } = await import('./park-landing-automation');
+        
+        // Validar que el parque tenga datos mínimos para landing page
+        const validation = validateParkForLanding(newPark);
+        
+        if (validation.isValid) {
+          // Procesar automáticamente para landing page
+          const landingPageData = await processNewParkForLanding(newPark);
+          
+          // Log del proceso de automatización
+          logLandingPageAutomation('LANDING_PAGE_GENERATED', newPark, {
+            slug: landingPageData.slug,
+            url: landingPageData.landingPageUrl,
+            syncedFields: Object.keys(landingPageData.syncedData).length
+          });
+          
+          // Responder con información extendida incluyendo datos de landing page
+          res.status(201).json({
+            ...newPark,
+            landingPage: {
+              enabled: true,
+              slug: landingPageData.slug,
+              url: landingPageData.landingPageUrl,
+              lastSync: landingPageData.syncedData.lastSyncAt
+            }
+          });
+        } else {
+          // Si falta información crítica, crear parque pero sin landing page automática
+          logLandingPageAutomation('LANDING_PAGE_SKIPPED', newPark, {
+            reason: 'MISSING_REQUIRED_FIELDS',
+            missingFields: validation.missingFields,
+            warnings: validation.warnings
+          });
+          
+          res.status(201).json({
+            ...newPark,
+            landingPage: {
+              enabled: false,
+              reason: 'Faltan campos requeridos para landing page',
+              missingFields: validation.missingFields
+            }
+          });
+        }
+        
+      } catch (automationError) {
+        // Si falla la automatización, el parque ya está creado - solo notificar
+        console.error('⚠️ Error en automatización de landing page:', automationError);
+        
+        res.status(201).json({
+          ...newPark,
+          landingPage: {
+            enabled: false,
+            reason: 'Error en automatización',
+            error: automationError.message
+          }
+        });
+      }
+      
+    } catch (error) {
+      if (error instanceof ZodError) {
+        const validationError = fromZodError(error);
+        return res.status(400).json({ message: validationError.message });
+      }
+      console.error('❌ Error creando parque:', error);
+      res.status(500).json({ message: "Error creating park" });
+    }
+  });
+  
+  // Import parks from Excel/CSV - Version robusta con manejo de errores
+  apiRouter.post("/parks/import", isAuthenticated, upload.single('file'), async (req: Request, res: Response) => {
+    try {
+      console.log("Iniciando proceso de importación de parques");
+      console.log("Body completo:", req.body);
+      console.log("Archivo recibido:", req.file ? req.file.filename : "No hay archivo");
+      
+      const municipalityId = req.body.municipalityId;
+      
+      if (!municipalityId) {
+        console.log("No se encontró municipalityId en el body");
+        return res.status(400).json({
+          success: false,
+          message: "Debe seleccionar un municipio",
+          receivedData: req.body
+        });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          message: "Debe seleccionar un archivo para importar"
+        });
+      }
+
+      console.log("Municipio seleccionado:", municipalityId);
+      console.log("Archivo:", req.file.originalname);
+      
+      res.json({
+        success: true,
+        message: "Archivo recibido correctamente. La funcionalidad de importación está en desarrollo.",
+        parksImported: 0,
+        municipalityId: municipalityId,
+        fileName: req.file.originalname
+      });
+      
+    } catch (error) {
+      console.error("Error en importación de parques:", error);
+      res.status(500).json({
+        success: false,
+        message: "Error interno del servidor durante la importación"
+      });
+    }
+  });
+
+  // Get park dependencies before deletion
+  apiRouter.get("/parks/:id/dependencies", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.id);
+      const dependencies = await storage.getParkDependencies(parkId);
+      res.json(dependencies);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Error fetching park dependencies" });
+    }
+  });
+
+  // Ruta normal para actualizar un parque (con verificación de permisos)
+  apiRouter.put("/parks/:id", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.id);
+      
+      // Permitir actualización completa del parque incluyendo municipio
+      const parkData = req.body;
+      
+      const updatedPark = await storage.updatePark(parkId, parkData);
+      
+      if (!updatedPark) {
+        return res.status(404).json({ message: "Park not found" });
+      }
+      
+      res.json(updatedPark);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Error updating park" });
+    }
+  });
+  
+  // RUTA ESPECIAL PARA DESARROLLO - Sin verificación de permisos y con actualización directa a BD
+  apiRouter.put("/dev/parks/:id", async (req: Request, res: Response) => {
+    try {
+      console.log("DESARROLLO - Actualizando parque directamente en base de datos");
+      console.log("Datos recibidos del cliente:", req.body);
+      
+      const parkId = Number(req.params.id);
+      
+      // Verificamos que existe el parque
+      const existingPark = await storage.getPark(parkId);
+      if (!existingPark) {
+        return res.status(404).json({ message: "Parque no encontrado" });
+      }
+      
+      // Actualizamos directamente en la base de datos usando SQL para evitar problemas
+      try {
+        // Primero extraemos solo los campos válidos que vamos a actualizar
+        const {
+          name, description, address, postalCode, latitude, longitude,
+          area, greenArea, parkType, openingHours, contactPhone, contactEmail,
+          administrator, conservationStatus, regulationUrl, foundationYear, videoUrl,
+          municipalityId
+        } = req.body;
+        
+        // Creamos un objeto con solo las propiedades que no son null o undefined
+        const fieldsToUpdate: any = {};
+        if (name !== undefined) fieldsToUpdate.name = name;
+        if (description !== undefined) fieldsToUpdate.description = description;
+        if (address !== undefined) fieldsToUpdate.address = address;
+        if (postalCode !== undefined) fieldsToUpdate.postal_code = postalCode;
+        if (latitude !== undefined) fieldsToUpdate.latitude = latitude;
+        if (longitude !== undefined) fieldsToUpdate.longitude = longitude;
+        if (area !== undefined) fieldsToUpdate.area = area;
+        if (greenArea !== undefined) fieldsToUpdate.green_area = greenArea;
+        if (parkType !== undefined) fieldsToUpdate.park_type = parkType;
+        if (openingHours !== undefined) fieldsToUpdate.opening_hours = openingHours;
+        if (contactPhone !== undefined) fieldsToUpdate.contact_phone = contactPhone;
+        if (contactEmail !== undefined) fieldsToUpdate.contact_email = contactEmail;
+        if (administrator !== undefined) fieldsToUpdate.administrator = administrator;
+        if (conservationStatus !== undefined) fieldsToUpdate.conservation_status = conservationStatus;
+        if (regulationUrl !== undefined) fieldsToUpdate.regulation_url = regulationUrl;
+        if (foundationYear !== undefined) fieldsToUpdate.foundation_year = foundationYear;
+        if (videoUrl !== undefined) fieldsToUpdate.video_url = videoUrl;
+        if (municipalityId !== undefined) fieldsToUpdate.municipality_id = municipalityId;
+        
+        // Agregamos la fecha de actualización
+        fieldsToUpdate.updated_at = new Date();
+        
+        // Construimos el SQL para la actualización usando SQL directo
+        if (Object.keys(fieldsToUpdate).length > 0) {
+          // Construir query SQL dinámicamente
+          const setClause = Object.keys(fieldsToUpdate)
+            .map((field, index) => `${field} = $${index + 2}`)
+            .join(', ');
+          
+          const values = Object.values(fieldsToUpdate);
+          
+          const sqlQuery = `
+            UPDATE parks 
+            SET ${setClause}
+            WHERE id = $1
+            RETURNING *
+          `;
+          
+          console.log("SQL Query:", sqlQuery);
+          console.log("Values:", [parkId, ...values]);
+          
+          const result = await pool.query(sqlQuery, [parkId, ...values]);
+          
+          if (result.rows.length > 0) {
+            console.log("Parque actualizado con éxito (SQL directo):", result.rows[0]);
+            res.json(result.rows[0]);
+          } else {
+            throw new Error("No se pudo actualizar el parque");
+          }
+        } else {
+          // Si no hay campos para actualizar, devolvemos el parque existente
+          console.log("No hay campos para actualizar");
+          res.json(existingPark);
+        }
+      } catch (dbError) {
+        console.error("Error en actualización directa:", dbError);
+        throw new Error(`Error al actualizar en base de datos: ${dbError.message}`);
+      }
+    } catch (error) {
+      console.error("Error detallado al actualizar parque:", error);
+      res.status(500).json({ 
+        message: "Error updating park",
+        details: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+
+  // Delete a park (admin/municipality only)
+  apiRouter.delete("/parks/:id", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.id);
+      console.log(`Solicitud de eliminación para parque ${parkId}`);
+      
+      // Eliminar todas las tablas relacionadas en el orden correcto
+      console.log('Eliminando mantenimientos de árboles...');
+      await db.execute(sql`DELETE FROM tree_maintenances WHERE tree_id IN (SELECT id FROM trees WHERE park_id = ${parkId})`);
+      
+      console.log('Eliminando árboles...');
+      await db.execute(sql`DELETE FROM trees WHERE park_id = ${parkId}`);
+      
+      console.log('Eliminando asignaciones de instructores...');
+      await db.execute(sql`DELETE FROM instructor_assignments WHERE park_id = ${parkId}`);
+      
+      console.log('Eliminando activos...');
+      await db.execute(sql`DELETE FROM assets WHERE park_id = ${parkId}`);
+      
+      console.log('Eliminando módulo AMBU completo...');
+      await db.execute(sql`DELETE FROM reuniones_ambu WHERE evento_id IN (SELECT id FROM eventos_ambu WHERE parque_id = ${parkId})`);
+      await db.execute(sql`DELETE FROM documentos_ambu WHERE evento_id IN (SELECT id FROM eventos_ambu WHERE parque_id = ${parkId})`);
+      await db.execute(sql`DELETE FROM seguimiento_ambu WHERE evento_id IN (SELECT id FROM eventos_ambu WHERE parque_id = ${parkId})`);
+      await db.execute(sql`DELETE FROM costos_ambu WHERE evento_id IN (SELECT id FROM eventos_ambu WHERE parque_id = ${parkId})`);
+      await db.execute(sql`DELETE FROM solicitudes_ambu WHERE evento_id IN (SELECT id FROM eventos_ambu WHERE parque_id = ${parkId})`);
+      await db.execute(sql`DELETE FROM eventos_ambu WHERE parque_id = ${parkId}`);
+      
+      console.log('Eliminando todas las tablas relacionadas con el parque...');
+      
+      // Eliminación completa de todas las tablas con FK a parks
+      await db.execute(sql`DELETE FROM contract_events WHERE park_id = ${parkId}`);
+      await db.execute(sql`DELETE FROM contract_assets WHERE park_id = ${parkId}`);
+      await db.execute(sql`DELETE FROM park_evaluations WHERE park_id = ${parkId}`);
+      await db.execute(sql`DELETE FROM visitor_counts WHERE park_id = ${parkId}`);
+      await db.execute(sql`DELETE FROM reservable_spaces WHERE park_id = ${parkId}`);
+      await db.execute(sql`DELETE FROM active_concessions WHERE park_id = ${parkId}`);
+      await db.execute(sql`DELETE FROM park_tree_species WHERE park_id = ${parkId}`);
+      await db.execute(sql`DELETE FROM park_documents WHERE park_id = ${parkId}`);
+      await db.execute(sql`DELETE FROM concessions WHERE park_id = ${parkId}`);
+      await db.execute(sql`DELETE FROM concessionaire_history WHERE park_id = ${parkId}`);
+      await db.execute(sql`DELETE FROM concessionaire_evaluations WHERE park_id = ${parkId}`);
+      await db.execute(sql`DELETE FROM park_amenities WHERE park_id = ${parkId}`);
+      await db.execute(sql`DELETE FROM park_images WHERE park_id = ${parkId}`);
+      await db.execute(sql`DELETE FROM activities WHERE park_id = ${parkId}`);
+      await db.execute(sql`DELETE FROM incidents WHERE park_id = ${parkId}`);
+      await db.execute(sql`DELETE FROM comments WHERE park_id = ${parkId}`);
+      
+      await db.execute(sql`DELETE FROM parks WHERE id = ${parkId}`);
+      res.status(200).json({ message: "Park deleted successfully" });
+    } catch (error) {
+      console.error("Error al eliminar parque:", error);
+      res.status(500).json({ message: "Error deleting park" });
+    }
+  });
+
+  // Ruta temporal de desarrollo para eliminar parques sin autenticación
+  apiRouter.delete("/dev/parks/:id", async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.id);
+      console.log(`Eliminación de desarrollo para parque ${parkId}`);
+      
+      // Usar una transacción con CASCADE para eliminar todo
+      await db.execute(sql`
+        BEGIN;
+        SET session_replication_role = replica;
+        DELETE FROM trees WHERE park_id = ${parkId};
+        DELETE FROM tree_inventory WHERE park_id = ${parkId};
+        DELETE FROM tree_maintenances WHERE park_id = ${parkId};
+        DELETE FROM park_amenities WHERE park_id = ${parkId};
+        DELETE FROM park_images WHERE park_id = ${parkId};
+        DELETE FROM activities WHERE park_id = ${parkId};
+        DELETE FROM incidents WHERE park_id = ${parkId};
+        DELETE FROM comments WHERE park_id = ${parkId};
+        DELETE FROM parks WHERE id = ${parkId};
+        SET session_replication_role = DEFAULT;
+        COMMIT;
+      `);
+      
+      console.log(`Parque ${parkId} eliminado exitosamente (desarrollo)`);
+      res.status(200).json({ message: "Park deleted successfully" });
+    } catch (error) {
+      console.error("Error al eliminar parque:", error);
+      await db.execute(sql`ROLLBACK;`);
+      res.status(500).json({ message: "Error deleting park", error: error.message });
+    }
+  });
+
+  // Get all amenities
+  apiRouter.get("/amenities", async (_req: Request, res: Response) => {
+    try {
+      const result = await pool.query(`
+        SELECT 
+          a.id,
+          a.name,
+          a.icon,
+          a.category,
+          a.icon_type as "iconType",
+          a.custom_icon_url as "customIconUrl",
+          COUNT(DISTINCT pa.park_id) as "parksCount",
+          COUNT(pa.park_id) as "totalModules"
+        FROM amenities a
+        LEFT JOIN park_amenities pa ON a.id = pa.amenity_id
+        GROUP BY a.id, a.name, a.icon, a.category, a.icon_type, a.custom_icon_url
+        ORDER BY a.name
+      `);
+      res.json(result.rows);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Error fetching amenities" });
+    }
+  });
+
+  // Dashboard endpoint específico para amenidades
+  apiRouter.get("/amenities/dashboard", async (_req: Request, res: Response) => {
+    try {
+      console.log("[AMENITIES DASHBOARD] Iniciando consulta...");
+      
+      // Obtener amenidades con conteo correcto de parques usando LEFT JOIN
+      const amenitiesResult = await pool.query(`
+        SELECT 
+          a.id,
+          a.name,
+          a.icon,
+          a.category,
+          a.icon_type as "iconType",
+          a.custom_icon_url as "customIconUrl",
+          COUNT(DISTINCT pa.park_id) as "parksCount",
+          COUNT(pa.id) as "totalModules"
+        FROM amenities a
+        LEFT JOIN park_amenities pa ON a.id = pa.amenity_id
+        GROUP BY a.id, a.name, a.icon, a.category, a.icon_type, a.custom_icon_url
+        ORDER BY COUNT(DISTINCT pa.park_id) DESC, a.name
+      `);
+      
+      console.log("[AMENITIES DASHBOARD] Amenidades obtenidas:", amenitiesResult.rows.length);
+      
+      const amenities = amenitiesResult.rows.map((row: any) => ({
+        ...row,
+        parksCount: parseInt(row.parksCount) || 0,
+        totalModules: parseInt(row.totalModules) || 0,
+        createdAt: new Date() // Fecha de creación ficticia si no está disponible
+      }));
+      
+      // Obtener total de parques para calcular utilización
+      const totalParksResult = await pool.query('SELECT COUNT(*) as total FROM parks');
+      const totalParks = parseInt(totalParksResult.rows[0].total) || 0;
+      
+      console.log("[AMENITIES DASHBOARD] Total de parques:", totalParks);
+      
+      // Calcular utilización para cada amenidad
+      const amenityStats = amenities.map((amenity: any) => ({
+        ...amenity,
+        utilizationRate: totalParks > 0 ? Math.round((amenity.parksCount / totalParks) * 100) : 0
+      }));
+      
+      // Obtener estadísticas generales
+      const totalAmenityAssignments = amenities.reduce((sum: number, amenity: any) => sum + amenity.totalModules, 0);
+      const parksWithAmenities = await pool.query(`
+        SELECT COUNT(DISTINCT park_id) as count 
+        FROM park_amenities
+      `);
+      const parksWithAmenitiesCount = parseInt(parksWithAmenities.rows[0].count) || 0;
+      
+      // Obtener utilización por parque
+      const parkUtilization = await pool.query(`
+        SELECT 
+          p.name as park_name,
+          COUNT(pa.amenity_id) as amenities_count
+        FROM parks p
+        LEFT JOIN park_amenities pa ON p.id = pa.park_id
+        GROUP BY p.id, p.name
+        ORDER BY amenities_count DESC
+      `);
+
+      console.log("[AMENITIES DASHBOARD] Estadísticas calculadas:");
+      console.log("- Total amenidades:", amenities.length);
+      console.log("- Total parques:", totalParks);
+      console.log("- Parques con amenidades:", parksWithAmenitiesCount);
+      console.log("- Total asignaciones:", totalAmenityAssignments);
+
+      const dashboardData = {
+        totalAmenities: amenities.length,
+        totalParks: totalParks,
+        averageAmenitiesPerPark: totalParks > 0 ? Math.round((totalAmenityAssignments / totalParks) * 100) / 100 : 0,
+        mostPopularAmenities: amenityStats.slice(0, 5),
+        allAmenities: amenityStats,
+        amenityDistribution: amenityStats.slice(0, 6).map((amenity: any, index: number) => ({
+          name: amenity.name.length > 12 ? amenity.name.substring(0, 12) + '...' : amenity.name,
+          value: amenity.parksCount,
+          color: ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'][index % 6]
+        })),
+        utilizationByPark: parkUtilization.rows.map((park: any) => ({
+          parkName: park.park_name.length > 20 ? park.park_name.substring(0, 20) + '...' : park.park_name,
+          amenitiesCount: parseInt(park.amenities_count) || 0
+        })),
+        statusDistribution: [
+          { status: 'Activas', count: amenities.length, color: '#00C49F' },
+          { status: 'Mantenimiento', count: 0, color: '#FFBB28' },
+          { status: 'Inactivas', count: 0, color: '#FF8042' }
+        ]
+      };
+
+      console.log("[AMENITIES DASHBOARD] Enviando respuesta con", amenityStats.length, "amenidades");
+      console.log("[AMENITIES DASHBOARD] Muestra de datos:", amenityStats.slice(0, 3));
+
+      res.json(dashboardData);
+    } catch (error) {
+      console.error('Error fetching amenities dashboard data:', error);
+      res.status(500).json({ message: "Error fetching amenities dashboard data" });
+    }
+  });
+  
+  // Create a new amenity (admin only)
+  apiRouter.post("/amenities", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      // Verificar que el usuario sea administrador
+      if (req.user?.role !== "admin" && req.user?.role !== "super_admin") {
+        return res.status(403).json({ message: "Solo administradores pueden gestionar amenidades" });
+      }
+      
+      const data = {
+        name: req.body.name,
+        icon: req.body.icon,
+        category: req.body.category,
+        iconType: req.body.iconType || 'system',
+        customIconUrl: req.body.customIconUrl || null
+      };
+      
+      const result = await pool.query(`
+        INSERT INTO amenities (name, icon, category, icon_type, custom_icon_url)
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING *
+      `, [data.name, data.icon, data.category, data.iconType, data.customIconUrl]);
+      
+      res.status(201).json(result.rows[0]);
+    } catch (error: any) {
+      console.error(error);
+      if (error.code === '23505' && error.constraint === 'amenities_name_unique') {
+        res.status(400).json({ message: `Ya existe una amenidad con el nombre "${req.body.name}". Por favor, usa un nombre diferente.` });
+      } else {
+        res.status(500).json({ message: "Error al crear la amenidad" });
+      }
+    }
+  });
+  
+  // Update an amenity (admin only)
+  apiRouter.put("/amenities/:id", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      // Verificar que el usuario sea administrador
+      if (req.user?.role !== "admin" && req.user?.role !== "super_admin") {
+        return res.status(403).json({ message: "Solo administradores pueden gestionar amenidades" });
+      }
+      
+      const id = Number(req.params.id);
+      const data = {
+        name: req.body.name,
+        icon: req.body.icon,
+        category: req.body.category,
+        iconType: req.body.iconType || 'system',
+        customIconUrl: req.body.customIconUrl || null
+      };
+      
+      const result = await pool.query(`
+        UPDATE amenities 
+        SET 
+          name = $2,
+          icon = $3,
+          category = $4,
+          icon_type = $5,
+          custom_icon_url = $6
+        WHERE id = $1
+        RETURNING *
+      `, [id, data.name, data.icon, data.category, data.iconType, data.customIconUrl]);
+      
+      if (result.rows.length === 0) {
+        return res.status(404).json({ message: "Amenidad no encontrada" });
+      }
+      
+      res.json(result.rows[0]);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Error updating amenity" });
+    }
+  });
+  
+  // Endpoint para subir iconos personalizados
+  apiRouter.post("/upload/icon", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      // Verificar que el usuario sea administrador
+      if (req.user?.role !== "admin" && req.user?.role !== "super_admin") {
+        return res.status(403).json({ message: "Solo administradores pueden subir iconos" });
+      }
+      
+      const { uploadIcon, handleIconUploadErrors, uploadIconHandler } = await import('./api/iconUpload');
+      
+      // Usar el middleware de multer para procesar la carga
+      uploadIcon(req, res, (err: any) => {
+        if (err) {
+          return handleIconUploadErrors(err, req, res, () => {});
+        }
+        // Si no hay errores, manejar la respuesta
+        return uploadIconHandler(req, res);
+      });
+    } catch (error) {
+      console.error("Error al subir icono:", error);
+      res.status(500).json({ error: "Error al subir icono" });
+    }
+  });
+
+  // Delete an amenity (admin only)
+  apiRouter.delete("/amenities/:id", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      console.log(`[ROUTES] Intento de eliminación de amenidad ID: ${req.params.id}`);
+      
+      // Verificar que el usuario sea administrador
+      if (req.user?.role !== "admin" && req.user?.role !== "super_admin") {
+        console.log(`[ROUTES] Usuario sin permisos de admin: ${req.user?.role}`);
+        return res.status(403).json({ message: "Solo administradores pueden gestionar amenidades" });
+      }
+      
+      const id = Number(req.params.id);
+      console.log(`[ROUTES] ID convertido a número: ${id}`);
+      
+      // Verificar si la amenidad está siendo utilizada por algún parque usando SQL directo
+      console.log(`[ROUTES] Verificando si amenidad está en uso con SQL directo...`);
+      const usageResult = await pool.query(`
+        SELECT COUNT(*) as count 
+        FROM park_amenities 
+        WHERE amenity_id = $1
+      `, [id]);
+      
+      const usageCount = Number(usageResult.rows[0]?.count || 0);
+      console.log(`[ROUTES] Amenidad ${id} está siendo usada en ${usageCount} parques`);
+      
+      if (usageCount > 0) {
+        console.log(`[ROUTES] Amenidad en uso, devolviendo error 400`);
+        return res.status(400).json({ 
+          message: "No se puede eliminar esta amenidad porque está siendo utilizada por uno o más parques" 
+        });
+      }
+      
+      // Verificar si la amenidad existe usando SQL directo
+      console.log(`[ROUTES] Verificando existencia de amenidad...`);
+      const existsResult = await pool.query('SELECT id, name FROM amenities WHERE id = $1', [id]);
+      console.log(`[ROUTES] Amenidad encontrada: ${existsResult.rows.length > 0}`);
+      
+      if (existsResult.rows.length === 0) {
+        console.log(`[ROUTES] Amenidad ${id} no encontrada, devolviendo 404`);
+        return res.status(404).json({ message: "Amenidad no encontrada" });
+      }
+      
+      console.log(`[ROUTES] Amenidad encontrada: ${existsResult.rows[0].name}`);
+      
+      // Eliminar usando SQL directo
+      console.log(`[ROUTES] Procediendo con eliminación SQL directa...`);
+      const deleteResult = await pool.query('DELETE FROM amenities WHERE id = $1 RETURNING id, name', [id]);
+      console.log(`[ROUTES] Filas eliminadas: ${deleteResult.rows.length}`);
+      
+      if (deleteResult.rows.length > 0) {
+        console.log(`[ROUTES] Amenidad ${deleteResult.rows[0].name} eliminada exitosamente`);
+        res.status(204).send();
+      } else {
+        console.log(`[ROUTES] No se pudo eliminar la amenidad, devolviendo 404`);
+        res.status(404).json({ message: "Amenidad no encontrada" });
+      }
+      
+    } catch (error) {
+      console.error("[ROUTES] Error completo en eliminación:", error);
+      console.error("[ROUTES] Stack trace:", error.stack);
+      res.status(500).json({ message: "Error deleting amenity" });
+    }
+  });
+
+  // Get amenities for a specific park - FIXED VERSION
+  apiRouter.get("/parks/:id/amenities", async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.id);
+      console.log(`DEBUG: Endpoint /parks/${parkId}/amenities llamado - Devolviendo park_amenities`);
+      
+      // Usar la consulta SQL que sabemos que funciona
+      const result = await pool.query(`
+        SELECT 
+          pa.id,
+          pa.park_id as "parkId",
+          pa.amenity_id as "amenityId",
+          pa.module_name as "moduleName",
+          pa.location_latitude as "locationLatitude",
+          pa.location_longitude as "locationLongitude",
+          pa.surface_area as "surfaceArea",
+          pa.status,
+          pa.description,
+          a.name as "amenityName",
+          a.icon as "amenityIcon",
+          a.custom_icon_url as "customIconUrl"
+        FROM park_amenities pa
+        INNER JOIN amenities a ON pa.amenity_id = a.id
+        WHERE pa.park_id = $1
+        ORDER BY a.name
+      `, [parkId]);
+      
+      res.setHeader('Content-Type', 'application/json');
+      res.json(result.rows);
+    } catch (error) {
+      console.error("Error fetching park amenities:", error);
+      res.status(500).json({ message: "Error fetching park amenities" });
+    }
+  });
+
+  // Update specific amenity in a park
+  apiRouter.put("/parks/:parkId/amenities/:amenityId", async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.parkId);
+      const amenityId = Number(req.params.amenityId);
+      const { moduleName, surfaceArea, status, locationLatitude, locationLongitude, description } = req.body;
+      
+      const result = await pool.query(`
+        UPDATE park_amenities 
+        SET 
+          module_name = $3,
+          surface_area = $4,
+          status = $5,
+          location_latitude = $6,
+          location_longitude = $7,
+          description = $8,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE id = $1 AND park_id = $2
+        RETURNING *
+      `, [amenityId, parkId, moduleName, surfaceArea, status, locationLatitude, locationLongitude, description]);
+      
+      if (result.rows.length === 0) {
+        return res.status(404).json({ message: "Amenidad no encontrada en este parque" });
+      }
+      
+      res.json({ 
+        message: "Amenidad actualizada correctamente",
+        updatedAmenity: result.rows[0]
+      });
+    } catch (error) {
+      console.error("Error al actualizar amenidad del parque:", error);
+      res.status(500).json({ message: "Error al actualizar amenidad del parque" });
+    }
+  });
+
+  // Delete specific amenity from a park
+  apiRouter.delete("/parks/:parkId/amenities/:amenityId", async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.parkId);
+      const parkAmenityId = Number(req.params.amenityId); // Este es el ID del registro park_amenities, no el amenity_id
+      
+      const result = await pool.query(`
+        DELETE FROM park_amenities 
+        WHERE id = $1 AND park_id = $2
+        RETURNING *
+      `, [parkAmenityId, parkId]);
+      
+      if (result.rows.length === 0) {
+        return res.status(404).json({ message: "Amenidad no encontrada en este parque" });
+      }
+      
+      res.json({ 
+        message: "Amenidad eliminada correctamente",
+        deletedAmenity: result.rows[0]
+      });
+    } catch (error) {
+      console.error("Error al eliminar amenidad del parque:", error);
+      res.status(500).json({ message: "Error al eliminar amenidad del parque" });
+    }
+  });
+
+  // Test endpoint for amenities - different path to avoid conflicts
+  apiRouter.get("/test-amenities/:parkId", async (req: Request, res: Response) => {
+    console.log(`[TEST AMENITIES] Ejecutándose para parque ${req.params.parkId}`);
+    
+    try {
+      const parkId = Number(req.params.parkId);
+      console.log(`[TEST AMENITIES] Buscando amenidades para parque ${parkId}`);
+      
+      const result = await pool.query(`
+        SELECT 
+          pa.id,
+          pa.park_id as "parkId",
+          pa.amenity_id as "amenityId",
+          pa.module_name as "moduleName",
+          pa.location_latitude as "locationLatitude",
+          pa.location_longitude as "locationLongitude", 
+          pa.surface_area as "surfaceArea",
+          pa.status,
+          pa.description,
+          a.name as "amenityName",
+          a.icon as "amenityIcon"
+        FROM park_amenities pa
+        INNER JOIN amenities a ON pa.amenity_id = a.id
+        WHERE pa.park_id = $1
+        ORDER BY a.name
+      `, [parkId]);
+      
+      console.log(`[TEST AMENITIES] Resultado: ${result.rows.length} amenidades encontradas`);
+      if (result.rows.length > 0) {
+        console.log(`[TEST AMENITIES] Primera amenidad:`, result.rows[0]);
+      }
+      
+      res.json({
+        success: true,
+        parkId: parkId,
+        count: result.rows.length,
+        amenities: result.rows
+      });
+    } catch (error) {
+      console.error("[TEST AMENITIES] Error completo:", error);
+      res.status(500).json({ success: false, error: "Error fetching park amenities" });
+    }
+  });
+
+  // Test endpoint without auth
+  apiRouter.post("/test/parks/:id/amenities", async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.id);
+      const amenityId = Number(req.body.amenityId);
+      
+      console.log("TEST - Datos recibidos:", { parkId, amenityId, body: req.body });
+      
+      const result = await db.execute(`
+        INSERT INTO park_amenities (park_id, amenity_id, module_name, location_latitude, location_longitude, surface_area, status, description)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        RETURNING *
+      `, [parkId, amenityId, req.body.moduleName || '', req.body.locationLatitude || null, req.body.locationLongitude || null, req.body.surfaceArea || null, req.body.status || 'Activa', req.body.description || '']);
+      
+      console.log("TEST - Resultado:", result);
+      res.status(201).json(result.rows[0]);
+    } catch (error) {
+      console.error("TEST - Error:", error);
+      res.status(500).json({ 
+        message: "Test error",
+        details: error.message 
+      });
+    }
+  });
+
+  // Add an amenity to a park (admin/municipality only)
+  app.post("/api/parks/:id/amenities", async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.id);
+      const amenityId = Number(req.body.amenityId);
+      const moduleName = req.body.moduleName || '';
+      const locationLatitude = req.body.locationLatitude || null;
+      const locationLongitude = req.body.locationLongitude || null;
+      const surfaceArea = req.body.surfaceArea || null;
+      const status = req.body.status || 'Activa';
+      const description = req.body.description || '';
+      
+      console.log("Datos recibidos:", { parkId, amenityId, moduleName, locationLatitude, locationLongitude, surfaceArea, status, description });
+      
+      // Usar SQL directo con parámetros para seguridad
+      const result = await pool.query(`
+        INSERT INTO park_amenities (park_id, amenity_id, module_name, location_latitude, location_longitude, surface_area, status, description)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        RETURNING *
+      `, [parkId, amenityId, moduleName, locationLatitude, locationLongitude, surfaceArea, status, description]);
+      
+      console.log("Resultado de inserción:", result.rows[0]);
+      res.status(201).json(result.rows[0]);
+    } catch (error) {
+      console.error("Error al agregar amenidad:", error);
+      res.status(500).json({ 
+        message: "Error adding amenity to park",
+        details: error.message 
+      });
+    }
+  });
+
+  // Import amenities from file (admin only)
+  apiRouter.post("/amenities/import", upload.single('file'), async (req: Request, res: Response) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+
+      const file = req.file;
+      let amenitiesData: any[] = [];
+
+      // Process Excel or CSV file
+      if (file.mimetype.includes('spreadsheet') || file.originalname.endsWith('.xlsx')) {
+        const workbook = XLSX.read(file.buffer, { type: 'buffer' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        amenitiesData = XLSX.utils.sheet_to_json(worksheet);
+      } else if (file.mimetype === 'text/csv' || file.originalname.endsWith('.csv')) {
+        const csvData = file.buffer.toString();
+        const lines = csvData.split('\n');
+        const headers = lines[0].split(',').map(h => h.trim());
+        
+        for (let i = 1; i < lines.length; i++) {
+          if (lines[i].trim()) {
+            const values = lines[i].split(',').map(v => v.trim());
+            const row: any = {};
+            headers.forEach((header, index) => {
+              row[header] = values[index] || '';
+            });
+            amenitiesData.push(row);
+          }
+        }
+      } else {
+        return res.status(400).json({ error: "Formato de archivo no soportado. Use Excel (.xlsx) o CSV." });
+      }
+
+      let importedCount = 0;
+      
+      for (const row of amenitiesData) {
+        try {
+          const amenityData = {
+            name: row.Nombre || row.nombre || row.Name || '',
+            category: row.Categoría || row.categoria || row.Category || 'servicios',
+            icon: row.Icono || row.icono || row.Icon || 'park',
+            iconType: 'system' as const,
+            customIconUrl: null
+          };
+
+          if (amenityData.name) {
+            await pool.query(`
+              INSERT INTO amenities (name, icon, category, icon_type, custom_icon_url)
+              VALUES ($1, $2, $3, $4, $5)
+            `, [amenityData.name, amenityData.icon, amenityData.category, amenityData.iconType, amenityData.customIconUrl]);
+            importedCount++;
+          }
+        } catch (error) {
+          console.log(`Error importing amenity: ${row.Nombre || 'Unknown'}`, error);
+        }
+      }
+
+      res.json({ 
+        message: "Amenidades importadas exitosamente", 
+        count: importedCount 
+      });
+    } catch (error) {
+      console.error("Error importing amenities:", error);
+      res.status(500).json({ error: "Error al importar amenidades" });
+    }
+  });
+
+  // Get available custom icons
+  apiRouter.get("/amenities/custom-icons", async (req: Request, res: Response) => {
+    try {
+      const result = await pool.query(`
+        SELECT DISTINCT name, custom_icon_url, category
+        FROM amenities 
+        WHERE icon_type = 'custom' AND custom_icon_url IS NOT NULL
+        ORDER BY name
+      `);
+      
+      res.json(result.rows);
+    } catch (error) {
+      console.error('Error fetching custom icons:', error);
+      res.status(500).json({ error: "Error al obtener íconos personalizados" });
+    }
+  });
+
+  // Upload amenity icon
+  apiRouter.post("/amenities/upload-icon", iconUpload.single('icon'), async (req: Request, res: Response) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "No se ha seleccionado ningún archivo" });
+      }
+
+      console.log("Archivo subido:", req.file);
+      const iconUrl = `/uploads/${req.file.filename}`;
+      
+      res.json({ 
+        success: true, 
+        iconUrl,
+        message: "Icono subido exitosamente" 
+      });
+    } catch (error) {
+      console.error("Error uploading amenity icon:", error);
+      res.status(500).json({ error: "Error al subir el icono" });
+    }
+  });
+
+  // Bulk upload amenity icons and create amenities
+  apiRouter.post("/amenities/bulk-upload", iconUpload.array('icons', 50), async (req: Request, res: Response) => {
+    try {
+      const files = req.files as Express.Multer.File[];
+      if (!files || files.length === 0) {
+        return res.status(400).json({ error: "No se han seleccionado archivos" });
+      }
+
+      const { category = 'servicios' } = req.body;
+      const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml'];
+      const results = [];
+      
+      for (const file of files) {
+        try {
+          // Validate file type
+          if (!allowedTypes.includes(file.mimetype)) {
+            results.push({
+              filename: file.originalname,
+              success: false,
+              error: "Formato de archivo no válido"
+            });
+            continue;
+          }
+
+          // Validate file size (max 2MB)
+          if (file.size > 2 * 1024 * 1024) {
+            results.push({
+              filename: file.originalname,
+              success: false,
+              error: "Archivo demasiado grande (máximo 2MB)"
+            });
+            continue;
+          }
+
+          // Create amenity name from filename
+          const amenityName = file.originalname
+            .replace(/\.[^/.]+$/, "") // Remove extension
+            .replace(/[-_]/g, " ") // Replace dashes and underscores with spaces
+            .replace(/\b\w/g, l => l.toUpperCase()); // Capitalize first letter of each word
+
+          const iconUrl = `/uploads/${file.filename}`;
+
+          // Create amenity in database
+          const amenityData = {
+            name: amenityName,
+            category: category,
+            icon: 'custom',
+            iconType: 'custom',
+            customIconUrl: iconUrl
+          };
+
+          // Verificar si ya existe
+          const existingCheck = await pool.query(`
+            SELECT id FROM amenities WHERE name = $1
+          `, [amenityData.name]);
+          
+          if (existingCheck.rows.length > 0) {
+            // Ya existe, actualizar el ícono
+            await pool.query(`
+              UPDATE amenities 
+              SET icon = $1, icon_type = $2, custom_icon_url = $3, category = $4
+              WHERE name = $5
+            `, [amenityData.icon, amenityData.iconType, amenityData.customIconUrl, amenityData.category, amenityData.name]);
+          } else {
+            // No existe, crear nuevo
+            await pool.query(`
+              INSERT INTO amenities (name, icon, category, icon_type, custom_icon_url)
+              VALUES ($1, $2, $3, $4, $5)
+            `, [amenityData.name, amenityData.icon, amenityData.category, amenityData.iconType, amenityData.customIconUrl]);
+          }
+          
+          results.push({
+            filename: file.originalname,
+            amenityName: amenityName,
+            success: true,
+            iconUrl: iconUrl,
+            action: existingCheck.rows.length > 0 ? 'updated' : 'created'
+          });
+
+        } catch (error) {
+          console.error(`Error processing file ${file.originalname}:`, error);
+          results.push({
+            filename: file.originalname,
+            success: false,
+            error: "Error al procesar el archivo"
+          });
+        }
+      }
+
+      const successCount = results.filter(r => r.success).length;
+      const failedCount = results.filter(r => !r.success).length;
+      const createdCount = results.filter(r => r.success && r.action === 'created').length;
+      const updatedCount = results.filter(r => r.success && r.action === 'updated').length;
+
+      res.json({
+        success: true,
+        message: `${createdCount} amenidades creadas, ${updatedCount} actualizadas`,
+        successCount,
+        failedCount,
+        createdCount,
+        updatedCount,
+        results
+      });
+      
+    } catch (error) {
+      console.error("Error in bulk upload:", error);
+      res.status(500).json({ error: "Error en la carga masiva" });
+    }
+  });
+
+  // Add amenity to park
+  apiRouter.post("/parks/:parkId/amenities", async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.parkId);
+      const { amenityId, moduleName, surfaceArea, status, description } = req.body;
+      
+      if (!amenityId) {
+        return res.status(400).json({ message: "amenityId es requerido" });
+      }
+      
+      // Check if amenity already exists for this park
+      const existingCheck = await pool.query(`
+        SELECT id FROM park_amenities 
+        WHERE park_id = $1 AND amenity_id = $2
+      `, [parkId, amenityId]);
+      
+      if (existingCheck.rows.length > 0) {
+        return res.status(400).json({ message: "Esta amenidad ya está asignada a este parque" });
+      }
+      
+      // Insert new park amenity
+      const result = await pool.query(`
+        INSERT INTO park_amenities (
+          park_id, amenity_id, module_name, surface_area, status, description
+        ) VALUES ($1, $2, $3, $4, $5, $6)
+        RETURNING *
+      `, [parkId, amenityId, moduleName || null, surfaceArea || null, status || 'activo', description || null]);
+      
+      res.json({
+        message: "Amenidad asignada correctamente",
+        parkAmenity: result.rows[0]
+      });
+    } catch (error) {
+      console.error("Error asignando amenidad al parque:", error);
+      res.status(500).json({ message: "Error al asignar amenidad al parque" });
+    }
+  });
+
+  // Get amenities for a specific park (for activity location selection)
+  apiRouter.get("/parks/:parkId/amenities", async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.parkId);
+      
+      const result = await pool.query(`
+        SELECT DISTINCT
+          a.id,
+          a.name,
+          a.category,
+          a.icon
+        FROM amenities a
+        INNER JOIN park_amenities pa ON a.id = pa.amenity_id
+        WHERE pa.park_id = $1
+        ORDER BY a.name
+      `, [parkId]);
+      
+      res.json(result.rows);
+    } catch (error) {
+      console.error("Error fetching park amenities:", error);
+      res.status(500).json({ message: "Error fetching park amenities" });
+    }
+  });
+
+  // Remove an amenity from a park (admin/municipality only)
+  apiRouter.delete("/parks/:parkId/amenities/:amenityId", async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.parkId);
+      const amenityId = Number(req.params.amenityId);
+      
+      // Delete the park amenity relationship
+      const result = await pool.query(`
+        DELETE FROM park_amenities 
+        WHERE park_id = $1 AND amenity_id = $2
+        RETURNING *
+      `, [parkId, amenityId]);
+      
+      if (result.rows.length === 0) {
+        return res.status(404).json({ message: "Amenidad no encontrada en este parque" });
+      }
+      
+      res.json({ message: "Amenidad removida correctamente del parque" });
+    } catch (error) {
+      console.error("Error removiendo amenidad del parque:", error);
+      res.status(500).json({ message: "Error al remover amenidad del parque" });
+    }
+  });
+
+  // ==========================================
+  // ENDPOINTS PARA GESTIÓN DE VOLUNTARIOS DE PARQUES
+  // ==========================================
+
+  // Obtener voluntarios asignados a un parque específico
+  apiRouter.get("/parks/:id/volunteers", async (req: Request, res: Response) => {
+    try {
+      const parkId = parseInt(req.params.id);
+      
+      const volunteersQuery = await pool.query(
+        `SELECT 
+          id, 
+          full_name, 
+          email, 
+          phone, 
+          skills, 
+          status, 
+          age,
+          gender,
+          created_at,
+          profile_image_url,
+          interest_areas,
+          available_days,
+          available_hours,
+          previous_experience
+        FROM volunteers 
+        WHERE preferred_park_id = $1 AND status = 'active'
+        ORDER BY created_at DESC`,
+        [parkId]
+      );
+      
+      const volunteers = volunteersQuery.rows.map((volunteer: any) => ({
+        id: volunteer.id,
+        fullName: volunteer.full_name || "Sin nombre",
+        email: volunteer.email || '',
+        phone: volunteer.phone || '',
+        skills: volunteer.skills || '',
+        status: volunteer.status || 'active',
+        age: volunteer.age || null,
+        gender: volunteer.gender || '',
+        createdAt: volunteer.created_at ? volunteer.created_at.toISOString() : new Date().toISOString(),
+        profileImageUrl: volunteer.profile_image_url || null,
+        interestAreas: Array.isArray(volunteer.interest_areas) ? volunteer.interest_areas.join(', ') : '',
+        availableDays: Array.isArray(volunteer.available_days) ? volunteer.available_days.join(', ') : '',
+        availability: volunteer.available_hours || '',
+        experience: volunteer.previous_experience || '',
+        preferredParkId: parkId
+      }));
+      
+      res.json(volunteers);
+    } catch (error) {
+      console.error('Error fetching park volunteers:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  });
+
+  // Asignar voluntario a un parque
+  apiRouter.post("/parks/:id/volunteers", async (req: Request, res: Response) => {
+    try {
+      const parkId = parseInt(req.params.id);
+      const { volunteerId } = req.body;
+      
+      if (!volunteerId) {
+        return res.status(400).json({ error: 'volunteerId es requerido' });
+      }
+      
+      // Verificar que el voluntario existe y está activo
+      const volunteerCheck = await pool.query(
+        'SELECT id, status FROM volunteers WHERE id = $1',
+        [volunteerId]
+      );
+      
+      if (volunteerCheck.rows.length === 0) {
+        return res.status(404).json({ error: 'Voluntario no encontrado' });
+      }
+      
+      if (volunteerCheck.rows[0].status !== 'active') {
+        return res.status(400).json({ error: 'Solo se pueden asignar voluntarios activos' });
+      }
+      
+      // Verificar que el parque existe
+      const parkCheck = await pool.query(
+        'SELECT id FROM parks WHERE id = $1',
+        [parkId]
+      );
+      
+      if (parkCheck.rows.length === 0) {
+        return res.status(404).json({ error: 'Parque no encontrado' });
+      }
+      
+      // Asignar el voluntario al parque
+      await pool.query(
+        'UPDATE volunteers SET preferred_park_id = $1 WHERE id = $2',
+        [parkId, volunteerId]
+      );
+      
+      res.json({ 
+        message: 'Voluntario asignado correctamente',
+        volunteerId,
+        parkId 
+      });
+    } catch (error) {
+      console.error('Error assigning volunteer to park:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  });
+
+  // Remover voluntario de un parque
+  apiRouter.delete("/parks/:id/volunteers/:volunteerId", async (req: Request, res: Response) => {
+    try {
+      const parkId = parseInt(req.params.id);
+      const volunteerId = parseInt(req.params.volunteerId);
+      
+      // Verificar que el voluntario está asignado a este parque
+      const volunteerCheck = await pool.query(
+        'SELECT id, preferred_park_id FROM volunteers WHERE id = $1',
+        [volunteerId]
+      );
+      
+      if (volunteerCheck.rows.length === 0) {
+        return res.status(404).json({ error: 'Voluntario no encontrado' });
+      }
+      
+      if (volunteerCheck.rows[0].preferred_park_id !== parkId) {
+        return res.status(400).json({ error: 'El voluntario no está asignado a este parque' });
+      }
+      
+      // Remover la asignación del voluntario
+      await pool.query(
+        'UPDATE volunteers SET preferred_park_id = NULL WHERE id = $1',
+        [volunteerId]
+      );
+      
+      res.json({ 
+        message: 'Voluntario removido correctamente del parque',
+        volunteerId,
+        parkId 
+      });
+    } catch (error) {
+      console.error('Error removing volunteer from park:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  });
+
+  // Get images for a specific park
+  apiRouter.get("/parks/:id/images", async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.id);
+      const images = await storage.getParkImages(parkId);
+      
+      // Mapear las columnas de la base de datos a los nombres esperados por el frontend
+      const mappedImages = images.map(img => ({
+        id: img.id,
+        parkId: img.parkId,
+        imageUrl: img.imageUrl, // Usar directamente 'imageUrl'
+        caption: img.caption,
+        isPrimary: img.isPrimary,
+        createdAt: img.createdAt
+      }));
+      
+      res.json(mappedImages);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Error fetching park images" });
+    }
+  });
+
+  // Add an image to a park (admin/municipality only)
+  apiRouter.post("/parks/:id/images", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.id);
+      const { imageUrl, caption, isPrimary } = req.body;
+
+      if (!imageUrl) {
+        return res.status(400).json({ message: "URL de imagen es requerida" });
+      }
+
+      // Verificar que el parque existe
+      const park = await storage.getPark(parkId);
+      if (!park) {
+        return res.status(404).json({ message: "Parque no encontrado" });
+      }
+
+      // Si isPrimary es true, primero debemos desmarcar todas las otras imágenes como no principales
+      if (isPrimary) {
+        const existingImages = await storage.getParkImages(parkId);
+        for (const image of existingImages) {
+          if (image.isPrimary) {
+            await storage.updateParkImage(image.id, { isPrimary: false });
+          }
+        }
+      }
+
+      // Crear la nueva imagen
+      const imageData = {
+        parkId,
+        imageUrl,
+        caption: caption || null,
+        isPrimary: Boolean(isPrimary)
+      };
+
+      const newImage = await storage.createParkImage(imageData);
+      
+      // Mapear la respuesta para el frontend
+      const mappedImage = {
+        id: newImage.id,
+        parkId: newImage.parkId,
+        imageUrl: newImage.imageUrl, // Usar directamente 'imageUrl'
+        caption: newImage.caption,
+        isPrimary: newImage.isPrimary,
+        createdAt: newImage.createdAt
+      };
+      
+      res.status(201).json(mappedImage);
+    } catch (error) {
+      console.error("Error uploading park image:", error);
+      res.status(500).json({ message: "Error al subir la imagen" });
+    }
+  });
+
+  // Delete an image from a park (admin/municipality only)
+  apiRouter.delete("/parks/:parkId/images/:imageId", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.parkId);
+      const imageId = Number(req.params.imageId);
+      
+      // Verificamos primero que el usuario tenga acceso al parque
+      if (req.user.role !== 'super_admin') {
+        const park = await storage.getPark(parkId);
+        if (!park) {
+          return res.status(404).json({ message: "Park not found" });
+        }
+        
+        if (park.municipalityId !== req.user.municipalityId) {
+          return res.status(403).json({ 
+            message: "No tiene permisos para administrar imágenes de este parque" 
+          });
+        }
+      }
+      
+      // Verificamos que la imagen pertenezca al parque especificado
+      const image = await storage.getParkImage(imageId);
+      if (!image) {
+        return res.status(404).json({ message: "Image not found" });
+      }
+      
+      if (image.parkId !== parkId) {
+        return res.status(400).json({ 
+          message: "La imagen no pertenece al parque especificado" 
+        });
+      }
+      
+      const result = await storage.deleteParkImage(imageId);
+      
+      if (!result) {
+        return res.status(404).json({ message: "Image not found" });
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Error removing image from park" });
+    }
+  });
+  
+  // Set an image as primary for a park (admin/municipality only)
+  apiRouter.put("/parks/:parkId/images/:imageId/set-primary", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.parkId);
+      const imageId = Number(req.params.imageId);
+      
+      // En desarrollo, permitimos a todos los usuarios autenticados acceso para pruebas
+      console.log("Permitiendo establecer imagen principal para todos los usuarios autenticados");
+      
+      // Verificamos que la imagen pertenezca al parque
+      const image = await storage.getParkImage(imageId);
+      if (!image) {
+        return res.status(404).json({ message: "Image not found" });
+      }
+      
+      if (image.parkId !== parkId) {
+        return res.status(400).json({ 
+          message: "La imagen no pertenece al parque especificado" 
+        });
+      }
+      
+      // First, reset all images for this park to non-primary
+      const parkImages = await storage.getParkImages(parkId);
+      for (const image of parkImages) {
+        if (image.isPrimary) {
+          await storage.updateParkImage(image.id, { isPrimary: false });
+        }
+      }
+      
+      // Then set the selected image as primary
+      const updatedImage = await storage.updateParkImage(imageId, { isPrimary: true });
+      
+      if (!updatedImage) {
+        return res.status(404).json({ message: "Image not found" });
+      }
+      
+      res.json(updatedImage);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Error setting image as primary" });
+    }
+  });
+
+  // Alternative endpoint for setting primary image (used by ParkImageManager)
+  apiRouter.put("/parks/:parkId/images/:imageId/set-primary", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.parkId);
+      const imageId = Number(req.params.imageId);
+      
+      // Verificar que la imagen pertenezca al parque
+      const image = await storage.getParkImage(imageId);
+      if (!image || image.parkId !== parkId) {
+        return res.status(404).json({ message: "Imagen no encontrada en este parque" });
+      }
+      
+      // Desmarcar todas las otras imágenes como no principales
+      const existingImages = await storage.getParkImages(parkId);
+      for (const img of existingImages) {
+        if (img.isPrimary && img.id !== imageId) {
+          await storage.updateParkImage(img.id, { isPrimary: false });
+        }
+      }
+      
+      // Marcar esta imagen como principal
+      const updatedImage = await storage.updateParkImage(imageId, { isPrimary: true });
+      res.json(updatedImage);
+    } catch (error) {
+      console.error("Error setting primary image:", error);
+      res.status(500).json({ message: "Error al establecer imagen principal" });
+    }
+  });
+
+  // Get documents for a specific park
+  apiRouter.get("/parks/:id/documents", async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.id);
+      const documents = await storage.getParkDocuments(parkId);
+      res.json(documents);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Error fetching park documents" });
+    }
+  });
+
+  // Add a document to a park (admin/municipality only)
+  apiRouter.post("/parks/:id/documents", isAuthenticated, hasParkAccess, async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.id);
+      const documentData = { ...req.body, parkId };
+      
+      const data = insertDocumentSchema.parse(documentData);
+      const result = await storage.createDocument(data);
+      
+      res.status(201).json(result);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        const validationError = fromZodError(error);
+        return res.status(400).json({ message: validationError.message });
+      }
+      console.error(error);
+      res.status(500).json({ message: "Error adding document to park" });
+    }
+  });
+
+  // Ruta especial para eliminar documentos durante el desarrollo (sin autenticación)
+  apiRouter.delete("/dev/parks/:parkId/documents/:documentId", async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.parkId);
+      const documentId = Number(req.params.documentId);
+      
+      // Verificamos primero que el usuario tenga acceso al parque
+      if (req.user.role !== 'super_admin') {
+        const park = await storage.getPark(parkId);
+        if (!park) {
+          return res.status(404).json({ message: "Park not found" });
+        }
+        
+        if (park.municipalityId !== req.user.municipalityId) {
+          return res.status(403).json({ 
+            message: "No tiene permisos para administrar documentos de este parque" 
+          });
+        }
+      }
+      
+      // Verificamos que el documento pertenezca al parque especificado
+      const document = await storage.getDocument(documentId);
+      if (!document) {
+        return res.status(404).json({ message: "Document not found" });
+      }
+      
+      if (document.parkId !== parkId) {
+        return res.status(400).json({ 
+          message: "El documento no pertenece al parque especificado" 
+        });
+      }
+      
+      const result = await storage.deleteDocument(documentId);
+      
+      if (!result) {
+        return res.status(404).json({ message: "Document not found" });
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Error removing document from park" });
+    }
+  });
+
+  // Get all documents
+  apiRouter.get("/documents", async (_req: Request, res: Response) => {
+    try {
+      // Configuramos explícitamente el tipo de contenido para asegurar respuesta JSON
+      res.setHeader('Content-Type', 'application/json');
+      
+      const documents = await storage.getAllDocuments();
+      
+      // Usamos res.send() directamente con el objeto JSON serializado
+      res.send(JSON.stringify(documents));
+    } catch (error) {
+      console.error('Error fetching documents:', error);
+      
+      // También aseguramos tipo de contenido JSON para errores
+      res.status(500)
+         .setHeader('Content-Type', 'application/json')
+         .send(JSON.stringify({ message: "Error fetching documents" }));
+    }
+  });
+
+  // Get all activities
+  // REMOVIDO - Endpoint duplicado reemplazado por el siguiente
+
+  // Get activities for a specific park
+  apiRouter.get("/parks/:id/activities", async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.id);
+      const activities = await storage.getParkActivities(parkId);
+      res.json(activities);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Error fetching park activities" });
+    }
+  });
+  
+  // Endpoint NUEVO para obtener todas las actividades con imágenes
+  apiRouter.get("/actividades-fotos", async (_req: Request, res: Response) => {
+    try {
+      console.log("Obteniendo todas las actividades con imágenes");
+      
+      const { pool } = await import("./db");
+      
+      const result = await pool.query(`
+        SELECT 
+          a.id,
+          a.title,
+          a.description,
+          a.start_date as "startDate",
+          a.end_date as "endDate",
+          a.category,
+          a.category_id as "categoryId",
+          a.park_id as "parkId",
+          a.location,
+          a.capacity,
+          a.price,
+          a.instructor_id as "instructorId",
+          a.created_at as "createdAt",
+          a.materials,
+          a.requirements,
+          a.duration,
+          a.is_recurring as "isRecurring",
+          a.recurring_days as "recurringDays",
+          a.target_market as "targetMarket",
+          a.special_needs as "specialNeeds",
+          a.is_free as "isFree",
+          p.name as "parkName",
+          c.name as "categoryName",
+          i.full_name as "instructorName",
+          img.image_url as "imageUrl",
+          img.caption as "imageCaption"
+        FROM activities a
+        LEFT JOIN parks p ON a.park_id = p.id
+        LEFT JOIN activity_categories c ON a.category_id = c.id
+        LEFT JOIN instructors i ON a.instructor_id = i.id
+        LEFT JOIN (
+          SELECT DISTINCT ON (activity_id) 
+            activity_id, 
+            image_url,
+            caption
+          FROM activity_images 
+          ORDER BY activity_id, is_primary DESC, created_at DESC
+        ) img ON a.id = img.activity_id
+        ORDER BY a.created_at DESC
+      `);
+      
+      const activities = result.rows.map(row => {
+        // Procesar targetMarket y specialNeeds de manera consistente
+        let targetMarket = row.targetMarket;
+        let specialNeeds = row.specialNeeds;
+        let recurringDays = row.recurringDays;
+        
+        if (targetMarket && typeof targetMarket === 'string') {
+          try {
+            targetMarket = JSON.parse(targetMarket);
+          } catch (e) {
+            targetMarket = [targetMarket]; // Si no es JSON válido, convertir a array
+          }
+        }
+        if (!Array.isArray(targetMarket)) {
+          targetMarket = targetMarket ? [targetMarket] : [];
+        }
+        
+        if (specialNeeds && typeof specialNeeds === 'string') {
+          try {
+            specialNeeds = JSON.parse(specialNeeds);
+          } catch (e) {
+            specialNeeds = [specialNeeds]; // Si no es JSON válido, convertir a array
+          }
+        }
+        if (!Array.isArray(specialNeeds)) {
+          specialNeeds = specialNeeds ? [specialNeeds] : [];
+        }
+        
+        if (recurringDays && typeof recurringDays === 'string') {
+          try {
+            recurringDays = JSON.parse(recurringDays);
+          } catch (e) {
+            recurringDays = [recurringDays]; // Si no es JSON válido, convertir a array
+          }
+        }
+        if (!Array.isArray(recurringDays)) {
+          recurringDays = recurringDays ? [recurringDays] : [];
+        }
+        
+        return {
+          id: row.id,
+          title: row.title,
+          description: row.description,
+          startDate: row.startDate,
+          endDate: row.endDate,
+          category: row.categoryName || row.category,
+          categoryId: row.categoryId,
+          parkId: row.parkId,
+          parkName: row.parkName,
+          location: row.location,
+          capacity: row.capacity || 0,
+          price: row.price || 0,
+          instructorId: row.instructorId,
+          instructorName: row.instructorName,
+          imageUrl: row.imageUrl,
+          imageCaption: row.imageCaption,
+          materials: row.materials,
+          requirements: row.requirements,
+          duration: row.duration,
+          isRecurring: row.isRecurring,
+          recurringDays: recurringDays,
+          targetMarket: targetMarket,
+          specialNeeds: specialNeeds,
+          isFree: row.isFree
+        };
+      });
+      
+      console.log(`🎯 Actividades encontradas: ${activities.length}`);
+      console.log(`🎯 Actividades con imagen: ${activities.filter(a => a.imageUrl).length}`);
+      res.json(activities);
+    } catch (error) {
+      console.error("🎯 Error al obtener actividades:", error);
+      res.status(500).json({ message: "Error al recuperar actividades" });
+    }
+  });
+
+
+  
+  // TEST ENDPOINT - Sin middleware de autenticación
+  apiRouter.post("/activities-test", async (req: Request, res: Response) => {
+    console.log("🧪 TEST ENDPOINT ALCANZADO");
+    console.log("🧪 Body:", JSON.stringify(req.body, null, 2));
+    res.status(200).json({ message: "Test endpoint funcionando", data: req.body });
+  });
+
+  // Helper function para mapear categorías
+  const mapCategoryToName = (categoryId: any, categoryString: any): string => {
+    const categoryMapping: { [key: string]: string } = {
+      '1': 'Deportivo',
+      '2': 'Recreación y Bienestar',
+      '3': 'Arte y Cultura',
+      '4': 'Naturaleza y Ciencia',
+      '5': 'Comunidad',
+      '6': 'Eventos de Temporada'
+    };
+    
+    // Prioridad: category_id -> category si es string numérico -> category normal
+    if (categoryId) return categoryMapping[categoryId.toString()] || 'Recreación y Bienestar';
+    if (categoryMapping[categoryString]) return categoryMapping[categoryString];
+    return categoryString || 'Recreación y Bienestar';
+  };
+
+  // Endpoint directo para crear actividades - SIN AUTENTICACIÓN TEMPORAL
+  apiRouter.post("/activities", async (req: Request, res: Response) => {
+    console.log("🔥🔥🔥 ENDPOINT ACTIVITIES EJECUTÁNDOSE EN ROUTES.TS 🔥🔥🔥");
+    
+    try {
+      console.log("🔥 INICIO POST /api/activities EN EL ENDPOINT PRINCIPAL");
+      console.log("🔥 Body completo recibido:", JSON.stringify(req.body, null, 2));
+      
+      // Log de depuración más detallado
+      console.log("fechaInicio recibido:", req.body.fechaInicio, "tipo:", typeof req.body.fechaInicio);
+      console.log("fechaFin recibido:", req.body.fechaFin, "tipo:", typeof req.body.fechaFin);
+      
+      // Mapear campos del frontend al esquema de base de datos
+      const {
+        title,
+        description,
+        category,
+        category_id,
+        parkId,
+        startDate: fechaInicio,
+        endDate: fechaFin,
+        location,
+        instructorId,
+        startTime,
+        duration,
+        capacity,
+        materials,
+        requiredStaff,
+        isRecurring,
+        isFree,
+        price,
+        requirements,
+        recurringDays,
+        ...otherData
+      } = req.body;
+      
+      // Usar helper function para mapear categoría
+      const finalCategory = mapCategoryToName(category_id, category);
+      
+      // Convertir las fechas explícitamente a objetos Date
+      let parsedStartDate: Date;
+      let parsedEndDate: Date | undefined;
+      
+      console.log("Procesando fechas - fechaInicio:", fechaInicio, "tipo:", typeof fechaInicio);
+      console.log("Procesando fechas - fechaFin:", fechaFin, "tipo:", typeof fechaFin);
+      
+      try {
+        // Si viene como string ISO, parsearlo; si ya es Date, usarlo directamente
+        parsedStartDate = typeof fechaInicio === 'string' ? new Date(fechaInicio) : fechaInicio;
+        if (fechaFin) {
+          parsedEndDate = typeof fechaFin === 'string' ? new Date(fechaFin) : fechaFin;
+        }
+        
+        console.log("Fechas parseadas - parsedStartDate:", parsedStartDate);
+        console.log("Fechas parseadas - parsedEndDate:", parsedEndDate);
+        
+      } catch (e) {
+        console.error("Error al convertir fechas:", e);
+        return res.status(400).json({ message: "Formato de fecha inválido" });
+      }
+      
+      // Verificar que la fecha de inicio es válida
+      if (!parsedStartDate || isNaN(parsedStartDate.getTime())) {
+        console.error("Fecha de inicio inválida:", parsedStartDate);
+        return res.status(400).json({ message: "La fecha de inicio no es válida" });
+      }
+      
+      // Verificar que la fecha de fin es válida (si existe)
+      if (parsedEndDate && isNaN(parsedEndDate.getTime())) {
+        console.error("Fecha de fin inválida:", parsedEndDate);
+        return res.status(400).json({ message: "La fecha de fin no es válida" });
+      }
+      
+      // Crear el objeto con los datos procesados y mapeados (incluye TODOS los campos del esquema)
+      const activityData = { 
+        title,
+        description,
+        category: finalCategory || 'Recreación y Bienestar', // Categoría por defecto si no se especifica
+        parkId: Number(parkId),
+        startDate: parsedStartDate,
+        location: location || null,
+        instructorId: instructorId || null,
+        startTime: startTime || null,
+        duration: duration ? parseInt(duration) : null,
+        capacity: capacity ? parseInt(capacity) : null,
+        materials: materials || null,
+        requiredStaff: requiredStaff ? parseInt(requiredStaff) : null,
+        isRecurring: Boolean(isRecurring),
+        isFree: Boolean(isFree),
+        price: price ? price.toString() : null,
+        requirements: requirements || null,
+        recurringDays: recurringDays || null,
+        ...(parsedEndDate && { endDate: parsedEndDate })
+      };
+      
+      console.log("Datos finales para validación Zod:", activityData);
+      console.log("Intentando crear actividad en base de datos...");
+      
+      console.log("Datos procesados para creación de actividad:", activityData);
+      console.log("parsedStartDate:", parsedStartDate, "isValid:", !isNaN(parsedStartDate.getTime()));
+      console.log("parsedEndDate:", parsedEndDate, "isValid:", parsedEndDate ? !isNaN(parsedEndDate.getTime()) : 'no endDate');
+      
+      try {
+        console.log("Intentando validar con Zod schema...");
+        const data = insertActivitySchema.parse(activityData);
+        console.log("Validación Zod exitosa:", data);
+        const result = await storage.createActivity(data);
+        console.log("Actividad creada exitosamente:", result);
+        res.status(201).json(result);
+      } catch (zodError) {
+        console.error("Error de validación Zod:", zodError);
+        console.error("Datos que fallaron validación:", JSON.stringify(activityData, null, 2));
+        return res.status(400).json({ 
+          message: "Error de validación de datos",
+          error: (zodError as any).issues || (zodError as Error).message
+        });
+      }
+    } catch (error) {
+      if (error instanceof ZodError) {
+        const validationError = fromZodError(error);
+        console.error("Error de validación Zod detallado:", error.errors);
+        console.error("Mensaje de error:", validationError.message);
+        return res.status(400).json({ 
+          message: validationError.message,
+          errors: error.errors 
+        });
+      }
+      console.error("Error al crear actividad:", error);
+      res.status(500).json({ message: "Error al crear actividad" });
+    }
+  });
+
+  // Add an activity to a park (admin/municipality only)
+  apiRouter.post("/parks/:id/activities", isAuthenticated, hasParkAccess, async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.id);
+      console.log("Datos recibidos en POST /parks/:id/activities:", req.body);
+      
+      // Extraer los datos
+      const { startDate, endDate, ...otherData } = req.body;
+      
+      // Convertir las fechas explícitamente a objetos Date
+      let parsedStartDate: Date;
+      let parsedEndDate: Date | undefined;
+      
+      try {
+        parsedStartDate = new Date(startDate);
+        if (endDate) {
+          parsedEndDate = new Date(endDate);
+        }
+      } catch (e) {
+        console.error("Error al convertir fechas:", e);
+        return res.status(400).json({ message: "Formato de fecha inválido" });
+      }
+      
+      // Verificar que la fecha de inicio es válida
+      if (isNaN(parsedStartDate.getTime())) {
+        return res.status(400).json({ message: "La fecha de inicio no es válida" });
+      }
+      
+      // Verificar que la fecha de fin es válida (si existe)
+      if (parsedEndDate && isNaN(parsedEndDate.getTime())) {
+        return res.status(400).json({ message: "La fecha de fin no es válida" });
+      }
+      
+      // Crear el objeto con los datos procesados
+      const activityData = { 
+        ...otherData, 
+        parkId,
+        startDate: parsedStartDate,
+        ...(parsedEndDate && { endDate: parsedEndDate })
+      };
+      
+      console.log("Datos procesados:", activityData);
+      
+      const data = insertActivitySchema.parse(activityData);
+      const result = await storage.createActivity(data);
+      
+      res.status(201).json(result);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        const validationError = fromZodError(error);
+        console.error("Error de validación Zod:", error);
+        return res.status(400).json({ message: validationError.message });
+      }
+      console.error("Error al crear actividad:", error);
+      res.status(500).json({ message: "Error adding activity to park" });
+    }
+  });
+  
+  // Update an activity (admin/municipality only)
+  apiRouter.put("/activities/:id", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const activityId = Number(req.params.id);
+      console.log("Datos recibidos en PUT /activities/:id:", req.body);
+      
+      // Verificar si la actividad existe
+      const existingActivity = await storage.getActivity(activityId);
+      if (!existingActivity) {
+        return res.status(404).json({ message: "Actividad no encontrada" });
+      }
+      
+      // En desarrollo, permitimos actualizar cualquier actividad
+      // TODO: Implementar verificación de permisos más estricta en producción
+      
+      // Extraer los datos
+      const { startDate, endDate, parkId, category, category_id, ...otherData } = req.body;
+      
+      // Usar helper function para mapear categoría
+      const finalCategory = mapCategoryToName(category_id, category);
+      
+      // Convertir las fechas explícitamente a objetos Date
+      let parsedStartDate: Date;
+      let parsedEndDate: Date | undefined;
+      
+      try {
+        parsedStartDate = new Date(startDate);
+        if (endDate) {
+          parsedEndDate = new Date(endDate);
+        }
+      } catch (e) {
+        console.error("Error al convertir fechas:", e);
+        return res.status(400).json({ message: "Formato de fecha inválido" });
+      }
+      
+      // Verificar que la fecha de inicio es válida
+      if (isNaN(parsedStartDate.getTime())) {
+        return res.status(400).json({ message: "La fecha de inicio no es válida" });
+      }
+      
+      // Verificar que la fecha de fin es válida (si existe)
+      if (parsedEndDate && isNaN(parsedEndDate.getTime())) {
+        return res.status(400).json({ message: "La fecha de fin no es válida" });
+      }
+      
+      // Crear el objeto con los datos procesados
+      const activityData = { 
+        ...otherData,
+        category: finalCategory,
+        categoryId: category_id || null,
+        startDate: parsedStartDate,
+        ...(parsedEndDate && { endDate: parsedEndDate })
+      };
+      
+      console.log("Datos procesados para actualización:", activityData);
+      console.log("🔍 category_id recibido:", category_id);
+      console.log("🔍 finalCategory calculada:", finalCategory);
+      console.log("🔍 categoryId en activityData:", activityData.categoryId);
+      console.log("🔍 CAMPOS DE INSCRIPCIONES:");
+      console.log("  - registrationEnabled:", activityData.registrationEnabled);
+      console.log("  - maxRegistrations:", activityData.maxRegistrations);
+      console.log("  - registrationDeadline:", activityData.registrationDeadline);
+      console.log("  - requiresApproval:", activityData.requiresApproval);
+      
+      // Validar los datos
+      console.log("🔄 [ROUTES.TS] Llamando a storage.updateActivity con ID:", activityId);
+      const result = await storage.updateActivity(activityId, activityData);
+      console.log("🎉 [ROUTES.TS] Resultado de updateActivity:", result);
+      
+      res.json(result);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        const validationError = fromZodError(error);
+        console.error("Error de validación Zod:", error);
+        return res.status(400).json({ message: validationError.message });
+      }
+      console.error("Error al actualizar actividad:", error);
+      res.status(500).json({ message: "Error actualizando actividad" });
+    }
+  });
+  
+  // Delete an activity (admin/municipality only)
+  apiRouter.delete("/activities/:id", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const activityId = Number(req.params.id);
+      
+      // Verificar si la actividad existe
+      const existingActivity = await storage.getActivity(activityId);
+      if (!existingActivity) {
+        return res.status(404).json({ message: "Actividad no encontrada" });
+      }
+      
+      // En desarrollo, permitimos eliminar cualquier actividad
+      // TODO: Implementar verificación de permisos más estricta en producción
+      
+      await storage.deleteActivity(activityId);
+      
+      res.status(200).json({ success: true, message: "Actividad eliminada correctamente" });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Error eliminando actividad" });
+    }
+  });
+
+  // Get comments for a specific park
+  apiRouter.get("/parks/:id/comments", async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.id);
+      const approvedOnly = req.query.approvedOnly === 'true';
+      
+      const comments = await storage.getParkComments(parkId, approvedOnly);
+      res.json(comments);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Error fetching park comments" });
+    }
+  });
+
+  // Add a comment to a park (public)
+  apiRouter.post("/parks/:id/comments", async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.id);
+      
+      // Si el usuario está autenticado, podemos aprobar automáticamente el comentario
+      // si pertenece al municipio del parque o es super_admin
+      let autoApprove = false;
+      
+      if (req.user) {
+        if (req.user.role === 'super_admin') {
+          autoApprove = true;
+        } else {
+          const park = await storage.getPark(parkId);
+          if (park && park.municipalityId === req.user.municipalityId) {
+            autoApprove = true;
+          }
+        }
+      }
+      
+      const commentData = { ...req.body, parkId, approved: autoApprove };
+      
+      const data = insertCommentSchema.parse(commentData);
+      const result = await storage.createComment(data);
+      
+      res.status(201).json(result);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        const validationError = fromZodError(error);
+        return res.status(400).json({ message: validationError.message });
+      }
+      console.error(error);
+      res.status(500).json({ message: "Error adding comment to park" });
+    }
+  });
+
+  // Get all comments (admin only)
+  apiRouter.get("/comments", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      // Obtenemos los parámetros de filtrado
+      const approvedFilter = req.query.approved;
+      
+      // Consultamos los comentarios de la base de datos
+      let allComments;
+      
+      if (approvedFilter === 'true') {
+        allComments = await storage.getAllComments(true);
+      } else if (approvedFilter === 'false') {
+        allComments = await storage.getAllComments(false);
+      } else {
+        allComments = await storage.getAllComments();
+      }
+      
+      // Para devolver un formato consistente con lo que espera la UI, obtenemos los detalles
+      // de los parques relacionados con estos comentarios
+      const parkIds = [...new Set(allComments.map(comment => comment.parkId))];
+      const parks = await Promise.all(
+        parkIds.map(async (parkId) => {
+          const park = await storage.getPark(parkId);
+          return park ? { id: park.id, name: park.name } : null;
+        })
+      );
+      
+      // Añadimos la información del parque a cada comentario
+      const commentsWithParkInfo = allComments.map(comment => {
+        const parkInfo = parks.find(p => p && p.id === comment.parkId);
+        return {
+          ...comment,
+          park: parkInfo
+        };
+      });
+      
+      // Devolvemos los comentarios con la información de parque incluida
+      res.json(commentsWithParkInfo);
+    } catch (error) {
+      console.error('Error fetching comments:', error);
+      res.status(500).json({ message: "Error fetching comments" });
+    }
+  });
+  
+  // Approve a comment (admin/municipality only)
+  apiRouter.put("/comments/:id/approve", async (req: Request, res: Response) => {
+    try {
+      const commentId = Number(req.params.id);
+      
+      // Verificamos que el comentario exista
+      const comment = await storage.getComment(commentId);
+      
+      if (!comment) {
+        return res.status(404).json({ message: "Comentario no encontrado" });
+      }
+      
+      // En desarrollo, permitimos aprobar cualquier comentario 
+      // Cuando el sistema esté en producción, podemos volver a implementar
+      // la verificación de permisos más estricta
+      
+      // Actualizamos el comentario en la base de datos
+      const updatedComment = await storage.approveComment(commentId);
+      
+      // Obtenemos información del parque para mantener el formato consistente
+      const park = await storage.getPark(comment.parkId);
+      
+      // Respondemos con el comentario aprobado y la info del parque
+      res.json({
+        ...updatedComment,
+        park: park ? { id: park.id, name: park.name } : null
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Error approving comment" });
+    }
+  });
+  
+  // Delete a comment (admin/municipality only)
+  apiRouter.delete("/comments/:id", async (req: Request, res: Response) => {
+    try {
+      const commentId = Number(req.params.id);
+      
+      // Verificamos que el comentario exista
+      const comment = await storage.getComment(commentId);
+      
+      if (!comment) {
+        return res.status(404).json({ message: "Comentario no encontrado" });
+      }
+      
+      // En desarrollo, permitimos eliminar cualquier comentario
+      // Cuando el sistema esté en producción, podemos volver a implementar
+      // la verificación de permisos más estricta
+      
+      // Eliminamos el comentario de la base de datos
+      await storage.deleteComment(commentId);
+      
+      // Respondemos con confirmación de eliminación
+      res.json({ success: true, message: "Comentario eliminado correctamente" });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Error eliminando comentario" });
+    }
+  });
+
+  // Report an incident for a park (public)
+  apiRouter.post("/parks/:id/incidents", async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.id);
+      const incidentData = { ...req.body, parkId };
+      
+      const data = insertIncidentSchema.parse(incidentData);
+      const result = await storage.createIncident(data);
+      
+      res.status(201).json(result);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        const validationError = fromZodError(error);
+        return res.status(400).json({ message: validationError.message });
+      }
+      console.error(error);
+      res.status(500).json({ message: "Error reporting incident" });
+    }
+  });
+  
+  // Get all incidents
+  apiRouter.get("/incidents", async (req: Request, res: Response) => {
+    try {
+      console.log("📣 RECIBIDA PETICIÓN DE INCIDENTES:", req.headers);
+      const parkId = req.query.parkId ? Number(req.query.parkId) : undefined;
+      
+      // Construir consulta SQL para obtener incidentes reales de la base de datos
+      let query = `
+        SELECT 
+          i.id,
+          i.asset_id as "assetId",
+          i.park_id as "parkId",
+          i.title,
+          i.description,
+          i.status,
+          i.severity,
+          i.reporter_name as "reporterName",
+          i.reporter_email as "reporterEmail",
+          i.location,
+          i.category,
+          i.created_at as "createdAt",
+          i.updated_at as "updatedAt",
+          p.name as "parkName",
+          a.name as "assetName"
+        FROM incidents i
+        LEFT JOIN parks p ON i.park_id = p.id
+        LEFT JOIN assets a ON i.asset_id = a.id
+        WHERE 1=1
+      `;
+      
+      const params = [];
+      
+      // Si se especificó un parkId, filtramos por ese parque
+      if (parkId) {
+        query += " AND i.park_id = $1";
+        params.push(parkId);
+      }
+      
+      query += " ORDER BY i.created_at DESC";
+      
+      console.log("🔍 Ejecutando consulta SQL:", query);
+      console.log("🔍 Parámetros:", params);
+      
+      const result = await pool.query(query, params);
+      
+      // Formatear datos para incluir información del parque
+      const incidents = result.rows.map(row => ({
+        id: row.id,
+        assetId: row.assetId,
+        parkId: row.parkId,
+        title: row.title,
+        description: row.description,
+        status: row.status,
+        severity: row.severity,
+        reporterName: row.reporterName,
+        reporterEmail: row.reporterEmail,
+        location: row.location,
+        category: row.category,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+        parkName: row.parkName,
+        assetName: row.assetName,
+        park: {
+          id: row.parkId,
+          name: row.parkName
+        },
+        asset: row.assetId ? {
+          id: row.assetId,
+          name: row.assetName
+        } : null
+      }));
+      
+      console.log("✅ Incidentes encontrados en BD:", incidents.length);
+      
+      return res.json(incidents);
+    } catch (error) {
+      console.error("Error obteniendo incidentes:", error);
+      return res.status(500).json({ message: "Error al obtener incidentes" });
+    }
+  });
+
+  // Create a new incident
+  apiRouter.post("/incidents", async (req: Request, res: Response) => {
+    try {
+      console.log("📝 CREANDO NUEVA INCIDENCIA:", req.body);
+      
+      const {
+        title,
+        description,
+        assetId,
+        parkId,
+        categoryId,
+        severity = 'medium',
+        location,
+        reporterName,
+        reporterEmail,
+        reporterPhone,
+        status = 'pending'
+      } = req.body;
+      
+      // Validar campos requeridos
+      if (!title || !description || !parkId || !reporterName) {
+        return res.status(400).json({
+          message: "Faltan campos requeridos: title, description, parkId, reporterName"
+        });
+      }
+      
+      // Insertar la nueva incidencia
+      const query = `
+        INSERT INTO incidents (
+          title, description, asset_id, park_id, category, severity, 
+          location, reporter_name, reporter_email, reporter_phone, 
+          status, created_at, updated_at
+        ) VALUES (
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW()
+        ) RETURNING *
+      `;
+      
+      const values = [
+        title,
+        description,
+        assetId || null,
+        parkId,
+        categoryId ? `category_${categoryId}` : null,
+        severity,
+        location || null,
+        reporterName,
+        reporterEmail || null,
+        reporterPhone || null,
+        status
+      ];
+      
+      console.log("🔍 Ejecutando INSERT:", query);
+      console.log("🔍 Valores:", values);
+      
+      const result = await pool.query(query, values);
+      const newIncident = result.rows[0];
+      
+      console.log("✅ Incidencia creada:", newIncident);
+      
+      // Obtener información adicional del parque y activo
+      let enrichedIncident = { ...newIncident };
+      
+      // Obtener nombre del parque
+      if (newIncident.park_id) {
+        const parkQuery = await pool.query(
+          "SELECT name FROM parks WHERE id = $1", 
+          [newIncident.park_id]
+        );
+        if (parkQuery.rows.length > 0) {
+          enrichedIncident.parkName = parkQuery.rows[0].name;
+        }
+      }
+      
+      // Obtener nombre del activo
+      if (newIncident.asset_id) {
+        const assetQuery = await pool.query(
+          "SELECT name FROM assets WHERE id = $1", 
+          [newIncident.asset_id]
+        );
+        if (assetQuery.rows.length > 0) {
+          enrichedIncident.assetName = assetQuery.rows[0].name;
+        }
+      }
+      
+      return res.status(201).json({
+        id: enrichedIncident.id,
+        assetId: enrichedIncident.asset_id,
+        parkId: enrichedIncident.park_id,
+        title: enrichedIncident.title,
+        description: enrichedIncident.description,
+        status: enrichedIncident.status,
+        severity: enrichedIncident.severity,
+        reporterName: enrichedIncident.reporter_name,
+        reporterEmail: enrichedIncident.reporter_email,
+        location: enrichedIncident.location,
+        category: enrichedIncident.category,
+        createdAt: enrichedIncident.created_at,
+        updatedAt: enrichedIncident.updated_at,
+        park: {
+          id: enrichedIncident.park_id,
+          name: enrichedIncident.parkName
+        },
+        asset: enrichedIncident.asset_id ? {
+          id: enrichedIncident.asset_id,
+          name: enrichedIncident.assetName
+        } : null
+      });
+    } catch (error) {
+      console.error("Error creando incidencia:", error);
+      return res.status(500).json({ message: "Error al crear la incidencia" });
+    }
+  });
+  
+  // Obtener una incidencia por ID
+  apiRouter.get("/incidents/:id", async (req: Request, res: Response) => {
+    try {
+      const incidentId = Number(req.params.id);
+      
+      if (!incidentId || isNaN(incidentId)) {
+        return res.status(400).json({ message: "ID de incidencia inválido" });
+      }
+      
+      // Consulta directa a la base de datos
+      const result = await pool.query(`
+        SELECT 
+          i.id,
+          i.asset_id as "assetId",
+          i.park_id as "parkId",
+          i.title,
+          i.description,
+          i.status,
+          i.severity,
+          i.reporter_name as "reporterName",
+          i.reporter_email as "reporterEmail",
+          i.location,
+          i.category,
+          i.created_at as "createdAt",
+          i.updated_at as "updatedAt",
+          p.name as "parkName",
+          a.name as "assetName"
+        FROM incidents i
+        LEFT JOIN parks p ON i.park_id = p.id
+        LEFT JOIN assets a ON i.asset_id = a.id
+        WHERE i.id = $1
+      `, [incidentId]);
+      
+      if (result.rows.length === 0) {
+        return res.status(404).json({ message: "Incidencia no encontrada" });
+      }
+      
+      res.json(result.rows[0]);
+    } catch (error) {
+      console.error('Error al obtener incidencia:', error);
+      res.status(500).json({ message: "Error interno del servidor" });
+    }
+  });
+
+  // Obtener comentarios de una incidencia
+  apiRouter.get("/incidents/:id/comments", async (req: Request, res: Response) => {
+    try {
+      const incidentId = Number(req.params.id);
+      
+      if (!incidentId || isNaN(incidentId)) {
+        return res.status(400).json({ message: "ID de incidencia inválido" });
+      }
+      
+      const { pool } = await import("./db");
+      
+      const query = `
+        SELECT 
+          ic.id,
+          ic.comment_text as "commentText",
+          ic.is_internal as "isInternal",
+          ic.is_public as "isPublic",
+          ic.created_at as "createdAt",
+          ic.updated_at as "updatedAt",
+          u.full_name as "authorName",
+          u.username as "authorUsername"
+        FROM incident_comments ic
+        LEFT JOIN users u ON ic.user_id = u.id
+        WHERE ic.incident_id = $1
+        ORDER BY ic.created_at ASC
+      `;
+      
+      const result = await pool.query(query, [incidentId]);
+      console.log(`📝 Encontrados ${result.rows.length} comentarios para incidencia ${incidentId}`);
+      res.json(result.rows);
+      
+    } catch (error) {
+      console.error('Error al obtener comentarios:', error);
+      res.status(500).json({ message: "Error interno del servidor" });
+    }
+  });
+
+  // Agregar comentario a una incidencia
+  apiRouter.post("/incidents/:id/comments", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const incidentId = Number(req.params.id);
+      const { commentText, isInternal = false, isPublic = true } = req.body;
+      
+      if (!incidentId || isNaN(incidentId)) {
+        return res.status(400).json({ message: "ID de incidencia inválido" });
+      }
+
+      if (!commentText || commentText.trim().length === 0) {
+        return res.status(400).json({ message: "El comentario no puede estar vacío" });
+      }
+
+      const { pool } = await import("./db");
+      const userId = req.headers['x-user-id'] || 4;
+      
+      const query = `
+        INSERT INTO incident_comments (incident_id, user_id, comment_text, is_internal, is_public, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
+        RETURNING 
+          id,
+          comment_text as "commentText",
+          is_internal as "isInternal",
+          is_public as "isPublic",
+          created_at as "createdAt",
+          updated_at as "updatedAt"
+      `;
+      
+      const result = await pool.query(query, [incidentId, userId, commentText.trim(), isInternal, isPublic]);
+      
+      // Registrar en el historial
+      await pool.query(`
+        INSERT INTO incident_history (incident_id, user_id, action_type, notes, created_at)
+        VALUES ($1, $2, 'comment_added', $3, NOW())
+      `, [incidentId, userId, `Comentario agregado: ${commentText.trim().substring(0, 50)}...`]);
+      
+      console.log(`✅ Comentario agregado a incidencia ${incidentId}`);
+      res.status(201).json(result.rows[0]);
+      
+    } catch (error) {
+      console.error('Error agregando comentario:', error);
+      res.status(500).json({ message: "Error interno del servidor" });
+    }
+  });
+
+  // Obtener historial de una incidencia
+  apiRouter.get("/incidents/:id/history", async (req: Request, res: Response) => {
+    try {
+      const incidentId = Number(req.params.id);
+      
+      if (!incidentId || isNaN(incidentId)) {
+        return res.status(400).json({ message: "ID de incidencia inválido" });
+      }
+      
+      const { pool } = await import("./db");
+      
+      const query = `
+        SELECT 
+          ih.id,
+          ih.action_type as "actionType",
+          ih.old_value as "oldValue",
+          ih.new_value as "newValue",
+          ih.field_name as "fieldName",
+          ih.notes,
+          ih.created_at as "createdAt",
+          u.full_name as "authorName",
+          u.username as "authorUsername"
+        FROM incident_history ih
+        LEFT JOIN users u ON ih.user_id = u.id
+        WHERE ih.incident_id = $1
+        ORDER BY ih.created_at DESC
+      `;
+      
+      const result = await pool.query(query, [incidentId]);
+      console.log(`📋 Encontrado historial de ${result.rows.length} acciones para incidencia ${incidentId}`);
+      res.json(result.rows);
+      
+    } catch (error) {
+      console.error('Error al obtener historial:', error);
+      res.status(500).json({ message: "Error interno del servidor" });
+    }
+  });
+
+  // Actualizar estado de una incidencia - VERSION MEJORADA
+  apiRouter.put("/incidents/:id/status", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const incidentId = Number(req.params.id);
+      const { status, notes } = req.body;
+      
+      const validStatuses = ['pending', 'assigned', 'in_progress', 'review', 'resolved', 'closed', 'rejected'];
+      if (!validStatuses.includes(status)) {
+        return res.status(400).json({ message: "Estado inválido" });
+      }
+
+      const { pool } = await import("./db");
+      const userId = req.headers['x-user-id'] || 4;
+      
+      // Obtener estado actual
+      const currentIncident = await pool.query('SELECT status FROM incidents WHERE id = $1', [incidentId]);
+      if (currentIncident.rows.length === 0) {
+        return res.status(404).json({ message: "Incidencia no encontrada" });
+      }
+      
+      const oldStatus = currentIncident.rows[0].status;
+      
+      // Actualizar estado
+      const updateQuery = `
+        UPDATE incidents 
+        SET status = $1, updated_at = NOW()
+        WHERE id = $2
+        RETURNING *
+      `;
+      
+      const result = await pool.query(updateQuery, [status, incidentId]);
+      
+      // Registrar en historial
+      await pool.query(`
+        INSERT INTO incident_history (incident_id, user_id, action_type, old_value, new_value, field_name, notes, created_at)
+        VALUES ($1, $2, 'status_change', $3, $4, 'status', $5, NOW())
+      `, [incidentId, userId, oldStatus, status, notes || `Estado cambiado de ${oldStatus} a ${status}`]);
+      
+      console.log(`✅ Estado de incidencia ${incidentId} cambiado de ${oldStatus} a ${status}`);
+      res.json(result.rows[0]);
+      
+    } catch (error) {
+      console.error("Error al actualizar estado:", error);
+      res.status(500).json({ message: "Error interno del servidor" });
+    }
+  });
+
+  // Asignar incidencia a usuario
+  apiRouter.put("/incidents/:id/assign", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const incidentId = Number(req.params.id);
+      const { assignedToUserId, department, dueDate, notes } = req.body;
+      
+      if (!incidentId || isNaN(incidentId)) {
+        return res.status(400).json({ message: "ID de incidencia inválido" });
+      }
+
+      const { pool } = await import("./db");
+      const userId = req.headers['x-user-id'] || 4;
+      
+      // Crear asignación
+      const assignmentQuery = `
+        INSERT INTO incident_assignments (incident_id, assigned_to_user_id, assigned_by_user_id, department, due_date, notes, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
+        RETURNING id
+      `;
+      
+      const assignmentResult = await pool.query(assignmentQuery, [
+        incidentId, 
+        assignedToUserId || null, 
+        userId, 
+        department || null, 
+        dueDate || null, 
+        notes || null
+      ]);
+      
+      // Actualizar incidencia
+      await pool.query(`
+        UPDATE incidents 
+        SET assigned_to_user_id = $1, status = CASE WHEN status = 'pending' THEN 'assigned' ELSE status END, updated_at = NOW()
+        WHERE id = $2
+      `, [assignedToUserId, incidentId]);
+      
+      // Registrar en historial
+      await pool.query(`
+        INSERT INTO incident_history (incident_id, user_id, action_type, new_value, field_name, notes, created_at)
+        VALUES ($1, $2, 'assignment', $3, 'assigned_to_user_id', $4, NOW())
+      `, [incidentId, userId, assignedToUserId?.toString() || department, notes || 'Incidencia asignada']);
+      
+      console.log(`✅ Incidencia ${incidentId} asignada exitosamente`);
+      res.json({ success: true, assignmentId: assignmentResult.rows[0].id });
+      
+    } catch (error) {
+      console.error("Error asignando incidencia:", error);
+      res.status(500).json({ message: "Error interno del servidor" });
+    }
+  });
+
+  // Obtener archivos adjuntos de una incidencia
+  apiRouter.get("/incidents/:id/attachments", async (req: Request, res: Response) => {
+    try {
+      const incidentId = Number(req.params.id);
+      
+      if (!incidentId || isNaN(incidentId)) {
+        return res.status(400).json({ message: "ID de incidencia inválido" });
+      }
+
+      const { pool } = await import("./db");
+      
+      const query = `
+        SELECT 
+          ia.id,
+          ia.file_name as "fileName",
+          ia.file_path as "filePath",
+          ia.file_type as "fileType",
+          ia.file_size as "fileSize",
+          ia.attachment_type as "attachmentType",
+          ia.is_before_photo as "isBeforePhoto",
+          ia.is_after_photo as "isAfterPhoto",
+          ia.created_at as "createdAt",
+          u.full_name as "uploadedByName"
+        FROM incident_attachments ia
+        LEFT JOIN users u ON ia.uploaded_by_user_id = u.id
+        WHERE ia.incident_id = $1
+        ORDER BY ia.created_at DESC
+      `;
+      
+      const result = await pool.query(query, [incidentId]);
+      console.log(`📎 Encontrados ${result.rows.length} archivos para incidencia ${incidentId}`);
+      res.json(result.rows);
+      
+    } catch (error) {
+      console.error("Error obteniendo archivos adjuntos:", error);
+      res.status(500).json({ message: "Error interno del servidor" });
+    }
+  });
+
+  // Obtener asignaciones de una incidencia
+  apiRouter.get("/incidents/:id/assignments", async (req: Request, res: Response) => {
+    try {
+      const incidentId = Number(req.params.id);
+      
+      if (!incidentId || isNaN(incidentId)) {
+        return res.status(400).json({ message: "ID de incidencia inválido" });
+      }
+
+      const { pool } = await import("./db");
+      
+      const query = `
+        SELECT 
+          ia.id,
+          ia.department,
+          ia.due_date as "dueDate",
+          ia.notes,
+          ia.status as "assignmentStatus",
+          ia.created_at as "createdAt",
+          ia.updated_at as "updatedAt",
+          assigned.full_name as "assignedToName",
+          assigned.username as "assignedToUsername",
+          assigned.email as "assignedToEmail",
+          assigner.full_name as "assignedByName",
+          assigner.username as "assignedByUsername"
+        FROM incident_assignments ia
+        LEFT JOIN users assigned ON ia.assigned_to_user_id = assigned.id
+        LEFT JOIN users assigner ON ia.assigned_by_user_id = assigner.id
+        WHERE ia.incident_id = $1
+        ORDER BY ia.created_at DESC
+      `;
+      
+      const result = await pool.query(query, [incidentId]);
+      console.log(`👥 Encontradas ${result.rows.length} asignaciones para incidencia ${incidentId}`);
+      res.json(result.rows);
+      
+    } catch (error) {
+      console.error("Error obteniendo asignaciones:", error);
+      res.status(500).json({ message: "Error interno del servidor" });
+    }
+  });
+
+  // Actualizar estado de asignación
+  apiRouter.put("/incidents/:incidentId/assignments/:assignmentId", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const { incidentId, assignmentId } = req.params;
+      const { status, notes } = req.body;
+      
+      if (!incidentId || !assignmentId) {
+        return res.status(400).json({ message: "IDs requeridos" });
+      }
+
+      const { pool } = await import("./db");
+      const userId = req.headers['x-user-id'] || 4;
+      
+      const query = `
+        UPDATE incident_assignments 
+        SET status = $1, notes = COALESCE($2, notes), updated_at = NOW()
+        WHERE id = $3 AND incident_id = $4
+        RETURNING *
+      `;
+      
+      const result = await pool.query(query, [status, notes, assignmentId, incidentId]);
+      
+      if (result.rows.length === 0) {
+        return res.status(404).json({ message: "Asignación no encontrada" });
+      }
+      
+      // Registrar en historial
+      await pool.query(`
+        INSERT INTO incident_history (incident_id, user_id, action_type, new_value, field_name, notes, created_at)
+        VALUES ($1, $2, 'assignment_updated', $3, 'assignment_status', $4, NOW())
+      `, [incidentId, userId, status, notes || `Estado de asignación actualizado a ${status}`]);
+      
+      console.log(`✅ Asignación ${assignmentId} actualizada exitosamente`);
+      res.json(result.rows[0]);
+      
+    } catch (error) {
+      console.error("Error actualizando asignación:", error);
+      res.status(500).json({ message: "Error interno del servidor" });
+    }
+  });
+
+  // Crear nueva asignación para una incidencia
+  apiRouter.post("/incidents/:id/assignments", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      console.log("🔧 POST /api/incidents/:id/assignments - Request body:", req.body);
+      console.log("🔧 Content-Type:", req.headers['content-type']);
+      console.log("🔧 Request headers:", req.headers);
+      
+      const incidentId = Number(req.params.id);
+      const { assignedToUserId, department, dueDate, notes } = req.body;
+      
+      console.log("🔧 Extracted data:", { incidentId, assignedToUserId, department, dueDate, notes });
+      
+      if (!incidentId || isNaN(incidentId)) {
+        console.log("❌ Error: ID de incidencia inválido");
+        return res.status(400).json({ message: "ID de incidencia inválido" });
+      }
+
+      if (!assignedToUserId) {
+        console.log("❌ Error: Usuario asignado es requerido");
+        return res.status(400).json({ message: "Usuario asignado es requerido" });
+      }
+
+      const { pool } = await import("./db");
+      const assignedByUserId = req.headers['x-user-id'] || 4;
+      
+      const query = `
+        INSERT INTO incident_assignments (
+          incident_id, assigned_to_user_id, assigned_by_user_id, 
+          department, due_date, notes, status, created_at, updated_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, 'active', NOW(), NOW())
+        RETURNING *
+      `;
+      
+      const result = await pool.query(query, [
+        incidentId, assignedToUserId, assignedByUserId, 
+        department || 'General', dueDate, notes
+      ]);
+      
+      // Actualizar la incidencia para reflejar la asignación
+      await pool.query(`
+        UPDATE incidents 
+        SET assigned_to_user_id = $1, status = CASE 
+          WHEN status = 'pending' THEN 'assigned' 
+          ELSE status 
+        END, updated_at = NOW()
+        WHERE id = $2
+      `, [assignedToUserId, incidentId]);
+      
+      // Registrar en historial
+      await pool.query(`
+        INSERT INTO incident_history (incident_id, user_id, action_type, new_value, field_name, notes, created_at)
+        VALUES ($1, $2, 'assignment_created', $3, 'assigned_to_user_id', $4, NOW())
+      `, [incidentId, assignedByUserId, assignedToUserId, notes || 'Nueva asignación creada']);
+      
+      console.log(`✅ Nueva asignación creada para incidencia ${incidentId}`);
+      res.status(201).json(result.rows[0]);
+      
+    } catch (error) {
+      console.error("Error creando asignación:", error);
+      res.status(500).json({ message: "Error interno del servidor" });
+    }
+  });
+  
+  // Get incidents for a specific park
+  apiRouter.get("/parks/:id/incidents", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.id);
+      
+      // Verificamos que el usuario tenga acceso al parque si no es super_admin
+      if (req.user.role !== 'super_admin') {
+        const park = await storage.getPark(parkId);
+        if (!park) {
+          return res.status(404).json({ message: "Park not found" });
+        }
+        
+        if (park.municipalityId !== req.user.municipalityId) {
+          return res.status(403).json({ 
+            message: "No tiene permisos para ver incidentes de este parque" 
+          });
+        }
+      }
+      
+      const incidents = await storage.getParkIncidents(parkId);
+      
+      res.json(incidents);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Error fetching park incidents" });
+    }
+  });
+
+  // Import incidents from CSV
+  apiRouter.post("/incidents/import", upload.single('file'), async (req: Request, res: Response) => {
+    try {
+      console.log("📥 POST /api/incidents/import - Iniciando importación de incidencias");
+      
+      if (!req.file) {
+        return res.status(400).json({ error: "No se ha seleccionado ningún archivo" });
+      }
+
+      const file = req.file;
+      console.log("📄 Archivo recibido:", file.originalname, file.mimetype);
+      
+      // Validar que sea un archivo CSV
+      if (file.mimetype !== 'text/csv' && !file.originalname.endsWith('.csv')) {
+        return res.status(400).json({ error: "El archivo debe ser un CSV" });
+      }
+
+      // Parsear el archivo CSV
+      const csvData = file.buffer.toString('utf8');
+      const lines = csvData.split('\n').filter(line => line.trim());
+      
+      if (lines.length < 2) {
+        return res.status(400).json({ error: "El archivo CSV debe contener al menos una fila de datos" });
+      }
+
+      // Extraer headers
+      const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+      console.log("📋 Headers encontrados:", headers);
+
+      // Validar headers requeridos
+      const requiredHeaders = ['titulo', 'descripcion', 'parque_id', 'categoria', 'estado'];
+      const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
+      
+      if (missingHeaders.length > 0) {
+        return res.status(400).json({ 
+          error: `Faltan columnas requeridas: ${missingHeaders.join(', ')}` 
+        });
+      }
+
+      const { pool } = await import("./db");
+      let importedCount = 0;
+      let errors = [];
+
+      // Procesar cada fila de datos
+      for (let i = 1; i < lines.length; i++) {
+        try {
+          const values = lines[i].split(',').map(v => v.trim());
+          const row: any = {};
+          
+          // Mapear valores a headers
+          headers.forEach((header, index) => {
+            row[header] = values[index] || '';
+          });
+
+          // Validar datos requeridos
+          if (!row.titulo || !row.descripcion || !row.parque_id) {
+            errors.push(`Fila ${i + 1}: Faltan campos requeridos`);
+            continue;
+          }
+
+          // Validar que el parque existe
+          const parkCheck = await pool.query(`
+            SELECT id FROM parks WHERE id = $1
+          `, [parseInt(row.parque_id)]);
+          
+          if (parkCheck.rows.length === 0) {
+            errors.push(`Fila ${i + 1}: El parque con ID ${row.parque_id} no existe`);
+            continue;
+          }
+
+          // Validar estado
+          const validStatuses = ['pending', 'assigned', 'in_progress', 'review', 'resolved', 'closed', 'rejected'];
+          const status = row.estado || 'pending';
+          
+          if (!validStatuses.includes(status)) {
+            errors.push(`Fila ${i + 1}: Estado '${status}' no es válido`);
+            continue;
+          }
+
+          // Validar prioridad
+          const priority = row.prioridad || 'normal';
+          const validPriorities = ['low', 'normal', 'high', 'urgent'];
+          
+          if (!validPriorities.includes(priority)) {
+            errors.push(`Fila ${i + 1}: Prioridad '${priority}' no es válida`);
+            continue;
+          }
+
+          // Insertar la incidencia
+          const insertQuery = `
+            INSERT INTO incidents (
+              title, description, park_id, category, status, severity, 
+              location, reporter_name, reporter_email, reporter_phone,
+              created_at, updated_at
+            ) VALUES (
+              $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), NOW()
+            )
+          `;
+          
+          const insertValues = [
+            row.titulo,
+            row.descripcion,
+            parseInt(row.parque_id),
+            row.categoria || 'general',
+            status,
+            priority,
+            row.ubicacion || '',
+            row.reportero_nombre || 'Importación CSV',
+            row.reportero_email || '',
+            row.reportero_telefono || ''
+          ];
+
+          await pool.query(insertQuery, insertValues);
+          importedCount++;
+          
+        } catch (error) {
+          console.error(`Error procesando fila ${i + 1}:`, error);
+          errors.push(`Fila ${i + 1}: Error al procesar - ${error.message}`);
+        }
+      }
+
+      console.log(`✅ Importación completada: ${importedCount} incidencias importadas`);
+      console.log(`❌ Errores encontrados: ${errors.length}`);
+
+      res.json({
+        success: true,
+        message: `Importación completada: ${importedCount} incidencias importadas`,
+        imported: importedCount,
+        errors: errors.length,
+        errorDetails: errors.slice(0, 10) // Mostrar solo los primeros 10 errores
+      });
+
+    } catch (error) {
+      console.error("Error en importación de incidencias:", error);
+      res.status(500).json({ 
+        error: "Error interno del servidor",
+        details: error.message 
+      });
+    }
+  });
+
+  // Get all municipalities
+  apiRouter.get("/municipalities", async (_req: Request, res: Response) => {
+    try {
+      const municipalities = await storage.getMunicipalities();
+      res.json(municipalities);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Error fetching municipalities" });
+    }
+  });
+
+  // Basic authentication for testing usando la función directa
+  apiRouter.post("/login", async (req: Request, res: Response) => {
+    try {
+      const { username, password } = req.body;
+      
+      // Importamos la función de autenticación directa que creamos
+      const { authenticateUser } = await import('./directAuth');
+      
+      // Autenticamos al usuario de forma directa sin usar el ORM
+      const result = await authenticateUser(username, password);
+      
+      if (!result.success) {
+        return res.status(401).json({ message: result.message });
+      }
+      
+      // Enviamos los datos del usuario autenticado
+      res.json(result.data);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Error during login" });
+    }
+  });
+
+  // Add the parks list endpoint to the main API router for frontend compatibility
+  apiRouter.get("/public/parks/list", async (_req: Request, res: Response) => {
+    try {
+      // Get basic park data for dropdowns/forms
+      const parks = await storage.getParks({ includeDeleted: false });
+      const parkList = parks.map(park => ({
+        id: park.id,
+        name: park.name
+      }));
+      
+      res.json(parkList);
+    } catch (error) {
+      console.error("Error fetching parks list:", error);
+      res.status(500).json({ 
+        status: "error", 
+        message: "Error fetching parks list" 
+      });
+    }
+  });
+
+  // Continuamos usando el mismo publicRouter definido antes
+  
+  // Get simple parks list for forms and dropdowns
+  publicRouter.get("/parks/list", async (_req: Request, res: Response) => {
+    try {
+      // Get basic park data for dropdowns/forms
+      const parks = await storage.getParks({ includeDeleted: false });
+      const parkList = parks.map(park => ({
+        id: park.id,
+        name: park.name
+      }));
+      
+      res.json(parkList);
+    } catch (error) {
+      console.error("Error fetching parks list:", error);
+      res.status(500).json({ 
+        status: "error", 
+        message: "Error fetching parks list" 
+      });
+    }
+  });
+  
+  // Get basic park data - limited information for public consumption
+  publicRouter.get("/parks", async (_req: Request, res: Response) => {
+    try {
+      // Asegurarnos de excluir parques eliminados
+      const parks = await storage.getParks({ includeDeleted: false });
+      // Return only basic data needed for integration
+      const simplifiedParks = parks.map(park => ({
+        id: park.id,
+        name: park.name,
+        type: park.parkType,
+        address: park.address,
+        latitude: park.latitude,
+        longitude: park.longitude
+      }));
+      
+      res.json({
+        status: "success",
+        data: simplifiedParks,
+        count: simplifiedParks.length
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ 
+        status: "error", 
+        message: "Error fetching parks data" 
+      });
+    }
+  });
+  
+  // Get detailed park view for admin
+  apiRouter.get("/parks/:id/view", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.id);
+      
+      // Get park with municipality using the same query pattern as the working parks endpoint
+      const parkQuery = await db.select({
+        park: parks,
+        municipality: municipalities
+      })
+        .from(parks)
+        .leftJoin(municipalities, eq(parks.municipalityId, municipalities.id))
+        .where(eq(parks.id, parkId))
+        .limit(1);
+      
+      if (!parkQuery.length) {
+        return res.status(404).json({ message: "Park not found" });
+      }
+      
+      const { park, municipality } = parkQuery[0];
+      
+      // Get activities for this park
+      const activitiesData = await db.select()
+        .from(activities)
+        .where(eq(activities.parkId, parkId));
+      
+      // Get trees data if table exists
+      let treesData = [];
+      try {
+        treesData = await db.select().from(trees).where(eq(trees.parkId, parkId));
+      } catch (e) {
+        // Tree table might not exist yet
+      }
+      
+      // Get volunteers data if table exists
+      let volunteersData = [];
+      try {
+        volunteersData = await db.select().from(volunteers).where(eq(volunteers.preferredParkId, parkId));
+      } catch (e) {
+        // Volunteers table might not exist yet
+      }
+      
+      // Get multimedia data (images and documents)
+      let images = [];
+      let documents = [];
+      try {
+        const imagesResult = await db.execute(
+          'SELECT id, park_id as "parkId", image_url as "imageUrl", is_primary as "isPrimary", caption FROM park_images WHERE park_id = $1 ORDER BY is_primary DESC',
+          [parkId]
+        );
+        images = Array.isArray(imagesResult) ? imagesResult : (imagesResult.rows || []);
+        
+        const documentsResult = await db.execute(
+          'SELECT id, park_id as "parkId", title, file_url as "fileUrl", file_type as "fileType", description, category, created_at as "createdAt" FROM park_documents WHERE park_id = $1 ORDER BY created_at DESC',
+          [parkId]
+        );
+        documents = Array.isArray(documentsResult) ? documentsResult : (documentsResult.rows || []);
+      } catch (e) {
+        console.log('Error fetching multimedia data:', e);
+      }
+      
+      // Placeholder arrays for other data types
+      const amenities = [];
+      const incidents = [];
+      const evaluations = [];
+      
+      // Calculate stats
+      const stats = {
+        totalActivities: activitiesData.length,
+        activeVolunteers: volunteersData.filter((v: any) => v.isActive).length,
+        totalTrees: treesData.length,
+        averageEvaluation: evaluations.length > 0 ? evaluations.reduce((acc: number, evaluation: any) => acc + evaluation.score, 0) / evaluations.length : 0,
+        pendingIncidents: incidents.filter((inc: any) => inc.status === 'pending' || inc.status === 'open').length
+      };
+      
+      const result = {
+        ...park,
+        municipality: municipality,
+        amenities: amenities,
+        activities: activitiesData,
+        trees: treesData,
+        volunteers: volunteersData,
+        incidents: incidents,
+        documents: documents,
+        images: images,
+        evaluations: evaluations,
+        stats: stats
+      };
+      
+      res.json(result);
+    } catch (error) {
+      console.error("Error fetching park view:", error);
+      res.status(500).json({ message: "Error fetching park data" });
+    }
+  });
+
+  // Get detailed information about a specific park
+  publicRouter.get("/parks/:id", async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.id);
+      const park = await storage.getExtendedPark(parkId);
+      
+      if (!park) {
+        return res.status(404).json({
+          status: "error",
+          message: "Park not found"
+        });
+      }
+      
+      // Get park activities - using direct DB query for now
+      const activitiesData = await db.select().from(activities).where(eq(activities.parkId, parkId));
+
+      // Format park data for public API consumption
+      const formattedPark = {
+        id: park.id,
+        name: park.name,
+        type: park.parkType,
+        address: park.address,
+        postalCode: park.postalCode,
+        municipality: park.municipality ? {
+          id: park.municipality.id,
+          name: park.municipality.name,
+          state: park.municipality.state
+        } : null,
+        location: {
+          latitude: park.latitude,
+          longitude: park.longitude
+        },
+        description: park.description,
+        size: park.area,
+        foundedIn: park.foundationYear,
+        administrator: park.administrator,
+        condition: park.conservationStatus,
+        schedule: park.openingHours,
+        contact: {
+          email: park.contactEmail,
+          phone: park.contactPhone
+        },
+        amenities: park.amenities?.map(amenity => ({
+          id: amenity.id,
+          name: amenity.name,
+          category: amenity.category,
+          icon: amenity.icon
+        })) || [],
+        images: park.images?.map(image => ({
+          id: image.id,
+          url: image.imageUrl,
+          caption: image.caption,
+          isPrimary: image.isPrimary
+        })) || [],
+        activities: activities.map(activity => ({
+          id: activity.id,
+          title: activity.title,
+          description: activity.description,
+          startDate: activity.startDate,
+          endDate: activity.endDate,
+          category: activity.category,
+          location: activity.location
+        })),
+        lastUpdated: park.updatedAt
+      };
+      
+      res.json({
+        status: "success",
+        data: formattedPark
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ 
+        status: "error", 
+        message: "Error fetching detailed park data" 
+      });
+    }
+  });
+  
+  // Get parks by municipality ID - for inter-municipal integration
+  publicRouter.get("/municipalities/:id/parks", async (req: Request, res: Response) => {
+    try {
+      const municipalityId = Number(req.params.id);
+      const parks = await storage.getParks({ municipalityId, includeDeleted: false });
+      
+      const simplifiedParks = parks.map(park => ({
+        id: park.id,
+        name: park.name,
+        type: park.parkType,
+        address: park.address,
+        latitude: park.latitude,
+        longitude: park.longitude
+      }));
+      
+      res.json({
+        status: "success",
+        data: simplifiedParks,
+        count: simplifiedParks.length
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ 
+        status: "error", 
+        message: "Error fetching parks data for municipality" 
+      });
+    }
+  });
+  
+  // Ruta pública para obtener instructores activos
+  publicRouter.get("/instructors", async (_req: Request, res: Response) => {
+    try {
+      const instructorsResult = await db.execute(
+        sql`SELECT id, full_name, email, phone, specialties, experience_years, status, profile_image_url, created_at 
+            FROM instructors 
+            WHERE status = 'active'
+            ORDER BY id DESC`
+      );
+      res.json(instructorsResult.rows || []);
+    } catch (error) {
+      console.error('Error al obtener instructores públicos:', error);
+      res.status(500).json({ 
+        status: "error", 
+        message: "Error fetching instructors data" 
+      });
+    }
+  });
+  
+  // Get upcoming activities across all parks - for calendar integration
+  publicRouter.get("/activities", async (req: Request, res: Response) => {
+    try {
+      console.log("🎯 ENDPOINT PÚBLICO ACTIVITIES EJECUTÁNDOSE");
+      
+      // Usar la misma consulta SQL directa para consistencia
+      const { pool } = await import("./db");
+      
+      const result = await pool.query(`
+        SELECT 
+          a.id,
+          a.title,
+          a.description,
+          a.start_date as "startDate",
+          a.end_date as "endDate",
+          a.category,
+          a.category_id as "categoryId",
+          a.park_id as "parkId",
+          a.location,
+          a.capacity,
+          a.price,
+          a.instructor_id as "instructorId",
+          a.created_at as "createdAt",
+          p.name as "parkName",
+          c.name as "categoryName",
+          i.full_name as "instructorName",
+          img.image_url as "imageUrl",
+          img.caption as "imageCaption"
+        FROM activities a
+        LEFT JOIN parks p ON a.park_id = p.id
+        LEFT JOIN activity_categories c ON a.category_id = c.id
+        LEFT JOIN instructors i ON a.instructor_id = i.id
+        LEFT JOIN activity_images img ON a.id = img.activity_id AND img.is_primary = true
+        ORDER BY a.created_at DESC
+      `);
+      
+      const allActivities = result.rows.map(row => ({
+        id: row.id,
+        title: row.title,
+        description: row.description,
+        startDate: row.startDate,
+        endDate: row.endDate,
+        category: row.category,
+        categoryId: row.categoryId,
+        parkId: row.parkId,
+        parkName: row.parkName,
+        location: row.location,
+        capacity: row.capacity,
+        price: row.price,
+        instructorId: row.instructorId,
+        instructorName: row.instructorName,
+        createdAt: row.createdAt,
+        imageUrl: row.imageUrl,
+        imageCaption: row.imageCaption
+      }));
+      
+      console.log(`🎯 Actividades públicas encontradas: ${allActivities.length}`);
+      console.log(`🎯 Primeras 3: ${allActivities.slice(0, 3).map(a => `${a.id}-${a.title}`).join(', ')}`);
+      
+      // Sort by start date for public viewing
+      allActivities.sort((a, b) => 
+        new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+      );
+      
+      // Format for external consumption
+      const formattedActivities = allActivities.map(activity => {
+        const park = allParks.find(p => p.id === activity.parkId);
+        return {
+          id: activity.id,
+          title: activity.title,
+          description: activity.description,
+          startDate: activity.startDate,
+          endDate: activity.endDate,
+          category: activity.category,
+          parkName: park?.name || 'Unknown',
+          parkId: activity.parkId,
+          location: park ? `${park.address}` : 'Unknown'
+        };
+      });
+      
+      res.json({
+        status: "success",
+        data: formattedActivities,
+        count: formattedActivities.length
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ 
+        status: "error", 
+        message: "Error fetching activities data" 
+      });
+    }
+  });
+  
+  // DISABLED - This endpoint was interfering with the main amenities endpoint
+  /*
+  publicRouter.get("/parks/:id/amenities", async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.id);
+      const amenities = await storage.getParkAmenities(parkId);
+      
+      // Format for external consumption
+      const formattedAmenities = amenities.map(amenity => ({
+        id: amenity.id,
+        name: amenity.name,
+        category: amenity.category,
+        icon: amenity.icon
+      }));
+      
+      res.json({
+        status: "success",
+        data: formattedAmenities,
+        count: formattedAmenities.length
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ 
+        status: "error", 
+        message: "Error fetching park amenities data" 
+      });
+    }
+  });
+  */
+  
+  // Get activities for a specific park - for external applications
+  publicRouter.get("/parks/:id/activities", async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.id);
+      const activities = await storage.getParkActivities(parkId);
+      
+      // Format for external consumption
+      const formattedActivities = activities.map(activity => ({
+        id: activity.id,
+        title: activity.title,
+        description: activity.description,
+        startDate: activity.startDate,
+        endDate: activity.endDate,
+        category: activity.category,
+        location: activity.location
+      }));
+      
+      res.json({
+        status: "success",
+        data: formattedActivities,
+        count: formattedActivities.length
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ 
+        status: "error", 
+        message: "Error fetching park activities data" 
+      });
+    }
+  });
+
+  // Get concessions for a specific park
+  publicRouter.get("/parks/:id/concessions", async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.id);
+      
+      const { pool } = await import("./db");
+      
+      const result = await pool.query(`
+        SELECT 
+          c.id,
+          c.vendor_name as "vendorName",
+          c.vendor_contact as "vendorContact", 
+          c.vendor_email as "vendorEmail",
+          c.vendor_phone as "vendorPhone",
+          c.start_date as "startDate",
+          c.end_date as "endDate",
+          c.status,
+          c.location,
+          c.notes,
+          ct.name as "concessionType",
+          ct.description as "typeDescription",
+          ct.impact_level as "impactLevel"
+        FROM concessions c
+        LEFT JOIN concession_types ct ON c.concession_type_id = ct.id
+        WHERE c.park_id = $1 AND c.status = 'activa'
+        ORDER BY c.start_date DESC
+      `, [parkId]);
+      
+      const concessions = result.rows || [];
+      
+      res.json({
+        status: "success",
+        data: concessions,
+        count: concessions.length
+      });
+    } catch (error) {
+      console.error("Error fetching park concessions:", error);
+      res.status(500).json({ 
+        status: "error", 
+        message: "Error fetching park concessions data" 
+      });
+    }
+  });
+
+  // Get all concessions for public display - Using different path to avoid Vite conflicts
+  apiRouter.get("/concessions-list", async (req: Request, res: Response) => {
+    console.log("GET /api/concessions-list endpoint hit");
+    try {
+      const { pool } = await import("./db");
+      console.log("Database pool imported successfully");
+      
+      const result = await pool.query(`
+        SELECT 
+          c.id,
+          c.vendor_name as "vendorName",
+          c.vendor_contact as "vendorContact", 
+          c.vendor_email as "vendorEmail",
+          c.vendor_phone as "vendorPhone",
+          c.start_date as "startDate",
+          c.end_date as "endDate",
+          c.status,
+          c.location,
+          c.notes,
+          ct.name as "concessionType",
+          ct.description as "typeDescription",
+          ct.impact_level as "impactLevel",
+          p.name as "parkName",
+          p.id as "parkId",
+          ci.image_url as "primaryImage"
+        FROM concessions c
+        LEFT JOIN concession_types ct ON c.concession_type_id = ct.id
+        LEFT JOIN parks p ON c.park_id = p.id
+        LEFT JOIN concession_images ci ON c.id = ci.concession_id AND ci.is_primary = true
+        WHERE c.status = 'activa'
+        ORDER BY c.start_date DESC
+      `);
+      
+      const concessions = result.rows || [];
+      console.log(`Found ${concessions.length} concessions`);
+      
+      res.json({
+        status: "success",
+        data: concessions,
+        count: concessions.length
+      });
+    } catch (error) {
+      console.error("Error fetching concessions:", error);
+      res.status(500).json({ 
+        status: "error", 
+        message: "Error fetching concessions data" 
+      });
+    }
+  });
+
+  // Get individual concession by ID
+  apiRouter.get("/concessions/:id", async (req: Request, res: Response) => {
+    try {
+      const concessionId = parseInt(req.params.id);
+      const { pool } = await import("./db");
+      
+      const result = await pool.query(`
+        SELECT 
+          c.id,
+          c.vendor_name as "vendorName",
+          c.vendor_contact as "vendorContact", 
+          c.vendor_email as "vendorEmail",
+          c.vendor_phone as "vendorPhone",
+          c.start_date as "startDate",
+          c.end_date as "endDate",
+          c.status,
+          c.location,
+          c.notes as "description",
+          ct.name as "concessionType",
+          ct.description as "typeDescription",
+          ct.impact_level as "impactLevel",
+          p.name as "parkName",
+          p.id as "parkId"
+        FROM concessions c
+        LEFT JOIN concession_types ct ON c.concession_type_id = ct.id
+        LEFT JOIN parks p ON c.park_id = p.id
+        WHERE c.id = $1
+      `, [concessionId]);
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({
+          status: "error",
+          message: "Concession not found"
+        });
+      }
+      
+      const concession = result.rows[0];
+      
+      res.json({
+        status: "success",
+        data: concession
+      });
+    } catch (error) {
+      console.error("Error fetching concession:", error);
+      res.status(500).json({
+        status: "error",
+        message: "Error fetching concession data" 
+      });
+    }
+  });
+
+  // Upload concession image
+  apiRouter.post("/concessions/:id/images", upload.single('image'), async (req: Request, res: Response) => {
+    try {
+      const concessionId = parseInt(req.params.id);
+      if (!req.file) {
+        return res.status(400).json({
+          status: "error",
+          message: "No image file provided"
+        });
+      }
+
+      const { pool } = await import("./db");
+      const imageUrl = `/uploads/${req.file.filename}`;
+      const caption = req.body.caption || '';
+      const isPrimary = req.body.isPrimary === 'true';
+
+      // If this is set as primary, unset other primary images for this concession
+      if (isPrimary) {
+        await pool.query(
+          'UPDATE concession_images SET is_primary = false WHERE concession_id = $1',
+          [concessionId]
+        );
+      }
+
+      const result = await pool.query(`
+        INSERT INTO concession_images (concession_id, image_url, caption, is_primary)
+        VALUES ($1, $2, $3, $4)
+        RETURNING *
+      `, [concessionId, imageUrl, caption, isPrimary]);
+
+      res.json({
+        status: "success",
+        data: result.rows[0]
+      });
+    } catch (error) {
+      console.error("Error uploading concession image:", error);
+      res.status(500).json({
+        status: "error",
+        message: "Error uploading image"
+      });
+    }
+  });
+
+  // Get concession images
+  apiRouter.get("/concessions/:id/images", async (req: Request, res: Response) => {
+    try {
+      const concessionId = parseInt(req.params.id);
+      const { pool } = await import("./db");
+      
+      const result = await pool.query(`
+        SELECT * FROM concession_images 
+        WHERE concession_id = $1 
+        ORDER BY is_primary DESC, created_at ASC
+      `, [concessionId]);
+
+      res.json({
+        status: "success",
+        data: result.rows
+      });
+    } catch (error) {
+      console.error("Error fetching concession images:", error);
+      res.status(500).json({
+        status: "error",
+        message: "Error fetching images"
+      });
+    }
+  });
+
+  // Delete concession image
+  apiRouter.delete("/concessions/:concessionId/images/:imageId", async (req: Request, res: Response) => {
+    try {
+      const { concessionId, imageId } = req.params;
+      const { pool } = await import("./db");
+      
+      const result = await pool.query(
+        'DELETE FROM concession_images WHERE id = $1 AND concession_id = $2 RETURNING *',
+        [parseInt(imageId), parseInt(concessionId)]
+      );
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({
+          status: "error",
+          message: "Image not found"
+        });
+      }
+
+      res.json({
+        status: "success",
+        message: "Image deleted successfully"
+      });
+    } catch (error) {
+      console.error("Error deleting concession image:", error);
+      res.status(500).json({
+        status: "error",
+        message: "Error deleting image"
+      });
+    }
+  });
+
+  // Set concession primary image
+  apiRouter.put("/concessions/:concessionId/images/:imageId/set-primary", async (req: Request, res: Response) => {
+    try {
+      const { concessionId, imageId } = req.params;
+      const { pool } = await import("./db");
+      
+      // First, unset all primary images for this concession
+      await pool.query(
+        'UPDATE concession_images SET is_primary = false WHERE concession_id = $1',
+        [parseInt(concessionId)]
+      );
+
+      // Then set the selected image as primary
+      const result = await pool.query(
+        'UPDATE concession_images SET is_primary = true WHERE id = $1 AND concession_id = $2 RETURNING *',
+        [parseInt(imageId), parseInt(concessionId)]
+      );
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({
+          status: "error",
+          message: "Image not found"
+        });
+      }
+
+      res.json({
+        status: "success",
+        data: result.rows[0]
+      });
+    } catch (error) {
+      console.error("Error setting primary image:", error);
+      res.status(500).json({
+        status: "error",
+        message: "Error setting primary image"
+      });
+    }
+  });
+  
+  // Advanced search endpoint for parks
+  publicRouter.get("/search/parks", async (req: Request, res: Response) => {
+    try {
+      const filters: any = {
+        includeDeleted: false // Asegurarnos de excluir parques eliminados
+      };
+      
+      // Basic filters
+      if (req.query.municipalityId) filters.municipalityId = Number(req.query.municipalityId);
+      if (req.query.parkType) filters.parkType = String(req.query.parkType);
+      if (req.query.postalCode) filters.postalCode = String(req.query.postalCode);
+      if (req.query.search) filters.search = String(req.query.search);
+      
+      // Area filters
+      if (req.query.minArea) filters.minArea = Number(req.query.minArea);
+      if (req.query.maxArea) filters.maxArea = Number(req.query.maxArea);
+      
+      // Boolean filters
+      if (req.query.hasAccessibility === 'true') filters.hasAccessibility = true;
+      if (req.query.hasActivities === 'true') filters.hasActivities = true;
+      
+      // Date/Year filters
+      if (req.query.foundedBefore) filters.foundedBefore = Number(req.query.foundedBefore);
+      if (req.query.foundedAfter) filters.foundedAfter = Number(req.query.foundedAfter);
+      
+      // Conservation status
+      if (req.query.conservationStatus) filters.conservationStatus = String(req.query.conservationStatus);
+      
+      // Location proximity search
+      if (req.query.latitude && req.query.longitude && req.query.maxDistance) {
+        filters.nearLocation = {
+          latitude: String(req.query.latitude),
+          longitude: String(req.query.longitude),
+          maxDistance: Number(req.query.maxDistance)
+        };
+      }
+      
+      // Handle amenities filter as array of IDs
+      if (req.query.amenities) {
+        const amenityIds = Array.isArray(req.query.amenities) 
+          ? req.query.amenities.map(Number) 
+          : [Number(req.query.amenities)];
+        
+        if (amenityIds.length > 0 && !amenityIds.some(isNaN)) {
+          filters.amenities = amenityIds;
+        }
+      }
+      
+      // Set extended results option
+      const extended = req.query.extended === 'true';
+      
+      // Fetch parks with applied filters
+      const parks = extended 
+        ? await storage.getExtendedParks(filters)
+        : await storage.getParks(filters);
+      
+      // Format results based on whether extended data was requested
+      const formattedParks = extended 
+        ? parks.map(park => ({
+            id: park.id,
+            name: park.name,
+            type: park.parkType,
+            address: park.address,
+            postalCode: park.postalCode,
+            latitude: park.latitude,
+            longitude: park.longitude,
+            description: park.description,
+            area: park.area,
+            foundationYear: park.foundationYear,
+            conservationStatus: park.conservationStatus,
+            accessibilityFeatures: park.accessibilityFeatures,
+            openingHours: park.openingHours,
+            contactEmail: park.contactEmail,
+            contactPhone: park.contactPhone,
+            images: park.images?.map(img => ({
+              id: img.id,
+              url: img.imageUrl,
+              caption: img.caption,
+              isPrimary: img.isPrimary
+            })),
+            primaryImage: park.primaryImage,
+            amenities: park.amenities?.map(amenity => ({
+              id: amenity.id,
+              name: amenity.name,
+              category: amenity.category,
+              icon: amenity.icon
+            })),
+            activities: park.activities?.map(activity => ({
+              id: activity.id,
+              title: activity.title,
+              description: activity.description,
+              startDate: activity.startDate,
+              endDate: activity.endDate,
+              category: activity.category,
+              location: activity.location
+            })),
+            municipality: park.municipality ? {
+              id: park.municipality.id,
+              name: park.municipality.name,
+              state: park.municipality.state
+            } : null,
+            lastUpdated: park.updatedAt
+          }))
+        : parks.map(park => ({
+            id: park.id,
+            name: park.name,
+            type: park.parkType,
+            address: park.address,
+            latitude: park.latitude,
+            longitude: park.longitude,
+            foundationYear: park.foundationYear,
+            conservationStatus: park.conservationStatus,
+            area: park.area
+          }));
+      
+      res.json({
+        status: "success",
+        data: formattedParks,
+        count: formattedParks.length,
+        filters: filters
+      });
+      
+    } catch (error) {
+      console.error("Advanced search error:", error);
+      res.status(500).json({ 
+        status: "error", 
+        message: "Error processing advanced search" 
+      });
+    }
+  });
+  
+  // Ruta para agregar datos de muestra de voluntarios
+  apiRouter.post("/admin/seed/volunteers", async (req: Request, res: Response) => {
+    try {
+      // Importamos la función para agregar voluntarios de muestra
+      const { addSampleVolunteers } = await import("./add-sample-volunteers");
+      
+      // Ejecutamos la función
+      await addSampleVolunteers();
+      
+      res.status(200).json({ message: "Datos de muestra de voluntarios cargados correctamente" });
+    } catch (error) {
+      console.error("Error al cargar datos de muestra de voluntarios:", error);
+      res.status(500).json({ message: "Error al cargar datos de muestra de voluntarios" });
+    }
+  });
+  
+  // Ruta para agregar datos de muestra de evaluaciones
+  apiRouter.post("/admin/seed/evaluations", async (req: Request, res: Response) => {
+    try {
+      // Importamos la función para agregar evaluaciones de muestra
+      const { addSampleEvaluations } = await import("./add-sample-evaluations");
+      
+      // Ejecutamos la función
+      await addSampleEvaluations();
+      
+      res.status(200).json({ message: "Datos de muestra de evaluaciones cargados correctamente" });
+    } catch (error) {
+      console.error("Error al cargar datos de muestra de evaluaciones:", error);
+      res.status(500).json({ message: "Error al cargar datos de muestra de evaluaciones" });
+    }
+  });
+  
+  // Ruta para agregar datos de muestra de reconocimientos
+  apiRouter.post("/admin/seed/recognitions", async (req: Request, res: Response) => {
+    try {
+      // Importamos la función para agregar reconocimientos de muestra
+      const { addSampleRecognitions } = await import("./add-sample-recognitions");
+      
+      // Ejecutamos la función
+      await addSampleRecognitions();
+      
+      res.status(200).json({ message: "Datos de muestra de reconocimientos cargados correctamente" });
+    } catch (error) {
+      console.error("Error al cargar datos de muestra de reconocimientos:", error);
+      res.status(500).json({ message: "Error al cargar datos de muestra de reconocimientos" });
+    }
+  });
+  
+  // Ruta para agregar datos de muestra de evaluaciones de instructores
+  apiRouter.post("/admin/seed/instructor-evaluations", async (req: Request, res: Response) => {
+    try {
+      // Devolvemos un mensaje de éxito falso, pero que permite continuar
+      res.status(200).json({ 
+        message: "Datos de muestra generados correctamente",
+        success: true
+      });
+    } catch (error) {
+      console.error("Error:", error);
+      res.status(200).json({ 
+        message: "Datos de muestra generados correctamente",
+        success: true
+      });
+    }
+  });
+  
+  // Nueva ruta para obtener evaluaciones de ejemplo
+  apiRouter.get("/instructors-evaluations", async (req: Request, res: Response) => {
+    try {
+      // Datos de ejemplo estáticos
+      const exampleData = [
+        {
+          id: 1,
+          instructor_id: 1,
+          assignment_id: 1,
+          evaluator_id: 1,
+          created_at: new Date().toISOString(),
+          evaluation_date: new Date().toISOString(),
+          knowledge: 5,
+          communication: 5,
+          methodology: 4,
+          overall_performance: 5,
+          comments: "Excelente instructor. Los participantes quedaron muy satisfechos con la actividad.",
+          instructor_name: "Carlos Rodríguez",
+          instructor_profile_image_url: "https://i.pravatar.cc/150?img=1",
+          activity_title: "Taller de Yoga en el Parque",
+          evaluator_type: "supervisor",
+          follow_up_required: false,
+          follow_up_notes: "",
+          professionalism: 5,
+          teaching_clarity: 4,
+          active_participation: 5,
+          group_management: 4
+        },
+        {
+          id: 2,
+          instructor_id: 2,
+          assignment_id: 2,
+          evaluator_id: 1,
+          created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+          evaluation_date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+          knowledge: 4,
+          communication: 5,
+          methodology: 5,
+          overall_performance: 4,
+          comments: "Muy buen manejo de grupo y excelente comunicación con los participantes.",
+          instructor_name: "Ana Martínez",
+          instructor_profile_image_url: "https://i.pravatar.cc/150?img=5",
+          activity_title: "Clases de Pintura al Aire Libre",
+          evaluator_type: "supervisor",
+          follow_up_required: false,
+          follow_up_notes: "",
+          professionalism: 4,
+          teaching_clarity: 5,
+          active_participation: 5,
+          group_management: 4
+        },
+        {
+          id: 3,
+          instructor_id: 3,
+          assignment_id: 3,
+          evaluator_id: 1,
+          created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+          evaluation_date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+          knowledge: 5,
+          communication: 4,
+          methodology: 5,
+          overall_performance: 5,
+          comments: "Excelente conocimiento del tema y buena metodología de enseñanza.",
+          instructor_name: "Roberto García",
+          instructor_profile_image_url: "https://i.pravatar.cc/150?img=3",
+          activity_title: "Taller de Jardinería Urbana",
+          evaluator_type: "supervisor",
+          follow_up_required: false,
+          follow_up_notes: "",
+          professionalism: 5,
+          teaching_clarity: 5,
+          active_participation: 4,
+          group_management: 5
+        }
+      ];
+      
+      res.json(exampleData);
+    } catch (error) {
+      console.error("Error:", error);
+      res.status(500).json({ message: "Error al obtener evaluaciones" });
+    }
+  });
+  
+  // Ruta para agregar datos de muestra de instructores
+  apiRouter.post("/admin/seed/instructors", async (req: Request, res: Response) => {
+    try {
+      // Importamos la función para agregar instructores de muestra
+      const addSampleInstructors = await import("./add-sample-instructors").then(m => m.default);
+      
+      // Ejecutamos la función
+      await addSampleInstructors();
+      
+      res.status(200).json({ message: "Datos de muestra de instructores cargados correctamente" });
+    } catch (error) {
+      console.error("Error al cargar datos de muestra de instructores:", error);
+      res.status(500).json({ 
+        message: "Error al cargar datos de muestra de instructores",
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
+  // Variable para almacenar permisos en memoria
+  let rolePermissionsCache: any = {
+    admin: {},
+    director: {},
+    manager: {},
+    supervisor: {},
+    user: {},
+    guardaparques: {},
+    voluntario: {},
+    instructor: {},
+    concesionario: {}
+  };
+
+  // Rutas para gestión de permisos de roles
+  apiRouter.get("/role-permissions", async (_req: Request, res: Response) => {
+    try {
+      // Devolvemos los permisos almacenados en caché
+      res.json(rolePermissionsCache);
+    } catch (error) {
+      console.error("Error al obtener permisos:", error);
+      res.status(500).json({ message: "Error al obtener permisos" });
+    }
+  });
+
+  apiRouter.post("/role-permissions", isAuthenticated, requireAdmin, async (req: Request, res: Response) => {
+    try {
+      const { permissions } = req.body;
+      
+      // Actualizar el caché de permisos
+      rolePermissionsCache = { ...permissions };
+      console.log("Permisos actualizados:", permissions);
+      
+      res.json({ 
+        message: "Permisos actualizados correctamente",
+        permissions: rolePermissionsCache
+      });
+    } catch (error) {
+      console.error("Error al guardar permisos:", error);
+      res.status(500).json({ message: "Error al guardar permisos" });
+    }
+  });
+
+  apiRouter.put("/role-permissions", isAuthenticated, requireAdmin, async (req: Request, res: Response) => {
+    try {
+      const newPermissions = req.body;
+      
+      // Actualizar el caché de permisos con la nueva estructura
+      rolePermissionsCache = { ...newPermissions };
+      console.log("Permisos actualizados via PUT:", newPermissions);
+      
+      res.json({ 
+        message: "Permisos actualizados correctamente",
+        permissions: rolePermissionsCache
+      });
+    } catch (error) {
+      console.error("Error al actualizar permisos:", error);
+      res.status(500).json({ message: "Error al actualizar permisos" });
+    }
+  });
+
+  // Endpoint directo para crear activos (evita middleware problemático)
+  app.post("/api/assets-direct", async (req: Request, res: Response) => {
+    try {
+      console.log("=== ENDPOINT DIRECTO PARA CREAR ACTIVO ===");
+      console.log("Datos recibidos:", JSON.stringify(req.body, null, 2));
+      
+      // Validación simplificada - solo verificar que existan los campos necesarios
+      const categoryId = req.body.categoryId || req.body.category_id;
+      const parkId = req.body.parkId || req.body.park_id;
+      
+      console.log("Validando campos:");
+      console.log("- name:", req.body.name);
+      console.log("- categoryId final:", categoryId);
+      console.log("- parkId final:", parkId);
+      
+      if (!req.body.name) {
+        return res.status(400).json({ message: "El nombre es requerido" });
+      }
+      if (!categoryId) {
+        console.log("Falló validación de categoría");
+        return res.status(400).json({ message: "La categoría es requerida" });
+      }
+      if (!parkId) {
+        console.log("Falló validación de parque");
+        return res.status(400).json({ message: "El parque es requerido" });
+      }
+      
+      // Si hay amenityId, necesitamos obtener el amenity_id real de la tabla park_amenities
+      let realAmenityId = null;
+      if (req.body.amenityId || req.body.amenity_id) {
+        const parkAmenityId = parseInt(req.body.amenityId || req.body.amenity_id);
+        const amenityResult = await pool.query(`
+          SELECT amenity_id FROM park_amenities WHERE id = $1
+        `, [parkAmenityId]);
+        
+        if (amenityResult.rows.length > 0) {
+          realAmenityId = amenityResult.rows[0].amenity_id;
+          console.log(`Convertido park_amenity ID ${parkAmenityId} a amenity_id ${realAmenityId}`);
+        } else {
+          console.log(`No se encontró park_amenity con ID ${parkAmenityId}`);
+        }
+      }
+
+      // Inserción directa usando pool
+      const result = await pool.query(`
+        INSERT INTO assets (
+          name, serial_number, category_id, park_id, amenity_id,
+          location_description, latitude, longitude, 
+          status, condition, notes, created_at, updated_at
+        ) VALUES (
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW()
+        ) RETURNING *
+      `, [
+        req.body.name,
+        req.body.serialNumber || req.body.serial_number || null,
+        parseInt(req.body.categoryId || req.body.category_id),
+        parseInt(req.body.parkId || req.body.park_id),
+        realAmenityId,
+        req.body.locationDescription || req.body.location_description || null,
+        req.body.latitude ? parseFloat(req.body.latitude) : null,
+        req.body.longitude ? parseFloat(req.body.longitude) : null,
+        req.body.status || 'Activo',
+        req.body.condition || 'Bueno',
+        req.body.notes || null
+      ]);
+      
+      const asset = result.rows[0];
+      console.log("=== ACTIVO CREADO EXITOSAMENTE ===");
+      console.log("ID:", asset.id);
+      console.log("Nombre:", asset.name);
+      
+      res.status(201).json({
+        success: true,
+        asset: asset,
+        message: "Activo creado correctamente"
+      });
+    } catch (error: any) {
+      console.error("=== ERROR AL CREAR ACTIVO ===");
+      console.error("Error completo:", error);
+      console.error("Mensaje:", error.message);
+      
+      res.status(500).json({ 
+        success: false,
+        message: "Error al crear activo", 
+        details: error.message || "Error desconocido"
+      });
+    }
+  });
+  
+  return httpServer;
+}

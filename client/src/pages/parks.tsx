@@ -1,0 +1,364 @@
+import React, { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { ExtendedPark } from '@shared/schema';
+import SimpleFilterSidebar from '@/components/SimpleFilterSidebar';
+import ParksMap from '@/components/ParksMap';
+import ParksList from '@/components/ParksList';
+import ParkDetail from '@/components/ParkDetail';
+import ExtendedParksList from '@/components/ExtendedParksList';
+import { Button } from '@/components/ui/button';
+import { ChevronLeft, ChevronRight, MapPin, Trees, Users, Search } from 'lucide-react';
+import heroImage from '@assets/group-of-tourists-walking-through-natural-reserve-2024-05-27-02-02-13-utc_1752940583323.jpg';
+import logoImage from '@assets/logo_1751306368691.png';
+import AdSpace from '@/components/AdSpace';
+const Parks: React.FC = () => {
+  const [filters, setFilters] = useState<{
+    search?: string;
+    parkType?: string;
+    postalCode?: string;
+    amenityIds?: number[];
+  }>({});
+  
+  const [selectedParkId, setSelectedParkId] = useState<number | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  
+  // Sin paginación - mostrar todos los parques
+  
+  // Reset scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+  
+  // Build query string from filters
+  const buildQueryString = () => {
+    const params = new URLSearchParams();
+    
+    if (filters.search) params.append('search', filters.search);
+    if (filters.parkType) params.append('parkType', filters.parkType);
+    if (filters.postalCode) params.append('postalCode', filters.postalCode);
+    if (filters.municipality) params.append('municipality', filters.municipality);
+    if (filters.amenityIds && filters.amenityIds.length > 0) {
+      params.append('amenities', filters.amenityIds.join(','));
+    }
+    
+    return params.toString() ? `?${params.toString()}` : '';
+  };
+  
+  // Fetch parks with filters
+  const { data: parksResponse, isLoading } = useQuery<ExtendedPark[]>({
+    queryKey: [`/api/parks${buildQueryString()}`],
+  });
+  
+  const allParks = parksResponse || [];
+  
+  // Filtrar parques sin nombre o marcados como eliminados
+  const filteredParks = allParks.filter(park => 
+    park.name.trim() !== '' && !park.isDeleted
+  );
+
+  // Mostrar todos los parques sin paginación
+  const totalParks = filteredParks.length;
+  const parks = filteredParks; // Mostrar todos los parques
+
+  // Function to scroll to results section
+  const scrollToResults = () => {
+    const resultsSection = document.getElementById('resultados-busqueda');
+    if (resultsSection) {
+      resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  // Sin función de cambio de página ya que no hay paginación
+  
+  // Fetch detailed park data when selected
+  const { data: selectedPark, isLoading: isLoadingPark } = useQuery<ExtendedPark>({
+    queryKey: [selectedParkId ? `/api/parks/${selectedParkId}` : ''],
+    enabled: !!selectedParkId,
+  });
+  
+  const handleApplyFilters = (newFilters: {
+    search?: string;
+    parkType?: string;
+    postalCode?: string;
+    municipality?: string;
+    amenityIds?: number[];
+  }) => {
+    setFilters(newFilters);
+  };
+  
+  const handleSelectPark = (parkId: number) => {
+    setSelectedParkId(parkId);
+    setModalOpen(true);
+  };
+  
+  const [mapExpanded, setMapExpanded] = useState(false);
+
+  const toggleMapExpansion = () => {
+    setMapExpanded(!mapExpanded);
+  };
+
+  // Calcular estadísticas para el hero
+  const uniqueTypes = new Set(filteredParks.map(park => park.parkType)).size;
+  const totalAmenities = filteredParks.reduce((acc, park) => acc + (park.amenities?.length || 0), 0);
+  const averageAmenities = filteredParks.length > 0 ? Math.round(totalAmenities / filteredParks.length) : 0;
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-4 text-gray-600">Cargando parques...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <main className="flex-grow bg-gray-50">
+      {/* Hero Section con imagen de fondo */}
+      <div 
+        className="relative text-white"
+        style={{
+          backgroundImage: `url(${heroImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      >
+        <div className="absolute inset-0 bg-black/40"></div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+          <div className="text-center">
+            <h1 className="text-4xl md:text-6xl font-bold mb-6">
+              Explora Nuestros <span className="text-yellow-300">Parques</span>
+            </h1>
+            <p className="text-xl md:text-2xl text-green-100 max-w-3xl mx-auto">
+              Descubre espacios verdes únicos en la Zona Metropolitana de Guadalajara para toda la familia
+            </p>
+            <div className="mt-8 flex justify-center items-center space-x-8 text-green-100">
+              <div className="text-center">
+                <div className="text-3xl font-bold">{totalParks}</div>
+                <div className="text-sm">Parques Disponibles</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold">{uniqueTypes}</div>
+                <div className="text-sm">Tipos Diferentes</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold">{averageAmenities}</div>
+                <div className="text-sm">Amenidades Promedio</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Espacio Publicitario - Header */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-3">
+        <AdSpace spaceId="1" position="header" pageType="parks" />
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Filtros modernos - TEMPORALMENTE DESACTIVADO */}
+        {/* 
+        <div className="mb-8">
+          <div className="bg-white rounded-2xl shadow-sm border p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Search className="h-5 w-5 text-primary" />
+              <h3 className="text-lg font-semibold text-gray-900">Encuentra tu Parque Ideal</h3>
+            </div>
+            <SimpleFilterSidebar onApplyFilters={handleApplyFilters} />
+          </div>
+        </div>
+        */}
+
+        {/* Banner publicitario */}
+        <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] my-8">
+          <AdSpace 
+            spaceId="31" 
+            position="banner" 
+            pageType="parks" 
+            className="w-full"
+          />
+        </div>
+
+        {/* Resultados con Sidebar */}
+        <div className="mb-8" id="resultados-busqueda">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            {/* Contenido Principal */}
+            <div className="lg:col-span-3">
+              <div className="bg-white rounded-2xl shadow-sm border p-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900">
+                      Bosques Urbanos de Guadalajara
+                    </h2>
+                  </div>
+
+                </div>
+                
+                <ExtendedParksList 
+                  parks={parks}
+                  isLoading={isLoading}
+                  onParkSelect={(park: ExtendedPark) => {
+                    setSelectedParkId(park.id);
+                    setModalOpen(true);
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Sidebar Publicitario */}
+            <div className="lg:col-span-1">
+              <div className="sticky top-4 space-y-6">
+                {/* Espacio publicitario principal */}
+                <AdSpace spaceId="2" position="card" pageType="parks" />
+                
+                {/* Espacios publicitarios administrables - Diseño Tipo Tarjeta */}
+                <AdSpace spaceId={39} position="card" pageType="parks" />
+                <AdSpace spaceId={40} position="card" pageType="parks" />
+                <AdSpace spaceId={41} position="card" pageType="parks" />
+                <AdSpace spaceId={42} position="card" pageType="parks" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Sin paginación - todos los parques se muestran */}
+
+        {/* Espacio Publicitario - Footer */}
+        <div className="mt-8 mb-6">
+          <AdSpace spaceId="3" position="footer" pageType="parks" />
+        </div>
+      </div>
+
+      {/* Modal de detalle del parque */}
+      {selectedPark && (
+        <ParkDetail 
+          park={selectedPark}
+          isOpen={modalOpen}
+          onClose={() => setModalOpen(false)}
+        />
+      )}
+      </main>
+
+      {/* Footer institucional */}
+      <footer className="bg-gradient-to-b from-[#067f5f] to-[#00a587] text-white">
+        {/* Logo y descripción principal */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="text-center mb-12">
+            <img 
+              src={logoImage} 
+              alt="Agencia Metropolitana de Bosques Urbanos" 
+              className="h-16 w-auto mx-auto mb-6 filter brightness-0 invert"
+            />
+            <h2 className="text-2xl font-bold mb-4">Agencia Metropolitana de Bosques Urbanos</h2>
+            <p className="text-lg text-emerald-100 max-w-3xl mx-auto">
+              Fortalecemos el tejido social a través de espacios verdes que conectan comunidades, 
+              promueven la sostenibilidad y mejoran la calidad de vida en nuestra área metropolitana.
+            </p>
+          </div>
+
+          {/* Enlaces organizados en columnas */}
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-8 mb-8">
+            <div>
+              <h4 className="font-semibold text-[#bcd256] mb-4">Parques</h4>
+              <ul className="space-y-2 text-sm text-emerald-100">
+                <li><a href="/parks" className="hover:text-white transition-colors">Directorio</a></li>
+                <li><a href="/activities" className="hover:text-white transition-colors">Actividades</a></li>
+                <li><a href="/tree-species" className="hover:text-white transition-colors">Arbolado</a></li>
+                <li><a href="/concessions" className="hover:text-white transition-colors">Concesiones</a></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold text-[#bcd256] mb-4">Comunidad</h4>
+              <ul className="space-y-2 text-sm text-emerald-100">
+                <li><a href="/volunteers" className="hover:text-white transition-colors">Voluntarios</a></li>
+                <li><a href="/instructors" className="hover:text-white transition-colors">Instructores</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Eventos</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Noticias</a></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold text-[#bcd256] mb-4">Servicios</h4>
+              <ul className="space-y-2 text-sm text-emerald-100">
+                <li><a href="#" className="hover:text-white transition-colors">Mantenimiento</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Consultoría</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Capacitación</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Evaluación</a></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold text-[#bcd256] mb-4">Recursos</h4>
+              <ul className="space-y-2 text-sm text-emerald-100">
+                <li><a href="#" className="hover:text-white transition-colors">Guías</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Manuales</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Biblioteca</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Investigación</a></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold text-[#bcd256] mb-4">Transparencia</h4>
+              <ul className="space-y-2 text-sm text-emerald-100">
+                <li><a href="#" className="hover:text-white transition-colors">Informes</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Presupuesto</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Licitaciones</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Auditoría</a></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold text-[#bcd256] mb-4">Legal</h4>
+              <ul className="space-y-2 text-sm text-emerald-100">
+                <li><a href="#" className="hover:text-white transition-colors">Términos</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Privacidad</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Cookies</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Accesibilidad</a></li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Información de contacto */}
+          <div className="border-t border-emerald-500/30 pt-8 text-center">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              <div>
+                <h4 className="font-semibold text-[#bcd256] mb-2">Dirección</h4>
+                <p className="text-emerald-100 text-sm">
+                  Av. Alcalde 1351, Miraflores<br/>
+                  44270 Guadalajara, Jalisco
+                </p>
+              </div>
+              <div>
+                <h4 className="font-semibold text-[#bcd256] mb-2">Contacto</h4>
+                <p className="text-emerald-100 text-sm">
+                  Tel: (33) 3837-4400<br/>
+                  bosques@guadalajara.gob.mx
+                </p>
+              </div>
+              <div>
+                <h4 className="font-semibold text-[#bcd256] mb-2">Horarios</h4>
+                <p className="text-emerald-100 text-sm">
+                  Lunes a Viernes: 8:00 - 15:00<br/>
+                  Fines de semana: Espacios abiertos
+                </p>
+              </div>
+            </div>
+            
+            <div className="text-sm text-emerald-200">
+              © {new Date().getFullYear()} Agencia Metropolitana de Bosques Urbanos de Guadalajara. 
+              Todos los derechos reservados.
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+export default Parks;

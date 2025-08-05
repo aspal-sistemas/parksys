@@ -1,0 +1,61 @@
+{
+  "title": "Gestão de Parques",
+  "subtitle": "Sistema abrangente de administração de parques municipais",
+  "fields": {
+    "name": "Nome do Parque",
+    "description": "Descrição",
+    "type": "Tipo de Parque",
+    "municipality": "Município",
+    "area": "Área (m²)",
+    "coordinates": "Coordenadas",
+    "latitude": "Latitude",
+    "longitude": "Longitude",
+    "address": "Endereço",
+    "manager": "Administrador",
+    "contactPhone": "Telefone de Contato",
+    "email": "E-mail",
+    "openingHours": "Horário de Abertura",
+    "closingHours": "Horário de Fechamento",
+    "capacity": "Capacidade",
+    "accessibilityFeatures": "Recursos de Acessibilidade",
+    "safetyFeatures": "Recursos de Segurança",
+    "maintenanceNotes": "Notas de Manutenção"
+  },
+  "types": {
+    "urbano": "Urbano",
+    "natural": "Natural",
+    "lineal": "Linear",
+    "metropolitano": "Metropolitano",
+    "vecinal": "Bairro",
+    "de_bolsillo": "De Bolso",
+    "tematico": "Temático"
+  },
+  "status": {
+    "active": "Ativo",
+    "inactive": "Inativo",
+    "maintenance": "Em Manutenção",
+    "closed": "Fechado"
+  },
+  "amenities": {
+    "title": "Comodidades",
+    "playground": "Playground",
+    "picnic_area": "Área de Piquenique",
+    "restrooms": "Banheiros",
+    "parking": "Estacionamento",
+    "trails": "Trilhas",
+    "sports_area": "Área Esportiva",
+    "fountain": "Fonte",
+    "lighting": "Iluminação",
+    "benches": "Bancos",
+    "pet_area": "Área para Animais"
+  },
+  "actions": {
+    "addPark": "Adicionar Novo Parque",
+    "editPark": "Editar Parque",
+    "deletePark": "Excluir Parque",
+    "viewDetails": "Ver Detalhes",
+    "addAmenity": "Adicionar Comodidade",
+    "uploadImage": "Enviar Imagem",
+    "setMainImage": "Definir Imagem Principal"
+  }
+}

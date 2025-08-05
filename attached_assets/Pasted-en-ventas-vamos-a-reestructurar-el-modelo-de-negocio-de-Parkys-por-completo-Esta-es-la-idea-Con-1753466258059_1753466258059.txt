@@ -1,0 +1,45 @@
+en: /ventas, vamos a reestructurar el modelo de negocio de Parkys por completo. Esta es la idea. Conteremos con 3 producos principales. 
+1. ParkSys Municipal
+Target: Gobiernos municipales con múltiples parques
+Gestión centralizada de inventario completo de parques urbanos
+Portal ciudadano para consulta pública
+Escalabilidad para cientos de parques
+
+2. ParkSys Network
+Target: Sistemas de parques grandes (15-20 parques)
+Gestión especializada para redes de parques emblemáticos
+Capacidades avanzadas de coordinación entre ubicaciones
+Ideal para organismos públicos descentralizados o fideicomisos
+
+3. ParkSys Pro
+Target: Parques individuales de gran escala
+Solución completa para un solo parque emblemático
+Máxima profundidad funcional
+Perfecto para parques metropolitanos, temáticos o especializados.  
+Los tres productos deben contar con 3 versiones de venta:
+1.	Escencial – Gratuito por 30 dias
+2.	Profesional – Incluye los módulos de: Configuración, Gestión y Marketing y Comunicación.
+3.	Enterprise: Incluye todo el Profesional, más: Operación y Mantenimiento, Administración y Finanzas y Recursos Humanos
+
+Las Estrategia de Precios por Producto serán:
+ParkSys Municipal
+•	Esencial: Gratuito
+•	Profesional: $18,000 - $25,000 mensual – 20% de descuento en anual
+•	Enterprise: $35,000 - $50,000 mensual – 20% de descuento en anual
+ParkSys Network
+•	Esencial: Gratuito
+•	Profesional: $18,000 - $25,000 mensual – 20% de descuento en anual 
+•	Enterprise: $35,000 - $50,000 mensual – 20% de descuento en anual 
+ParkSys Pro
+•	Esencial: Gratuito
+•	Profesional: $18,000 - $25,000 mensual – 20% de descuento en anual 
+•	Enterprise: $35,000 - $50,000 mensual – 20% de descuento en annual
+Es importante en la reestructuración de la oferta el poder mostrar una matriz completa con todo lo que inlcuye cada módulo. Revisa el sidebar de nuestro sistema para que puedas trabajar con esa información.
+Propuesta de Valor Diferenciada
+Para ParkSys Municipal:
+"La plataforma integral que transforma la gestión de parques municipales, conectando gobierno y ciudadanos en un ecosistema digital intuitivo."
+Para ParkSys Network:
+"Coordina y optimiza tu red de parques con inteligencia centralizada y operaciones distribuidas."
+Para ParkSys Pro:
+"La solución definitiva para parques emblemáticos que buscan excelencia operacional y experiencia ciudadana superior."
+

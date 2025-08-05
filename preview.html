@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vista previa - Gestión de Arbolado</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #2d7b43;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+        h2 {
+            color: #4b7b2d;
+            margin-top: 25px;
+        }
+        .preview-section {
+            margin-bottom: 40px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            background-color: #f9fafb;
+        }
+        .interface-description {
+            margin-bottom: 20px;
+        }
+        .feature-list {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .feature-list li {
+            margin-bottom: 8px;
+            padding-left: 25px;
+            position: relative;
+        }
+        .feature-list li:before {
+            content: "✓";
+            color: #4caf50;
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+        .screenshot-placeholder {
+            background-color: #e5e7eb;
+            border-radius: 6px;
+            padding: 30px;
+            text-align: center;
+            margin: 20px 0;
+            border: 1px dashed #cbd5e0;
+        }
+        .code-example {
+            background-color: #f1f5f9;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: monospace;
+            overflow-x: auto;
+            margin: 15px 0;
+            border-left: 4px solid #4b7b2d;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 5px;
+        }
+        .badge-green {
+            background-color: #e6f7e6;
+            color: #2d7b43;
+        }
+        .badge-yellow {
+            background-color: #fef9e6;
+            color: #927238;
+        }
+        .badge-red {
+            background-color: #fdeded;
+            color: #b42c2c;
+        }
+        .badge-blue {
+            background-color: #e6f1fe;
+            color: #2563eb;
+        }
+        .tab-ui {
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        .tab-header {
+            display: flex;
+            background-color: #f9fafb;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .tab-item {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-right: 1px solid #e5e7eb;
+            font-weight: 600;
+        }
+        .tab-item.active {
+            background-color: #fff;
+            border-bottom: 2px solid #4b7b2d;
+        }
+        .tab-content {
+            padding: 20px;
+            background-color: #fff;
+        }
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .card {
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 15px;
+            background-color: #fff;
+        }
+        .card-header {
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        .table-example {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .table-example th, 
+        .table-example td {
+            border: 1px solid #e5e7eb;
+            padding: 10px;
+            text-align: left;
+        }
+        .table-example th {
+            background-color: #f9fafb;
+            font-weight: 600;
+        }
+        .table-example tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+        .form-example {
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .form-row {
+            margin-bottom: 15px;
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        .form-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+        .button {
+            background-color: #4b7b2d;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .button-outline {
+            background-color: transparent;
+            color: #4b7b2d;
+            border: 1px solid #4b7b2d;
+        }
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .metric-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 15px;
+            background-color: #fff;
+        }
+        .metric-title {
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 5px;
+        }
+        .metric-value {
+            font-size: 20px;
+            font-weight: 600;
+            color: #111827;
+        }
+        .icon-placeholder {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background-color: #e5e7eb;
+            border-radius: 4px;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <h1>Vista Previa de las Interfaces de Gestión de Arbolado</h1>
+    <p>
+        Este documento muestra una representación visual de las interfaces que hemos desarrollado para la gestión técnica y ambiental de árboles en el sistema ParquesMX.
+    </p>
+
+    <div class="preview-section">
+        <h1>Gestión Técnica de Arbolado</h1>
+        <div class="interface-description">
+            <p>La sección de Gestión Técnica permite administrar evaluaciones de riesgo e intervenciones para cada árbol en el inventario del sistema.</p>
+            <ul class="feature-list">
+                <li>Visualización de listado de árboles con filtros avanzados</li>
+                <li>Consulta detallada de cada árbol con su estado actual</li>
+                <li>Registro y seguimiento de evaluaciones de riesgo</li>
+                <li>Planificación y documentación de intervenciones técnicas</li>
+                <li>Sistema de alertas visuales por nivel de riesgo</li>
+            </ul>
+        </div>
+
+        <h2>Vista de Listado de Árboles</h2>
+        <div class="table-example">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Especie</th>
+                        <th>Parque</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>
+                            <div style="display: flex; align-items: center;">
+                                <div class="icon-placeholder"></div>
+                                <div>
+                                    <div>Ahuehuete</div>
+                                    <div style="font-size: 12px; color: #6b7280; font-style: italic;">Taxodium mucronatum</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>Parque Chapultepec</td>
+                        <td><span class="badge badge-green">Bueno</span></td>
+                        <td><button class="button button-outline">Ver detalles</button></td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>
+                            <div style="display: flex; align-items: center;">
+                                <div class="icon-placeholder"></div>
+                                <div>
+                                    <div>Jacaranda</div>
+                                    <div style="font-size: 12px; color: #6b7280; font-style: italic;">Jacaranda mimosifolia</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>Parque Chapultepec</td>
+                        <td><span class="badge badge-yellow">Regular</span></td>
+                        <td><button class="button button-outline">Ver detalles</button></td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>
+                            <div style="display: flex; align-items: center;">
+                                <div class="icon-placeholder"></div>
+                                <div>
+                                    <div>Colorín</div>
+                                    <div style="font-size: 12px; color: #6b7280; font-style: italic;">Erythrina americana</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>Parque México</td>
+                        <td><span class="badge badge-red">Crítico</span></td>
+                        <td><button class="button button-outline">Ver detalles</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h2>Detalle de Árbol - Vista de Evaluaciones de Riesgo</h2>
+        <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div>
+                    <h2 style="margin: 0;">Árbol #1</h2>
+                    <p style="margin: 0; color: #6b7280;">Ahuehuete (Taxodium mucronatum)</p>
+                </div>
+                <button class="button button-outline">Volver a la lista</button>
+            </div>
+
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-header">Parque</div>
+                    <div>Parque Chapultepec</div>
+                </div>
+                <div class="card">
+                    <div class="card-header">Estado de Salud</div>
+                    <div><span class="badge badge-green">Bueno</span></div>
+                </div>
+                <div class="card">
+                    <div class="card-header">Condición</div>
+                    <div><span class="badge badge-blue">Saludable</span></div>
+                </div>
+            </div>
+
+            <div class="tab-ui">
+                <div class="tab-header">
+                    <div class="tab-item active">Evaluaciones de Riesgo</div>
+                    <div class="tab-item">Intervenciones</div>
+                </div>
+                <div class="tab-content">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                        <h3 style="margin: 0;">Historial de Evaluaciones de Riesgo</h3>
+                        <button class="button">Nueva Evaluación</button>
+                    </div>
+
+                    <div class="card" style="margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <div style="display: flex; align-items: center;">
+                                <span class="badge badge-green">Bajo</span>
+                                <span style="margin-left: 10px; font-weight: 600;">TRAQ</span>
+                            </div>
+                            <div style="font-size: 14px; color: #6b7280;">15 mayo, 2023</div>
+                        </div>
+                        <div style="font-size: 14px; color: #6b7280; margin-bottom: 10px;">Evaluado por: Juan Pérez</div>
+                        <p style="margin: 0; font-size: 14px;">Árbol en buenas condiciones, no presenta riesgos significativos.</p>
+                    </div>
+
+                    <div class="card">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <div style="display: flex; align-items: center;">
+                                <span class="badge badge-yellow">Moderado</span>
+                                <span style="margin-left: 10px; font-weight: 600;">QTRA</span>
+                            </div>
+                            <div style="font-size: 14px; color: #6b7280;">20 agosto, 2023</div>
+                        </div>
+                        <div style="font-size: 14px; color: #6b7280; margin-bottom: 10px;">Evaluado por: María López</div>
+                        <p style="margin: 0; font-size: 14px;">Se observa una rama con signos de deterioro que podría requerir poda preventiva.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h2>Formulario de Nueva Evaluación de Riesgo</h2>
+        <div class="form-example">
+            <h3>Nueva Evaluación de Riesgo</h3>
+            <p style="color: #6b7280;">Registra una nueva evaluación de riesgo para el árbol #1</p>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-row">
+                    <label class="form-label">Fecha de Evaluación</label>
+                    <input type="date" class="form-input">
+                </div>
+                <div class="form-row">
+                    <label class="form-label">Metodología</label>
+                    <select class="form-input">
+                        <option>Seleccionar</option>
+                        <option>TRAQ</option>
+                        <option>QTRA</option>
+                        <option>Evaluación Simple</option>
+                        <option>Otro</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-row">
+                    <label class="form-label">Evaluado por</label>
+                    <input type="text" class="form-input" placeholder="Nombre del evaluador">
+                </div>
+                <div class="form-row">
+                    <label class="form-label">Nivel de Riesgo</label>
+                    <select class="form-input">
+                        <option>Seleccionar</option>
+                        <option>Bajo</option>
+                        <option>Moderado</option>
+                        <option>Alto</option>
+                        <option>Crítico</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <label class="form-label">Observaciones</label>
+                <textarea class="form-input" rows="4" placeholder="Detalles de la evaluación"></textarea>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+                <button class="button button-outline">Cancelar</button>
+                <button class="button">Guardar</button>
+            </div>
+        </div>
+
+        <h2>Detalle de Árbol - Vista de Intervenciones</h2>
+        <div class="tab-ui">
+            <div class="tab-header">
+                <div class="tab-item">Evaluaciones de Riesgo</div>
+                <div class="tab-item active">Intervenciones</div>
+            </div>
+            <div class="tab-content">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                    <h3 style="margin: 0;">Historial de Intervenciones</h3>
+                    <button class="button">Nueva Intervención</button>
+                </div>
+
+                <div class="card" style="margin-bottom: 15px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <div style="display: flex; align-items: center;">
+                            <span class="badge badge-yellow">Media</span>
+                            <span style="margin-left: 10px; font-weight: 600;">Poda</span>
+                        </div>
+                        <span class="badge badge-green">Completada</span>
+                    </div>
+                    <div style="display: flex; gap: 15px; font-size: 14px; color: #6b7280; margin-bottom: 10px;">
+                        <span>Planificada: 10 septiembre, 2023</span>
+                        <span>Completada: 12 septiembre, 2023</span>
+                    </div>
+                    <p style="margin: 0; font-size: 14px;">Poda de ramas con deterioro en el sector norte del árbol.</p>
+                </div>
+
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <div style="display: flex; align-items: center;">
+                            <span class="badge badge-red">Alta</span>
+                            <span style="margin-left: 10px; font-weight: 600;">Tratamiento</span>
+                        </div>
+                        <span class="badge badge-yellow">Pendiente</span>
+                    </div>
+                    <div style="display: flex; gap: 15px; font-size: 14px; color: #6b7280; margin-bottom: 10px;">
+                        <span>Planificada: 15 octubre, 2023</span>
+                    </div>
+                    <p style="margin: 0; font-size: 14px;">Aplicación de tratamiento preventivo contra plagas.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="preview-section">
+        <h1>Gestión Ambiental de Arbolado</h1>
+        <div class="interface-description">
+            <p>La sección de Gestión Ambiental permite evaluar y documentar los servicios ecosistémicos proporcionados por cada árbol, calculando su contribución ambiental y valor económico.</p>
+            <ul class="feature-list">
+                <li>Visualización de métricas ambientales por árbol</li>
+                <li>Cálculo de secuestro de carbono anual y durante la vida útil</li>
+                <li>Medición de remoción de contaminantes (NO2, SO2, PM2.5)</li>
+                <li>Estimación de servicios hidrológicos y de temperatura</li>
+                <li>Valoración económica de los servicios ambientales</li>
+            </ul>
+        </div>
+
+        <h2>Vista de Listado de Árboles (Enfoque Ambiental)</h2>
+        <div class="table-example">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Especie</th>
+                        <th>Parque</th>
+                        <th>Altura</th>
+                        <th>Diámetro</th>
+                        <th>Último Cálculo</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>
+                            <div style="display: flex; align-items: center;">
+                                <div class="icon-placeholder"></div>
+                                <div>
+                                    <div>Ahuehuete</div>
+                                    <div style="font-size: 12px; color: #6b7280; font-style: italic;">Taxodium mucronatum</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>Parque Chapultepec</td>
+                        <td>15.5 m</td>
+                        <td>45.2 cm</td>
+                        <td><span class="badge badge-blue">10/04/2023</span></td>
+                        <td><button class="button button-outline">Ver detalles</button></td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td>
+                            <div style="display: flex; align-items: center;">
+                                <div class="icon-placeholder"></div>
+                                <div>
+                                    <div>Encino</div>
+                                    <div style="font-size: 12px; color: #6b7280; font-style: italic;">Quercus rugosa</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>Parque México</td>
+                        <td>20.1 m</td>
+                        <td>52.6 cm</td>
+                        <td><span class="badge badge-blue">15/05/2022</span></td>
+                        <td><button class="button button-outline">Ver detalles</button></td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>
+                            <div style="display: flex; align-items: center;">
+                                <div class="icon-placeholder"></div>
+                                <div>
+                                    <div>Fresno</div>
+                                    <div style="font-size: 12px; color: #6b7280; font-style: italic;">Fraxinus uhdei</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>Parque Viveros de Coyoacán</td>
+                        <td>12.3 m</td>
+                        <td>35.8 cm</td>
+                        <td><span class="badge badge-outline">No calculado</span></td>
+                        <td><button class="button button-outline">Ver detalles</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h2>Detalle de Árbol - Servicios Ambientales</h2>
+        <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div>
+                    <h2 style="margin: 0;">Árbol #1</h2>
+                    <p style="margin: 0; color: #6b7280;">Ahuehuete (Taxodium mucronatum)</p>
+                </div>
+                <button class="button button-outline">Volver a la lista</button>
+            </div>
+
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-header">Parque</div>
+                    <div>Parque Chapultepec</div>
+                </div>
+                <div class="card">
+                    <div class="card-header">Altura y Diámetro</div>
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <div>
+                            <p style="margin: 0; font-size: 12px; color: #6b7280;">Altura</p>
+                            <p style="margin: 0; font-weight: 600;">15.5 m</p>
+                        </div>
+                        <div style="height: 30px; border-left: 1px solid #e5e7eb;"></div>
+                        <div>
+                            <p style="margin: 0; font-size: 12px; color: #6b7280;">Diámetro</p>
+                            <p style="margin: 0; font-weight: 600;">45.2 cm</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">Condición</div>
+                    <div>Saludable</div>
+                </div>
+            </div>
+
+            <div style="margin-top: 30px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                    <h3 style="margin: 0;">Historial de Cálculos Ambientales</h3>
+                    <button class="button">Nuevo Cálculo</button>
+                </div>
+
+                <div class="card" style="margin-bottom: 30px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <h4 style="margin: 0;">i-Tree</h4>
+                        <span class="badge badge-blue">10 abril, 2023</span>
+                    </div>
+                    <p style="margin: 0 0 15px 0; color: #6b7280; font-size: 14px;">Cálculo basado en condiciones climáticas locales y estado actual del árbol.</p>
+
+                    <div class="metric-grid">
+                        <div class="metric-card">
+                            <h5 style="margin: 0 0 10px 0; display: flex; align-items: center;">
+                                <div class="icon-placeholder"></div>
+                                Captura de CO2
+                            </h5>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <span style="font-size: 14px; color: #6b7280;">Anual:</span>
+                                <span style="font-size: 14px; font-weight: 600;">25.7 kg/año</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="font-size: 14px; color: #6b7280;">Vida útil:</span>
+                                <span style="font-size: 14px; font-weight: 600;">1285 kg</span>
+                            </div>
+                        </div>
+                        
+                        <div class="metric-card">
+                            <h5 style="margin: 0 0 10px 0; display: flex; align-items: center;">
+                                <div class="icon-placeholder"></div>
+                                Filtración de Contaminantes
+                            </h5>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <span style="font-size: 14px; color: #6b7280;">NO2:</span>
+                                <span style="font-size: 14px; font-weight: 600;">0.25 kg/año</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <span style="font-size: 14px; color: #6b7280;">SO2:</span>
+                                <span style="font-size: 14px; font-weight: 600;">0.18 kg/año</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="font-size: 14px; color: #6b7280;">PM2.5:</span>
+                                <span style="font-size: 14px; font-weight: 600;">0.32 kg/año</span>
+                            </div>
+                        </div>
+                        
+                        <div class="metric-card">
+                            <h5 style="margin: 0 0 10px 0; display: flex; align-items: center;">
+                                <div class="icon-placeholder"></div>
+                                Agua y Temperatura
+                            </h5>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <span style="font-size: 14px; color: #6b7280;">Intercepción:</span>
+                                <span style="font-size: 14px; font-weight: 600;">2.8 m³/año</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <span style="font-size: 14px; color: #6b7280;">Sombra:</span>
+                                <span style="font-size: 14px; font-weight: 600;">42.5 m²</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="font-size: 14px; color: #6b7280;">Reducción temp.:</span>
+                                <span style="font-size: 14px; font-weight: 600;">1.2 °C</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 15px; padding: 15px; background-color: #f9fafb; border-radius: 6px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div style="display: flex; align-items: center;">
+                                <div class="icon-placeholder"></div>
+                                <span style="font-weight: 600;">Valor económico anual:</span>
+                            </div>
+                            <span style="font-size: 18px; font-weight: bold; color: #2d7b43;">$156.87</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h2>Formulario de Nuevo Cálculo Ambiental</h2>
+        <div class="form-example">
+            <h3>Nuevo Cálculo de Servicios Ambientales</h3>
+            <p style="color: #6b7280;">Registra un nuevo cálculo de beneficios ambientales para el árbol #1</p>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                <div class="form-row">
+                    <label class="form-label">Fecha de Cálculo</label>
+                    <input type="date" class="form-input">
+                </div>
+                <div class="form-row">
+                    <label class="form-label">Metodología</label>
+                    <select class="form-input">
+                        <option>Seleccionar</option>
+                        <option>i-Tree</option>
+                        <option>CityGreen</option>
+                        <option>Cálculo Manual</option>
+                        <option>Estimación Basada en Especie</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                <div>
+                    <h4>Secuestro de Carbono</h4>
+                    <div class="form-row">
+                        <label class="form-label">Secuestro CO2 Anual (kg/año)</label>
+                        <input type="number" step="0.01" class="form-input">
+                    </div>
+                    <div class="form-row">
+                        <label class="form-label">Secuestro CO2 Vida Útil (kg)</label>
+                        <input type="number" step="0.01" class="form-input">
+                    </div>
+                </div>
+                
+                <div>
+                    <h4>Remoción de Contaminantes</h4>
+                    <div class="form-row">
+                        <label class="form-label">Remoción NO2 (kg/año)</label>
+                        <input type="number" step="0.01" class="form-input">
+                    </div>
+                    <div class="form-row">
+                        <label class="form-label">Remoción SO2 (kg/año)</label>
+                        <input type="number" step="0.01" class="form-input">
+                    </div>
+                    <div class="form-row">
+                        <label class="form-label">Remoción PM2.5 (kg/año)</label>
+                        <input type="number" step="0.01" class="form-input">
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px;">
+                <div>
+                    <h4>Agua y Temperatura</h4>
+                    <div class="form-row">
+                        <label class="form-label">Intercepción Agua Pluvial (m³/año)</label>
+                        <input type="number" step="0.01" class="form-input">
+                    </div>
+                    <div class="form-row">
+                        <label class="form-label">Área de Sombra Verano (m²)</label>
+                        <input type="number" step="0.01" class="form-input">
+                    </div>
+                    <div class="form-row">
+                        <label class="form-label">Reducción de Temperatura (°C)</label>
+                        <input type="number" step="0.01" class="form-input">
+                    </div>
+                </div>
+                
+                <div>
+                    <h4>Valor Económico</h4>
+                    <div class="form-row">
+                        <label class="form-label">Beneficio Económico Anual ($/año)</label>
+                        <input type="number" step="0.01" class="form-input">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row" style="margin-top: 20px;">
+                <label class="form-label">Observaciones</label>
+                <textarea class="form-input" rows="4" placeholder="Detalles del cálculo"></textarea>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+                <button class="button button-outline">Cancelar</button>
+                <button class="button">Guardar</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

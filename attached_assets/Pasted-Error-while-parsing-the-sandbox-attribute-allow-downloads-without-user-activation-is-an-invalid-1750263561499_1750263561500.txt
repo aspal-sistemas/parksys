@@ -1,0 +1,52 @@
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.Understand this error
+framework-53c68947d8a4eec3.js:1 Unrecognized feature: 'ambient-light-sensor'.
+_ @ framework-53c68947d8a4eec3.js:1Understand this warning
+framework-53c68947d8a4eec3.js:1 Unrecognized feature: 'battery'.
+_ @ framework-53c68947d8a4eec3.js:1Understand this warning
+framework-53c68947d8a4eec3.js:1 Unrecognized feature: 'execution-while-not-rendered'.
+_ @ framework-53c68947d8a4eec3.js:1Understand this warning
+framework-53c68947d8a4eec3.js:1 Unrecognized feature: 'execution-while-out-of-viewport'.
+_ @ framework-53c68947d8a4eec3.js:1Understand this warning
+framework-53c68947d8a4eec3.js:1 Unrecognized feature: 'layout-animations'.
+_ @ framework-53c68947d8a4eec3.js:1Understand this warning
+framework-53c68947d8a4eec3.js:1 Unrecognized feature: 'legacy-image-formats'.
+_ @ framework-53c68947d8a4eec3.js:1Understand this warning
+framework-53c68947d8a4eec3.js:1 Unrecognized feature: 'navigation-override'.
+_ @ framework-53c68947d8a4eec3.js:1Understand this warning
+framework-53c68947d8a4eec3.js:1 Unrecognized feature: 'oversized-images'.
+_ @ framework-53c68947d8a4eec3.js:1Understand this warning
+framework-53c68947d8a4eec3.js:1 Unrecognized feature: 'publickey-credentials'.
+_ @ framework-53c68947d8a4eec3.js:1Understand this warning
+framework-53c68947d8a4eec3.js:1 Unrecognized feature: 'speaker-selection'.
+_ @ framework-53c68947d8a4eec3.js:1Understand this warning
+framework-53c68947d8a4eec3.js:1 Unrecognized feature: 'unoptimized-images'.
+_ @ framework-53c68947d8a4eec3.js:1Understand this warning
+framework-53c68947d8a4eec3.js:1 Unrecognized feature: 'unsized-media'.
+_ @ framework-53c68947d8a4eec3.js:1Understand this warning
+framework-53c68947d8a4eec3.js:1 Unrecognized feature: 'pointer-lock'.
+_ @ framework-53c68947d8a4eec3.js:1Understand this warning
+framework-53c68947d8a4eec3.js:1 Allow attribute will take precedence over 'allowfullscreen'.
+_ @ framework-53c68947d8a4eec3.js:1Understand this warning
+framework-53c68947d8a4eec3.js:1 Allow attribute will take precedence over 'allowpaymentrequest'.
+_ @ framework-53c68947d8a4eec3.js:1Understand this warning
+_app-e26a9acb10a97f21.js:38 task queue exceeded allotted deadline by 46ms
+(anonymous) @ _app-e26a9acb10a97f21.js:38Understand this warning
+_app-e26a9acb10a97f21.js:38 task queue exceeded allotted deadline by 49ms
+(anonymous) @ _app-e26a9acb10a97f21.js:38Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'ambient-light-sensor'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'battery'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'execution-while-not-rendered'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'execution-while-out-of-viewport'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'layout-animations'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'legacy-image-formats'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'navigation-override'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'oversized-images'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'publickey-credentials'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'speaker-selection'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'unoptimized-images'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'unsized-media'.Understand this warning
+workspace_iframe.html:32 Allow attribute will take precedence over 'allowfullscreen'.Understand this warning
+workspace_iframe.html:32 Allow attribute will take precedence over 'allowpaymentrequest'.Understand this warning
+_app-e26a9acb10a97f21.js:38 onClick is deprecated, please use onPress
+(anonymous) @ _app-e26a9acb10a97f21.js:38Understand this warning
+3586 log entries are not shown.Understand this warning

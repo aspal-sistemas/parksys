@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Descargar Recibo de Nómina - Parques de México</title>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #00a587 0%, #067f5f 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+        .logo {
+            width: 200px;
+            height: auto;
+            margin-bottom: 30px;
+        }
+        h1 {
+            color: #00a587;
+            font-size: 24px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        p {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+        .btn {
+            background: linear-gradient(135deg, #00a587 0%, #067f5f 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            transition: transform 0.2s ease;
+            margin: 10px;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,165,135,0.3);
+        }
+        .btn-secondary {
+            background: #bcd256;
+            color: #333;
+        }
+        .btn-secondary:hover {
+            box-shadow: 0 10px 20px rgba(188,210,86,0.3);
+        }
+        .features {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .feature {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            color: #333;
+            font-size: 14px;
+        }
+        .check {
+            color: #00a587;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="parques-mexico-logo.jpg" alt="Parques de México" class="logo">
+        
+        <h1>Recibo de Nómina Generado</h1>
+        <p>El recibo PDF ha sido generado exitosamente con el logo oficial de Parques de México y todos los elementos fiscales requeridos.</p>
+        
+        <div class="features">
+            <h3 style="color: #00a587; margin-top: 0;">Características del Recibo:</h3>
+            <div class="feature">
+                <span class="check">✓</span>
+                Logo oficial de Parques de México integrado
+            </div>
+            <div class="feature">
+                <span class="check">✓</span>
+                Información fiscal completa (RFC, CURP, NSS)
+            </div>
+            <div class="feature">
+                <span class="check">✓</span>
+                Colores corporativos oficiales
+            </div>
+            <div class="feature">
+                <span class="check">✓</span>
+                Cumplimiento legal mexicano (Art. 99 LFT)
+            </div>
+            <div class="feature">
+                <span class="check">✓</span>
+                Footer profesional con información legal
+            </div>
+        </div>
+        
+        <a href="sample-receipt-with-logo.pdf" class="btn" download="recibo-nomina-parques-mexico.pdf">
+            📄 Descargar Recibo PDF
+        </a>
+        
+        <a href="sample-receipt-with-logo.pdf" class="btn btn-secondary" target="_blank">
+            👁️ Ver en Nueva Ventana
+        </a>
+        
+        <p style="font-size: 12px; color: #999; margin-top: 30px;">
+            Documento generado con ParkSys - Sistema de Gestión de Parques Urbanos
+        </p>
+    </div>
+</body>
+</html>

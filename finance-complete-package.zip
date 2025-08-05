@@ -1,0 +1,445 @@
+// MÓDULO DE FINANZAS COMPLETO - INSTALACIÓN AUTOMÁTICA
+// ====================================================
+
+// 1. ESQUEMA DE BASE DE DATOS
+export const financeSchema = `
+// shared/finance-schema.ts
+import {
+  pgTable,
+  text,
+  varchar,
+  decimal,
+  integer,
+  timestamp,
+  boolean,
+  date,
+  serial,
+} from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
+import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+import { z } from "zod";
+
+export const incomeCategories = pgTable("income_categories", {
+  id: serial("id").primaryKey(),
+  code: varchar("code", { length: 20 }).notNull().unique(),
+  name: varchar("name", { length: 100 }).notNull(),
+  description: text("description"),
+  level: integer("level").default(1),
+  isActive: boolean("is_active").default(true),
+  sortOrder: integer("sort_order").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const expenseCategories = pgTable("expense_categories", {
+  id: serial("id").primaryKey(),
+  code: varchar("code", { length: 20 }).notNull().unique(),
+  name: varchar("name", { length: 100 }).notNull(),
+  description: text("description"),
+  level: integer("level").default(1),
+  isActive: boolean("is_active").default(true),
+  sortOrder: integer("sort_order").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const budgets = pgTable("budgets", {
+  id: serial("id").primaryKey(),
+  municipalityId: integer("municipality_id"),
+  parkId: integer("park_id"),
+  year: integer("year").notNull(),
+  name: varchar("name", { length: 100 }).notNull(),
+  status: varchar("status", { length: 20 }).default("draft"),
+  totalIncome: decimal("total_income", { precision: 15, scale: 2 }).default("0"),
+  totalExpenses: decimal("total_expenses", { precision: 15, scale: 2 }).default("0"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const actualIncomes = pgTable("actual_incomes", {
+  id: serial("id").primaryKey(),
+  parkId: integer("park_id").notNull(),
+  categoryId: integer("category_id").references(() => incomeCategories.id),
+  concept: varchar("concept", { length: 200 }).notNull(),
+  amount: decimal("amount", { precision: 15, scale: 2 }).notNull(),
+  date: date("date").notNull(),
+  month: integer("month").notNull(),
+  year: integer("year").notNull(),
+  description: text("description"),
+  referenceNumber: varchar("reference_number", { length: 50 }),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const actualExpenses = pgTable("actual_expenses", {
+  id: serial("id").primaryKey(),
+  parkId: integer("park_id").notNull(),
+  categoryId: integer("category_id").references(() => expenseCategories.id),
+  concept: varchar("concept", { length: 200 }).notNull(),
+  amount: decimal("amount", { precision: 15, scale: 2 }).notNull(),
+  date: date("date").notNull(),
+  month: integer("month").notNull(),
+  year: integer("year").notNull(),
+  supplier: varchar("supplier", { length: 200 }),
+  description: text("description"),
+  referenceNumber: varchar("reference_number", { length: 50 }),
+  isPaid: boolean("is_paid").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertIncomeCategorySchema = createInsertSchema(incomeCategories);
+export const selectIncomeCategorySchema = createSelectSchema(incomeCategories);
+export type InsertIncomeCategory = z.infer<typeof insertIncomeCategorySchema>;
+export type IncomeCategory = z.infer<typeof selectIncomeCategorySchema>;
+
+export const insertExpenseCategorySchema = createInsertSchema(expenseCategories);
+export const selectExpenseCategorySchema = createSelectSchema(expenseCategories);
+export type InsertExpenseCategory = z.infer<typeof insertExpenseCategorySchema>;
+export type ExpenseCategory = z.infer<typeof selectExpenseCategorySchema>;
+`;
+
+// 2. RUTAS DEL SERVIDOR
+export const financeRoutes = `
+// server/finance-routes.ts
+import { Router, Request, Response } from "express";
+import { db } from "./db";
+import { 
+  incomeCategories, 
+  expenseCategories,
+  budgets,
+  actualIncomes,
+  actualExpenses
+} from "@shared/finance-schema";
+import { eq, desc, sql } from "drizzle-orm";
+
+export function registerFinanceRoutes(app: any, apiRouter: Router, isAuthenticated: any) {
+  
+  // Obtener categorías de ingresos
+  apiRouter.get("/finance/income-categories", async (_req: Request, res: Response) => {
+    try {
+      const categories = await db.select().from(incomeCategories);
+      res.json(categories);
+    } catch (error) {
+      res.status(500).json({ message: "Error al obtener categorías" });
+    }
+  });
+
+  // Crear categoría de ingresos
+  apiRouter.post("/finance/income-categories", async (req: Request, res: Response) => {
+    try {
+      const { name, description } = req.body;
+      const existingCategories = await db.select().from(incomeCategories);
+      const code = \`ING\${(existingCategories.length + 1).toString().padStart(3, '0')}\`;
+      
+      const [newCategory] = await db.insert(incomeCategories).values({
+        code,
+        name,
+        description: description || '',
+        level: 1,
+        isActive: true,
+        sortOrder: existingCategories.length + 1
+      }).returning();
+      
+      res.status(201).json(newCategory);
+    } catch (error) {
+      res.status(500).json({ message: "Error al crear categoría" });
+    }
+  });
+
+  // Obtener categorías de egresos
+  apiRouter.get("/finance/expense-categories", async (_req: Request, res: Response) => {
+    try {
+      const categories = await db.select().from(expenseCategories);
+      res.json(categories);
+    } catch (error) {
+      res.status(500).json({ message: "Error al obtener categorías" });
+    }
+  });
+
+  // Crear categoría de egresos
+  apiRouter.post("/finance/expense-categories", async (req: Request, res: Response) => {
+    try {
+      const { name, description } = req.body;
+      const existingCategories = await db.select().from(expenseCategories);
+      const code = \`EGR\${(existingCategories.length + 1).toString().padStart(3, '0')}\`;
+      
+      const [newCategory] = await db.insert(expenseCategories).values({
+        code,
+        name,
+        description: description || '',
+        level: 1,
+        isActive: true,
+        sortOrder: existingCategories.length + 1
+      }).returning();
+      
+      res.status(201).json(newCategory);
+    } catch (error) {
+      res.status(500).json({ message: "Error al crear categoría" });
+    }
+  });
+
+  // Obtener ingresos reales
+  apiRouter.get("/finance/actual-incomes", async (req: Request, res: Response) => {
+    try {
+      const { year = new Date().getFullYear() } = req.query;
+      const incomes = await db.select().from(actualIncomes)
+        .where(eq(actualIncomes.year, parseInt(year as string)))
+        .orderBy(desc(actualIncomes.date));
+      res.json(incomes);
+    } catch (error) {
+      res.status(500).json({ message: "Error al obtener ingresos" });
+    }
+  });
+
+  // Crear ingreso real
+  apiRouter.post("/finance/actual-incomes", async (req: Request, res: Response) => {
+    try {
+      const incomeData = req.body;
+      const [newIncome] = await db.insert(actualIncomes).values(incomeData).returning();
+      res.status(201).json(newIncome);
+    } catch (error) {
+      res.status(500).json({ message: "Error al crear ingreso" });
+    }
+  });
+
+  // Obtener egresos reales
+  apiRouter.get("/finance/actual-expenses", async (req: Request, res: Response) => {
+    try {
+      const { year = new Date().getFullYear() } = req.query;
+      const expenses = await db.select().from(actualExpenses)
+        .where(eq(actualExpenses.year, parseInt(year as string)))
+        .orderBy(desc(actualExpenses.date));
+      res.json(expenses);
+    } catch (error) {
+      res.status(500).json({ message: "Error al obtener egresos" });
+    }
+  });
+
+  // Crear egreso real
+  apiRouter.post("/finance/actual-expenses", async (req: Request, res: Response) => {
+    try {
+      const expenseData = req.body;
+      const [newExpense] = await db.insert(actualExpenses).values(expenseData).returning();
+      res.status(201).json(newExpense);
+    } catch (error) {
+      res.status(500).json({ message: "Error al crear egreso" });
+    }
+  });
+
+  // Dashboard metrics
+  apiRouter.get("/finance/dashboard-metrics", async (req: Request, res: Response) => {
+    try {
+      const currentYear = new Date().getFullYear();
+      
+      const totalIncomes = await db.execute(sql\`
+        SELECT COALESCE(SUM(amount), 0) as total 
+        FROM actual_incomes 
+        WHERE year = \${currentYear}
+      \`);
+      
+      const totalExpenses = await db.execute(sql\`
+        SELECT COALESCE(SUM(amount), 0) as total 
+        FROM actual_expenses 
+        WHERE year = \${currentYear}
+      \`);
+      
+      const metrics = {
+        totalIncome: totalIncomes[0]?.total || 0,
+        totalExpenses: totalExpenses[0]?.total || 0,
+        netBalance: (totalIncomes[0]?.total || 0) - (totalExpenses[0]?.total || 0)
+      };
+      
+      res.json(metrics);
+    } catch (error) {
+      res.status(500).json({ message: "Error al obtener métricas" });
+    }
+  });
+}
+`;
+
+// 3. DASHBOARD PRINCIPAL
+export const dashboardComponent = `
+// client/src/pages/admin/finance/dashboard.tsx
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { DollarSign, TrendingUp, TrendingDown, BarChart3 } from "lucide-react";
+import AdminLayout from "@/components/AdminLayout";
+import { useQuery } from "@tanstack/react-query";
+
+const FinanceDashboard = () => {
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+
+  const { data: metrics, isLoading } = useQuery({
+    queryKey: ['/api/finance/dashboard-metrics'],
+    enabled: true
+  });
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('es-MX', {
+      style: 'currency',
+      currency: 'MXN'
+    }).format(amount);
+  };
+
+  const kpis = [
+    {
+      title: "Ingresos Totales",
+      value: formatCurrency(metrics?.totalIncome || 0),
+      icon: DollarSign,
+      color: "text-green-600",
+      bgColor: "bg-green-100"
+    },
+    {
+      title: "Egresos Totales", 
+      value: formatCurrency(metrics?.totalExpenses || 0),
+      icon: TrendingDown,
+      color: "text-red-600",
+      bgColor: "bg-red-100"
+    },
+    {
+      title: "Balance Neto",
+      value: formatCurrency(metrics?.netBalance || 0),
+      icon: TrendingUp,
+      color: "text-blue-600",
+      bgColor: "bg-blue-100"
+    },
+    {
+      title: "Año Fiscal",
+      value: selectedYear.toString(),
+      icon: BarChart3,
+      color: "text-purple-600",
+      bgColor: "bg-purple-100"
+    }
+  ];
+
+  if (isLoading) {
+    return (
+      <AdminLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-gray-500">Cargando dashboard financiero...</div>
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  return (
+    <AdminLayout>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-green-100 rounded-lg">
+              <DollarSign className="h-6 w-6 text-green-600" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Dashboard Financiero
+              </h1>
+              <p className="text-gray-600">
+                Gestión integral de finanzas del parque
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {kpis.map((kpi, index) => {
+            const IconComponent = kpi.icon;
+            return (
+              <Card key={index}>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className={\`p-3 rounded-lg \${kpi.bgColor}\`}>
+                      <IconComponent className={\`h-6 w-6 \${kpi.color}\`} />
+                    </div>
+                  </div>
+                  <div className="mt-4">
+                    <h3 className="text-sm font-medium text-gray-600">{kpi.title}</h3>
+                    <p className="text-2xl font-bold text-gray-900 mt-1">
+                      {kpi.value}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Acciones Rápidas</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Button 
+                className="w-full justify-start" 
+                variant="outline"
+                onClick={() => window.location.href = '/admin/finance/incomes'}
+              >
+                <DollarSign className="h-4 w-4 mr-2" />
+                Registrar Ingreso
+              </Button>
+              <Button 
+                className="w-full justify-start" 
+                variant="outline"
+                onClick={() => window.location.href = '/admin/finance/expenses'}
+              >
+                <TrendingDown className="h-4 w-4 mr-2" />
+                Registrar Egreso
+              </Button>
+              <Button 
+                className="w-full justify-start" 
+                variant="outline"
+                onClick={() => window.location.href = '/admin/finance/reports'}
+              >
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Ver Reportes
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Resumen del Mes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Ingresos del mes:</span>
+                  <span className="font-semibold text-green-600">
+                    {formatCurrency((metrics?.totalIncome || 0) / 12)}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Egresos del mes:</span>
+                  <span className="font-semibold text-red-600">
+                    {formatCurrency((metrics?.totalExpenses || 0) / 12)}
+                  </span>
+                </div>
+                <div className="border-t pt-3">
+                  <div className="flex justify-between">
+                    <span className="text-gray-900 font-medium">Balance mensual:</span>
+                    <span className="font-bold text-blue-600">
+                      {formatCurrency((metrics?.netBalance || 0) / 12)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </AdminLayout>
+  );
+};
+
+export default FinanceDashboard;
+`;
+
+// INSTRUCCIONES SIMPLES
+console.log("MÓDULO DE FINANZAS - INSTALACIÓN AUTOMÁTICA");
+console.log("==========================================");
+console.log("✅ Esquemas de base de datos incluidos");
+console.log("✅ Rutas API completas");
+console.log("✅ Dashboard principal funcional");
+console.log("✅ Listo para implementar");

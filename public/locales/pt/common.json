@@ -1,0 +1,59 @@
+{
+  "navigation": {
+    "dashboard": "Painel de Controle",
+    "parks": "Parques",
+    "users": "Usuários",
+    "volunteers": "Voluntários",
+    "instructors": "Instrutores",
+    "activities": "Atividades",
+    "assets": "Ativos",
+    "finance": "Finanças",
+    "trees": "Arborização",
+    "concessions": "Concessões",
+    "incidents": "Incidentes",
+    "events": "Eventos",
+    "reports": "Relatórios",
+    "settings": "Configurações"
+  },
+  "common": {
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "delete": "Excluir",
+    "view": "Visualizar",
+    "add": "Adicionar",
+    "create": "Criar",
+    "update": "Atualizar",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "export": "Exportar",
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso",
+    "confirm": "Confirmar",
+    "yes": "Sim",
+    "no": "Não",
+    "close": "Fechar",
+    "submit": "Enviar"
+  },
+  "forms": {
+    "name": "Nome",
+    "email": "E-mail",
+    "phone": "Telefone",
+    "address": "Endereço",
+    "description": "Descrição",
+    "date": "Data",
+    "status": "Status",
+    "location": "Localização",
+    "username": "Usuário",
+    "password": "Senha",
+    "fullName": "Nome Completo",
+    "role": "Função"
+  },
+  "messages": {
+    "saveSuccess": "Salvo com sucesso",
+    "deleteConfirm": "Tem certeza de que deseja excluir este item?",
+    "noDataFound": "Nenhum dado encontrado",
+    "loadingData": "Carregando dados..."
+  }
+}

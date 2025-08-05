@@ -1,0 +1,100 @@
+Descripción Completa del Módulo: /financial/budget-planning
+Descripción General
+El módulo de Planificación Presupuestaria es un sistema avanzado de gestión de presupuestos que permite a los usuarios de Parques de México definir, gestionar y comparar proyecciones financieras anuales por categoría. Este módulo opera de forma independiente al flujo de transacciones operativas, proporcionando una herramienta dedicada para la planificación estratégica financiera.
+
+Arquitectura y Estructura de Datos
+Base de Datos
+Tabla Principal: budget_projections
+id: Identificador único auto-incremental
+categoryId: Referencia a transaction_categories.id
+year: Año de la proyección (entero)
+month: Mes de la proyección (1-12)
+projectedAmount: Monto proyectado (decimal 15,2)
+isApproved: Estado de aprobación (boolean)
+approvedBy: Usuario que aprobó (referencia a users.id)
+approvedAt: Fecha de aprobación (timestamp)
+createdBy: Usuario creador (referencia a users.id)
+createdAt / updatedAt: Timestamps de auditoría
+Frontend (React + TypeScript)
+Interfaz: BudgetEntry - Define estructura de entrada presupuestaria
+Estado: budgetMatrix - Matriz bidimensional [categoría-mes] para gestión eficiente
+Plantillas: BudgetTemplate - Permite definir plantillas reutilizables
+Funcionalidades Principales
+1. Matriz de Planificación Interactiva
+Visualización: Tabla matricial con categorías en filas y meses en columnas
+División: Separación visual entre categorías de ingresos y gastos
+Entrada de Datos: Inputs individuales para cada celda categoría-mes
+Formato: Presentación monetaria automática con separadores de miles
+2. Sistema de Categorías
+Integración: Utiliza categorías existentes del catálogo de transacciones
+Clasificación: Automática entre ingresos (verde) y gastos (rojo)
+Colores: Indicadores visuales usando colores asignados a cada categoría
+Filtrado: Separación automática para presentación organizada
+3. Cálculos Automáticos en Tiempo Real
+Totales por Categoría: Suma anual automática por cada fila
+Totales por Mes: Suma mensual automática por cada columna
+Flujo Neto: Cálculo automático de ingresos menos gastos
+Indicadores: Códigos de color para utilidad (verde) o pérdida (rojo)
+4. Funcionalidad CSV Avanzada
+Importación CSV
+Plantilla Descargable: Genera archivo CSV con estructura predefinida
+Validación: Verificación de formato y datos antes de importación
+Mapeo: Conversión automática de columnas CSV a estructura de base de datos
+Error Handling: Reportes detallados de errores de validación
+Exportación CSV
+Datos Completos: Exporta toda la matriz presupuestaria
+Formato Estándar: Compatible con Excel y otras herramientas
+Metadatos: Incluye información de categorías y totales
+5. Gestión de Plantillas
+Creación: Permite definir plantillas de presupuesto reutilizables
+Aplicación: Un clic para aplicar plantilla a año específico
+Flexibilidad: Modificación posterior de valores aplicados
+APIs y Endpoints
+Consulta de Datos
+GET /api/budget-projections?year={year}
+Recupera todas las proyecciones para año específico
+Ordenado por mes y categoría
+Incluye metadata de aprobación
+GET /api/transaction-categories
+Obtiene catálogo completo de categorías
+Incluye tipo (income/expense) y colores
+Filtra solo categorías activas
+Persistencia de Datos
+POST /api/budget-projections/bulk
+Guarda múltiples proyecciones simultáneamente
+Operación de reemplazo completo por año
+Validación de integridad referencial
+Importación/Exportación
+POST /api/budget-projections/import-csv
+Procesa archivos CSV con validación
+Manejo de errores granular
+Preserva datos existentes en caso de error
+Integración con Otros Módulos
+Matriz de Flujo de Caja
+Datos Proyectados: Alimenta la columna "Proyectado" en matriz de flujo
+Comparación: Permite análisis Real vs Proyectado vs Varianza
+Sincronización: Cambios en presupuesto se reflejan automáticamente
+Reportes Financieros
+Análisis Presupuestario: Datos base para reportes de desempeño
+Tendencias: Comparación inter-anual de proyecciones
+KPIs: Alimenta métricas de cumplimiento presupuestario
+Características Técnicas
+Rendimiento
+Carga Perezosa: Solo carga datos del año seleccionado
+Cache Inteligente: TanStack Query con invalidación selectiva
+Optimización: Renderizado condicional para matrices grandes
+Validación
+Frontend: Validación en tiempo real de formatos numéricos
+Backend: Validación de integridad y rangos de datos
+Consistencia: Verificación de referencias a categorías válidas
+Seguridad
+Autenticación: Requiere token JWT válido
+Autorización: Permisos específicos para modificación
+Auditoría: Registro completo de cambios con timestamps
+Flujo de Trabajo Típico
+Inicio de Año: Usuario accede al módulo y selecciona nuevo año
+Configuración: Define proyecciones mensuales por categoría
+Validación: Sistema verifica consistencia y totales
+Guardado: Persistencia masiva en base de datos
+Seguimiento: Durante el año, comparación con datos reales
+Análisis: Reportes de varianza y cumplimiento presupuestario

@@ -1,0 +1,192 @@
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.Understand this error
+framework-c2be319115910dbc.js:1 Unrecognized feature: 'ambient-light-sensor'.
+_ @ framework-c2be319115910dbc.js:1
+(anonymous) @ framework-c2be319115910dbc.js:1
+uD @ framework-c2be319115910dbc.js:1
+uI @ framework-c2be319115910dbc.js:1
+uM @ framework-c2be319115910dbc.js:1
+uS @ framework-c2be319115910dbc.js:1
+C @ framework-c2be319115910dbc.js:1
+z @ framework-c2be319115910dbc.js:1Understand this warning
+framework-c2be319115910dbc.js:1 Unrecognized feature: 'battery'.
+_ @ framework-c2be319115910dbc.js:1
+(anonymous) @ framework-c2be319115910dbc.js:1
+uD @ framework-c2be319115910dbc.js:1
+uI @ framework-c2be319115910dbc.js:1
+uM @ framework-c2be319115910dbc.js:1
+uS @ framework-c2be319115910dbc.js:1
+C @ framework-c2be319115910dbc.js:1
+z @ framework-c2be319115910dbc.js:1Understand this warning
+framework-c2be319115910dbc.js:1 Unrecognized feature: 'execution-while-not-rendered'.
+_ @ framework-c2be319115910dbc.js:1
+(anonymous) @ framework-c2be319115910dbc.js:1
+uD @ framework-c2be319115910dbc.js:1
+uI @ framework-c2be319115910dbc.js:1
+uM @ framework-c2be319115910dbc.js:1
+uS @ framework-c2be319115910dbc.js:1
+C @ framework-c2be319115910dbc.js:1
+z @ framework-c2be319115910dbc.js:1Understand this warning
+framework-c2be319115910dbc.js:1 Unrecognized feature: 'execution-while-out-of-viewport'.
+_ @ framework-c2be319115910dbc.js:1
+(anonymous) @ framework-c2be319115910dbc.js:1
+uD @ framework-c2be319115910dbc.js:1
+uI @ framework-c2be319115910dbc.js:1
+uM @ framework-c2be319115910dbc.js:1
+uS @ framework-c2be319115910dbc.js:1
+C @ framework-c2be319115910dbc.js:1
+z @ framework-c2be319115910dbc.js:1Understand this warning
+framework-c2be319115910dbc.js:1 Unrecognized feature: 'layout-animations'.
+_ @ framework-c2be319115910dbc.js:1
+(anonymous) @ framework-c2be319115910dbc.js:1
+uD @ framework-c2be319115910dbc.js:1
+uI @ framework-c2be319115910dbc.js:1
+uM @ framework-c2be319115910dbc.js:1
+uS @ framework-c2be319115910dbc.js:1
+C @ framework-c2be319115910dbc.js:1
+z @ framework-c2be319115910dbc.js:1Understand this warning
+framework-c2be319115910dbc.js:1 Unrecognized feature: 'legacy-image-formats'.
+_ @ framework-c2be319115910dbc.js:1
+(anonymous) @ framework-c2be319115910dbc.js:1
+uD @ framework-c2be319115910dbc.js:1
+uI @ framework-c2be319115910dbc.js:1
+uM @ framework-c2be319115910dbc.js:1
+uS @ framework-c2be319115910dbc.js:1
+C @ framework-c2be319115910dbc.js:1
+z @ framework-c2be319115910dbc.js:1Understand this warning
+framework-c2be319115910dbc.js:1 Unrecognized feature: 'navigation-override'.
+_ @ framework-c2be319115910dbc.js:1
+(anonymous) @ framework-c2be319115910dbc.js:1
+uD @ framework-c2be319115910dbc.js:1
+uI @ framework-c2be319115910dbc.js:1
+uM @ framework-c2be319115910dbc.js:1
+uS @ framework-c2be319115910dbc.js:1
+C @ framework-c2be319115910dbc.js:1
+z @ framework-c2be319115910dbc.js:1Understand this warning
+framework-c2be319115910dbc.js:1 Unrecognized feature: 'oversized-images'.
+_ @ framework-c2be319115910dbc.js:1
+(anonymous) @ framework-c2be319115910dbc.js:1
+uD @ framework-c2be319115910dbc.js:1
+uI @ framework-c2be319115910dbc.js:1
+uM @ framework-c2be319115910dbc.js:1
+uS @ framework-c2be319115910dbc.js:1
+C @ framework-c2be319115910dbc.js:1
+z @ framework-c2be319115910dbc.js:1Understand this warning
+framework-c2be319115910dbc.js:1 Unrecognized feature: 'publickey-credentials'.
+_ @ framework-c2be319115910dbc.js:1
+(anonymous) @ framework-c2be319115910dbc.js:1
+uD @ framework-c2be319115910dbc.js:1
+uI @ framework-c2be319115910dbc.js:1
+uM @ framework-c2be319115910dbc.js:1
+uS @ framework-c2be319115910dbc.js:1
+C @ framework-c2be319115910dbc.js:1
+z @ framework-c2be319115910dbc.js:1Understand this warning
+framework-c2be319115910dbc.js:1 Unrecognized feature: 'speaker-selection'.
+_ @ framework-c2be319115910dbc.js:1
+(anonymous) @ framework-c2be319115910dbc.js:1
+uD @ framework-c2be319115910dbc.js:1
+uI @ framework-c2be319115910dbc.js:1
+uM @ framework-c2be319115910dbc.js:1
+uS @ framework-c2be319115910dbc.js:1
+C @ framework-c2be319115910dbc.js:1
+z @ framework-c2be319115910dbc.js:1Understand this warning
+framework-c2be319115910dbc.js:1 Unrecognized feature: 'unoptimized-images'.
+_ @ framework-c2be319115910dbc.js:1
+(anonymous) @ framework-c2be319115910dbc.js:1
+uD @ framework-c2be319115910dbc.js:1
+uI @ framework-c2be319115910dbc.js:1
+uM @ framework-c2be319115910dbc.js:1
+uS @ framework-c2be319115910dbc.js:1
+C @ framework-c2be319115910dbc.js:1
+z @ framework-c2be319115910dbc.js:1Understand this warning
+framework-c2be319115910dbc.js:1 Unrecognized feature: 'unsized-media'.
+_ @ framework-c2be319115910dbc.js:1
+(anonymous) @ framework-c2be319115910dbc.js:1
+uD @ framework-c2be319115910dbc.js:1
+uI @ framework-c2be319115910dbc.js:1
+uM @ framework-c2be319115910dbc.js:1
+uS @ framework-c2be319115910dbc.js:1
+C @ framework-c2be319115910dbc.js:1
+z @ framework-c2be319115910dbc.js:1Understand this warning
+framework-c2be319115910dbc.js:1 Unrecognized feature: 'pointer-lock'.
+_ @ framework-c2be319115910dbc.js:1
+(anonymous) @ framework-c2be319115910dbc.js:1
+uD @ framework-c2be319115910dbc.js:1
+uI @ framework-c2be319115910dbc.js:1
+uM @ framework-c2be319115910dbc.js:1
+uS @ framework-c2be319115910dbc.js:1
+C @ framework-c2be319115910dbc.js:1
+z @ framework-c2be319115910dbc.js:1Understand this warning
+framework-c2be319115910dbc.js:1 Allow attribute will take precedence over 'allowfullscreen'.
+_ @ framework-c2be319115910dbc.js:1
+(anonymous) @ framework-c2be319115910dbc.js:1
+uD @ framework-c2be319115910dbc.js:1
+uI @ framework-c2be319115910dbc.js:1
+uM @ framework-c2be319115910dbc.js:1
+uS @ framework-c2be319115910dbc.js:1
+C @ framework-c2be319115910dbc.js:1
+z @ framework-c2be319115910dbc.js:1Understand this warning
+framework-c2be319115910dbc.js:1 Allow attribute will take precedence over 'allowpaymentrequest'.
+_ @ framework-c2be319115910dbc.js:1
+(anonymous) @ framework-c2be319115910dbc.js:1
+uD @ framework-c2be319115910dbc.js:1
+uI @ framework-c2be319115910dbc.js:1
+uM @ framework-c2be319115910dbc.js:1
+uS @ framework-c2be319115910dbc.js:1
+C @ framework-c2be319115910dbc.js:1
+z @ framework-c2be319115910dbc.js:1Understand this warning
+_app-1dfc359d2d776d85.js:38 task queue exceeded allotted deadline by 53ms
+(anonymous) @ _app-1dfc359d2d776d85.js:38
+_process @ 1c7fb644.6c630f467b6cd232.js:3
+(anonymous) @ 1c7fb644.6c630f467b6cd232.js:3
+n @ _app-1dfc359d2d776d85.js:38Understand this warning
+_app-1dfc359d2d776d85.js:38 task queue exceeded allotted deadline by 25ms
+(anonymous) @ _app-1dfc359d2d776d85.js:38
+_process @ 1c7fb644.6c630f467b6cd232.js:3
+(anonymous) @ 1c7fb644.6c630f467b6cd232.js:3
+n @ _app-1dfc359d2d776d85.js:38Understand this warning
+_app-1dfc359d2d776d85.js:38 task queue exceeded allotted deadline by 29ms
+(anonymous) @ _app-1dfc359d2d776d85.js:38
+_process @ 1c7fb644.6c630f467b6cd232.js:3
+(anonymous) @ 1c7fb644.6c630f467b6cd232.js:3
+n @ _app-1dfc359d2d776d85.js:38Understand this warning
+_app-1dfc359d2d776d85.js:38 task queue exceeded allotted deadline by 35ms
+(anonymous) @ _app-1dfc359d2d776d85.js:38
+_process @ 1c7fb644.6c630f467b6cd232.js:3
+(anonymous) @ 1c7fb644.6c630f467b6cd232.js:3
+n @ _app-1dfc359d2d776d85.js:38Understand this warning
+_app-1dfc359d2d776d85.js:38 task queue exceeded allotted deadline by 26ms
+(anonymous) @ _app-1dfc359d2d776d85.js:38
+_process @ 1c7fb644.6c630f467b6cd232.js:3
+(anonymous) @ 1c7fb644.6c630f467b6cd232.js:3
+n @ _app-1dfc359d2d776d85.js:38Understand this warning
+_app-1dfc359d2d776d85.js:38 task queue exceeded allotted deadline by 167ms
+(anonymous) @ _app-1dfc359d2d776d85.js:38
+_process @ 1c7fb644.6c630f467b6cd232.js:3
+(anonymous) @ 1c7fb644.6c630f467b6cd232.js:3
+n @ _app-1dfc359d2d776d85.js:38Understand this warning
+_app-1dfc359d2d776d85.js:38 task queue exceeded allotted deadline by 62ms
+(anonymous) @ _app-1dfc359d2d776d85.js:38
+_process @ 1c7fb644.6c630f467b6cd232.js:3
+(anonymous) @ 1c7fb644.6c630f467b6cd232.js:3
+n @ _app-1dfc359d2d776d85.js:38Understand this warning
+_app-1dfc359d2d776d85.js:38 task queue exceeded allotted deadline by 76ms
+(anonymous) @ _app-1dfc359d2d776d85.js:38
+_process @ 1c7fb644.6c630f467b6cd232.js:3
+(anonymous) @ 1c7fb644.6c630f467b6cd232.js:3
+n @ _app-1dfc359d2d776d85.js:38Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'ambient-light-sensor'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'battery'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'execution-while-not-rendered'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'execution-while-out-of-viewport'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'layout-animations'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'legacy-image-formats'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'navigation-override'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'oversized-images'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'publickey-credentials'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'speaker-selection'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'unoptimized-images'.Understand this warning
+workspace_iframe.html:32 Unrecognized feature: 'unsized-media'.Understand this warning
+workspace_iframe.html:32 Allow attribute will take precedence over 'allowfullscreen'.Understand this warning
+workspace_iframe.html:32 Allow attribute will take precedence over 'allowpaymentrequest'.Understand this warning
+Console.js:61 Google Maps JavaScript API has been loaded directly without loading=async. This can result in suboptimal performance. For best-practice loading patterns please see https://goo.gle/js-api-loading
+Mt.forEach.n.<computed> @ Console.js:61Understand this warning

@@ -1,0 +1,11 @@
+4db9107a-1fd2-47c3-a….js?v=016459d6:9129 Uncaught Error: A <Select.Item /> must have a value prop that is not an empty string. This is because the Select value can be set to an empty string to clear the selection and show the placeholder.
+    at 4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-select.js?v=016459d6:873:13
+    at renderWithHooks (4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-SKRUXVEK.js?v=016459d6:11548:26)
+    at updateForwardRef (4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-SKRUXVEK.js?v=016459d6:14325:28)
+    at beginWork (4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-SKRUXVEK.js?v=016459d6:15946:22)
+    at beginWork$1 (4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-SKRUXVEK.js?v=016459d6:19753:22)
+    at performUnitOfWork (4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-SKRUXVEK.js?v=016459d6:19198:20)
+    at workLoopSync (4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-SKRUXVEK.js?v=016459d6:19137:13)
+    at renderRootSync (4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-SKRUXVEK.js?v=016459d6:19116:15)
+    at recoverFromConcurrentError (4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-SKRUXVEK.js?v=016459d6:18736:28)
+    at performSyncWorkOnRoot (4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-SKRUXVEK.js?v=016459d6:18879:28)Understand this error
