@@ -348,15 +348,13 @@ export class DatabaseStorage implements IStorage {
   
   async getUsers(): Promise<any[]> {
     try {
-      // Solo obtener usuarios que pueden iniciar sesión en el sistema
-      // Excluir roles de empleados, voluntarios, concesionarios e instructores inactivos
+      // Obtener TODOS los usuarios para la página de administración
       const result = await db.select().from(users)
-        .where(sql`role IN ('admin', 'super_admin', 'moderator', 'operator')`)
-        .orderBy(users.fullName);
-      console.log(`Usuarios administrativos obtenidos del storage: ${result.length}`);
+        .orderBy(users.id);
+      console.log(`Total usuarios obtenidos del storage: ${result.length}`);
       return result;
     } catch (error) {
-      console.error("Error al obtener usuarios administrativos:", error);
+      console.error("Error al obtener usuarios:", error);
       return [];
     }
   }
