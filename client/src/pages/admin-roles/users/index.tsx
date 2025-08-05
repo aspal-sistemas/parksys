@@ -388,7 +388,10 @@ export default function UsersManagement() {
                   <SelectItem value="all">Todos los roles</SelectItem>
                   {mockRoles.map((role) => (
                     <SelectItem key={role.id} value={role.id}>
-                      {role.displayName}
+                      <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg ${role.badge.color} text-white text-xs`}>
+                        {role.badge.icon}
+                        <span>{role.name.toUpperCase()}</span>
+                      </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -460,7 +463,7 @@ export default function UsersManagement() {
                           user.roles.map((role) => (
                             <div key={role.id} className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg ${role.badge.color} text-white text-xs`}>
                               {role.badge.icon}
-                              <span>{role.displayName}</span>
+                              <span>{role.name.toUpperCase()}</span>
                             </div>
                           ))
                         ) : (

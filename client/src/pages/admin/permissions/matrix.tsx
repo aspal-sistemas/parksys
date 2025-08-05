@@ -70,7 +70,7 @@ const PermissionsMatrix: React.FC = () => {
       if (!newPermissions[roleId]) {
         newPermissions[roleId] = {} as any;
       }
-      if (!newPermissions[roleId][module as keyof typeof newPermissions[roleId]]) {
+      if (!(newPermissions[roleId] as any)[module]) {
         (newPermissions[roleId] as any)[module] = [];
       }
 
@@ -142,7 +142,7 @@ const PermissionsMatrix: React.FC = () => {
                 <SelectItem value="all">Todos los roles</SelectItem>
                 {SYSTEM_ROLES.map(role => (
                   <SelectItem key={role.id} value={role.id}>
-                    {role.displayName}
+                    <RoleBadge roleId={role.id} size="sm" />
                   </SelectItem>
                 ))}
               </SelectContent>

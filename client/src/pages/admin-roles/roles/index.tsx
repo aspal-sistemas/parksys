@@ -223,7 +223,7 @@ export default function RolesManagement() {
 
   // Filtrar roles por búsqueda
   const filteredRoles = (roles as Role[]).filter((role: Role) =>
-    role.displayName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    role.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     role.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -320,8 +320,7 @@ export default function RolesManagement() {
                           {role.badge.icon}
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900">{role.displayName}</p>
-                          <p className="text-sm text-gray-500">{role.name}</p>
+                          <p className="font-medium text-gray-900">{role.name.toUpperCase()}</p>
                         </div>
                       </div>
                     </TableCell>
@@ -388,7 +387,7 @@ export default function RolesManagement() {
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem 
-                            onClick={() => handleDeleteRole(role.id, role.displayName)}
+                            onClick={() => handleDeleteRole(role.id, role.name)}
                             className="text-red-600"
                             disabled={role.id === 'super-admin'}
                           >

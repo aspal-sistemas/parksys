@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { toast } from '@/hooks/use-toast';
 
 // Datos simulados de auditoría de roles
 const AUDIT_LOGS = [

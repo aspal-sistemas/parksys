@@ -365,7 +365,7 @@ export default function PermissionMatrix() {
                             {role.badge.icon}
                           </div>
                           <div className="text-center">
-                            <p className="text-xs font-medium">{role.displayName}</p>
+                            <p className="text-xs font-medium">{role.name.toUpperCase()}</p>
                             <Badge variant="outline" className="text-xs">
                               Nivel {role.level}
                             </Badge>
