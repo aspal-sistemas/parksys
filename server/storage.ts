@@ -349,9 +349,35 @@ export class DatabaseStorage implements IStorage {
   async getUsers(): Promise<any[]> {
     try {
       // Obtener TODOS los usuarios para la página de administración
-      const result = await db.select().from(users)
+      const result = await db.select({
+        id: users.id,
+        username: users.username,
+        email: users.email,
+        fullName: users.fullName,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        role: users.role,
+        roleId: users.roleId,  // Asegurar que se incluya role_id
+        municipalityId: users.municipalityId,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt,
+        isActive: users.isActive,
+        lastLogin: users.lastLogin,
+        department: users.department,
+        position: users.position
+      }).from(users)
         .orderBy(users.id);
       console.log(`Total usuarios obtenidos del storage: ${result.length}`);
+      
+      // Debug: log primeros usuarios para verificar roleId
+      if (result.length > 0) {
+        console.log('🔍 Primer usuario del storage:', {
+          id: result[0].id,
+          role: result[0].role,
+          roleId: result[0].roleId
+        });
+      }
+      
       return result;
     } catch (error) {
       console.error("Error al obtener usuarios:", error);
