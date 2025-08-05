@@ -69,6 +69,7 @@ import {
 } from "@shared/schema";
 import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
+import { registerRoleRoutes } from "./roleRoutes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Create HTTP server first
@@ -424,6 +425,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Registramos las rutas del módulo de usuarios
   registerUserRoutes(app, apiRouter);
+
+  // Registramos las rutas del sistema de roles
+  registerRoleRoutes(app);
   
   // Registramos las rutas del módulo de concesiones
   registerConcessionRoutes(app, apiRouter, isAuthenticated);

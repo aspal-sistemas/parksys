@@ -408,12 +408,38 @@ export const insertTreeInterventionSchema = createInsertSchema(treeInterventions
   updatedAt: true
 });
 
+// ===== SISTEMA DE ROLES =====
+
+// Tabla de roles del sistema
+export const roles = pgTable("roles", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 100 }).notNull().unique(),
+  slug: varchar("slug", { length: 100 }).notNull().unique(),
+  description: text("description"),
+  level: integer("level").notNull(), // 1 = Super Admin, 7 = Consultor Auditor
+  color: varchar("color", { length: 7 }).default("#6366f1"), // Color para badges
+  permissions: jsonb("permissions").$type<Record<string, any>>().default({}),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow()
+});
+
+export type Role = typeof roles.$inferSelect;
+export type InsertRole = typeof roles.$inferInsert;
+
+export const insertRoleSchema = createInsertSchema(roles).omit({ 
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
   email: text("email").notNull(),
-  role: text("role").notNull().default("admin"),
+  role: text("role").notNull().default("admin"), // Mantener por compatibilidad
+  roleId: integer("role_id").references(() => roles.id), // Nueva referencia a roles
   fullName: text("full_name").notNull(),
   municipalityId: integer("municipality_id"),
   phone: text("phone"),
@@ -421,9 +447,28 @@ export const users = pgTable("users", {
   birthDate: date("birth_date"),
   bio: text("bio"),
   profileImageUrl: text("profile_image_url"),
+  // Nuevos campos de alta prioridad
+  notificationPreferences: jsonb("notification_preferences").$type<Record<string, any>>().default({}),
+  isActive: boolean("is_active").default(true),
+  lastLogin: timestamp("last_login"),
+  department: text("department"),
+  position: text("position"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow()
 });
+
+export type User = typeof users.$inferSelect;
+export type InsertUser = typeof users.$inferInsert;
+
+export const insertUserSchema = createInsertSchema(users).omit({ 
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+export const rolesRelations = relations(roles, ({ many }) => ({
+  users: many(users),
+}));
 
 // Elementos adicionales necesarios para el funcionamiento del sistema
 export const parkImages = pgTable("park_images", {
@@ -925,8 +970,12 @@ export const concessionaireDocumentsRelations = relations(concessionaireDocument
   })
 }));
 
-// Relaciones de usuarios - incluyendo perfiles de concesionarios
+// Relaciones de usuarios - incluyendo perfiles de concesionarios y roles
 export const usersRelations = relations(users, ({ one, many }) => ({
+  userRole: one(roles, {
+    fields: [users.roleId],
+    references: [roles.id],
+  }),
   concessionaireProfile: one(concessionaireProfiles, {
     fields: [users.id],
     references: [concessionaireProfiles.userId]
@@ -1262,11 +1311,6 @@ export const parkTreeSpecies = pgTable("park_tree_species", {
 });
 
 // Esquemas de inserción
-export const insertUserSchema = createInsertSchema(users).omit({ 
-  id: true,
-  createdAt: true,
-  updatedAt: true
-});
 
 export const insertMunicipalitySchema = createInsertSchema(municipalities).omit({ 
   id: true,
@@ -1333,9 +1377,6 @@ export const insertTreeMaintenanceSchema = createInsertSchema(treeMaintenances).
 });
 
 // Tipos
-export type User = typeof users.$inferSelect;
-export type InsertUser = z.infer<typeof insertUserSchema>;
-
 export type Municipality = typeof municipalities.$inferSelect;
 export type InsertMunicipality = z.infer<typeof insertMunicipalitySchema>;
 

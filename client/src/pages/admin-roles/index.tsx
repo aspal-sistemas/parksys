@@ -270,7 +270,15 @@ export default function AdminRolesIndex() {
             </ol>
           </CardContent>
         </Card>
+
+        {/* Componente de prueba del sistema de roles */}
+        <div className="mt-8">
+          <RoleTestComponent />
+        </div>
       </div>
     </DynamicAdminLayout>
   );
 }
+
+// Importar el componente de prueba
+import { RoleTestComponent } from '@/components/RoleTestComponent';
