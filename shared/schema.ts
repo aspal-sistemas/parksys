@@ -1005,7 +1005,7 @@ export const instructors = pgTable("instructors", {
   availableDays: text("available_days").array(),
   availableHours: text("available_hours"),
   preferredParkId: integer("preferred_park_id"),
-  status: text("status").default("active"),
+  status: text("status").default("pending"), // pending, active, rejected, inactive
   bio: text("bio"),
   qualifications: text("qualifications"),
   profileImageUrl: text("profile_image_url"),
@@ -1013,11 +1013,32 @@ export const instructors = pgTable("instructors", {
   hourlyRate: real("hourly_rate").default(0),
   rating: real("rating").default(0),
   activitiesCount: integer("activities_count").default(0),
+  // Campos para el proceso de aplicación
+  applicationCampaignId: integer("application_campaign_id").references(() => instructorApplicationCampaigns.id),
+  applicationDate: timestamp("application_date").defaultNow(),
+  evaluatedBy: integer("evaluated_by").references(() => users.id),
+  evaluatedAt: timestamp("evaluated_at"),
+  evaluationNotes: text("evaluation_notes"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow()
 });
 
-// Tabla para invitaciones de instructores por email
+// Tabla para campañas de aplicaciones de instructores
+export const instructorApplicationCampaigns = pgTable("instructor_application_campaigns", {
+  id: serial("id").primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  isActive: boolean("is_active").default(false),
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date").notNull(),
+  maxApplications: integer("max_applications"), // Límite opcional de aplicaciones
+  currentApplications: integer("current_applications").default(0),
+  createdBy: integer("created_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+
+// Tabla para invitaciones de instructores por email (mantener para compatibilidad)
 export const instructorInvitations = pgTable("instructor_invitations", {
   id: serial("id").primaryKey(),
   email: varchar("email", { length: 255 }).notNull().unique(),
@@ -1095,11 +1116,47 @@ export type Instructor = typeof instructors.$inferSelect;
 export type InsertInstructor = typeof instructors.$inferInsert;
 export type InstructorInvitation = typeof instructorInvitations.$inferSelect;
 export type InsertInstructorInvitation = typeof instructorInvitations.$inferInsert;
+export type InstructorApplicationCampaign = typeof instructorApplicationCampaigns.$inferSelect;
+export type InsertInstructorApplicationCampaign = typeof instructorApplicationCampaigns.$inferInsert;
 
 export const insertInstructorSchema = createInsertSchema(instructors).omit({ 
   id: true,
   createdAt: true,
-  updatedAt: true
+  updatedAt: true,
+  applicationDate: true,
+  evaluatedBy: true,
+  evaluatedAt: true,
+  evaluationNotes: true
+});
+
+export const insertInstructorApplicationCampaignSchema = createInsertSchema(instructorApplicationCampaigns).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  currentApplications: true
+});
+
+// Schema para aplicaciones públicas de instructores
+export const instructorApplicationSchema = createInsertSchema(instructors).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  applicationDate: true,
+  evaluatedBy: true,
+  evaluatedAt: true,
+  evaluationNotes: true,
+  rating: true,
+  activitiesCount: true,
+  status: true // Se asigna automáticamente como "pending"
+}).extend({
+  applicationCampaignId: z.number().positive("ID de campaña requerido"),
+  fullName: z.string().min(2, "Nombre completo debe tener al menos 2 caracteres"),
+  email: z.string().email("Email inválido"),
+  phone: z.string().min(10, "Teléfono debe tener al menos 10 dígitos").optional(),
+  experienceYears: z.number().min(0).max(50).default(0),
+  specialties: z.array(z.string()).min(1, "Debe especificar al menos una especialidad"),
+  bio: z.string().min(50, "La biografía debe tener al menos 50 caracteres").optional(),
+  qualifications: z.string().optional()
 });
 
 export const insertInstructorInvitationSchema = createInsertSchema(instructorInvitations).omit({

@@ -17,6 +17,7 @@ import { db } from "./db";
 import { incomeCategories, expenseCategories } from "../shared/finance-schema";
 import { eq } from "drizzle-orm";
 import { registerInstructorInvitationRoutes } from "./instructorInvitationRoutes";
+import { registerInstructorApplicationRoutes } from "./instructorApplicationRoutes";
 
 const app = express();
 
@@ -648,6 +649,7 @@ app.use('/api', activityRouter);
 
 // Registrar rutas de invitaciones de instructores
 registerInstructorInvitationRoutes(app);
+registerInstructorApplicationRoutes(app);
 
 // Registrar las rutas de prueba
 app.use('/api/test', testRouter);

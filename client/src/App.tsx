@@ -422,6 +422,11 @@ function Router() {
              ya que ahora se gestiona desde el módulo de Usuarios */}
         
         {/* Rutas para el módulo de instructores */}
+        <Route path="/admin/instructors/applications">
+          <Suspense fallback={<div className="p-8 text-center">Cargando aplicaciones de instructores...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/instructors/applications')))}
+          </Suspense>
+        </Route>
         <Route path="/admin/instructors/invitations" component={AdminInstructorInvitations} />
         <Route path="/admin/instructors/evaluations">
           <Suspense fallback={<div className="p-8 text-center">Cargando evaluaciones de instructores...</div>}>
