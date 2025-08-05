@@ -28,17 +28,49 @@ export function registerHRRoutes(app: any, apiRouter: Router, isAuthenticated: a
     try {
       console.log("🔍 Obteniendo empleados desde la tabla employees...");
       
-      // Usar Drizzle ORM - corregir nombres de campos según esquema real
-      const employeesList = await db
-        .select({
-          id: employees.id,
-          fullName: sql`COALESCE(${employees.fullName}, 'Sin nombre')`.as('full_name'),
-          email: sql`COALESCE(${employees.email}, 'Sin email')`.as('email'),
-          position: employees.position,
-          department: employees.department
-        })
-        .from(employees)
-        .orderBy(employees.id);
+      // Usar consulta SQL directa para obtener todos los campos
+      const results = await pool.query(`
+        SELECT 
+          id,
+          employee_code,
+          full_name,
+          email,
+          phone,
+          position,
+          department,
+          salary,
+          hire_date,
+          status,
+          work_schedule,
+          address,
+          emergency_contact,
+          emergency_phone,
+          education,
+          skills,
+          certifications
+        FROM employees 
+        ORDER BY id
+      `);
+      
+      const employeesList = results.rows.map(emp => ({
+        id: emp.id,
+        fullName: emp.full_name || '',
+        email: emp.email || '',
+        phone: emp.phone || '',
+        position: emp.position || '',
+        department: emp.department || '',
+        hireDate: emp.hire_date ? emp.hire_date.toISOString().split('T')[0] : '',
+        salary: emp.salary ? parseFloat(emp.salary) : 0,
+        status: emp.status || 'active',
+        address: emp.address || '',
+        emergencyContact: emp.emergency_contact || '',
+        emergencyPhone: emp.emergency_phone || '',
+        education: emp.education || '',
+        workSchedule: emp.work_schedule || '',
+        employeeCode: emp.employee_code || '',
+        skills: emp.skills || [],
+        certifications: emp.certifications || []
+      }));
       
       console.log(`✅ Encontrados ${employeesList.length} empleados desde tabla employees`);
       res.json(employeesList);
@@ -48,8 +80,133 @@ export function registerHRRoutes(app: any, apiRouter: Router, isAuthenticated: a
     }
   });
 
-  // Crear empleado con usuario automático
-  apiRouter.post("/employees", isAuthenticated, async (req: Request, res: Response) => {
+  // Crear empleado
+  apiRouter.post("/employees", async (req: Request, res: Response) => {
+    try {
+      console.log("Datos recibidos para crear empleado:", req.body);
+      
+      const {
+        fullName,
+        email,
+        phone,
+        position,
+        department,
+        salary,
+        hireDate,
+        status = 'active',
+        workSchedule,
+        address,
+        emergencyContact,
+        emergencyPhone,
+        education
+      } = req.body;
+
+      // Generar código de empleado automático
+      const codeResult = await pool.query(`
+        SELECT COALESCE(MAX(CAST(SUBSTRING(employee_code FROM 5) AS INTEGER)), 0) + 1 as next_code
+        FROM employees 
+        WHERE employee_code LIKE 'EMP-%'
+      `);
+      const nextCode = codeResult.rows[0]?.next_code || 1;
+      const employeeCode = `EMP-${String(nextCode).padStart(4, '0')}`;
+
+      const result = await pool.query(`
+        INSERT INTO employees (
+          employee_code, full_name, email, phone, position, department, 
+          salary, hire_date, status, work_schedule, address, 
+          emergency_contact, emergency_phone, education
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+        RETURNING *
+      `, [
+        employeeCode, fullName, email, phone, position, department,
+        salary ? parseFloat(salary) : null, hireDate || null, status, workSchedule,
+        address, emergencyContact, emergencyPhone, education
+      ]);
+
+      res.status(201).json(result.rows[0]);
+    } catch (error) {
+      console.error("❌ Error al crear empleado:", error);
+      res.status(500).json({ error: "Error interno del servidor", details: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
+  // Actualizar empleado
+  apiRouter.put("/employees/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const {
+        fullName,
+        email,
+        phone,
+        position,
+        department,
+        salary,
+        hireDate,
+        status,
+        workSchedule,
+        address,
+        emergencyContact,
+        emergencyPhone,
+        education
+      } = req.body;
+
+      const result = await pool.query(`
+        UPDATE employees SET
+          full_name = $2,
+          email = $3,
+          phone = $4,
+          position = $5,
+          department = $6,
+          salary = $7,
+          hire_date = $8,
+          status = $9,
+          work_schedule = $10,
+          address = $11,
+          emergency_contact = $12,
+          emergency_phone = $13,
+          education = $14,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE id = $1
+        RETURNING *
+      `, [
+        id, fullName, email, phone, position, department,
+        salary ? parseFloat(salary) : null, hireDate || null, status, workSchedule,
+        address, emergencyContact, emergencyPhone, education
+      ]);
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: "Empleado no encontrado" });
+      }
+
+      res.json(result.rows[0]);
+    } catch (error) {
+      console.error("❌ Error al actualizar empleado:", error);
+      res.status(500).json({ error: "Error interno del servidor", details: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
+  // Eliminar empleado
+  apiRouter.delete("/employees/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+
+      const result = await pool.query(`
+        DELETE FROM employees WHERE id = $1 RETURNING *
+      `, [id]);
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: "Empleado no encontrado" });
+      }
+
+      res.json({ message: "Empleado eliminado exitosamente" });
+    } catch (error) {
+      console.error("❌ Error al eliminar empleado:", error);
+      res.status(500).json({ error: "Error interno del servidor", details: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
+  // Crear empleado con usuario automático (método alternativo obsoleto)
+  apiRouter.post("/employees-with-user", isAuthenticated, async (req: Request, res: Response) => {
     try {
       console.log("Datos recibidos para crear empleado:", req.body);
       
