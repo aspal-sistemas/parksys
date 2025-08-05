@@ -16,6 +16,7 @@ import { createParkEvaluationsTables } from "./create-park-evaluations-tables";
 import { db } from "./db";
 import { incomeCategories, expenseCategories } from "../shared/finance-schema";
 import { eq } from "drizzle-orm";
+import { registerInstructorInvitationRoutes } from "./instructorInvitationRoutes";
 
 const app = express();
 
@@ -644,6 +645,9 @@ app.get("/api/activity-registrations/stats/:activityId", async (req, res) => {
 
 // Registrar las rutas de actividades - TEMPORALMENTE COMENTADO PARA USAR ENDPOINT PRINCIPAL
 app.use('/api', activityRouter);
+
+// Registrar rutas de invitaciones de instructores
+registerInstructorInvitationRoutes(app);
 
 // Registrar las rutas de prueba
 app.use('/api/test', testRouter);

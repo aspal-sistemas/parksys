@@ -183,9 +183,10 @@ export type InsertActualExpense = z.infer<typeof insertActualExpenseSchema>;
 // ========== MÓDULO DE RECURSOS HUMANOS ==========
 
 // Tabla de empleados - Matching actual database structure
+// Tabla employees - Catálogo independiente de activos humanos
 export const employees = pgTable("employees", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id),
+  userId: integer("user_id").references(() => users.id), // Nullable - Solo si el empleado también es usuario organizacional
   employeeCode: varchar("employee_code", { length: 20 }).unique(),
   fullName: varchar("full_name", { length: 100 }).notNull(),
   email: varchar("email", { length: 100 }).notNull(),
@@ -660,13 +661,18 @@ export const incidents = pgTable("incidents", {
   resolvedAt: timestamp("resolved_at")
 });
 
+// Tabla volunteers - Catálogo independiente alimentado desde /volunteers/register
 export const volunteers = pgTable("volunteers", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
+  fullName: text("full_name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone"),
+  age: integer("age"),
+  gender: text("gender").notNull(),
+  address: text("address"),
   emergencyContactName: text("emergency_contact_name"),
   emergencyContactPhone: text("emergency_contact_phone"),
   emergencyContactRelation: text("emergency_contact_relation"),
-  address: text("address"),
   preferredParkId: integer("preferred_park_id"),
   previousExperience: text("previous_experience"),
   availableDays: text("available_days").array(),
@@ -983,18 +989,22 @@ export const usersRelations = relations(users, ({ one, many }) => ({
 }));
 
 // Definición de tablas de instructores
+// Tabla instructors - Catálogo independiente con registro por invitación
 export const instructors = pgTable("instructors", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
   fullName: text("full_name").notNull(),
-  firstName: text("first_name").notNull(),
-  lastName: text("last_name").notNull(),
+  firstName: text("first_name"),
+  lastName: text("last_name"),
   email: text("email").notNull(),
   phone: text("phone"),
+  age: integer("age"),
+  gender: text("gender"),
+  address: text("address"),
   specialties: text("specialties").array(),
   certifications: text("certifications").array(),
   experienceYears: integer("experience_years").default(0),
   availableDays: text("available_days").array(),
+  availableHours: text("available_hours"),
   preferredParkId: integer("preferred_park_id"),
   status: text("status").default("active"),
   bio: text("bio"),
@@ -1006,6 +1016,19 @@ export const instructors = pgTable("instructors", {
   activitiesCount: integer("activities_count").default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow()
+});
+
+// Tabla para invitaciones de instructores por email
+export const instructorInvitations = pgTable("instructor_invitations", {
+  id: serial("id").primaryKey(),
+  email: varchar("email", { length: 255 }).notNull().unique(),
+  invitationToken: varchar("invitation_token", { length: 255 }).notNull().unique(),
+  invitedBy: integer("invited_by").references(() => users.id),
+  invitedAt: timestamp("invited_at").defaultNow(),
+  expiresAt: timestamp("expires_at").notNull(),
+  usedAt: timestamp("used_at"),
+  status: varchar("status", { length: 50 }).default("pending"), // pending, used, expired
+  createdAt: timestamp("created_at").defaultNow()
 });
 
 export const instructorAssignments = pgTable("instructor_assignments", {
@@ -1071,12 +1094,25 @@ export const instructorRecognitions = pgTable("instructor_recognitions", {
 // Tipos para las tablas de instructores
 export type Instructor = typeof instructors.$inferSelect;
 export type InsertInstructor = typeof instructors.$inferInsert;
+export type InstructorInvitation = typeof instructorInvitations.$inferSelect;
+export type InsertInstructorInvitation = typeof instructorInvitations.$inferInsert;
 
 export const insertInstructorSchema = createInsertSchema(instructors).omit({ 
   id: true,
   createdAt: true,
   updatedAt: true
 });
+
+export const insertInstructorInvitationSchema = createInsertSchema(instructorInvitations).omit({
+  id: true,
+  createdAt: true,
+  invitationToken: true,
+  invitedAt: true,
+  usedAt: true,
+  status: true,
+});
+
+// Nota: Los tipos Volunteer, Employee y sus esquemas de inserción ya están definidos más adelante en el archivo
 
 export type InstructorAssignment = typeof instructorAssignments.$inferSelect;
 export type InsertInstructorAssignment = typeof instructorAssignments.$inferInsert;

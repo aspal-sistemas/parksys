@@ -18,14 +18,19 @@ The application uses a client-server architecture with a modern full-stack.
 - **Financial Management**: Accounting (SAT codes, journal entries, cash flow matrix), expense/income categories, and budget planning.
 - **Asset Management**: Inventory tracking, maintenance scheduling, incident reporting, and asset assignments.
 - **Communication & Marketing**: Email campaigns, templates, bulk sending, analytics, and dynamic advertising spaces with impression/click tracking.
-- **Volunteer & Instructor Management**: Registration, evaluation, recognition, and profile management.
+- **Volunteer & Instructor Management**: Registration, evaluation, recognition, and profile management with email-based invitation system for instructors.
 - **Concession Management**: Contracts, active concessions, financial integration, and detailed public pages.
 - **Security**: Advanced authentication, login attempt tracking, audit logs, and password recovery, including a comprehensive role-based access control system with 7 hierarchical roles and granular permissions.
 - **Tree Management**: Inventory, species catalog, maintenance tracking, and ecological data.
 - **Event Management**: General events and specific AMBU events with differentiated forms and cost calculators.
 - **Space Reservations**: Management of reservable spaces with automatic cost calculation and calendar views.
 - **Sponsor Management**: Supports a 10-tier gemstone/precious metal sponsorship system with unique icons, color schemes, and graduated benefits.
-**System Design Choices**: Single Source of Truth architecture ensures data consistency across modules. Internationalization (i18n) support for multiple languages (Spanish, English, Portuguese) is implemented throughout the application. Error handling is robust with detailed logging and user-friendly notifications. Optimized for Replit deployment.
+**System Design Choices**: Single Source of Truth architecture ensures data consistency across modules. Clear separation between organizational users (with login access) and external catalogs (employees, volunteers, instructors, concessionaires as independent databases). Email-based invitation system for instructor registration with token validation and expiration. Internationalization (i18n) support for multiple languages (Spanish, English, Portuguese) is implemented throughout the application. Error handling is robust with detailed logging and user-friendly notifications. Optimized for Replit deployment.
+
+## Recent Changes (January 2025)
+- **Architecture Refactor**: Implemented complete separation of organizational users from catalog entities, eliminating data duplication across employees, volunteers, instructors, and concessionaires tables.
+- **Instructor Invitation System**: Built email-based invitation system with dedicated registration flow, token validation, and automatic expiration management.
+- **Database Schema Updates**: Updated all catalog tables to be independent with optional user_id references only where needed for organizational roles.
 
 ## External Dependencies
 - **Frontend**: React, TypeScript, Vite, Tailwind CSS, Radix UI (shadcn/ui), React Query, React Router, React Hook Form, Zod.

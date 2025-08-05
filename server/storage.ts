@@ -446,21 +446,15 @@ export class DatabaseStorage implements IStorage {
       await db.execute(sql`DELETE FROM employees WHERE user_id = ${id}`);
       console.log(`✅ Registro de employees eliminado para usuario ${id}`);
       
-      // 3. Eliminar de instructors (nueva dependencia detectada)
-      await db.execute(sql`DELETE FROM instructors WHERE user_id = ${id}`);
-      console.log(`✅ Registro de instructors eliminado para usuario ${id}`);
-      
-      // 4. Eliminar de concessionaire_profiles (nueva dependencia detectada)
-      await db.execute(sql`DELETE FROM concessionaire_profiles WHERE user_id = ${id}`);
-      console.log(`✅ Registro de concessionaire_profiles eliminado para usuario ${id}`);
-      
-      // 5. Eliminar de volunteers (si la tabla existe)
+      // 3. Eliminar de concessionaire_profiles (si tiene user_id)
       try {
-        await db.execute(sql`DELETE FROM volunteers WHERE user_id = ${id}`);
-        console.log(`✅ Registro de volunteers eliminado para usuario ${id}`);
+        await db.execute(sql`DELETE FROM concessionaire_profiles WHERE user_id = ${id}`);
+        console.log(`✅ Registro de concessionaire_profiles eliminado para usuario ${id}`);
       } catch (error) {
-        console.log(`ℹ️ Tabla volunteers no existe o no tiene dependencias para usuario ${id}`);
+        console.log(`ℹ️ No hay dependencias de concessionaire_profiles para usuario ${id}`);
       }
+
+      // Nota: instructors, volunteers ya no tienen user_id en la nueva arquitectura
       
       // 6. Finalmente eliminar el usuario de la tabla users
       const result = await db.delete(users).where(eq(users.id, id));
