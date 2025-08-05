@@ -266,18 +266,30 @@ const UserDetail: React.FC<{
     staleTime: 5 * 60 * 1000, // 5 minutos
     retry: 3
   });
+
+  // Cargar roles del sistema jerárquico
+  const { data: roles = [] } = useQuery({
+    queryKey: ['/api/roles'],
+    refetchOnWindowFocus: false,
+    staleTime: 10 * 60 * 1000, // 10 minutos
+    retry: 3
+  });
   
   // Debugger para el parque preferido
   useEffect(() => {
-    if (user && userData.role === 'voluntario') {
+    const selectedRole = roles.find((r: any) => String(r.id) === userData.role);
+    const isVolunteerRole = selectedRole?.name?.toLowerCase().includes('voluntario');
+    
+    if (user && isVolunteerRole) {
       console.log('Datos del usuario cargados:', {
         userId: user.id,
         userPreferredParkId: user?.preferredParkId,
         formPreferredParkId: userData.preferredParkId,
-        availableParks: parks?.length || 0
+        availableParks: parks?.length || 0,
+        selectedRole: selectedRole?.name
       });
     }
-  }, [user, userData.role, userData.preferredParkId, parks]);
+  }, [user, userData.role, userData.preferredParkId, parks, roles]);
 
   const handleChange = (field: keyof UserFormData, value: string | number | null | boolean | File | string[]) => {
     setUserData(prev => ({
@@ -408,10 +420,18 @@ const UserDetail: React.FC<{
                   <SelectValue placeholder="Seleccionar rol" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="admin">Administrador</SelectItem>
-                  <SelectItem value="super_admin">Super Administrador</SelectItem>
-                  <SelectItem value="moderator">Moderador</SelectItem>
-                  <SelectItem value="operator">Operador</SelectItem>
+                  {roles.map((role: any) => (
+                    <SelectItem key={role.id} value={String(role.id)}>
+                      <div className="flex items-center gap-2">
+                        <span className={`inline-block w-2 h-2 rounded-full`} 
+                              style={{backgroundColor: role.color}} />
+                        <span>{role.name}</span>
+                        <span className="text-xs text-muted-foreground ml-auto">
+                          Nivel {role.level}
+                        </span>
+                      </div>
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground mt-1">
@@ -592,35 +612,46 @@ const UserDetail: React.FC<{
             </div>
           </div>
           
-          {/* Sección específica para instructores */}
-          {userData.role === 'instructor' && (
-            <div className="space-y-4 mt-6 pt-6 border-t border-gray-200">
-              <h3 className="font-medium text-lg">Información de Instructor</h3>
-              <p className="text-sm text-gray-600">
-                Complete la información básica para crear el perfil de instructor.
-              </p>
-            </div>
-          )}
-          
-          {/* Sección específica para concesionarios */}
-          {userData.role === 'concesionario' && (
-            <div className="space-y-4 mt-6 pt-6 border-t border-gray-200">
-              <h3 className="font-medium text-lg">Información de Concesionario</h3>
-              <p className="text-sm text-gray-600">
-                Complete la información básica para crear el perfil de concesionario.
-              </p>
-            </div>
-          )}
-          
-          {/* Sección específica para voluntarios */}
-          {userData.role === 'voluntario' && (
-            <div className="space-y-4 mt-6 pt-6 border-t border-gray-200">
-              <h3 className="font-medium text-lg">Información de Voluntario</h3>
-              <p className="text-sm text-gray-600">
-                Complete la información básica para crear el perfil de voluntario.
-              </p>
-            </div>
-          )}
+          {/* Sección específica basada en rol jerárquico */}
+          {(() => {
+            const selectedRole = roles.find((r: any) => String(r.id) === userData.role);
+            const roleName = selectedRole?.name?.toLowerCase() || '';
+            
+            if (roleName.includes('instructor')) {
+              return (
+                <div className="space-y-4 mt-6 pt-6 border-t border-gray-200">
+                  <h3 className="font-medium text-lg">Información de Instructor</h3>
+                  <p className="text-sm text-gray-600">
+                    Complete la información básica para crear el perfil de instructor.
+                  </p>
+                </div>
+              );
+            }
+            
+            if (roleName.includes('concesionario')) {
+              return (
+                <div className="space-y-4 mt-6 pt-6 border-t border-gray-200">
+                  <h3 className="font-medium text-lg">Información de Concesionario</h3>
+                  <p className="text-sm text-gray-600">
+                    Complete la información básica para crear el perfil de concesionario.
+                  </p>
+                </div>
+              );
+            }
+            
+            if (roleName.includes('voluntario')) {
+              return (
+                <div className="space-y-4 mt-6 pt-6 border-t border-gray-200">
+                  <h3 className="font-medium text-lg">Información de Voluntario</h3>
+                  <p className="text-sm text-gray-600">
+                    Complete la información básica para crear el perfil de voluntario.
+                  </p>
+                </div>
+              );
+            }
+            
+            return null;
+          })()}
 
           <DialogFooter className="pt-4">
             <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>

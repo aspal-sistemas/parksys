@@ -433,7 +433,10 @@ export class DatabaseStorage implements IStorage {
 
   async deleteUser(id: number): Promise<boolean> {
     try {
-      // Primero eliminar registros relacionados en cascada
+      // Primero eliminar referencias en actividades (establecer instructor_id a null)
+      await db.execute(sql`UPDATE activities SET instructor_id = NULL WHERE instructor_id IN (SELECT id FROM instructors WHERE user_id = ${id})`);
+      
+      // Luego eliminar registros relacionados en cascada
       await db.execute(sql`DELETE FROM employees WHERE user_id = ${id}`);
       await db.execute(sql`DELETE FROM instructors WHERE user_id = ${id}`);
       await db.execute(sql`DELETE FROM volunteers WHERE user_id = ${id}`);
