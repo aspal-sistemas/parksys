@@ -1307,20 +1307,9 @@ const AdminSidebarComplete: React.FC = () => {
         </Accordion>
       </ScrollArea>
 
-      {/* Footer */}
-      <div className="p-4 border-t border-teal-600" style={{ backgroundColor: '#003D49' }}>
-        <div className="flex items-center justify-center">
-          <Button 
-            variant="ghost" 
-            size="sm"
-            onClick={handleLogout}
-            className="text-teal-200 hover:text-white hover:bg-teal-600"
-            title="Cerrar Sesión"
-          >
-            <LogOut className="h-4 w-4 mr-2" />
-            Cerrar Sesión
-          </Button>
-        </div>
+      {/* Footer - Eliminado el botón de cerrar sesión */}
+      <div className="p-2 border-t border-teal-600" style={{ backgroundColor: '#003D49' }}>
+        {/* Footer vacío - funcionalidad de logout movida al header */}
       </div>
     </div>
   );

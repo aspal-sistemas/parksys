@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'wouter';
-import { Menu, X, ChevronDown, LogIn, Home, HelpCircle } from 'lucide-react';
+import { Menu, X, ChevronDown, LogIn, Home, HelpCircle, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import GlobalSearch from '@/components/GlobalSearch';
 import { HelpCenter } from '@/components/HelpCenter';
@@ -17,8 +17,16 @@ const Header: React.FC = () => {
   const [usersMenuOpen, setUsersMenuOpen] = useState(false);
   const [gestionMenuOpen, setGestionMenuOpen] = useState(false);
   
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const isAdmin = location.startsWith('/admin');
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
+  };
   
   const toggleMobileMenu = () => {
     setMobileMenuOpen(prev => !prev);
@@ -375,6 +383,15 @@ const Header: React.FC = () => {
                       <span className="text-xs text-gray-600">{(user as any)?.role || 'usuario'}</span>
                     </div>
                   </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={handleLogout}
+                    className="text-gray-600 hover:text-gray-800 hover:bg-gray-100 w-8 h-8 p-0"
+                    title="Cerrar Sesión"
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </Button>
                 </div>
               )
             ) : (
