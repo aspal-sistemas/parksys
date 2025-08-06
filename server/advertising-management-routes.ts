@@ -298,11 +298,10 @@ router.put('/spaces/:id', async (req, res) => {
     const result = await pool.query(`
       UPDATE ad_spaces 
       SET name = $1, description = $2, page_type = $3, position = $4, 
-          page_identifier = $5, width = $6, height = $7, category = $8,
-          is_active = $9, updated_at = CURRENT_TIMESTAMP
-      WHERE id = $10
+          is_active = $5, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $6
       RETURNING *
-    `, [name, description, page_type, position, page_identifier, width, height, category, is_active, id]);
+    `, [name, description, page_type, position, is_active, id]);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Espacio no encontrado' });

@@ -46,10 +46,6 @@ const AdSpaces = () => {
           description: space.description,
           page_type: space.page_type,
           position: space.position,
-          page_identifier: space.page_identifier,
-          width: space.dimensions?.split('x')[0] || '300',
-          height: space.dimensions?.split('x')[1] || '250',
-          category: space.category,
           is_active: !isActive
         }
       });
