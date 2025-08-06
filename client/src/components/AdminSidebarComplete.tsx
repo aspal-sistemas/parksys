@@ -201,9 +201,14 @@ const ModuleNav: React.FC<ModuleNavProps> = ({
 
   return (
     <AccordionItem value={value} className="border-0">
-      <AccordionTrigger className={cn("py-2 hover:no-underline", colors.hoverBg)}>
-        <div className={cn("flex items-center text-sm font-medium", colors.textColor)}>
-          <div className="mr-2">{iconWithClass}</div>
+      <AccordionTrigger 
+        className="py-2 hover:no-underline rounded-lg transition-colors" 
+        style={{ backgroundColor: '#D2EAEA' }}
+      >
+        <div className="flex items-center text-sm font-medium text-gray-800">
+          <div className="mr-2">{React.cloneElement(icon as React.ReactElement, {
+            className: cn((icon as React.ReactElement).props.className, 'menu-icon text-gray-700')
+          })}</div>
           {title}
         </div>
       </AccordionTrigger>
