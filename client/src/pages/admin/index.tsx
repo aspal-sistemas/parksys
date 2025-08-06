@@ -240,7 +240,7 @@ const AdminDashboard: React.FC = () => {
             <CardDescription>{t('dashboard.charts.moduleAdoptionDescription', 'Porcentaje de uso activo por módulo del sistema')}</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-6">
               {moduleUsageData.map((module, index) => (
                 <div key={index} className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
@@ -250,9 +250,18 @@ const AdminDashboard: React.FC = () => {
                     ></div>
                     <span className="text-sm font-medium">{module.name}</span>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Progress value={module.value} className="w-20" />
-                    <span className="text-sm font-bold w-10">{module.value}%</span>
+                  <div className="flex items-center space-x-3">
+                    <div className="w-80 bg-gray-200 rounded-full h-8">
+                      <div 
+                        className="h-8 rounded-full flex items-center justify-center text-white text-sm font-bold" 
+                        style={{ 
+                          width: `${module.value}%`, 
+                          backgroundColor: module.color 
+                        }}
+                      >
+                        {module.value}%
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))}
