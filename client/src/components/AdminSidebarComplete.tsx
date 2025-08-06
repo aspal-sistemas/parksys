@@ -1316,12 +1316,22 @@ const AdminSidebarComplete: React.FC = () => {
 
       {/* Footer con logo de ParkSys */}
       <div className="p-4 border-t border-teal-600" style={{ backgroundColor: '#003D49' }}>
-        <div className="flex items-center justify-center">
+        <div className="flex flex-col items-center justify-center space-y-3">
           <img 
             src="/attached_assets/iScreen Shoter - Acrobat - 250806102921_1754500660875.png" 
             alt="ParkSys - Sistema de parques" 
             className="h-18 w-auto opacity-80 hover:opacity-100 transition-opacity"
           />
+          <button 
+            className="w-full py-2 px-4 rounded-full text-sm font-medium transition-all duration-200 hover:bg-opacity-80"
+            style={{ 
+              backgroundColor: '#003D49',
+              color: '#61B1A0',
+              border: '1px solid #61B1A0'
+            }}
+          >
+            By Parques de México
+          </button>
         </div>
       </div>
     </div>
