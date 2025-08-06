@@ -109,7 +109,7 @@ interface TrendData {
   feedback: number;
 }
 
-const COLORS = ['#00a587', '#10b981', '#34d399', '#6ee7b7', '#a7f3d0'];
+const COLORS = ['#61B1A0', '#513C73', '#B275B0', '#B3C077', '#1E5AA6'];
 
 export default function VisitorsDashboard() {
   const [selectedPark, setSelectedPark] = useState<string>('all');
@@ -218,7 +218,7 @@ export default function VisitorsDashboard() {
                 </Select>
               </div>
 
-              <Button onClick={refreshData} size="sm" className="bg-[#00a587] hover:bg-[#067f5f]">
+              <Button onClick={refreshData} size="sm" style={{ backgroundColor: '#61B1A0', color: 'white' }} className="hover:opacity-90">
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Actualizar
               </Button>
@@ -317,7 +317,7 @@ export default function VisitorsDashboard() {
             <CardContent>
               {isTrendLoading ? (
                 <div className="h-64 flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00a587]"></div>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderBottomColor: '#61B1A0' }}></div>
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height={300}>
@@ -330,21 +330,21 @@ export default function VisitorsDashboard() {
                     <Line 
                       type="monotone" 
                       dataKey="visitors" 
-                      stroke="#00a587" 
+                      stroke="#61B1A0" 
                       name="Visitantes"
                       strokeWidth={2}
                     />
                     <Line 
                       type="monotone" 
                       dataKey="evaluations" 
-                      stroke="#3b82f6" 
+                      stroke="#1E5AA6" 
                       name="Evaluaciones"
                       strokeWidth={2}
                     />
                     <Line 
                       type="monotone" 
                       dataKey="feedback" 
-                      stroke="#f59e0b" 
+                      stroke="#B3C077" 
                       name="Retroalimentación"
                       strokeWidth={2}
                     />
@@ -409,7 +409,7 @@ export default function VisitorsDashboard() {
                 <XAxis dataKey="category" angle={-45} textAnchor="end" height={100} />
                 <YAxis domain={[0, 5]} />
                 <Tooltip />
-                <Bar dataKey="rating" fill="#00a587" />
+                <Bar dataKey="rating" fill="#61B1A0" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -423,7 +423,7 @@ export default function VisitorsDashboard() {
           <CardContent>
             {isParksLoading ? (
               <div className="h-64 flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00a587]"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderBottomColor: '#61B1A0' }}></div>
               </div>
             ) : (
               <div className="space-y-4">
@@ -451,7 +451,7 @@ export default function VisitorsDashboard() {
                       </div>
                       <div>
                         <span className="text-muted-foreground">Pendientes:</span>
-                        <div className="font-medium text-orange-600">{formatNumber(park.pendingFeedback)}</div>
+                        <div className="font-medium" style={{ color: '#B3C077' }}>{formatNumber(park.pendingFeedback)}</div>
                       </div>
                     </div>
                   </div>
