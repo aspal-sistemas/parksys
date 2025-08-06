@@ -293,7 +293,7 @@ const AdminDashboard: React.FC = () => {
                   stackId="1" 
                   stroke="#B3C077" 
                   fill="#B3C077" 
-                  fillOpacity={0.6}
+                  fillOpacity={1.0}
                   name={t('dashboard.charts.income', 'Ingresos')}
                 />
                 <Area 
@@ -302,7 +302,7 @@ const AdminDashboard: React.FC = () => {
                   stackId="2" 
                   stroke="#B275B0" 
                   fill="#B275B0" 
-                  fillOpacity={0.6}
+                  fillOpacity={1.0}
                   name={t('dashboard.charts.expenses', 'Egresos')}
                 />
               </AreaChart>
