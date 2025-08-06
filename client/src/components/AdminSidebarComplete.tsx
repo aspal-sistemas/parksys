@@ -1322,8 +1322,11 @@ const AdminSidebarComplete: React.FC = () => {
             alt="ParkSys - Sistema de parques" 
             className="h-18 w-auto opacity-80 hover:opacity-100 transition-opacity"
           />
-          <button 
-            className="w-full py-2 px-4 rounded-full text-sm font-medium transition-all duration-200 hover:bg-opacity-80"
+          <a 
+            href="https://parquesdemexico.org/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full py-2 px-4 rounded-full text-sm font-medium transition-all duration-200 hover:bg-opacity-80 block text-center"
             style={{ 
               backgroundColor: '#003D49',
               color: '#61B1A0',
@@ -1331,7 +1334,7 @@ const AdminSidebarComplete: React.FC = () => {
             }}
           >
             By Parques de México
-          </button>
+          </a>
         </div>
       </div>
     </div>
