@@ -210,7 +210,7 @@ const ModuleNav: React.FC<ModuleNavProps> = ({
 
   return (
     <AccordionItem value={value} className="border-0">
-      <AccordionTrigger className={cn("py-2 hover:no-underline", colors.hoverBg)}>
+      <AccordionTrigger className={cn("py-2 hover:no-underline [&>svg]:text-white", colors.hoverBg)}>
         <div className={cn("flex items-center text-sm font-medium", colors.textColor)}>
           <div className="mr-2 flex items-center justify-center w-8 h-8 rounded-full" style={{ backgroundColor: colors.bgColor }}>
             {iconWithClass}
