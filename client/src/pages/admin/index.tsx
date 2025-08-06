@@ -348,27 +348,26 @@ const AdminDashboard: React.FC = () => {
         {/* Indicadores críticos */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center">
-              <AlertCircle className="h-5 w-5 mr-2 text-amber-500" />
+            <CardTitle>
               {t('dashboard.kpis.criticalIndicators', 'Indicadores Críticos')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-sm">{t('dashboard.kpis.pendingMaintenance', 'Mantenimiento Pendiente')}</span>
-              <Badge variant="destructive">{t('dashboard.kpis.urgentItems', '3 urgentes')}</Badge>
+              <Badge style={{ backgroundColor: '#B3C077', color: 'white' }}>{t('dashboard.kpis.urgentItems', '3 urgentes')}</Badge>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm">{t('dashboard.kpis.availableBudget', 'Presupuesto Disponible')}</span>
-              <Badge variant="outline" className="text-amber-600">{t('dashboard.kpis.remainingBudget', '32% restante')}</Badge>
+              <Badge style={{ backgroundColor: '#1E5AA6', color: 'white' }}>{t('dashboard.kpis.remainingBudget', '32% restante')}</Badge>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm">{t('dashboard.kpis.upcomingEvents', 'Eventos Próximos')}</span>
-              <Badge variant="secondary">{t('dashboard.kpis.thisWeekEvents', '8 esta semana')}</Badge>
+              <Badge style={{ backgroundColor: '#198DCE', color: 'white' }}>{t('dashboard.kpis.thisWeekEvents', '8 esta semana')}</Badge>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm">{t('dashboard.kpis.expiringContracts', 'Contratos por Vencer')}</span>
-              <Badge variant="destructive">{t('dashboard.kpis.thisMonthContracts', '2 este mes')}</Badge>
+              <Badge style={{ backgroundColor: '#90D3EC', color: 'white' }}>{t('dashboard.kpis.thisMonthContracts', '2 este mes')}</Badge>
             </div>
           </CardContent>
         </Card>
@@ -376,27 +375,26 @@ const AdminDashboard: React.FC = () => {
         {/* Estado del sistema */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center">
-              <CheckCircle className="h-5 w-5 mr-2 text-green-500" />
+            <CardTitle>
               {t('dashboard.kpis.systemStatus', 'Estado del Sistema')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-sm">{t('dashboard.kpis.activeUsers24h', 'Usuarios Activos (24h)')}</span>
-              <Badge variant="outline" className="text-green-600">{usersArray.length}</Badge>
+              <Badge style={{ backgroundColor: '#B3C077', color: 'white' }}>{usersArray.length}</Badge>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm">{t('dashboard.kpis.systemUptime', 'Uptime del Sistema')}</span>
-              <Badge variant="outline" className="text-green-600">99.8%</Badge>
+              <Badge style={{ backgroundColor: '#1E5AA6', color: 'white' }}>99.8%</Badge>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm">{t('dashboard.kpis.automaticBackup', 'Backup Automático')}</span>
-              <Badge variant="outline" className="text-green-600">{t('dashboard.kpis.updated', 'Actualizado')}</Badge>
+              <Badge style={{ backgroundColor: '#198DCE', color: 'white' }}>{t('dashboard.kpis.updated', 'Actualizado')}</Badge>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm">{t('dashboard.kpis.security', 'Seguridad')}</span>
-              <Badge variant="outline" className="text-green-600">{t('dashboard.kpis.optimal', 'Óptima')}</Badge>
+              <Badge style={{ backgroundColor: '#90D3EC', color: 'white' }}>{t('dashboard.kpis.optimal', 'Óptima')}</Badge>
             </div>
           </CardContent>
         </Card>
