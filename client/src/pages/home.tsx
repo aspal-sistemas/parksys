@@ -42,7 +42,7 @@ const Home: React.FC = () => {
   });
   
   // Fetch sponsors para la sección de patrocinadores
-  const { data: sponsors = [], isLoading: sponsorsLoading } = useQuery({
+  const { data: sponsors = [], isLoading: sponsorsLoading } = useQuery<any[]>({
     queryKey: ['/api/sponsors'],
   });
   
@@ -107,12 +107,12 @@ const Home: React.FC = () => {
             </div>
             
             {/* 🎯 PUBLICIDAD PILOTO - Hero Banner */}
-            <div className="mb-8">
+            <div className="mb-8 relative z-20">
               <AdSpace 
                 spaceId="10" 
                 position="hero" 
                 pageType="homepage" 
-                className="rounded-lg shadow-xl border-2 border-white/20 backdrop-blur-sm"
+                className="rounded-lg shadow-xl border-2 border-white/20 backdrop-blur-sm max-w-2xl"
               />
             </div>
 
