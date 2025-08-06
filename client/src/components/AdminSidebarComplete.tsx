@@ -385,20 +385,14 @@ const AdminSidebarComplete: React.FC = () => {
 
 
 
-          {/* 1. PANEL DE CONTROL */}
-          <ModuleNav 
-            title="Panel de Control" 
+          {/* 1. PANEL DE CONTROL - ENLACE DIRECTO */}
+          <NavItem 
+            href="/admin" 
             icon={<Home className="h-5 w-5" />}
-            value="dashboard"
+            active={location === '/admin' || location === '/admin/'}
           >
-            <NavItem 
-              href="/admin" 
-              icon={<Home className="h-5 w-5" />}
-              active={location === '/admin' || location === '/admin/'}
-            >
-              Dashboard
-            </NavItem>
-          </ModuleNav>
+            Panel de Control
+          </NavItem>
 
           {/* 2. GESTIÓN - MENÚ PRINCIPAL CON SUBMENÚS COLAPSABLES */}
           <ModuleNav 

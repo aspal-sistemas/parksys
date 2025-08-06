@@ -106,7 +106,13 @@ const AdminDashboard: React.FC = () => {
       title={t('dashboard.title', 'Dashboard Ejecutivo')} 
       subtitle={t('dashboard.subtitle', 'Panel de control integral del sistema ParkSys')}
     >
-      {/* Métricas principales */}
+      {/* Encabezado del Panel de Control */}
+      <div className="border-b pb-4 mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Panel de Control</h1>
+        <p className="text-gray-600 mt-2">Resumen ejecutivo del sistema de gestión de parques</p>
+      </div>
+
+      {/* Fila 1: Métricas principales */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
         {/* Parques */}
         <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
@@ -187,8 +193,8 @@ const AdminDashboard: React.FC = () => {
 
 
 
-      {/* KPIs y Tendencias principales */}
-      <div className="grid gap-6 md:grid-cols-4 mb-8">
+      {/* Fila 2: Tendencias principales */}
+      <div className="grid gap-6 md:grid-cols-2 mb-8">
         {/* Tendencias mensuales */}
         <Card className="col-span-1">
           <CardHeader>
@@ -238,64 +244,9 @@ const AdminDashboard: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Indicadores críticos */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <AlertCircle className="h-5 w-5 mr-2 text-amber-500" />
-              {t('dashboard.kpis.criticalIndicators', 'Indicadores Críticos')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm">{t('dashboard.kpis.pendingMaintenance', 'Mantenimiento Pendiente')}</span>
-              <Badge variant="destructive">{t('dashboard.kpis.urgentItems', '3 urgentes')}</Badge>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm">{t('dashboard.kpis.availableBudget', 'Presupuesto Disponible')}</span>
-              <Badge variant="outline" className="text-amber-600">{t('dashboard.kpis.remainingBudget', '32% restante')}</Badge>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm">{t('dashboard.kpis.upcomingEvents', 'Eventos Próximos')}</span>
-              <Badge variant="secondary">{t('dashboard.kpis.thisWeekEvents', '8 esta semana')}</Badge>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm">{t('dashboard.kpis.expiringContracts', 'Contratos por Vencer')}</span>
-              <Badge variant="destructive">{t('dashboard.kpis.thisMonthContracts', '2 este mes')}</Badge>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Estado del sistema */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <CheckCircle className="h-5 w-5 mr-2 text-green-500" />
-              {t('dashboard.kpis.systemStatus', 'Estado del Sistema')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm">{t('dashboard.kpis.activeUsers24h', 'Usuarios Activos (24h)')}</span>
-              <Badge variant="outline" className="text-green-600">{usersArray.length}</Badge>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm">{t('dashboard.kpis.systemUptime', 'Uptime del Sistema')}</span>
-              <Badge variant="outline" className="text-green-600">99.8%</Badge>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm">{t('dashboard.kpis.automaticBackup', 'Backup Automático')}</span>
-              <Badge variant="outline" className="text-green-600">{t('dashboard.kpis.updated', 'Actualizado')}</Badge>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm">{t('dashboard.kpis.security', 'Seguridad')}</span>
-              <Badge variant="outline" className="text-green-600">{t('dashboard.kpis.optimal', 'Óptima')}</Badge>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
-      {/* Segunda fila de gráficas */}
+      {/* Fila 3: Flujo Financiero y Tipos de Parques */}
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         {/* Flujo financiero */}
         <Card className="col-span-1">
@@ -367,7 +318,66 @@ const AdminDashboard: React.FC = () => {
 
 
 
-      {/* Resumen de módulos principales */}
+      {/* Fila 4: Indicadores Críticos y Estado del Sistema */}
+      <div className="grid gap-6 md:grid-cols-2 mb-8">
+        {/* Indicadores críticos */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <AlertCircle className="h-5 w-5 mr-2 text-amber-500" />
+              {t('dashboard.kpis.criticalIndicators', 'Indicadores Críticos')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm">{t('dashboard.kpis.pendingMaintenance', 'Mantenimiento Pendiente')}</span>
+              <Badge variant="destructive">{t('dashboard.kpis.urgentItems', '3 urgentes')}</Badge>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm">{t('dashboard.kpis.availableBudget', 'Presupuesto Disponible')}</span>
+              <Badge variant="outline" className="text-amber-600">{t('dashboard.kpis.remainingBudget', '32% restante')}</Badge>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm">{t('dashboard.kpis.upcomingEvents', 'Eventos Próximos')}</span>
+              <Badge variant="secondary">{t('dashboard.kpis.thisWeekEvents', '8 esta semana')}</Badge>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm">{t('dashboard.kpis.expiringContracts', 'Contratos por Vencer')}</span>
+              <Badge variant="destructive">{t('dashboard.kpis.thisMonthContracts', '2 este mes')}</Badge>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Estado del sistema */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <CheckCircle className="h-5 w-5 mr-2 text-green-500" />
+              {t('dashboard.kpis.systemStatus', 'Estado del Sistema')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm">{t('dashboard.kpis.activeUsers24h', 'Usuarios Activos (24h)')}</span>
+              <Badge variant="outline" className="text-green-600">{usersArray.length}</Badge>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm">{t('dashboard.kpis.systemUptime', 'Uptime del Sistema')}</span>
+              <Badge variant="outline" className="text-green-600">99.8%</Badge>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm">{t('dashboard.kpis.automaticBackup', 'Backup Automático')}</span>
+              <Badge variant="outline" className="text-green-600">{t('dashboard.kpis.updated', 'Actualizado')}</Badge>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm">{t('dashboard.kpis.security', 'Seguridad')}</span>
+              <Badge variant="outline" className="text-green-600">{t('dashboard.kpis.optimal', 'Óptima')}</Badge>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Fila 5: Resumen de módulos principales */}
       <div className="grid gap-6 md:grid-cols-4 mb-8">
         <Card className="text-center">
           <CardContent className="pt-6">
