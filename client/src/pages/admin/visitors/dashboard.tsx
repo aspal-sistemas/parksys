@@ -136,8 +136,8 @@ export default function VisitorsDashboard() {
     retry: 1
   });
 
-  const parks = parksData?.data || [];
-  const metrics: DashboardMetrics = dashboardData?.metrics || {
+  const parks = (parksData as any)?.data || [];
+  const metrics: DashboardMetrics = (dashboardData as any)?.metrics || {
     visitors: { total: 0, thisMonth: 0, lastMonth: 0, avgDaily: 0, uniqueParks: 0, totalRecords: 0 },
     evaluations: { total: 0, averageRating: 0, thisMonth: 0, lastMonth: 0, recommendationRate: 0, categoryAverages: {} },
     feedback: { total: 0, pending: 0, resolved: 0, thisMonth: 0, lastMonth: 0, byType: { share: 0, report_problem: 0, suggest_improvement: 0, propose_event: 0 }, resolutionRate: 0 }
@@ -216,11 +216,11 @@ export default function VisitorsDashboard() {
         {/* Métricas principales CON DISEÑO CORPORATIVO FORZADO */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Visitantes */}
-          <Card className="corporate-dark-card border-teal-600" style={{ backgroundColor: CORPORATE_STYLES.dark }}>
+          <Card className="corporate-dark-card border-teal-600" style={{ backgroundColor: '#003D49', color: 'white' }}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-lg font-medium text-white">Total Visitantes</CardTitle>
-              <div className="corporate-visitors-icon w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: CORPORATE_STYLES.visitors }}>
-                <Users className="h-7 w-7 text-white" />
+              <CardTitle className="text-lg font-medium" style={{ color: 'white' }}>Total Visitantes</CardTitle>
+              <div className="corporate-visitors-icon w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#61B1A0' }}>
+                <Users className="h-7 w-7" style={{ color: 'white' }} />
               </div>
             </CardHeader>
             <CardContent>
@@ -239,11 +239,11 @@ export default function VisitorsDashboard() {
           </Card>
 
           {/* Evaluaciones */}
-          <Card className="corporate-dark-card border-teal-600" style={{ backgroundColor: CORPORATE_STYLES.dark }}>
+          <Card className="corporate-dark-card border-teal-600" style={{ backgroundColor: '#003D49 !important', color: 'white !important' }}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-lg font-medium text-white">Evaluaciones</CardTitle>
-              <div className="corporate-evaluations-icon w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: CORPORATE_STYLES.evaluations }}>
-                <Star className="h-7 w-7 text-white" />
+              <CardTitle className="text-lg font-medium" style={{ color: 'white !important' }}>Evaluaciones</CardTitle>
+              <div className="corporate-evaluations-icon w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#513C73 !important' }}>
+                <Star className="h-7 w-7" style={{ color: 'white !important' }} />
               </div>
             </CardHeader>
             <CardContent>
@@ -262,11 +262,11 @@ export default function VisitorsDashboard() {
           </Card>
 
           {/* Retroalimentación */}
-          <Card className="corporate-dark-card border-teal-600" style={{ backgroundColor: CORPORATE_STYLES.dark }}>
+          <Card className="corporate-dark-card border-teal-600" style={{ backgroundColor: '#003D49 !important', color: 'white !important' }}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-lg font-medium text-white">Retroalimentación</CardTitle>
-              <div className="corporate-feedback-icon w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: CORPORATE_STYLES.feedback }}>
-                <MessageSquare className="h-7 w-7 text-white" />
+              <CardTitle className="text-lg font-medium" style={{ color: 'white !important' }}>Retroalimentación</CardTitle>
+              <div className="corporate-feedback-icon w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#B275B0 !important' }}>
+                <MessageSquare className="h-7 w-7" style={{ color: 'white !important' }} />
               </div>
             </CardHeader>
             <CardContent>
@@ -285,11 +285,11 @@ export default function VisitorsDashboard() {
           </Card>
 
           {/* Satisfacción General */}
-          <Card className="corporate-dark-card border-teal-600" style={{ backgroundColor: CORPORATE_STYLES.dark }}>
+          <Card className="corporate-dark-card border-teal-600" style={{ backgroundColor: '#003D49 !important', color: 'white !important' }}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-lg font-medium text-white">Satisfacción</CardTitle>
-              <div className="corporate-satisfaction-icon w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: CORPORATE_STYLES.satisfaction }}>
-                <Award className="h-7 w-7 text-white" />
+              <CardTitle className="text-lg font-medium" style={{ color: 'white !important' }}>Satisfacción</CardTitle>
+              <div className="corporate-satisfaction-icon w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#B3C077 !important' }}>
+                <Award className="h-7 w-7" style={{ color: 'white !important' }} />
               </div>
             </CardHeader>
             <CardContent>
