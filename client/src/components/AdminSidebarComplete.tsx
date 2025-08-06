@@ -148,7 +148,7 @@ const ModuleNav: React.FC<ModuleNavProps> = ({
         iconColor: 'text-white',
         textColor: 'text-white',
         hoverBg: 'hover:bg-teal-600',
-        bgColor: '#513C73'
+        bgColor: '#61B1A0'
       },
       'gestion': {
         iconColor: 'text-white',
@@ -1267,7 +1267,7 @@ const AdminSidebarComplete: React.FC = () => {
             </NavItem>
           </ModuleNav>
 
-          {/* 8. CONFIGURACIÓN - COLOR: #513C73 */}
+          {/* 8. CONFIGURACIÓN - COLOR: #61B1A0 */}
           <ModuleNav 
             title={t('navigation.settings')} 
             icon={<Settings className="h-5 w-5" />}
