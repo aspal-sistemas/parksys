@@ -204,12 +204,15 @@ const Header: React.FC = () => {
               {/* Páneles de Control */}
               <Link href="/admin">
                 <button
-                  className={`py-2 px-3 text-sm font-medium flex items-center rounded-lg transition-colors ${
+                  className={`py-2 px-3 text-sm font-medium flex items-center rounded-lg border-2 transition-colors ${
                     location === '/admin' 
-                      ? 'bg-primary text-white' 
+                      ? 'bg-primary text-white border-primary' 
                       : 'text-gray-600 hover:text-gray-800'
                   }`}
-                  style={{ backgroundColor: location !== '/admin' ? '#D2EAEA' : undefined }}>
+                  style={{ 
+                    backgroundColor: location !== '/admin' ? '#D2EAEA' : undefined,
+                    borderColor: '#003D49'
+                  }}>
                   <Home className="mr-2 h-4 w-4" />
                   Páneles de Control
                 </button>
@@ -218,8 +221,11 @@ const Header: React.FC = () => {
               {/* Menú de Gestión */}
               <div className="relative group">
                 <button
-                  className="py-2 px-3 text-sm font-medium flex items-center rounded-lg text-gray-600 hover:text-gray-800 transition-colors"
-                  style={{ backgroundColor: '#D2EAEA' }}>
+                  className="py-2 px-3 text-sm font-medium flex items-center rounded-lg border-2 text-gray-600 hover:text-gray-800 transition-colors"
+                  style={{ 
+                    backgroundColor: '#D2EAEA',
+                    borderColor: '#003D49'
+                  }}>
                   Gestión
                   <ChevronDown className="ml-1 h-3 w-3" />
                 </button>
@@ -254,8 +260,11 @@ const Header: React.FC = () => {
               {/* Menú O & M */}
               <div className="relative group">
                 <button
-                  className="py-2 px-3 text-sm font-medium flex items-center rounded-lg text-gray-600 hover:text-gray-800 transition-colors"
-                  style={{ backgroundColor: '#D2EAEA' }}>
+                  className="py-2 px-3 text-sm font-medium flex items-center rounded-lg border-2 text-gray-600 hover:text-gray-800 transition-colors"
+                  style={{ 
+                    backgroundColor: '#D2EAEA',
+                    borderColor: '#003D49'
+                  }}>
                   O & M
                   <ChevronDown className="ml-1 h-3 w-3" />
                 </button>
@@ -282,8 +291,11 @@ const Header: React.FC = () => {
               {/* Menú Admin */}
               <div className="relative group">
                 <button
-                  className="py-2 px-3 text-sm font-medium flex items-center rounded-lg text-gray-600 hover:text-gray-800 transition-colors"
-                  style={{ backgroundColor: '#D2EAEA' }}>
+                  className="py-2 px-3 text-sm font-medium flex items-center rounded-lg border-2 text-gray-600 hover:text-gray-800 transition-colors"
+                  style={{ 
+                    backgroundColor: '#D2EAEA',
+                    borderColor: '#003D49'
+                  }}>
                   Admin
                   <ChevronDown className="ml-1 h-3 w-3" />
                 </button>
@@ -310,8 +322,11 @@ const Header: React.FC = () => {
               {/* Menú Mkt y Comm */}
               <div className="relative group">
                 <button
-                  className="py-2 px-3 text-sm font-medium flex items-center rounded-lg text-gray-600 hover:text-gray-800 transition-colors"
-                  style={{ backgroundColor: '#D2EAEA' }}>
+                  className="py-2 px-3 text-sm font-medium flex items-center rounded-lg border-2 text-gray-600 hover:text-gray-800 transition-colors"
+                  style={{ 
+                    backgroundColor: '#D2EAEA',
+                    borderColor: '#003D49'
+                  }}>
                   Mkt y Comm
                   <ChevronDown className="ml-1 h-3 w-3" />
                 </button>
@@ -338,8 +353,11 @@ const Header: React.FC = () => {
               {/* Menú RH */}
               <Link href="/admin/hr/employees">
                 <button
-                  className="py-2 px-3 text-sm font-medium rounded-lg text-gray-600 hover:text-gray-800 transition-colors"
-                  style={{ backgroundColor: '#D2EAEA' }}>
+                  className="py-2 px-3 text-sm font-medium rounded-lg border-2 text-gray-600 hover:text-gray-800 transition-colors"
+                  style={{ 
+                    backgroundColor: '#D2EAEA',
+                    borderColor: '#003D49'
+                  }}>
                   RH
                 </button>
               </Link>
@@ -357,16 +375,25 @@ const Header: React.FC = () => {
               location !== '/admin/login' && (
                 <div className="flex items-center gap-2 mr-2">
                   <Link href="/">
-                    <Button variant="outline" size="sm" className="rounded-lg" style={{ backgroundColor: '#D2EAEA' }}>
+                    <Button variant="outline" size="sm" className="rounded-lg border-2" style={{ 
+                      backgroundColor: '#D2EAEA',
+                      borderColor: '#003D49'
+                    }}>
                       Sitio
                     </Button>
                   </Link>
                   <HelpCenter>
-                    <Button variant="outline" size="sm" className="w-9 h-9 p-0 rounded-lg" style={{ backgroundColor: '#D2EAEA' }}>
+                    <Button variant="outline" size="sm" className="w-9 h-9 p-0 rounded-lg border-2" style={{ 
+                      backgroundColor: '#D2EAEA',
+                      borderColor: '#003D49'
+                    }}>
                       <HelpCircle className="h-4 w-4" />
                     </Button>
                   </HelpCenter>
-                  <div style={{ backgroundColor: '#D2EAEA' }} className="rounded-lg">
+                  <div style={{ 
+                    backgroundColor: '#D2EAEA',
+                    borderColor: '#003D49'
+                  }} className="rounded-lg border-2">
                     <LanguageSelector />
                   </div>
                   <div className="flex items-center gap-2">
