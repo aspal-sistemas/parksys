@@ -101,7 +101,10 @@ export default function RolesManagement() {
               <div>
                 <p className="text-sm text-muted-foreground">Administrativos</p>
                 <p className="text-2xl font-bold">
-                  {roleStats.filter(r => getRoleLevel(r.roleId) <= 2).reduce((acc, r) => acc + r.userCount, 0)}
+                  {roleStats.filter(r => {
+                    const role = SYSTEM_ROLES.find(role => role.id === r.roleId);
+                    return (role?.level || 0) <= 2;
+                  }).reduce((acc, r) => acc + r.userCount, 0)}
                 </p>
               </div>
             </div>
