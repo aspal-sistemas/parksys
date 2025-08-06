@@ -130,7 +130,6 @@ const AdminDashboard: React.FC = () => {
               <TrendingUp className="h-4 w-4 mr-1" style={{ color: '#B3C077' }} />
               <span className="text-sm font-medium" style={{ color: '#B3C077' }}>{t('dashboard.metrics.growthThisMonth', '+2 este mes')}</span>
             </div>
-            <Progress value={85} className="mt-3" style={{ backgroundColor: 'rgba(179, 192, 119, 0.3)' }} />
             <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
               <div className="h-2 rounded-full" style={{ width: '85%', backgroundColor: '#B3C077' }}></div>
             </div>
