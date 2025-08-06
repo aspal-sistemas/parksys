@@ -196,10 +196,15 @@ const Parks: React.FC = () => {
 
         {/* Banner publicitario */}
         <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] my-8">
-          <AdSpace 
-            spaceId="31" 
-            position="banner" 
+          <AdSpaceIntelligent 
             pageType="parks" 
+            position="banner" 
+            layoutConfig={{
+              responsive: true,
+              maxWidth: "100%",
+              minHeight: "100px"
+            }}
+            enableAnalytics={true}
             className="w-full"
           />
         </div>
@@ -230,7 +235,17 @@ const Parks: React.FC = () => {
 
         {/* Espacio Publicitario - Footer */}
         <div className="mt-8 mb-6">
-          <AdSpace spaceId="3" position="footer" pageType="parks" />
+          <AdSpaceIntelligent 
+            pageType="parks" 
+            position="footer" 
+            layoutConfig={{
+              responsive: true,
+              maxWidth: "100%",
+              minHeight: "80px"
+            }}
+            enableAnalytics={true}
+            className="w-full"
+          />
         </div>
       </div>
 
