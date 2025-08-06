@@ -1313,7 +1313,7 @@ const AdminSidebarComplete: React.FC = () => {
           <img 
             src="/attached_assets/iScreen Shoter - Acrobat - 250806102921_1754500660875.png" 
             alt="ParkSys - Sistema de parques" 
-            className="h-12 w-auto opacity-80 hover:opacity-100 transition-opacity"
+            className="h-18 w-auto opacity-80 hover:opacity-100 transition-opacity"
           />
         </div>
       </div>
