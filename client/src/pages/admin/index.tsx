@@ -404,12 +404,12 @@ const AdminDashboard: React.FC = () => {
       <div className="grid gap-6 md:grid-cols-4 mb-8">
         <Card className="text-center">
           <CardContent className="pt-6">
-            <HeartHandshake className="h-12 w-12 mx-auto mb-3" style={{ color: '#513C73' }} />
+            <HeartHandshake className="h-12 w-12 mx-auto mb-3" style={{ color: '#61B1A0' }} />
             <h3 className="font-semibold mb-1">{t('dashboard.moduleSummary.volunteers', 'Voluntarios')}</h3>
             <p className="text-2xl font-bold mb-2">{volunteersArray.length}</p>
             <p className="text-sm text-gray-600">{t('dashboard.moduleSummary.activeThisMonth', '38 activos este mes')}</p>
             <Link href="/admin/volunteers">
-              <Button variant="outline" size="sm" className="mt-3" style={{ backgroundColor: '#513C73', color: 'white', borderColor: '#513C73' }}>
+              <Button variant="outline" size="sm" className="mt-3" style={{ backgroundColor: '#61B1A0', color: 'white', borderColor: '#61B1A0' }}>
                 {t('dashboard.moduleSummary.manage', 'Gestionar')}
               </Button>
             </Link>
