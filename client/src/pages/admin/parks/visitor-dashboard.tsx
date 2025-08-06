@@ -40,21 +40,7 @@ interface ParkSummary {
   lastCountDate: string;
 }
 
-// PALETA CORPORATIVA 
-const CORPORATE_COLORS = {
-  light: '#D2EAEA',
-  dark1: '#036668', 
-  dark2: '#003D49',
-  teal: '#61B1A0',
-  purple: '#513C73',
-  pink: '#B275B0', 
-  green: '#B3C077',
-  blue1: '#1E5AA6',
-  blue2: '#198DCE',
-  blue3: '#90D3EC'
-};
-
-const COLORS = ['#61B1A0', '#513C73', '#B275B0', '#B3C077', '#1E5AA6', '#198DCE', '#90D3EC', '#036668', '#003D49'];
+const COLORS = ['#00a587', '#067f5f', '#bcd256', '#8498a5', '#4CAF50', '#FF6B6B', '#4ECDC4', '#45B7D1'];
 
 const methodLabels = {
   'estimation': 'Estimación',
@@ -283,15 +269,13 @@ export default function VisitorDashboard() {
   return (
     <AdminLayout>
       <div className="p-6 space-y-6">
-        {/* Header con título CON DISEÑO CORPORATIVO */}
-        <Card className="p-4" style={{ backgroundColor: CORPORATE_COLORS.dark2, borderColor: CORPORATE_COLORS.teal }}>
+        {/* Header con título */}
+        <Card className="p-4 bg-gray-50">
           <div className="flex items-center gap-2">
-            <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: CORPORATE_COLORS.teal }}>
-              <BarChart3 className="w-8 h-8" style={{ color: 'white' }} />
-            </div>
+            <BarChart3 className="w-8 h-8 text-gray-900" />
             <div>
-              <h1 className="text-3xl font-bold" style={{ color: 'white' }}>Dashboard de Parques</h1>
-              <p className="mt-2" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>Análisis y estadísticas del conteo de visitantes</p>
+              <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+              <p className="text-gray-600 mt-2">Análisis y estadísticas del conteo de visitantes</p>
             </div>
           </div>
         </Card>
@@ -348,109 +332,109 @@ export default function VisitorDashboard() {
           </CardContent>
         </Card>
 
-        {/* Métricas principales CON DISEÑO CORPORATIVO */}
+        {/* Métricas principales */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="corporate-dark-card border-teal-600" style={{ backgroundColor: CORPORATE_COLORS.dark2, color: 'white' }}>
+          <Card>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium" style={{ color: 'white' }}>Total Visitantes</p>
-                  <p className="text-2xl font-bold" style={{ color: 'white' }}>{Number(metrics?.totalVisitors || 0).toLocaleString()}</p>
+                  <p className="text-sm font-medium text-gray-600">Total Visitantes</p>
+                  <p className="text-2xl font-bold text-gray-900">{Number(metrics?.totalVisitors || 0).toLocaleString()}</p>
                 </div>
-                <div className="h-12 w-12 rounded-full flex items-center justify-center" style={{ backgroundColor: CORPORATE_COLORS.teal }}>
-                  <Users className="w-6 h-6" style={{ color: 'white' }} />
+                <div className="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
+                  <Users className="w-6 h-6 text-green-600" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="corporate-dark-card border-teal-600" style={{ backgroundColor: CORPORATE_COLORS.dark2, color: 'white' }}>
+          <Card>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium" style={{ color: 'white' }}>Promedio Diario</p>
-                  <p className="text-2xl font-bold" style={{ color: 'white' }}>{Number(metrics?.avgDailyVisitors || 0).toLocaleString()}</p>
+                  <p className="text-sm font-medium text-gray-600">Promedio Diario</p>
+                  <p className="text-2xl font-bold text-gray-900">{Number(metrics?.avgDailyVisitors || 0).toLocaleString()}</p>
                 </div>
-                <div className="h-12 w-12 rounded-full flex items-center justify-center" style={{ backgroundColor: CORPORATE_COLORS.blue1 }}>
-                  <TrendingUp className="w-6 h-6" style={{ color: 'white' }} />
+                <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <TrendingUp className="w-6 h-6 text-blue-600" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="corporate-dark-card border-teal-600" style={{ backgroundColor: CORPORATE_COLORS.dark2, color: 'white' }}>
+          <Card>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium" style={{ color: 'white' }}>Registros</p>
-                  <p className="text-2xl font-bold" style={{ color: 'white' }}>{Number(metrics?.totalRecords || 0).toLocaleString()}</p>
+                  <p className="text-sm font-medium text-gray-600">Registros</p>
+                  <p className="text-2xl font-bold text-gray-900">{Number(metrics?.totalRecords || 0).toLocaleString()}</p>
                 </div>
-                <div className="h-12 w-12 rounded-full flex items-center justify-center" style={{ backgroundColor: CORPORATE_COLORS.purple }}>
-                  <Activity className="w-6 h-6" style={{ color: 'white' }} />
+                <div className="h-12 w-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                  <Activity className="w-6 h-6 text-purple-600" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="corporate-dark-card border-teal-600" style={{ backgroundColor: CORPORATE_COLORS.dark2, color: 'white' }}>
+          <Card>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium" style={{ color: 'white' }}>Parques Activos</p>
-                  <p className="text-2xl font-bold" style={{ color: 'white' }}>{Number(metrics?.uniqueParks || 0).toLocaleString()}</p>
+                  <p className="text-sm font-medium text-gray-600">Parques Activos</p>
+                  <p className="text-2xl font-bold text-gray-900">{Number(metrics?.uniqueParks || 0).toLocaleString()}</p>
                 </div>
-                <div className="h-12 w-12 rounded-full flex items-center justify-center" style={{ backgroundColor: CORPORATE_COLORS.green }}>
-                  <MapPin className="w-6 h-6" style={{ color: 'white' }} />
+                <div className="h-12 w-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                  <MapPin className="w-6 h-6 text-orange-600" />
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Desglose demográfico CON DISEÑO CORPORATIVO */}
+        {/* Desglose demográfico */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card style={{ backgroundColor: CORPORATE_COLORS.light, borderColor: CORPORATE_COLORS.teal }}>
+          <Card>
             <CardContent className="p-4">
               <div className="text-center">
-                <p className="text-sm font-medium" style={{ color: CORPORATE_COLORS.dark2 }}>Adultos</p>
-                <p className="text-xl font-bold" style={{ color: CORPORATE_COLORS.dark2 }}>{Number(metrics?.totalAdults || 0).toLocaleString()}</p>
-                <p className="text-xs" style={{ color: CORPORATE_COLORS.dark1 }}>
+                <p className="text-sm font-medium text-gray-600">Adultos</p>
+                <p className="text-xl font-bold text-gray-900">{Number(metrics?.totalAdults || 0).toLocaleString()}</p>
+                <p className="text-xs text-gray-500">
                   {metrics?.totalVisitors ? Math.round((metrics.totalAdults / metrics.totalVisitors) * 100) : 0}% del total
                 </p>
               </div>
             </CardContent>
           </Card>
 
-          <Card style={{ backgroundColor: CORPORATE_COLORS.light, borderColor: CORPORATE_COLORS.purple }}>
+          <Card>
             <CardContent className="p-4">
               <div className="text-center">
-                <p className="text-sm font-medium" style={{ color: CORPORATE_COLORS.dark2 }}>Niños</p>
-                <p className="text-xl font-bold" style={{ color: CORPORATE_COLORS.dark2 }}>{Number(metrics?.totalChildren || 0).toLocaleString()}</p>
-                <p className="text-xs" style={{ color: CORPORATE_COLORS.dark1 }}>
+                <p className="text-sm font-medium text-gray-600">Niños</p>
+                <p className="text-xl font-bold text-gray-900">{Number(metrics?.totalChildren || 0).toLocaleString()}</p>
+                <p className="text-xs text-gray-500">
                   {metrics?.totalVisitors ? Math.round((metrics.totalChildren / metrics.totalVisitors) * 100) : 0}% del total
                 </p>
               </div>
             </CardContent>
           </Card>
 
-          <Card style={{ backgroundColor: CORPORATE_COLORS.light, borderColor: CORPORATE_COLORS.pink }}>
+          <Card>
             <CardContent className="p-4">
               <div className="text-center">
-                <p className="text-sm font-medium" style={{ color: CORPORATE_COLORS.dark2 }}>Adultos Mayores</p>
-                <p className="text-xl font-bold" style={{ color: CORPORATE_COLORS.dark2 }}>{Number(metrics?.totalSeniors || 0).toLocaleString()}</p>
-                <p className="text-xs" style={{ color: CORPORATE_COLORS.dark1 }}>
+                <p className="text-sm font-medium text-gray-600">Adultos Mayores</p>
+                <p className="text-xl font-bold text-gray-900">{Number(metrics?.totalSeniors || 0).toLocaleString()}</p>
+                <p className="text-xs text-gray-500">
                   {metrics?.totalVisitors ? Math.round((metrics.totalSeniors / metrics.totalVisitors) * 100) : 0}% del total
                 </p>
               </div>
             </CardContent>
           </Card>
 
-          <Card style={{ backgroundColor: CORPORATE_COLORS.light, borderColor: CORPORATE_COLORS.blue2 }}>
+          <Card>
             <CardContent className="p-4">
               <div className="text-center">
-                <p className="text-sm font-medium" style={{ color: CORPORATE_COLORS.dark2 }}>Mascotas</p>
-                <p className="text-xl font-bold" style={{ color: CORPORATE_COLORS.dark2 }}>{Number(metrics?.totalPets || 0).toLocaleString()}</p>
-                <p className="text-xs" style={{ color: CORPORATE_COLORS.dark1 }}>Acompañantes</p>
+                <p className="text-sm font-medium text-gray-600">Mascotas</p>
+                <p className="text-xl font-bold text-gray-900">{Number(metrics?.totalPets || 0).toLocaleString()}</p>
+                <p className="text-xs text-gray-500">Acompañantes</p>
               </div>
             </CardContent>
           </Card>
