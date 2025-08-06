@@ -181,13 +181,11 @@ export default function VisitorsDashboard() {
         <Card className="bg-gray-50">
           <CardContent className="p-6">
             <div className="flex items-center gap-2 mb-4">
-              <BarChart3 className="w-8 h-8 text-gray-900" />
               <h1 className="text-3xl font-bold text-gray-900">Dashboard de Visitantes</h1>
             </div>
             
             <div className="flex flex-wrap gap-4 items-center">
               <div className="flex items-center gap-2">
-                <Filter className="h-4 w-4 text-gray-600" />
                 <Select value={selectedPark} onValueChange={setSelectedPark}>
                   <SelectTrigger className="w-48">
                     <SelectValue placeholder="Seleccionar parque" />
@@ -204,7 +202,6 @@ export default function VisitorsDashboard() {
               </div>
 
               <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-gray-600" />
                 <Select value={dateRange} onValueChange={setDateRange}>
                   <SelectTrigger className="w-40">
                     <SelectValue />
@@ -232,17 +229,13 @@ export default function VisitorsDashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Visitantes</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{formatNumber(metrics.visitors.total)}</div>
-              <div className="flex items-center text-xs text-muted-foreground">
-                {getChangePercentage(metrics.visitors.thisMonth, metrics.visitors.lastMonth) >= 0 ? (
-                  <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
-                ) : (
-                  <TrendingDown className="h-3 w-3 text-red-500 mr-1" />
-                )}
-                {Math.abs(getChangePercentage(metrics.visitors.thisMonth, metrics.visitors.lastMonth))}% vs mes anterior
+              <div className="flex items-center text-xs">
+                <span style={{ backgroundColor: '#61B1A0', color: 'white' }} className="px-2 py-1 rounded text-xs">
+                  {Math.abs(getChangePercentage(metrics.visitors.thisMonth, metrics.visitors.lastMonth))}% vs mes anterior
+                </span>
               </div>
               <p className="text-xs text-muted-foreground mt-1">
                 Promedio diario: {formatNumber(metrics.visitors.avgDaily)}
@@ -254,13 +247,13 @@ export default function VisitorsDashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Evaluaciones</CardTitle>
-              <Star className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{formatNumber(metrics.evaluations.total)}</div>
-              <div className="flex items-center text-xs text-muted-foreground">
-                <Star className="h-3 w-3 text-yellow-500 mr-1" />
-                {metrics.evaluations.averageRating.toFixed(1)}/5.0 promedio
+              <div className="flex items-center text-xs">
+                <span style={{ backgroundColor: '#513C73', color: 'white' }} className="px-2 py-1 rounded text-xs">
+                  {metrics.evaluations.averageRating.toFixed(1)}/5.0 promedio
+                </span>
               </div>
               <p className="text-xs text-muted-foreground mt-1">
                 {metrics.evaluations.recommendationRate.toFixed(1)}% recomendación
@@ -272,13 +265,13 @@ export default function VisitorsDashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Retroalimentación</CardTitle>
-              <MessageSquare className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{formatNumber(metrics.feedback.total)}</div>
-              <div className="flex items-center text-xs text-muted-foreground">
-                <Clock className="h-3 w-3 text-orange-500 mr-1" />
-                {formatNumber(metrics.feedback.pending)} pendientes
+              <div className="flex items-center text-xs">
+                <span style={{ backgroundColor: '#B275B0', color: 'white' }} className="px-2 py-1 rounded text-xs">
+                  {formatNumber(metrics.feedback.pending)} pendientes
+                </span>
               </div>
               <p className="text-xs text-muted-foreground mt-1">
                 {metrics.feedback.resolutionRate.toFixed(1)}% resueltos
@@ -290,15 +283,15 @@ export default function VisitorsDashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Satisfacción</CardTitle>
-              <Award className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
                 {((metrics.evaluations.averageRating / 5) * 100).toFixed(0)}%
               </div>
-              <div className="flex items-center text-xs text-muted-foreground">
-                <Target className="h-3 w-3 text-blue-500 mr-1" />
-                Índice de satisfacción
+              <div className="flex items-center text-xs">
+                <span style={{ backgroundColor: '#B3C077', color: 'white' }} className="px-2 py-1 rounded text-xs">
+                  Índice de satisfacción
+                </span>
               </div>
               <p className="text-xs text-muted-foreground mt-1">
                 Basado en {formatNumber(metrics.evaluations.total)} evaluaciones
