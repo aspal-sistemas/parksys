@@ -118,29 +118,6 @@ const Parks: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <main className="flex-grow bg-gray-50">
-      {/* Banner publicitario de ancho completo */}
-      <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] bg-gradient-to-r from-green-500 to-blue-600 py-4">
-        <div className="flex items-center justify-center h-20">
-          <AdSpaceIntelligent 
-            pageType="parks"
-            position="banner"
-            layoutConfig={{
-              responsive: true,
-              maxWidth: "100%",
-              minHeight: "80px"
-            }}
-            enableAnalytics={true}
-            autoRefresh={false}
-            className="w-full"
-          />
-          {/* Fallback visible para cuando no hay anuncios */}
-          <div className="text-white text-center">
-            <h3 className="text-xl font-bold">Espacio Publicitario Banner</h3>
-            <p className="text-sm opacity-90">Ancho completo - 150px altura</p>
-          </div>
-        </div>
-      </div>
-
       {/* Hero Section con imagen de fondo */}
       <div 
         className="relative text-white"
@@ -178,7 +155,28 @@ const Parks: React.FC = () => {
         </div>
       </div>
 
-
+      {/* Banner publicitario de ancho completo - MOVIDO DESPUÉS DEL HERO */}
+      <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] bg-gradient-to-r from-green-500 to-blue-600 py-4">
+        <div className="flex items-center justify-center h-20">
+          <AdSpaceIntelligent 
+            pageType="parks"
+            position="banner"
+            layoutConfig={{
+              responsive: true,
+              maxWidth: "100%",
+              minHeight: "80px"
+            }}
+            enableAnalytics={true}
+            autoRefresh={false}
+            className="w-full"
+          />
+          {/* Fallback visible para cuando no hay anuncios */}
+          <div className="text-white text-center">
+            <h3 className="text-xl font-bold">Espacio Publicitario Banner</h3>
+            <p className="text-sm opacity-90">Ancho completo - 150px altura</p>
+          </div>
+        </div>
+      </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Filtros modernos - TEMPORALMENTE DESACTIVADO */}
@@ -194,20 +192,7 @@ const Parks: React.FC = () => {
         </div>
         */}
 
-        {/* Banner publicitario */}
-        <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] my-8">
-          <AdSpaceIntelligent 
-            pageType="parks" 
-            position="banner" 
-            layoutConfig={{
-              responsive: true,
-              maxWidth: "100%",
-              minHeight: "100px"
-            }}
-            enableAnalytics={true}
-            className="w-full"
-          />
-        </div>
+
 
         {/* Contenido Principal - Ancho completo */}
         <div className="mb-8" id="resultados-busqueda">

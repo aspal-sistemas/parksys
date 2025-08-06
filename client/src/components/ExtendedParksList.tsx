@@ -59,14 +59,14 @@ function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksList
         {/* Skeleton que simula la nueva distribución de grilla */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[...Array(2)].map((_, i) => (
-            <div key={i} className="bg-white rounded-xl overflow-hidden shadow-sm animate-pulse aspect-[4/3]">
+            <div key={i} className="bg-white rounded-xl overflow-hidden shadow-sm animate-pulse aspect-[3/2]">
               <div className="w-full h-full bg-gray-200"></div>
             </div>
           ))}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="bg-white rounded-xl overflow-hidden shadow-sm animate-pulse aspect-[4/3]">
+            <div key={i} className="bg-white rounded-xl overflow-hidden shadow-sm animate-pulse aspect-[3/2]">
               <div className="w-full h-full bg-gray-200"></div>
             </div>
           ))}
@@ -91,7 +91,7 @@ function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksList
 
   // Función para renderizar una tarjeta de parque
   const renderParkCard = (park: ExtendedPark, size: 'normal' | 'large' | 'wide' = 'normal') => {
-    const aspectRatio = size === 'wide' ? 'aspect-[16/6]' : size === 'large' ? 'aspect-[4/3]' : 'aspect-[4/3]';
+    const aspectRatio = size === 'wide' ? 'aspect-[16/6]' : size === 'large' ? 'aspect-[3/2]' : 'aspect-[3/2]';
     const textSize = size === 'wide' ? 'text-xl md:text-2xl' : size === 'large' ? 'text-lg' : 'text-base md:text-lg';
     
     return (
