@@ -104,6 +104,18 @@ export default function ConcessionsList() {
   return (
     <PublicLayout>
       <div className="min-h-screen bg-gray-50">
+      {/* Header Ad Space */}
+      <div className="w-full bg-white border-b">
+        <div className="max-w-7xl mx-auto px-4 py-2">
+          <AdSpace 
+            spaceId="8" 
+            position="header" 
+            pageType="concessions" 
+            className="w-full"
+          />
+        </div>
+      </div>
+
       {/* Hero Section */}
       <div 
         className="relative text-white py-24"
@@ -290,6 +302,13 @@ export default function ConcessionsList() {
           {/* Sidebar Publicitario */}
           <div className="w-80 flex-shrink-0 hidden lg:block">
             <div className="sticky top-4 space-y-6">
+              {/* Espacio 5 (Concessions Sidebar) */}
+              <AdSpace 
+                spaceId="5" 
+                position="sidebar" 
+                pageType="concessions" 
+              />
+              
               {/* Espacios publicitarios con diseño tipo tarjeta */}
               <AdSpace spaceId="9" position="card" pageType="concessions" />
               <AdSpace spaceId="19" position="card" pageType="concessions" />

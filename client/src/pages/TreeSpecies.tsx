@@ -364,6 +364,18 @@ export default function TreeSpecies() {
   return (
     <PublicLayout>
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
+        {/* Header Ad Space */}
+        <div className="w-full bg-white border-b">
+          <div className="max-w-7xl mx-auto px-4 py-2">
+            <AdSpace 
+              spaceId="4" 
+              position="header" 
+              pageType="tree-species" 
+              className="w-full"
+            />
+          </div>
+        </div>
+
         {/* Hero Section con imagen */}
         <div className="relative h-96 overflow-hidden">
           <img 
@@ -515,14 +527,18 @@ export default function TreeSpecies() {
             </Card>
           </div>
 
-          {/* Resultados */}
-          {filteredSpecies.length > 0 ? (
-            <>
-              <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-6'}>
-                {paginatedSpecies.map((species) => (
-                  <TreeSpeciesCard key={species.id} species={species} viewMode={viewMode} />
-                ))}
-              </div>
+          {/* Layout principal con sidebar */}
+          <div className="flex gap-8">
+            {/* Contenido principal */}
+            <div className="flex-1">
+              {/* Resultados */}
+              {filteredSpecies.length > 0 ? (
+                <>
+                  <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-6'}>
+                    {paginatedSpecies.map((species) => (
+                      <TreeSpeciesCard key={species.id} species={species} viewMode={viewMode} />
+                    ))}
+                  </div>
               
               {/* Información de paginación */}
               <div className="flex items-center justify-between mt-8 mb-12">
@@ -592,6 +608,18 @@ export default function TreeSpecies() {
               </p>
             </div>
           )}
+            </div>
+            
+            {/* Sidebar publicitario */}
+            <div className="w-80 space-y-6 sticky top-4 self-start">
+              <AdSpace 
+                spaceId="5" 
+                position="sidebar" 
+                pageType="tree-species" 
+                className="w-full"
+              />
+            </div>
+          </div>
         </div>
       </div>
     </PublicLayout>
