@@ -409,7 +409,7 @@ const AdminDashboard: React.FC = () => {
             <p className="text-2xl font-bold mb-2">{volunteersArray.length}</p>
             <p className="text-sm text-gray-600">{t('dashboard.moduleSummary.activeThisMonth', '38 activos este mes')}</p>
             <Link href="/admin/volunteers">
-              <Button variant="outline" size="sm" className="mt-3" style={{ borderColor: '#513C73', color: '#513C73' }}>
+              <Button variant="outline" size="sm" className="mt-3" style={{ backgroundColor: '#513C73', color: 'white', borderColor: '#513C73' }}>
                 {t('dashboard.moduleSummary.manage', 'Gestionar')}
               </Button>
             </Link>
@@ -423,7 +423,7 @@ const AdminDashboard: React.FC = () => {
             <p className="text-2xl font-bold mb-2">{concessionsArray.length}</p>
             <p className="text-sm text-gray-600">{t('dashboard.moduleSummary.activeContracts', '9 contratos activos')}</p>
             <Link href="/admin/concessions">
-              <Button variant="outline" size="sm" className="mt-3" style={{ borderColor: '#513C73', color: '#513C73' }}>
+              <Button variant="outline" size="sm" className="mt-3" style={{ backgroundColor: '#513C73', color: 'white', borderColor: '#513C73' }}>
                 {t('dashboard.moduleSummary.manage', 'Gestionar')}
               </Button>
             </Link>
@@ -437,7 +437,7 @@ const AdminDashboard: React.FC = () => {
             <p className="text-2xl font-bold mb-2">50</p>
             <p className="text-sm text-gray-600">{t('dashboard.moduleSummary.catalogedSpecies', '14 especies catalogadas')}</p>
             <Link href="/admin/trees">
-              <Button variant="outline" size="sm" className="mt-3" style={{ borderColor: '#B275B0', color: '#B275B0' }}>
+              <Button variant="outline" size="sm" className="mt-3" style={{ backgroundColor: '#B275B0', color: 'white', borderColor: '#B275B0' }}>
                 {t('dashboard.moduleSummary.manage', 'Gestionar')}
               </Button>
             </Link>
@@ -451,7 +451,7 @@ const AdminDashboard: React.FC = () => {
             <p className="text-2xl font-bold mb-2">2,847</p>
             <p className="text-sm text-gray-600">{t('dashboard.moduleSummary.emailsSent', 'emails enviados')}</p>
             <Link href="/admin/communications">
-              <Button variant="outline" size="sm" className="mt-3" style={{ borderColor: '#B3C077', color: '#B3C077' }}>
+              <Button variant="outline" size="sm" className="mt-3" style={{ backgroundColor: '#B3C077', color: 'white', borderColor: '#B3C077' }}>
                 {t('dashboard.moduleSummary.manage', 'Gestionar')}
               </Button>
             </Link>
