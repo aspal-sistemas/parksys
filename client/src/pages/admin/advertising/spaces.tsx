@@ -38,17 +38,27 @@ const AdSpaces = () => {
 
   // Mutación para toggle del estado de un espacio
   const toggleSpaceMutation = useMutation({
-    mutationFn: async ({ spaceId, isActive }: { spaceId: number; isActive: boolean }) => {
-      return apiRequest(`/api/advertising-management/spaces/${spaceId}`, {
+    mutationFn: async ({ space, isActive }: { space: AdSpace; isActive: boolean }) => {
+      return apiRequest(`/api/advertising-management/spaces/${space.id}`, {
         method: 'PUT',
-        data: { is_active: !isActive }
+        data: {
+          name: space.name,
+          description: space.description,
+          page_type: space.page_type,
+          position: space.position,
+          page_identifier: space.page_identifier,
+          width: space.dimensions?.split('x')[0] || '300',
+          height: space.dimensions?.split('x')[1] || '250',
+          category: space.category,
+          is_active: !isActive
+        }
       });
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/advertising-management/spaces'] });
       toast({
         title: "Espacio actualizado",
-        description: `El espacio ha sido ${data.data.isActive ? 'activado' : 'desactivado'} correctamente.`,
+        description: `El espacio ha sido ${data.is_active ? 'activado' : 'desactivado'} correctamente.`,
       });
     },
     onError: (error) => {
@@ -338,7 +348,7 @@ const AdSpaces = () => {
                           <Button
                             variant={space.is_active ? "outline" : "default"}
                             size="sm"
-                            onClick={() => toggleSpaceMutation.mutate({ spaceId: space.id, isActive: space.is_active })}
+                            onClick={() => toggleSpaceMutation.mutate({ space: space, isActive: space.is_active })}
                             disabled={toggleSpaceMutation.isPending}
                             className="flex items-center gap-2"
                           >
@@ -385,7 +395,7 @@ const AdSpaces = () => {
                           <Button
                             variant={space.is_active ? "outline" : "default"}
                             size="sm"
-                            onClick={() => toggleSpaceMutation.mutate({ spaceId: space.id, isActive: space.is_active })}
+                            onClick={() => toggleSpaceMutation.mutate({ space: space, isActive: space.is_active })}
                             disabled={toggleSpaceMutation.isPending}
                             className="flex items-center gap-2"
                           >
