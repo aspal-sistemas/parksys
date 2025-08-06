@@ -11,28 +11,18 @@ import {
   DollarSign,
   HeartHandshake,
   Briefcase,
-  Shield,
   MessageSquare,
   TrendingUp,
-  TrendingDown,
   Activity,
   CheckCircle,
-  AlertCircle,
-  Clock,
-  Plus,
-  UserCheck,
-  Lock,
-  Crown,
-  Star,
-  Settings as SettingsIcon
+  AlertCircle
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import AdminLayout from '@/components/AdminLayout';
-import { RoleBadge, SYSTEM_ROLES } from '@/components/RoleBadge';
-import { usePermissions } from '@/components/RoleGuard';
+
 import { 
   LineChart, 
   Line, 
@@ -54,7 +44,6 @@ import {
 // Dashboard mejorado con gráficas e indicadores
 const AdminDashboard: React.FC = () => {
   const { t } = useTranslation('common');
-  const permissions = usePermissions(); // Sistema de roles integrado
   
   // Consultas de datos reales
   const { data: parksResponse } = useQuery({ queryKey: ['/api/parks'] });
@@ -110,19 +99,7 @@ const AdminDashboard: React.FC = () => {
     { name: t('dashboard.parkCategories.natural', 'Naturales'), value: 2, color: '#059669' }
   ];
 
-  // Datos del sistema de roles - INTEGRACIÓN DEL SISTEMA AVANZADO
-  const roleStatsData = [
-    { role: 'super-admin', users: 2, activity: 95 },
-    { role: 'director-general', users: 3, activity: 88 },
-    { role: 'coordinador-parques', users: 8, activity: 92 },
-    { role: 'coordinador-actividades', users: 6, activity: 85 },
-    { role: 'admin-financiero', users: 4, activity: 90 },
-    { role: 'operador-parque', users: 15, activity: 78 },
-    { role: 'consultor-auditor', users: 5, activity: 65 }
-  ];
 
-  const totalActiveUsers = roleStatsData.reduce((sum, role) => sum + role.users, 0);
-  const averageActivity = Math.round(roleStatsData.reduce((sum, role) => sum + role.activity, 0) / roleStatsData.length);
 
   return (
     <AdminLayout 
@@ -234,34 +211,7 @@ const AdminDashboard: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* NUEVA GRÁFICA: Distribución de Roles - SISTEMA AVANZADO INTEGRADO */}
-        <Card className="col-span-1">
-          <CardHeader>
-            <CardTitle>Distribución de Roles</CardTitle>
-            <CardDescription>Usuarios asignados por nivel jerárquico del sistema</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={roleStatsData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="role" 
-                  angle={-45}
-                  textAnchor="end"
-                  height={100}
-                  fontSize={10}
-                  tickFormatter={(value) => SYSTEM_ROLES.find(r => r.id === value)?.displayName || value}
-                />
-                <YAxis />
-                <Tooltip 
-                  labelFormatter={(value) => SYSTEM_ROLES.find(r => r.id === value)?.displayName || value}
-                  formatter={(value, name) => [value, name === 'users' ? 'Usuarios' : 'Actividad %']}
-                />
-                <Bar dataKey="users" fill="#6366f1" name="Usuarios" />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+
 
         {/* Uso de módulos */}
         <Card className="col-span-1">
@@ -359,68 +309,7 @@ const AdminDashboard: React.FC = () => {
         </Card>
       </div>
 
-      {/* Sistema de Roles - Información secundaria justo antes de indicadores críticos */}
-      <div className="grid gap-6 md:grid-cols-3 mb-6">
-        <Card className="bg-gradient-to-br from-indigo-50 to-blue-50 border-indigo-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-indigo-800">
-              Sistema de Roles
-            </CardTitle>
-            <Shield className="h-5 w-5 text-indigo-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-indigo-900">{SYSTEM_ROLES.length}</div>
-            <div className="flex items-center mt-2">
-              <UserCheck className="h-4 w-4 text-indigo-600 mr-1" />
-              <span className="text-sm text-indigo-600 font-medium">{totalActiveUsers} usuarios</span>
-            </div>
-            <Progress value={averageActivity} className="mt-3" />
-            <p className="text-xs text-indigo-700 mt-1">{averageActivity}% actividad</p>
-          </CardContent>
-        </Card>
 
-        <Card className="bg-gradient-to-br from-rose-50 to-pink-50 border-rose-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-rose-800">
-              Mi Rol
-            </CardTitle>
-            <Crown className="h-5 w-5 text-rose-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="mb-2">
-              <RoleBadge roleId={permissions.userRole} size="sm" />
-            </div>
-            <div className="text-sm text-rose-700">
-              <div className="flex items-center justify-between mb-1">
-                <span>Nivel:</span>
-                <span className="font-medium">{permissions.roleLevel}/10</span>
-              </div>
-              <Progress value={permissions.roleLevel * 10} className="mt-2" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gradient-to-br from-emerald-50 to-green-50 border-emerald-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-emerald-800">
-              Permisos
-            </CardTitle>
-            <Lock className="h-5 w-5 text-emerald-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-emerald-900">7</div>
-            <div className="flex items-center mt-2">
-              <SettingsIcon className="h-4 w-4 text-emerald-600 mr-1" />
-              <span className="text-sm text-emerald-600 font-medium">Módulos</span>
-            </div>
-            <div className="mt-2">
-              <Badge variant="outline" className="text-emerald-600 border-emerald-300 text-xs">
-                Admin completo
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
 
       {/* KPIs y alertas */}
       <div className="grid gap-6 md:grid-cols-3 mb-8">
@@ -480,60 +369,7 @@ const AdminDashboard: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* NUEVA SECCIÓN: Acciones Rápidas Basadas en Roles - SISTEMA AVANZADO */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Star className="h-5 w-5 mr-2 text-purple-500" />
-              Acciones Rápidas
-            </CardTitle>
-            <CardDescription>
-              Acciones disponibles según tu rol: <RoleBadge roleId={permissions.userRole} size="sm" />
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {permissions.canAdmin('Gestión') && (
-              <Link href="/admin/parks/create">
-                <Button variant="outline" size="sm" className="w-full justify-start">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Crear Nuevo Parque
-                </Button>
-              </Link>
-            )}
-            {permissions.canWrite('Marketing') && (
-              <Link href="/admin/activities/create">
-                <Button variant="outline" size="sm" className="w-full justify-start">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  Nueva Actividad
-                </Button>
-              </Link>
-            )}
-            {permissions.canAdmin('Seguridad') && (
-              <Link href="/admin/roles">
-                <Button variant="outline" size="sm" className="w-full justify-start">
-                  <Shield className="h-4 w-4 mr-2" />
-                  Gestionar Roles
-                </Button>
-              </Link>
-            )}
-            {permissions.canWrite('Finanzas') && (
-              <Link href="/admin/finance">
-                <Button variant="outline" size="sm" className="w-full justify-start">
-                  <DollarSign className="h-4 w-4 mr-2" />
-                  Revisar Finanzas
-                </Button>
-              </Link>
-            )}
-            {permissions.canRead('RH') && (
-              <Link href="/admin/hr">
-                <Button variant="outline" size="sm" className="w-full justify-start">
-                  <Users className="h-4 w-4 mr-2" />
-                  Recursos Humanos
-                </Button>
-              </Link>
-            )}
-          </CardContent>
-        </Card>
+
       </div>
 
       {/* Resumen de módulos principales */}
