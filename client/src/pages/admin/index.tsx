@@ -115,78 +115,78 @@ const AdminDashboard: React.FC = () => {
       {/* Fila 1: Métricas principales */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
         {/* Parques */}
-        <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
+        <Card className="border-teal-600" style={{ backgroundColor: '#003D49' }}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-green-800">
+            <CardTitle className="text-sm font-medium text-white">
               {t('dashboard.metrics.totalParks', 'Total de Parques')}
             </CardTitle>
-            <MapPin className="h-5 w-5 text-green-600" />
+            <MapPin className="h-5 w-5 text-teal-300" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-green-900">{parksArray.length}</div>
+            <div className="text-3xl font-bold text-white">{parksArray.length}</div>
             <div className="flex items-center mt-2">
-              <TrendingUp className="h-4 w-4 text-green-600 mr-1" />
-              <span className="text-sm text-green-600 font-medium">{t('dashboard.metrics.growthThisMonth', '+2 este mes')}</span>
+              <TrendingUp className="h-4 w-4 text-teal-300 mr-1" />
+              <span className="text-sm text-teal-300 font-medium">{t('dashboard.metrics.growthThisMonth', '+2 este mes')}</span>
             </div>
             <Progress value={85} className="mt-3" />
-            <p className="text-xs text-green-700 mt-1">{t('dashboard.metrics.capacityTarget', '85% de capacidad objetivo')}</p>
+            <p className="text-xs text-teal-200 mt-1">{t('dashboard.metrics.capacityTarget', '85% de capacidad objetivo')}</p>
           </CardContent>
         </Card>
         
         {/* Personal RH */}
-        <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-200">
+        <Card className="border-teal-600" style={{ backgroundColor: '#003D49' }}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-blue-800">
+            <CardTitle className="text-sm font-medium text-white">
               {t('dashboard.metrics.activeStaff', 'Personal Activo')}
             </CardTitle>
-            <Briefcase className="h-5 w-5 text-blue-600" />
+            <Briefcase className="h-5 w-5 text-teal-300" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-blue-900">{employeesArray.length}</div>
+            <div className="text-3xl font-bold text-white">{employeesArray.length}</div>
             <div className="flex items-center mt-2">
-              <TrendingUp className="h-4 w-4 text-blue-600 mr-1" />
-              <span className="text-sm text-blue-600 font-medium">{t('dashboard.metrics.staffGrowthThisMonth', '+5 este mes')}</span>
+              <TrendingUp className="h-4 w-4 text-teal-300 mr-1" />
+              <span className="text-sm text-teal-300 font-medium">{t('dashboard.metrics.staffGrowthThisMonth', '+5 este mes')}</span>
             </div>
             <Progress value={92} className="mt-3" />
-            <p className="text-xs text-blue-700 mt-1">{t('dashboard.metrics.averageAttendance', '92% asistencia promedio')}</p>
+            <p className="text-xs text-teal-200 mt-1">{t('dashboard.metrics.averageAttendance', '92% asistencia promedio')}</p>
           </CardContent>
         </Card>
         
         {/* Actividades */}
-        <Card className="bg-gradient-to-br from-purple-50 to-violet-50 border-purple-200">
+        <Card className="border-teal-600" style={{ backgroundColor: '#003D49' }}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-purple-800">
+            <CardTitle className="text-sm font-medium text-white">
               {t('dashboard.metrics.activeActivities', 'Actividades Activas')}
             </CardTitle>
-            <Calendar className="h-5 w-5 text-purple-600" />
+            <Calendar className="h-5 w-5 text-teal-300" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-purple-900">{activitiesArray.length}</div>
+            <div className="text-3xl font-bold text-white">{activitiesArray.length}</div>
             <div className="flex items-center mt-2">
-              <Activity className="h-4 w-4 text-purple-600 mr-1" />
-              <span className="text-sm text-purple-600 font-medium">{t('dashboard.metrics.activitiesThisWeek', '15 esta semana')}</span>
+              <Activity className="h-4 w-4 text-teal-300 mr-1" />
+              <span className="text-sm text-teal-300 font-medium">{t('dashboard.metrics.activitiesThisWeek', '15 esta semana')}</span>
             </div>
             <Progress value={78} className="mt-3" />
-            <p className="text-xs text-purple-700 mt-1">{t('dashboard.metrics.averageParticipation', '78% participación promedio')}</p>
+            <p className="text-xs text-teal-200 mt-1">{t('dashboard.metrics.averageParticipation', '78% participación promedio')}</p>
           </CardContent>
         </Card>
         
         {/* Finanzas */}
-        <Card className="bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-200">
+        <Card className="border-teal-600" style={{ backgroundColor: '#003D49' }}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-amber-800">
+            <CardTitle className="text-sm font-medium text-white">
               {t('dashboard.metrics.monthlyBalance', 'Balance Mensual')}
             </CardTitle>
-            <DollarSign className="h-5 w-5 text-amber-600" />
+            <DollarSign className="h-5 w-5 text-teal-300" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-amber-900">$54K</div>
+            <div className="text-3xl font-bold text-white">$54K</div>
             <div className="flex items-center mt-2">
-              <TrendingUp className="h-4 w-4 text-amber-600 mr-1" />
-              <span className="text-sm text-amber-600 font-medium">{t('dashboard.metrics.vsLastMonth', '+18% vs mes anterior')}</span>
+              <TrendingUp className="h-4 w-4 text-teal-300 mr-1" />
+              <span className="text-sm text-teal-300 font-medium">{t('dashboard.metrics.vsLastMonth', '+18% vs mes anterior')}</span>
             </div>
             <Progress value={68} className="mt-3" />
-            <p className="text-xs text-amber-700 mt-1">{t('dashboard.metrics.annualBudget', '68% del presupuesto anual')}</p>
+            <p className="text-xs text-teal-200 mt-1">{t('dashboard.metrics.annualBudget', '68% del presupuesto anual')}</p>
           </CardContent>
         </Card>
       </div>
