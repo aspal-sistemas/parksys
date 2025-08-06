@@ -164,7 +164,7 @@ export function SidebarSearch() {
   };
 
   return (
-    <div className="sidebar-search-container relative px-3 mb-4" style={{ backgroundColor: '#D2EAEA', padding: '12px', borderRadius: '8px', margin: '8px' }}>
+    <div className="sidebar-search-container relative px-3 mb-4" style={{ marginTop: '20px' }}>
       <div className="relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
         <Input
