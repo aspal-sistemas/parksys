@@ -390,12 +390,7 @@ const Header: React.FC = () => {
                       <HelpCircle className="h-4 w-4" />
                     </Button>
                   </HelpCenter>
-                  <div style={{ 
-                    backgroundColor: '#D2EAEA',
-                    borderColor: '#003D49'
-                  }} className="rounded-lg border-2">
-                    <LanguageSelector />
-                  </div>
+                  <LanguageSelector />
                   <div className="flex items-center gap-2">
                     <UserProfileImage 
                       userId={(user as any)?.id || 0} 

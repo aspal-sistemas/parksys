@@ -42,7 +42,12 @@ export function LanguageSelector() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="gap-2" 
+          style={{ backgroundColor: '#D2EAEA' }}
+        >
           <Globe className="h-4 w-4" />
           <span className="text-lg">{currentLanguage.flag}</span>
           <span className="hidden sm:inline">{currentLanguage.nativeName}</span>
