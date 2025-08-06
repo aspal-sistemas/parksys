@@ -225,9 +225,9 @@ const AdminDashboard: React.FC = () => {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Line type="monotone" dataKey="parques" stroke="#00a587" strokeWidth={3} name={t('dashboard.modules.parks', 'Parques')} />
-                <Line type="monotone" dataKey="actividades" stroke="#8498a5" strokeWidth={3} name={t('dashboard.modules.activities', 'Actividades')} />
-                <Line type="monotone" dataKey="voluntarios" stroke="#059669" strokeWidth={3} name={t('dashboard.modules.volunteers', 'Voluntarios')} />
+                <Line type="monotone" dataKey="parques" stroke="#B3C077" strokeWidth={3} name={t('dashboard.modules.parks', 'Parques')} />
+                <Line type="monotone" dataKey="actividades" stroke="#B275B0" strokeWidth={3} name={t('dashboard.modules.activities', 'Actividades')} />
+                <Line type="monotone" dataKey="voluntarios" stroke="#198DCE" strokeWidth={3} name={t('dashboard.modules.volunteers', 'Voluntarios')} />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>
