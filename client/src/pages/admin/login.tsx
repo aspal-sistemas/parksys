@@ -163,7 +163,7 @@ const AdminLogin: React.FC = () => {
         <Card className="w-full max-w-md" style={{ backgroundColor: '#003D49' }}>
           <CardHeader className="space-y-1">
             <div className="flex items-center justify-center mb-4">
-              <img src={logoPath} alt="ParkSys" className="h-12 w-auto" />
+              <img src={logoPath} alt="ParkSys" className="h-16 w-auto" />
             </div>
             <CardTitle className="text-xl text-white">Recuperar Contraseña</CardTitle>
             <CardDescription className="text-gray-200">
@@ -225,7 +225,7 @@ const AdminLogin: React.FC = () => {
         <CardHeader className="space-y-1">
           <div className="flex items-center justify-center mb-4">
             <a href="/" className="hover:opacity-80 transition-opacity">
-              <img src={logoPath} alt="ParkSys" className="h-12 w-auto" />
+              <img src={logoPath} alt="ParkSys" className="h-16 w-auto" />
             </a>
           </div>
           <CardTitle className="text-xl text-white">Panel Administrativo</CardTitle>
