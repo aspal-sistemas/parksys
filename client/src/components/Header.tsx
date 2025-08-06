@@ -204,11 +204,12 @@ const Header: React.FC = () => {
               {/* Páneles de Control */}
               <Link href="/admin">
                 <button
-                  className={`border-b-2 py-2 px-3 text-sm font-medium flex items-center ${
+                  className={`py-2 px-3 text-sm font-medium flex items-center rounded-lg transition-colors ${
                     location === '/admin' 
-                      ? 'border-primary text-gray-900' 
-                      : 'border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300'
-                  }`}>
+                      ? 'bg-primary text-white' 
+                      : 'text-gray-600 hover:text-gray-800'
+                  }`}
+                  style={{ backgroundColor: location !== '/admin' ? '#D2EAEA' : undefined }}>
                   <Home className="mr-2 h-4 w-4" />
                   Páneles de Control
                 </button>
@@ -217,7 +218,8 @@ const Header: React.FC = () => {
               {/* Menú de Gestión */}
               <div className="relative group">
                 <button
-                  className="border-b-2 py-2 px-3 text-sm font-medium flex items-center border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300">
+                  className="py-2 px-3 text-sm font-medium flex items-center rounded-lg text-gray-600 hover:text-gray-800 transition-colors"
+                  style={{ backgroundColor: '#D2EAEA' }}>
                   Gestión
                   <ChevronDown className="ml-1 h-3 w-3" />
                 </button>
@@ -252,7 +254,8 @@ const Header: React.FC = () => {
               {/* Menú O & M */}
               <div className="relative group">
                 <button
-                  className="border-b-2 py-2 px-3 text-sm font-medium flex items-center border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300">
+                  className="py-2 px-3 text-sm font-medium flex items-center rounded-lg text-gray-600 hover:text-gray-800 transition-colors"
+                  style={{ backgroundColor: '#D2EAEA' }}>
                   O & M
                   <ChevronDown className="ml-1 h-3 w-3" />
                 </button>
@@ -279,7 +282,8 @@ const Header: React.FC = () => {
               {/* Menú Admin */}
               <div className="relative group">
                 <button
-                  className="border-b-2 py-2 px-3 text-sm font-medium flex items-center border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300">
+                  className="py-2 px-3 text-sm font-medium flex items-center rounded-lg text-gray-600 hover:text-gray-800 transition-colors"
+                  style={{ backgroundColor: '#D2EAEA' }}>
                   Admin
                   <ChevronDown className="ml-1 h-3 w-3" />
                 </button>
@@ -306,7 +310,8 @@ const Header: React.FC = () => {
               {/* Menú Mkt y Comm */}
               <div className="relative group">
                 <button
-                  className="border-b-2 py-2 px-3 text-sm font-medium flex items-center border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300">
+                  className="py-2 px-3 text-sm font-medium flex items-center rounded-lg text-gray-600 hover:text-gray-800 transition-colors"
+                  style={{ backgroundColor: '#D2EAEA' }}>
                   Mkt y Comm
                   <ChevronDown className="ml-1 h-3 w-3" />
                 </button>
@@ -333,7 +338,8 @@ const Header: React.FC = () => {
               {/* Menú RH */}
               <Link href="/admin/hr/employees">
                 <button
-                  className="border-b-2 py-2 px-3 text-sm font-medium border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300">
+                  className="py-2 px-3 text-sm font-medium rounded-lg text-gray-600 hover:text-gray-800 transition-colors"
+                  style={{ backgroundColor: '#D2EAEA' }}>
                   RH
                 </button>
               </Link>
@@ -351,16 +357,18 @@ const Header: React.FC = () => {
               location !== '/admin/login' && (
                 <div className="flex items-center gap-2 mr-2">
                   <Link href="/">
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" className="rounded-lg" style={{ backgroundColor: '#D2EAEA' }}>
                       Sitio
                     </Button>
                   </Link>
                   <HelpCenter>
-                    <Button variant="outline" size="sm" className="w-9 h-9 p-0">
+                    <Button variant="outline" size="sm" className="w-9 h-9 p-0 rounded-lg" style={{ backgroundColor: '#D2EAEA' }}>
                       <HelpCircle className="h-4 w-4" />
                     </Button>
                   </HelpCenter>
-                  <LanguageSelector />
+                  <div style={{ backgroundColor: '#D2EAEA' }} className="rounded-lg">
+                    <LanguageSelector />
+                  </div>
                   <div className="flex items-center gap-2">
                     <UserProfileImage 
                       userId={(user as any)?.id || 0} 
