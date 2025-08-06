@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
+import logoPath from "@assets/iScreen Shoter - Acrobat - 250806102921_1754498797906.png";
 
 const loginSchema = z.object({
   username: z.string().min(1, { message: 'El nombre de usuario es requerido' }),
@@ -158,14 +159,11 @@ const AdminLogin: React.FC = () => {
   
   if (showForgotPassword) {
     return (
-      <div className="h-screen w-screen fixed inset-0 flex items-center justify-center bg-gray-50 px-4 z-[60]">
+      <div className="h-screen w-screen fixed inset-0 flex items-center justify-center px-4 z-[60]" style={{ backgroundColor: '#003D49' }}>
         <Card className="w-full max-w-md">
           <CardHeader className="space-y-1">
             <div className="flex items-center justify-center mb-4">
-              <svg className="h-10 w-10 text-primary" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M5 16c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm0-8c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm4 8c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm0-8c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm7.5-4c.28 0 .5.22.5.5s-.22.5-.5.5-.5-.22-.5-.5.22-.5.5-.5zM5 12c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm7 0c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm1-8.5c-.28 0-.5.22-.5.5s.22.5.5.5.5-.22.5-.5-.22-.5-.5-.5zM17 12c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm2-5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm0 8c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm-7-10c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm0 8c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm-4-8c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z"></path>
-              </svg>
-              <span className="ml-2 text-2xl font-heading font-semibold text-gray-900">ParkSys</span>
+              <img src={logoPath} alt="ParkSys" className="h-12 w-auto" />
             </div>
             <CardTitle className="text-xl">Recuperar Contraseña</CardTitle>
             <CardDescription>
@@ -222,15 +220,12 @@ const AdminLogin: React.FC = () => {
   }
 
   return (
-    <div className="h-screen w-screen fixed inset-0 flex items-center justify-center bg-gray-50 px-4 z-[60]">
+    <div className="h-screen w-screen fixed inset-0 flex items-center justify-center px-4 z-[60]" style={{ backgroundColor: '#003D49' }}>
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <div className="flex items-center justify-center mb-4">
-            <a href="/" className="flex items-center hover:opacity-80 transition-opacity">
-              <svg className="h-10 w-10 text-primary" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M5 16c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm0-8c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm4 8c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm0-8c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm7.5-4c.28 0 .5.22.5.5s-.22.5-.5.5-.5-.22-.5-.5.22-.5.5-.5zM5 12c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm7 0c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm1-8.5c-.28 0-.5.22-.5.5s.22.5.5.5.5-.22.5-.5-.22-.5-.5-.5zM17 12c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm2-5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm0 8c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm-7-10c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm0 8c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm-4-8c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z"></path>
-              </svg>
-              <span className="ml-2 text-2xl font-heading font-semibold text-gray-900">ParkSys</span>
+            <a href="/" className="hover:opacity-80 transition-opacity">
+              <img src={logoPath} alt="ParkSys" className="h-12 w-auto" />
             </a>
           </div>
           <CardTitle className="text-xl">Panel Administrativo</CardTitle>
