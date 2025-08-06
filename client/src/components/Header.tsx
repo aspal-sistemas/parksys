@@ -63,7 +63,7 @@ const Header: React.FC = () => {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 shadow-sm border-b border-gray-200" style={{ backgroundColor: isAdmin ? '#D2EAEA' : 'white' }}>
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
+        <div className="flex items-center h-20">
           <div className="flex items-center">
             {/* Logo y navegación - Solo mostrar para páginas públicas */}
             {!isAdmin && (
@@ -198,9 +198,9 @@ const Header: React.FC = () => {
             )}
           </div>
           
-          {/* Navegación izquierda para administradores */}
+          {/* Navegación para administradores - movida hacia la derecha */}
           {isAdmin && location !== '/admin/login' && (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-1 justify-end mr-4">
               {/* Páneles de Control */}
               <Link href="/admin">
                 <button
@@ -343,7 +343,7 @@ const Header: React.FC = () => {
           )}
 
           {/* Búsqueda Global y Ver Sitio Público - lado derecho */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-shrink-0">
             {/* Búsqueda Global - Solo en sitio público */}
             {!isAdmin && <GlobalSearch />}
             
