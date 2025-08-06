@@ -50,6 +50,15 @@ import {
   RefreshCw
 } from 'lucide-react';
 
+// Colores corporativos - FORZAR ACTUALIZACIÓN
+const CORPORATE_DARK_BG = '#003D49';
+const CORPORATE_COLORS = {
+  visitors: '#61B1A0',
+  evaluations: '#513C73', 
+  feedback: '#B275B0',
+  satisfaction: '#B3C077'
+};
+
 interface DashboardMetrics {
   visitors: {
     total: number;
@@ -220,80 +229,80 @@ export default function VisitorsDashboard() {
 
         {/* Métricas principales */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Visitantes */}
-          <Card className="border-teal-600" style={{ backgroundColor: '#003D49' }}>
+          {/* Visitantes - ACTUALIZADO CON DISEÑO CORPORATIVO */}
+          <Card className="border-teal-600" style={{ backgroundColor: CORPORATE_DARK_BG }}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-lg font-medium text-white">Total Visitantes</CardTitle>
-              <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#61B1A0' }}>
+              <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: CORPORATE_COLORS.visitors }}>
                 <Users className="h-7 w-7 text-white" />
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{formatNumber(metrics.visitors.total)}</div>
               <div className="flex items-center mt-2">
-                <TrendingUp className="h-4 w-4 mr-1" style={{ color: '#61B1A0' }} />
-                <span className="text-sm font-medium" style={{ color: '#61B1A0' }}>
+                <TrendingUp className="h-4 w-4 mr-1" style={{ color: CORPORATE_COLORS.visitors }} />
+                <span className="text-sm font-medium" style={{ color: CORPORATE_COLORS.visitors }}>
                   {Math.abs(getChangePercentage(metrics.visitors.thisMonth, metrics.visitors.lastMonth))}% vs mes anterior
                 </span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
-                <div className="h-2 rounded-full" style={{ width: '85%', backgroundColor: '#61B1A0' }}></div>
+                <div className="h-2 rounded-full" style={{ width: '85%', backgroundColor: CORPORATE_COLORS.visitors }}></div>
               </div>
               <p className="text-xs text-white mt-1">Promedio diario: {formatNumber(metrics.visitors.avgDaily)}</p>
             </CardContent>
           </Card>
 
-          {/* Evaluaciones */}
-          <Card className="border-teal-600" style={{ backgroundColor: '#003D49' }}>
+          {/* Evaluaciones - ACTUALIZADO CON DISEÑO CORPORATIVO */}
+          <Card className="border-teal-600" style={{ backgroundColor: CORPORATE_DARK_BG }}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-lg font-medium text-white">Evaluaciones</CardTitle>
-              <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#513C73' }}>
+              <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: CORPORATE_COLORS.evaluations }}>
                 <Star className="h-7 w-7 text-white" />
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{formatNumber(metrics.evaluations.total)}</div>
               <div className="flex items-center mt-2">
-                <Star className="h-4 w-4 mr-1" style={{ color: '#513C73' }} />
-                <span className="text-sm font-medium" style={{ color: '#513C73' }}>
+                <Star className="h-4 w-4 mr-1" style={{ color: CORPORATE_COLORS.evaluations }} />
+                <span className="text-sm font-medium" style={{ color: CORPORATE_COLORS.evaluations }}>
                   {metrics.evaluations.averageRating.toFixed(1)}/5.0 promedio
                 </span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
-                <div className="h-2 rounded-full" style={{ width: `${(metrics.evaluations.averageRating / 5) * 100}%`, backgroundColor: '#513C73' }}></div>
+                <div className="h-2 rounded-full" style={{ width: `${(metrics.evaluations.averageRating / 5) * 100}%`, backgroundColor: CORPORATE_COLORS.evaluations }}></div>
               </div>
               <p className="text-xs text-white mt-1">{metrics.evaluations.recommendationRate.toFixed(1)}% recomendación</p>
             </CardContent>
           </Card>
 
-          {/* Retroalimentación */}
-          <Card className="border-teal-600" style={{ backgroundColor: '#003D49' }}>
+          {/* Retroalimentación - ACTUALIZADO CON DISEÑO CORPORATIVO */}
+          <Card className="border-teal-600" style={{ backgroundColor: CORPORATE_DARK_BG }}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-lg font-medium text-white">Retroalimentación</CardTitle>
-              <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#B275B0' }}>
+              <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: CORPORATE_COLORS.feedback }}>
                 <MessageSquare className="h-7 w-7 text-white" />
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{formatNumber(metrics.feedback.total)}</div>
               <div className="flex items-center mt-2">
-                <Clock className="h-4 w-4 mr-1" style={{ color: '#B275B0' }} />
-                <span className="text-sm font-medium" style={{ color: '#B275B0' }}>
+                <Clock className="h-4 w-4 mr-1" style={{ color: CORPORATE_COLORS.feedback }} />
+                <span className="text-sm font-medium" style={{ color: CORPORATE_COLORS.feedback }}>
                   {formatNumber(metrics.feedback.pending)} pendientes
                 </span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
-                <div className="h-2 rounded-full" style={{ width: `${metrics.feedback.resolutionRate}%`, backgroundColor: '#B275B0' }}></div>
+                <div className="h-2 rounded-full" style={{ width: `${metrics.feedback.resolutionRate}%`, backgroundColor: CORPORATE_COLORS.feedback }}></div>
               </div>
               <p className="text-xs text-white mt-1">{metrics.feedback.resolutionRate.toFixed(1)}% resueltos</p>
             </CardContent>
           </Card>
 
-          {/* Satisfacción General */}
-          <Card className="border-teal-600" style={{ backgroundColor: '#003D49' }}>
+          {/* Satisfacción General - ACTUALIZADO CON DISEÑO CORPORATIVO */}
+          <Card className="border-teal-600" style={{ backgroundColor: CORPORATE_DARK_BG }}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-lg font-medium text-white">Satisfacción</CardTitle>
-              <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#B3C077' }}>
+              <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: CORPORATE_COLORS.satisfaction }}>
                 <Award className="h-7 w-7 text-white" />
               </div>
             </CardHeader>
@@ -302,13 +311,13 @@ export default function VisitorsDashboard() {
                 {((metrics.evaluations.averageRating / 5) * 100).toFixed(0)}%
               </div>
               <div className="flex items-center mt-2">
-                <Target className="h-4 w-4 mr-1" style={{ color: '#B3C077' }} />
-                <span className="text-sm font-medium" style={{ color: '#B3C077' }}>
+                <Target className="h-4 w-4 mr-1" style={{ color: CORPORATE_COLORS.satisfaction }} />
+                <span className="text-sm font-medium" style={{ color: CORPORATE_COLORS.satisfaction }}>
                   Índice de satisfacción
                 </span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
-                <div className="h-2 rounded-full" style={{ width: `${((metrics.evaluations.averageRating / 5) * 100)}%`, backgroundColor: '#B3C077' }}></div>
+                <div className="h-2 rounded-full" style={{ width: `${((metrics.evaluations.averageRating / 5) * 100)}%`, backgroundColor: CORPORATE_COLORS.satisfaction }}></div>
               </div>
               <p className="text-xs text-white mt-1">Basado en {formatNumber(metrics.evaluations.total)} evaluaciones</p>
             </CardContent>
