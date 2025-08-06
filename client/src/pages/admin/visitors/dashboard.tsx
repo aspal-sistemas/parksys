@@ -109,7 +109,7 @@ interface TrendData {
   feedback: number;
 }
 
-const COLORS = ['#61B1A0', '#513C73', '#B275B0', '#B3C077', '#1E5AA6'];
+const COLORS = ['#61B1A0', '#513C73', '#B275B0', '#B3C077', '#1E5AA6', '#198DCE', '#90D3EC', '#036668', '#003D49'];
 
 export default function VisitorsDashboard() {
   const [selectedPark, setSelectedPark] = useState<string>('all');
@@ -226,76 +226,96 @@ export default function VisitorsDashboard() {
         {/* Métricas principales */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Visitantes */}
-          <Card>
+          <Card className="border-teal-600" style={{ backgroundColor: '#003D49' }}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Visitantes</CardTitle>
+              <CardTitle className="text-lg font-medium text-white">Total Visitantes</CardTitle>
+              <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#61B1A0' }}>
+                <Users className="h-7 w-7 text-white" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatNumber(metrics.visitors.total)}</div>
-              <div className="flex items-center text-xs">
-                <span style={{ backgroundColor: '#61B1A0', color: 'white' }} className="px-2 py-1 rounded text-xs">
+              <div className="text-3xl font-bold text-white">{formatNumber(metrics.visitors.total)}</div>
+              <div className="flex items-center mt-2">
+                <TrendingUp className="h-4 w-4 mr-1" style={{ color: '#61B1A0' }} />
+                <span className="text-sm font-medium" style={{ color: '#61B1A0' }}>
                   {Math.abs(getChangePercentage(metrics.visitors.thisMonth, metrics.visitors.lastMonth))}% vs mes anterior
                 </span>
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Promedio diario: {formatNumber(metrics.visitors.avgDaily)}
-              </p>
+              <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
+                <div className="h-2 rounded-full" style={{ width: '85%', backgroundColor: '#61B1A0' }}></div>
+              </div>
+              <p className="text-xs text-white mt-1">Promedio diario: {formatNumber(metrics.visitors.avgDaily)}</p>
             </CardContent>
           </Card>
 
           {/* Evaluaciones */}
-          <Card>
+          <Card className="border-teal-600" style={{ backgroundColor: '#003D49' }}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Evaluaciones</CardTitle>
+              <CardTitle className="text-lg font-medium text-white">Evaluaciones</CardTitle>
+              <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#513C73' }}>
+                <Star className="h-7 w-7 text-white" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatNumber(metrics.evaluations.total)}</div>
-              <div className="flex items-center text-xs">
-                <span style={{ backgroundColor: '#513C73', color: 'white' }} className="px-2 py-1 rounded text-xs">
+              <div className="text-3xl font-bold text-white">{formatNumber(metrics.evaluations.total)}</div>
+              <div className="flex items-center mt-2">
+                <Star className="h-4 w-4 mr-1" style={{ color: '#513C73' }} />
+                <span className="text-sm font-medium" style={{ color: '#513C73' }}>
                   {metrics.evaluations.averageRating.toFixed(1)}/5.0 promedio
                 </span>
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {metrics.evaluations.recommendationRate.toFixed(1)}% recomendación
-              </p>
+              <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
+                <div className="h-2 rounded-full" style={{ width: `${(metrics.evaluations.averageRating / 5) * 100}%`, backgroundColor: '#513C73' }}></div>
+              </div>
+              <p className="text-xs text-white mt-1">{metrics.evaluations.recommendationRate.toFixed(1)}% recomendación</p>
             </CardContent>
           </Card>
 
           {/* Retroalimentación */}
-          <Card>
+          <Card className="border-teal-600" style={{ backgroundColor: '#003D49' }}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Retroalimentación</CardTitle>
+              <CardTitle className="text-lg font-medium text-white">Retroalimentación</CardTitle>
+              <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#B275B0' }}>
+                <MessageSquare className="h-7 w-7 text-white" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatNumber(metrics.feedback.total)}</div>
-              <div className="flex items-center text-xs">
-                <span style={{ backgroundColor: '#B275B0', color: 'white' }} className="px-2 py-1 rounded text-xs">
+              <div className="text-3xl font-bold text-white">{formatNumber(metrics.feedback.total)}</div>
+              <div className="flex items-center mt-2">
+                <Clock className="h-4 w-4 mr-1" style={{ color: '#B275B0' }} />
+                <span className="text-sm font-medium" style={{ color: '#B275B0' }}>
                   {formatNumber(metrics.feedback.pending)} pendientes
                 </span>
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {metrics.feedback.resolutionRate.toFixed(1)}% resueltos
-              </p>
+              <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
+                <div className="h-2 rounded-full" style={{ width: `${metrics.feedback.resolutionRate}%`, backgroundColor: '#B275B0' }}></div>
+              </div>
+              <p className="text-xs text-white mt-1">{metrics.feedback.resolutionRate.toFixed(1)}% resueltos</p>
             </CardContent>
           </Card>
 
           {/* Satisfacción General */}
-          <Card>
+          <Card className="border-teal-600" style={{ backgroundColor: '#003D49' }}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Satisfacción</CardTitle>
+              <CardTitle className="text-lg font-medium text-white">Satisfacción</CardTitle>
+              <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#B3C077' }}>
+                <Award className="h-7 w-7 text-white" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-3xl font-bold text-white">
                 {((metrics.evaluations.averageRating / 5) * 100).toFixed(0)}%
               </div>
-              <div className="flex items-center text-xs">
-                <span style={{ backgroundColor: '#B3C077', color: 'white' }} className="px-2 py-1 rounded text-xs">
+              <div className="flex items-center mt-2">
+                <Target className="h-4 w-4 mr-1" style={{ color: '#B3C077' }} />
+                <span className="text-sm font-medium" style={{ color: '#B3C077' }}>
                   Índice de satisfacción
                 </span>
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Basado en {formatNumber(metrics.evaluations.total)} evaluaciones
-              </p>
+              <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
+                <div className="h-2 rounded-full" style={{ width: `${((metrics.evaluations.averageRating / 5) * 100)}%`, backgroundColor: '#B3C077' }}></div>
+              </div>
+              <p className="text-xs text-white mt-1">Basado en {formatNumber(metrics.evaluations.total)} evaluaciones</p>
             </CardContent>
           </Card>
         </div>
