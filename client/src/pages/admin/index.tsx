@@ -92,11 +92,11 @@ const AdminDashboard: React.FC = () => {
   ];
 
   const parkTypeData = [
-    { name: t('dashboard.parkCategories.urban', 'Urbanos'), value: 8, color: '#00a587' },
-    { name: t('dashboard.parkCategories.metropolitan', 'Metropolitanos'), value: 5, color: '#067f5f' },
-    { name: t('dashboard.parkCategories.neighborhood', 'Vecinales'), value: 4, color: '#bcd256' },
-    { name: t('dashboard.parkCategories.linear', 'Lineales'), value: 3, color: '#8498a5' },
-    { name: t('dashboard.parkCategories.natural', 'Naturales'), value: 2, color: '#059669' }
+    { name: t('dashboard.parkCategories.urban', 'Urbanos'), value: 8, color: '#513C73' },
+    { name: t('dashboard.parkCategories.metropolitan', 'Metropolitanos'), value: 5, color: '#B275B0' },
+    { name: t('dashboard.parkCategories.neighborhood', 'Vecinales'), value: 4, color: '#1E5AA6' },
+    { name: t('dashboard.parkCategories.linear', 'Lineales'), value: 3, color: '#198DCE' },
+    { name: t('dashboard.parkCategories.natural', 'Naturales'), value: 2, color: '#90D3EC' }
   ];
 
 
