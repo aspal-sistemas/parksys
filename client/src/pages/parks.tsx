@@ -119,13 +119,20 @@ const Parks: React.FC = () => {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <main className="flex-grow bg-gray-50">
       {/* Banner publicitario de ancho completo */}
-      <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]">
-        <AdSpace 
-          spaceId="1" 
-          position="banner" 
-          pageType="parks" 
-          className="w-full"
-        />
+      <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] bg-gradient-to-r from-green-500 to-blue-600 py-4">
+        <div className="flex items-center justify-center h-20">
+          <AdSpace 
+            spaceId="1" 
+            position="banner" 
+            pageType="parks" 
+            className="w-full"
+          />
+          {/* Fallback visible para cuando no hay anuncios */}
+          <div className="text-white text-center">
+            <h3 className="text-xl font-bold">Espacio Publicitario Banner</h3>
+            <p className="text-sm opacity-90">Ancho completo - 150px altura</p>
+          </div>
+        </div>
       </div>
 
       {/* Hero Section con imagen de fondo */}
