@@ -212,17 +212,17 @@ const ModuleNav: React.FC<ModuleNavProps> = ({
           {React.Children.map(children, (child) => {
             if (React.isValidElement(child)) {
               if (child.type === NavItem) {
-                return React.cloneElement(child, { moduleColor: colors.iconColor });
+                return React.cloneElement(child, { moduleColor: colors.iconColor } as any);
               }
               // Si es un div, procesar sus hijos recursivamente pero evitar bucles infinitos
               if (child.type === 'div') {
                 const processedChildren = React.Children.map(child.props.children, (grandChild) => {
                   if (React.isValidElement(grandChild) && grandChild.type === NavItem) {
-                    return React.cloneElement(grandChild, { moduleColor: colors.iconColor });
+                    return React.cloneElement(grandChild, { moduleColor: colors.iconColor } as any);
                   }
                   return grandChild;
                 });
-                return React.cloneElement(child, { children: processedChildren });
+                return React.cloneElement(child, { children: processedChildren } as any);
               }
             }
             return child;
