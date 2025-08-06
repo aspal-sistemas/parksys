@@ -55,14 +55,27 @@ function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksList
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {[...Array(6)].map((_, i) => (
-          <div key={i} className="bg-white rounded-xl overflow-hidden shadow-sm animate-pulse">
-            {/* Imagen del parque - skeleton */}
-            <div className="aspect-[4/3] bg-gray-200"></div>
-            {/* Área para nombre - integrada en la imagen */}
+      <div className="space-y-6">
+        {/* Skeleton que simula la nueva distribución de grilla */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {[...Array(2)].map((_, i) => (
+            <div key={i} className="bg-white rounded-xl overflow-hidden shadow-sm animate-pulse aspect-[4/3]">
+              <div className="w-full h-full bg-gray-200"></div>
+            </div>
+          ))}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="bg-white rounded-xl overflow-hidden shadow-sm animate-pulse aspect-[4/3]">
+              <div className="w-full h-full bg-gray-200"></div>
+            </div>
+          ))}
+        </div>
+        <div className="grid grid-cols-1 gap-4">
+          <div className="bg-white rounded-xl overflow-hidden shadow-sm animate-pulse aspect-[16/6]">
+            <div className="w-full h-full bg-gray-200"></div>
           </div>
-        ))}
+        </div>
       </div>
     );
   }
@@ -76,58 +89,100 @@ function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksList
     );
   }
 
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {parks.map((park) => (
-        <Link 
-          key={park.id}
-          href={`/parque/${generateParkSlug(park.name, park.id)}`}
-          className="group cursor-pointer"
-        >
-          <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-            {/* Imagen del parque con overlay y Green Flag */}
-            <div className="relative aspect-[4/3] overflow-hidden">
-              {park.primaryImage ? (
-                <img
-                  src={park.primaryImage}
-                  alt={park.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.src = 'https://images.unsplash.com/photo-1519331379826-f10be5486c6f?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=60';
-                  }}
-                />
-              ) : (
-                <div className="w-full h-full bg-gradient-to-br from-primary-100 to-secondary-100 flex items-center justify-center">
-                  <MapPin className="h-12 w-12 text-primary-600" />
-                </div>
-              )}
-              
-              {/* Overlay con gradiente para el nombre */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              
-              {/* Green Flag Award Logo - Integrado en la esquina superior derecha */}
-              {shouldShowGreenFlag(park.id) && (
-                <div className="absolute top-3 right-3 z-10">
-                  <img 
-                    src={greenFlagLogo} 
-                    alt="Green Flag Award" 
-                    className="h-16 w-24 object-contain bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-lg border border-green-500/30"
-                    title="Green Flag Award"
-                  />
-                </div>
-              )}
-              
-              {/* Nombre del parque - Siempre visible en la parte inferior */}
-              <div className="absolute bottom-0 left-0 right-0 p-4">
-                <h3 className="text-white font-semibold text-lg drop-shadow-lg">
-                  {park.name}
-                </h3>
+  // Función para renderizar una tarjeta de parque
+  const renderParkCard = (park: ExtendedPark, size: 'normal' | 'large' | 'wide' = 'normal') => {
+    const aspectRatio = size === 'wide' ? 'aspect-[16/6]' : size === 'large' ? 'aspect-[4/3]' : 'aspect-[4/3]';
+    const textSize = size === 'wide' ? 'text-xl md:text-2xl' : size === 'large' ? 'text-lg' : 'text-base md:text-lg';
+    
+    return (
+      <Link 
+        key={park.id}
+        href={`/parque/${generateParkSlug(park.name, park.id)}`}
+        className="group cursor-pointer"
+      >
+        <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+          <div className={`relative ${aspectRatio} overflow-hidden`}>
+            {park.primaryImage ? (
+              <img
+                src={park.primaryImage}
+                alt={park.name}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = 'https://images.unsplash.com/photo-1519331379826-f10be5486c6f?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=60';
+                }}
+              />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-primary-100 to-secondary-100 flex items-center justify-center">
+                <MapPin className={`text-primary-600 ${size === 'wide' ? 'h-16 w-16' : 'h-12 w-12'}`} />
               </div>
+            )}
+            
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            
+            {shouldShowGreenFlag(park.id) && (
+              <div className="absolute top-3 right-3 z-10">
+                <img 
+                  src={greenFlagLogo} 
+                  alt="Green Flag Award" 
+                  className={`object-contain bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-lg border border-green-500/30 ${size === 'wide' ? 'h-20 w-28' : 'h-16 w-24'}`}
+                  title="Green Flag Award"
+                />
+              </div>
+            )}
+            
+            <div className="absolute bottom-0 left-0 right-0 p-4">
+              <h3 className={`text-white font-semibold drop-shadow-lg ${textSize}`}>
+                {park.name}
+              </h3>
             </div>
           </div>
-        </Link>
-      ))}
+        </div>
+      </Link>
+    );
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Fila 1: 2 tarjetas grandes */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+        {parks.slice(0, 2).map((park) => renderParkCard(park, 'large'))}
+      </div>
+
+      {/* Fila 2: 3 tarjetas normales */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {parks.slice(2, 5).map((park) => renderParkCard(park, 'normal'))}
+      </div>
+
+      {/* Fila 3: 1 tarjeta ancha */}
+      <div className="grid grid-cols-1 gap-4">
+        {parks.slice(5, 6).map((park) => renderParkCard(park, 'wide'))}
+      </div>
+
+      {/* Fila 4: 2 tarjetas grandes */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+        {parks.slice(6, 8).map((park) => renderParkCard(park, 'large'))}
+      </div>
+
+      {/* Fila 5: 3 tarjetas normales */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {parks.slice(8, 11).map((park) => renderParkCard(park, 'normal'))}
+      </div>
+
+      {/* Fila 6: 2 tarjetas grandes */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+        {parks.slice(11, 13).map((park) => renderParkCard(park, 'large'))}
+      </div>
+
+      {/* Tarjetas adicionales si hay más de 13 parques - continúa el patrón */}
+      {parks.length > 13 && (
+        <div className="space-y-6 pt-6 border-t border-gray-200">
+          <h4 className="text-lg font-semibold text-gray-700 mb-4">Más Parques</h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {parks.slice(13).map((park) => renderParkCard(park, 'normal'))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -36,7 +36,7 @@ const Parks: React.FC = () => {
     if (filters.search) params.append('search', filters.search);
     if (filters.parkType) params.append('parkType', filters.parkType);
     if (filters.postalCode) params.append('postalCode', filters.postalCode);
-    if (filters.municipality) params.append('municipality', filters.municipality);
+
     if (filters.amenityIds && filters.amenityIds.length > 0) {
       params.append('amenities', filters.amenityIds.join(','));
     }
@@ -118,6 +118,11 @@ const Parks: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <main className="flex-grow bg-gray-50">
+      {/* Espacio Publicitario - Header movido antes del Hero */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-3">
+        <AdSpace spaceId="1" position="header" pageType="parks" />
+      </div>
+
       {/* Hero Section con imagen de fondo */}
       <div 
         className="relative text-white"
@@ -155,10 +160,7 @@ const Parks: React.FC = () => {
         </div>
       </div>
 
-      {/* Espacio Publicitario - Header */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-3">
-        <AdSpace spaceId="1" position="header" pageType="parks" />
-      </div>
+
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Filtros modernos - TEMPORALMENTE DESACTIVADO */}
@@ -184,45 +186,25 @@ const Parks: React.FC = () => {
           />
         </div>
 
-        {/* Resultados con Sidebar */}
+        {/* Contenido Principal - Ancho completo */}
         <div className="mb-8" id="resultados-busqueda">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            {/* Contenido Principal */}
-            <div className="lg:col-span-3">
-              <div className="bg-white rounded-2xl shadow-sm border p-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                  <div>
-                    <h2 className="text-2xl font-bold text-gray-900">
-                      Bosques Urbanos de Guadalajara
-                    </h2>
-                  </div>
-
-                </div>
-                
-                <ExtendedParksList 
-                  parks={parks}
-                  isLoading={isLoading}
-                  onParkSelect={(park: ExtendedPark) => {
-                    setSelectedParkId(park.id);
-                    setModalOpen(true);
-                  }}
-                />
+          <div className="bg-white rounded-2xl shadow-sm border p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Bosques Urbanos de Guadalajara
+                </h2>
               </div>
             </div>
-
-            {/* Sidebar Publicitario */}
-            <div className="lg:col-span-1">
-              <div className="sticky top-4 space-y-6">
-                {/* Espacio publicitario principal */}
-                <AdSpace spaceId="2" position="card" pageType="parks" />
-                
-                {/* Espacios publicitarios administrables - Diseño Tipo Tarjeta */}
-                <AdSpace spaceId={39} position="card" pageType="parks" />
-                <AdSpace spaceId={40} position="card" pageType="parks" />
-                <AdSpace spaceId={41} position="card" pageType="parks" />
-                <AdSpace spaceId={42} position="card" pageType="parks" />
-              </div>
-            </div>
+            
+            <ExtendedParksList 
+              parks={parks}
+              isLoading={isLoading}
+              onParkSelect={(park: ExtendedPark) => {
+                setSelectedParkId(park.id);
+                setModalOpen(true);
+              }}
+            />
           </div>
         </div>
 
