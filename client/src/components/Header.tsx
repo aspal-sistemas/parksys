@@ -63,7 +63,7 @@ const Header: React.FC = () => {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 shadow-sm border-b border-gray-200" style={{ backgroundColor: isAdmin ? '#D2EAEA' : 'white' }}>
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
+        <div className="flex items-center h-20">
           <div className="flex items-center">
             {/* Logo y navegación - Solo mostrar para páginas públicas */}
             {!isAdmin && (
@@ -198,7 +198,26 @@ const Header: React.FC = () => {
             )}
           </div>
           
-          {/* Navegación izquierda para administradores */}
+          {/* Botones Sitio, Centro de Ayuda e Idioma */}
+          {isAdmin && location !== '/admin/login' && (
+            <div className="flex items-center gap-2 mr-4">
+              <Link href="/">
+                <Button variant="outline" size="sm" style={{ backgroundColor: '#D2EAEA' }}>
+                  Sitio
+                </Button>
+              </Link>
+              <HelpCenter>
+                <Button variant="outline" size="sm" className="w-9 h-9 p-0" style={{ backgroundColor: '#D2EAEA' }}>
+                  <HelpCircle className="h-4 w-4" />
+                </Button>
+              </HelpCenter>
+              <div style={{ backgroundColor: '#D2EAEA' }} className="rounded-md">
+                <LanguageSelector />
+              </div>
+            </div>
+          )}
+          
+          {/* Navegación para administradores */}
           {isAdmin && location !== '/admin/login' && (
             <div className="flex items-center gap-3">
               {/* Páneles de Control */}
@@ -342,25 +361,14 @@ const Header: React.FC = () => {
             </div>
           )}
 
-          {/* Búsqueda Global y Ver Sitio Público - lado derecho */}
-          <div className="flex items-center gap-3">
+          {/* Usuario y acciones - lado derecho */}
+          <div className="flex items-center gap-3 ml-auto">
             {/* Búsqueda Global - Solo en sitio público */}
             {!isAdmin && <GlobalSearch />}
             
             {isAdmin ? (
               location !== '/admin/login' && (
-                <div className="flex items-center gap-2 mr-2">
-                  <Link href="/">
-                    <Button variant="outline" size="sm">
-                      Sitio
-                    </Button>
-                  </Link>
-                  <HelpCenter>
-                    <Button variant="outline" size="sm" className="w-9 h-9 p-0">
-                      <HelpCircle className="h-4 w-4" />
-                    </Button>
-                  </HelpCenter>
-                  <LanguageSelector />
+                <div className="flex items-center gap-2">
                   <div className="flex items-center gap-2">
                     <UserProfileImage 
                       userId={(user as any)?.id || 0} 
