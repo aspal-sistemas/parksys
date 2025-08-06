@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import AdminSidebarComplete from './AdminSidebarComplete';
+import AdminHeader from './AdminHeader';
 import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -27,6 +28,10 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ title, subtitle, children }) 
       
       {/* Main Content con margen izquierdo para el sidebar */}
       <div className="ml-64 flex flex-col min-h-screen">
+        {/* Header Superior */}
+        <AdminHeader />
+        
+        {/* Main Content */}
         <main className="flex-1 overflow-y-auto p-6">
           {children}
         </main>
