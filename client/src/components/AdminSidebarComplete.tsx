@@ -1267,7 +1267,7 @@ const AdminSidebarComplete: React.FC = () => {
             </NavItem>
           </ModuleNav>
 
-          {/* 8. CONFIGURACIÓN */}
+          {/* 8. CONFIGURACIÓN - COLOR: #513C73 */}
           <ModuleNav 
             title={t('navigation.settings')} 
             icon={<Settings className="h-5 w-5" />}
