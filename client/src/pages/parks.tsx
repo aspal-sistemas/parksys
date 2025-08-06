@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, MapPin, Trees, Users, Search } from 'lucide-react';
 import heroImage from '@assets/group-of-tourists-walking-through-natural-reserve-2024-05-27-02-02-13-utc_1752940583323.jpg';
 import logoImage from '@assets/logo_1751306368691.png';
-import AdSpace from '@/components/AdSpace';
+import AdSpaceIntelligent from '@/components/AdSpaceIntelligent';
 const Parks: React.FC = () => {
   const [filters, setFilters] = useState<{
     search?: string;
@@ -121,10 +121,16 @@ const Parks: React.FC = () => {
       {/* Banner publicitario de ancho completo */}
       <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] bg-gradient-to-r from-green-500 to-blue-600 py-4">
         <div className="flex items-center justify-center h-20">
-          <AdSpace 
-            spaceId="1" 
-            position="banner" 
-            pageType="parks" 
+          <AdSpaceIntelligent 
+            pageType="parks"
+            position="banner"
+            layoutConfig={{
+              responsive: true,
+              maxWidth: "100%",
+              minHeight: "80px"
+            }}
+            enableAnalytics={true}
+            autoRefresh={false}
             className="w-full"
           />
           {/* Fallback visible para cuando no hay anuncios */}

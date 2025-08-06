@@ -1246,4 +1246,12 @@ router.get('/campaigns/:id', async (req, res) => {
   }
 });
 
+// =====================================
+// ENDPOINTS PARA MAPEO DINÁMICO DE ESPACIOS
+// =====================================
+
+// Importar rutas de mapeo de espacios
+import spaceMappingRouter from './routes/space-mapping-routes';
+router.use('/space-mappings', spaceMappingRouter);
+
 export default router;
