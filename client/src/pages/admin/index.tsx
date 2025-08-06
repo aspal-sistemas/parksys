@@ -291,8 +291,8 @@ const AdminDashboard: React.FC = () => {
                   type="monotone" 
                   dataKey="ingresos" 
                   stackId="1" 
-                  stroke="#00a587" 
-                  fill="#00a587" 
+                  stroke="#B3C077" 
+                  fill="#B3C077" 
                   fillOpacity={0.6}
                   name={t('dashboard.charts.income', 'Ingresos')}
                 />
@@ -300,8 +300,8 @@ const AdminDashboard: React.FC = () => {
                   type="monotone" 
                   dataKey="egresos" 
                   stackId="2" 
-                  stroke="#ef4444" 
-                  fill="#ef4444" 
+                  stroke="#B275B0" 
+                  fill="#B275B0" 
                   fillOpacity={0.6}
                   name={t('dashboard.charts.expenses', 'Egresos')}
                 />
