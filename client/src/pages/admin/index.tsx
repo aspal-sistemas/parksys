@@ -117,76 +117,93 @@ const AdminDashboard: React.FC = () => {
         {/* Parques */}
         <Card className="border-teal-600" style={{ backgroundColor: '#003D49' }}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-white">
+            <CardTitle className="text-lg font-medium text-white">
               {t('dashboard.metrics.totalParks', 'Total de Parques')}
             </CardTitle>
-            <MapPin className="h-5 w-5 text-teal-300" />
+            <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#B3C077' }}>
+              <MapPin className="h-7 w-7 text-white" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-white">{parksArray.length}</div>
             <div className="flex items-center mt-2">
-              <TrendingUp className="h-4 w-4 text-teal-300 mr-1" />
-              <span className="text-sm text-teal-300 font-medium">{t('dashboard.metrics.growthThisMonth', '+2 este mes')}</span>
+              <TrendingUp className="h-4 w-4 mr-1" style={{ color: '#B3C077' }} />
+              <span className="text-sm font-medium" style={{ color: '#B3C077' }}>{t('dashboard.metrics.growthThisMonth', '+2 este mes')}</span>
             </div>
-            <Progress value={85} className="mt-3" />
-            <p className="text-xs text-teal-200 mt-1">{t('dashboard.metrics.capacityTarget', '85% de capacidad objetivo')}</p>
+            <Progress value={85} className="mt-3" style={{ backgroundColor: 'rgba(179, 192, 119, 0.3)' }} />
+            <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
+              <div className="h-2 rounded-full" style={{ width: '85%', backgroundColor: '#B3C077' }}></div>
+            </div>
+            <p className="text-xs text-white mt-1">{t('dashboard.metrics.capacityTarget', '85% de capacidad objetivo')}</p>
           </CardContent>
         </Card>
         
         {/* Personal RH */}
         <Card className="border-teal-600" style={{ backgroundColor: '#003D49' }}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-white">
+            <CardTitle className="text-lg font-medium text-white">
               {t('dashboard.metrics.activeStaff', 'Personal Activo')}
             </CardTitle>
-            <Briefcase className="h-5 w-5 text-teal-300" />
+            <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#198DCE' }}>
+              <Briefcase className="h-7 w-7 text-white" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-white">{employeesArray.length}</div>
             <div className="flex items-center mt-2">
-              <TrendingUp className="h-4 w-4 text-teal-300 mr-1" />
-              <span className="text-sm text-teal-300 font-medium">{t('dashboard.metrics.staffGrowthThisMonth', '+5 este mes')}</span>
+              <TrendingUp className="h-4 w-4 mr-1" style={{ color: '#198DCE' }} />
+              <span className="text-sm font-medium" style={{ color: '#198DCE' }}>{t('dashboard.metrics.staffGrowthThisMonth', '+5 este mes')}</span>
             </div>
-            <Progress value={92} className="mt-3" />
-            <p className="text-xs text-teal-200 mt-1">{t('dashboard.metrics.averageAttendance', '92% asistencia promedio')}</p>
+            <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
+              <div className="h-2 rounded-full" style={{ width: '92%', backgroundColor: '#198DCE' }}></div>
+            </div>
+            <p className="text-xs text-white mt-1">{t('dashboard.metrics.averageAttendance', '92% asistencia promedio')}</p>
           </CardContent>
         </Card>
         
         {/* Actividades */}
         <Card className="border-teal-600" style={{ backgroundColor: '#003D49' }}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-white">
+            <CardTitle className="text-lg font-medium text-white">
               {t('dashboard.metrics.activeActivities', 'Actividades Activas')}
             </CardTitle>
-            <Calendar className="h-5 w-5 text-teal-300" />
+            <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#B275B0' }}>
+              <Calendar className="h-7 w-7 text-white" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-white">{activitiesArray.length}</div>
             <div className="flex items-center mt-2">
-              <Activity className="h-4 w-4 text-teal-300 mr-1" />
-              <span className="text-sm text-teal-300 font-medium">{t('dashboard.metrics.activitiesThisWeek', '15 esta semana')}</span>
+              <Activity className="h-4 w-4 mr-1" style={{ color: '#B275B0' }} />
+              <span className="text-sm font-medium" style={{ color: '#B275B0' }}>{t('dashboard.metrics.activitiesThisWeek', '15 esta semana')}</span>
             </div>
-            <Progress value={78} className="mt-3" />
-            <p className="text-xs text-teal-200 mt-1">{t('dashboard.metrics.averageParticipation', '78% participación promedio')}</p>
+            <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
+              <div className="h-2 rounded-full" style={{ width: '78%', backgroundColor: '#B275B0' }}></div>
+            </div>
+            <p className="text-xs text-white mt-1">{t('dashboard.metrics.averageParticipation', '78% participación promedio')}</p>
           </CardContent>
         </Card>
         
         {/* Finanzas */}
         <Card className="border-teal-600" style={{ backgroundColor: '#003D49' }}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-white">
+            <CardTitle className="text-lg font-medium text-white">
               {t('dashboard.metrics.monthlyBalance', 'Balance Mensual')}
             </CardTitle>
-            <DollarSign className="h-5 w-5 text-teal-300" />
+            <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#90D3EC' }}>
+              <DollarSign className="h-7 w-7 text-white" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-white">$54K</div>
             <div className="flex items-center mt-2">
-              <TrendingUp className="h-4 w-4 text-teal-300 mr-1" />
-              <span className="text-sm text-teal-300 font-medium">{t('dashboard.metrics.vsLastMonth', '+18% vs mes anterior')}</span>
+              <TrendingUp className="h-4 w-4 mr-1" style={{ color: '#90D3EC' }} />
+              <span className="text-sm font-medium" style={{ color: '#90D3EC' }}>{t('dashboard.metrics.vsLastMonth', '+18% vs mes anterior')}</span>
             </div>
-            <Progress value={68} className="mt-3" />
-            <p className="text-xs text-teal-200 mt-1">{t('dashboard.metrics.annualBudget', '68% del presupuesto anual')}</p>
+            <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
+              <div className="h-2 rounded-full" style={{ width: '68%', backgroundColor: '#90D3EC' }}></div>
+            </div>
+            <p className="text-xs text-white mt-1">{t('dashboard.metrics.annualBudget', '68% del presupuesto anual')}</p>
           </CardContent>
         </Card>
       </div>
