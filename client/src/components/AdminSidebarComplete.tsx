@@ -145,51 +145,60 @@ const ModuleNav: React.FC<ModuleNavProps> = ({
   const getModuleColors = (moduleValue: string) => {
     const colorSchemes = {
       'system': {
-        iconColor: 'text-emerald-300',
-        textColor: 'text-emerald-200',
-        hoverBg: 'hover:bg-teal-600'
+        iconColor: 'text-white',
+        textColor: 'text-white',
+        hoverBg: 'hover:bg-teal-600',
+        bgColor: '#90D3EC'
       },
       'gestion': {
-        iconColor: 'text-green-300',
-        textColor: 'text-green-200', 
-        hoverBg: 'hover:bg-teal-600'
+        iconColor: 'text-white',
+        textColor: 'text-white', 
+        hoverBg: 'hover:bg-teal-600',
+        bgColor: '#513C73'
       },
       'operations': {
-        iconColor: 'text-teal-300',
-        textColor: 'text-teal-200',
-        hoverBg: 'hover:bg-teal-600'
+        iconColor: 'text-white',
+        textColor: 'text-white',
+        hoverBg: 'hover:bg-teal-600',
+        bgColor: '#B275B0'
       },
       'admin-finance': {
-        iconColor: 'text-cyan-300',
-        textColor: 'text-cyan-200',
-        hoverBg: 'hover:bg-teal-600'
+        iconColor: 'text-white',
+        textColor: 'text-white',
+        hoverBg: 'hover:bg-teal-600',
+        bgColor: '#B3C077'
       },
       'mkt-comm': {
-        iconColor: 'text-lime-300',
-        textColor: 'text-lime-200',
-        hoverBg: 'hover:bg-teal-600'
+        iconColor: 'text-white',
+        textColor: 'text-white',
+        hoverBg: 'hover:bg-teal-600',
+        bgColor: '#1E5AA6'
       },
       'hr': {
-        iconColor: 'text-emerald-300',
-        textColor: 'text-emerald-200',
-        hoverBg: 'hover:bg-teal-600'
+        iconColor: 'text-white',
+        textColor: 'text-white',
+        hoverBg: 'hover:bg-teal-600',
+        bgColor: '#198DCE'
       },
       'security': {
-        iconColor: 'text-slate-300',
-        textColor: 'text-slate-200',
-        hoverBg: 'hover:bg-teal-600'
+        iconColor: 'text-white',
+        textColor: 'text-white',
+        hoverBg: 'hover:bg-teal-600',
+        bgColor: '#90D3EC'
       },
       'public': {
-        iconColor: 'text-blue-300',
-        textColor: 'text-blue-200',
-        hoverBg: 'hover:bg-teal-600'
+        iconColor: 'text-white',
+        textColor: 'text-white',
+        hoverBg: 'hover:bg-teal-600',
+        bgColor: '#1E5AA6'
       }
     };
     
     return colorSchemes[moduleValue as keyof typeof colorSchemes] || {
-      iconColor: 'text-teal-300',
-      textColor: 'text-teal-200',
-      hoverBg: 'hover:bg-teal-600'
+      iconColor: 'text-white',
+      textColor: 'text-white',
+      hoverBg: 'hover:bg-teal-600',
+      bgColor: '#90D3EC'
     };
   };
 
@@ -203,7 +212,9 @@ const ModuleNav: React.FC<ModuleNavProps> = ({
     <AccordionItem value={value} className="border-0">
       <AccordionTrigger className={cn("py-2 hover:no-underline", colors.hoverBg)}>
         <div className={cn("flex items-center text-sm font-medium", colors.textColor)}>
-          <div className="mr-2">{iconWithClass}</div>
+          <div className="mr-2 flex items-center justify-center w-8 h-8 rounded-full" style={{ backgroundColor: colors.bgColor }}>
+            {iconWithClass}
+          </div>
           {title}
         </div>
       </AccordionTrigger>
