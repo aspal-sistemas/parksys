@@ -360,16 +360,7 @@ const AdminSidebarComplete: React.FC = () => {
   return (
     <div className="fixed inset-y-0 left-0 w-64 flex flex-col shadow-lg z-50" style={{ height: '100vh', backgroundColor: '#003D49' }}>
       {/* Header */}
-      <div className="flex items-center justify-between p-6 border-b border-teal-600" style={{ minHeight: '80px', backgroundColor: '#003D49' }}>
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-teal-500 rounded-lg flex items-center justify-center">
-            <Map className="h-6 w-6 text-white" />
-          </div>
-          <div>
-            <h1 className="text-lg font-bold text-white">ParkSys</h1>
-            <p className="text-sm text-teal-200">Sistema de Parques</p>
-          </div>
-        </div>
+      <div className="flex items-center justify-between p-6 border-b border-teal-600" style={{ minHeight: '80px', backgroundColor: '#D2EAEA' }}>
       </div>
 
       {/* Buscador del sistema */}
