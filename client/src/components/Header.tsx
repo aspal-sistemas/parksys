@@ -4,6 +4,9 @@ import { Menu, X, ChevronDown, LogIn, Home, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import GlobalSearch from '@/components/GlobalSearch';
 import { HelpCenter } from '@/components/HelpCenter';
+import { LanguageSelector } from '@/components/LanguageSelector';
+import UserProfileImage from '@/components/UserProfileImage';
+import { useAuth } from '@/hooks/useAuth';
 import logoImage from '@assets/logo_1751306368691.png';
 
 const Header: React.FC = () => {
@@ -14,6 +17,7 @@ const Header: React.FC = () => {
   const [usersMenuOpen, setUsersMenuOpen] = useState(false);
   const [gestionMenuOpen, setGestionMenuOpen] = useState(false);
   
+  const { user } = useAuth();
   const isAdmin = location.startsWith('/admin');
   
   const toggleMobileMenu = () => {
@@ -354,6 +358,23 @@ const Header: React.FC = () => {
                       <HelpCircle className="h-4 w-4" />
                     </Button>
                   </HelpCenter>
+                  <LanguageSelector />
+                  <div className="flex items-center gap-2">
+                    <UserProfileImage 
+                      userId={(user as any)?.id || 0} 
+                      role={(user as any)?.role || 'user'} 
+                      name={(user as any)?.fullName || (user as any)?.username || 'Usuario'} 
+                      size="sm" 
+                    />
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium text-gray-800">
+                        {(user as any)?.firstName && (user as any)?.lastName 
+                          ? `${(user as any).firstName} ${(user as any).lastName}` 
+                          : (user as any)?.fullName || (user as any)?.username || 'Usuario'}
+                      </span>
+                      <span className="text-xs text-gray-600">{(user as any)?.role || 'usuario'}</span>
+                    </div>
+                  </div>
                 </div>
               )
             ) : (

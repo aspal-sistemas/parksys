@@ -186,7 +186,7 @@ const ModuleNav: React.FC<ModuleNavProps> = ({
       }
     };
     
-    return colorSchemes[moduleValue] || {
+    return colorSchemes[moduleValue as keyof typeof colorSchemes] || {
       iconColor: 'text-teal-300',
       textColor: 'text-teal-200',
       hoverBg: 'hover:bg-teal-600'
@@ -1309,27 +1309,7 @@ const AdminSidebarComplete: React.FC = () => {
 
       {/* Footer */}
       <div className="p-4 border-t border-teal-600" style={{ backgroundColor: '#003D49' }}>
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <UserProfileImage 
-              userId={(user as any)?.id || 0} 
-              role={(user as any)?.role || 'user'} 
-              name={(user as any)?.fullName || (user as any)?.username || 'Usuario'} 
-              size="sm" 
-            />
-            <div className="flex flex-col">
-              <span className="text-sm font-medium text-white">
-                {user?.firstName && user?.lastName 
-                  ? `${user.firstName} ${user.lastName}` 
-                  : user?.fullName || user?.username || 'Usuario'}
-              </span>
-              <span className="text-xs text-teal-300">{user?.role || 'usuario'}</span>
-            </div>
-          </div>
-        </div>
-        
-        <div className="flex items-center justify-between">
-          <LanguageSelector />
+        <div className="flex items-center justify-center">
           <Button 
             variant="ghost" 
             size="sm"
@@ -1337,7 +1317,8 @@ const AdminSidebarComplete: React.FC = () => {
             className="text-teal-200 hover:text-white hover:bg-teal-600"
             title="Cerrar Sesión"
           >
-            <LogOut className="h-4 w-4" />
+            <LogOut className="h-4 w-4 mr-2" />
+            Cerrar Sesión
           </Button>
         </div>
       </div>
