@@ -360,7 +360,12 @@ const AdminSidebarComplete: React.FC = () => {
   return (
     <div className="fixed inset-y-0 left-0 w-64 flex flex-col shadow-lg z-50" style={{ height: '100vh', backgroundColor: '#003D49' }}>
       {/* Header */}
-      <div className="flex items-center justify-between p-6 border-b border-teal-600" style={{ minHeight: '80px', backgroundColor: '#D2EAEA' }}>
+      <div className="flex items-center justify-center p-6 border-b border-teal-600" style={{ minHeight: '80px', backgroundColor: '#D2EAEA' }}>
+        <img 
+          src="/attached_assets/images_1754508335227.png" 
+          alt="Agencia de Bosques Urbanos" 
+          className="h-12 w-auto object-contain"
+        />
       </div>
 
       {/* Buscador del sistema */}
