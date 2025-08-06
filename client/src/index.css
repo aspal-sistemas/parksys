@@ -163,19 +163,6 @@
   .corporate-satisfaction-icon {
     background-color: #B3C077 !important;
   }
-
-  /* MEGA OVERRIDE - FORZAR TODO EL ESTILO CORPORATIVO */
-  div[class*="corporate-dark-card"] {
-    background-color: #003D49 !important;
-    color: white !important;
-  }
-
-  div[class*="corporate-dark-card"] h3,
-  div[class*="corporate-dark-card"] div,
-  div[class*="corporate-dark-card"] p,
-  div[class*="corporate-dark-card"] span {
-    color: white !important;
-  }
 }
 
 @layer base {
