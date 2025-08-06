@@ -385,39 +385,18 @@ const AdminSidebarComplete: React.FC = () => {
 
 
 
-          {/* 1. CONFIGURACIÓN */}
+          {/* 1. PANEL DE CONTROL */}
           <ModuleNav 
-            title={t('navigation.settings')} 
-            icon={<Settings className="h-5 w-5" />}
-            value="system"
+            title="Panel de Control" 
+            icon={<Home className="h-5 w-5" />}
+            value="dashboard"
           >
             <NavItem 
-              href="/admin/settings" 
-              icon={<Settings className="h-5 w-5" />}
-              active={location === '/admin/settings'}
+              href="/admin" 
+              icon={<Home className="h-5 w-5" />}
+              active={location === '/admin' || location === '/admin/'}
             >
-              {t('navigation.settings')}
-            </NavItem>
-            <NavItem 
-              href="/admin/users" 
-              icon={<UserCheck className="h-5 w-5" />}
-              active={location === '/admin/users'}
-            >
-              {t('navigation.users')}
-            </NavItem>
-            <NavItem 
-              href="/admin/permissions" 
-              icon={<Shield className="h-5 w-5" />}
-              active={location === '/admin/permissions'}
-            >
-              {t('navigation.permissions')}
-            </NavItem>
-            <NavItem 
-              href="/admin/users/notifications" 
-              icon={<Bell className="h-5 w-5" />}
-              active={location === '/admin/users/notifications'}
-            >
-              Notificaciones
+              Dashboard
             </NavItem>
           </ModuleNav>
 
@@ -1212,7 +1191,41 @@ const AdminSidebarComplete: React.FC = () => {
             </NavItem>
           </ModuleNav>
 
-
+          {/* 7. CONFIGURACIÓN */}
+          <ModuleNav 
+            title={t('navigation.settings')} 
+            icon={<Settings className="h-5 w-5" />}
+            value="system"
+          >
+            <NavItem 
+              href="/admin/settings" 
+              icon={<Settings className="h-5 w-5" />}
+              active={location === '/admin/settings'}
+            >
+              {t('navigation.settings')}
+            </NavItem>
+            <NavItem 
+              href="/admin/users" 
+              icon={<UserCheck className="h-5 w-5" />}
+              active={location === '/admin/users'}
+            >
+              {t('navigation.users')}
+            </NavItem>
+            <NavItem 
+              href="/admin/permissions" 
+              icon={<Shield className="h-5 w-5" />}
+              active={location === '/admin/permissions'}
+            >
+              {t('navigation.permissions')}
+            </NavItem>
+            <NavItem 
+              href="/admin/users/notifications" 
+              icon={<Bell className="h-5 w-5" />}
+              active={location === '/admin/users/notifications'}
+            >
+              Notificaciones
+            </NavItem>
+          </ModuleNav>
 
           {/* 8. SEGURIDAD - SISTEMA AVANZADO DE ROLES INTEGRADO */}
           <ModuleNav 
