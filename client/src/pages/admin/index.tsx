@@ -73,12 +73,12 @@ const AdminDashboard: React.FC = () => {
   ];
 
   const moduleUsageData = [
-    { name: t('dashboard.modules.parks', 'Parques'), value: 95, color: '#00a587' },
-    { name: t('dashboard.modules.hr', 'RH'), value: 88, color: '#067f5f' },
-    { name: t('dashboard.modules.finance', 'Finanzas'), value: 92, color: '#bcd256' },
-    { name: t('dashboard.modules.activities', 'Actividades'), value: 78, color: '#8498a5' },
-    { name: t('dashboard.modules.volunteers', 'Voluntarios'), value: 65, color: '#059669' },
-    { name: t('dashboard.modules.concessions', 'Concesiones'), value: 72, color: '#0ea5e9' }
+    { name: t('dashboard.modules.parks', 'Parques'), value: 95, color: '#513C73' },
+    { name: t('dashboard.modules.hr', 'RH'), value: 88, color: '#B275B0' },
+    { name: t('dashboard.modules.finance', 'Finanzas'), value: 92, color: '#B3C077' },
+    { name: t('dashboard.modules.activities', 'Actividades'), value: 78, color: '#1E5AA6' },
+    { name: t('dashboard.modules.volunteers', 'Voluntarios'), value: 65, color: '#198DCE' },
+    { name: t('dashboard.modules.concessions', 'Concesiones'), value: 72, color: '#90D3EC' }
   ];
 
   const financialData = [
