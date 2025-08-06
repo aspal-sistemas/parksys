@@ -118,6 +118,16 @@ const Parks: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <main className="flex-grow bg-gray-50">
+      {/* Banner publicitario de ancho completo */}
+      <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]">
+        <AdSpace 
+          spaceId="1" 
+          position="banner" 
+          pageType="parks" 
+          className="w-full"
+        />
+      </div>
+
       {/* Hero Section con imagen de fondo */}
       <div 
         className="relative text-white"
