@@ -132,37 +132,6 @@
     display: none !important;
     content: none !important;
   }
-
-  /* DISEÑO CORPORATIVO FORZADO PARA DASHBOARD DE VISITANTES */
-  .corporate-dark-card {
-    background-color: #003D49 !important;
-    color: white !important;
-    border-color: #61B1A0 !important;
-  }
-
-  .corporate-dark-card * {
-    color: white !important;
-  }
-
-  .corporate-dark-card .text-muted-foreground {
-    color: rgba(255, 255, 255, 0.7) !important;
-  }
-
-  .corporate-visitors-icon {
-    background-color: #61B1A0 !important;
-  }
-
-  .corporate-evaluations-icon {
-    background-color: #513C73 !important;
-  }
-
-  .corporate-feedback-icon {
-    background-color: #B275B0 !important;
-  }
-
-  .corporate-satisfaction-icon {
-    background-color: #B3C077 !important;
-  }
 }
 
 @layer base {

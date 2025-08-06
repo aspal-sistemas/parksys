@@ -50,15 +50,6 @@ import {
   RefreshCw
 } from 'lucide-react';
 
-// ESTILOS CORPORATIVOS OBLIGATORIOS
-const CORPORATE_STYLES = {
-  dark: '#003D49',
-  visitors: '#61B1A0',
-  evaluations: '#513C73',
-  feedback: '#B275B0',
-  satisfaction: '#B3C077'
-};
-
 interface DashboardMetrics {
   visitors: {
     total: number;
@@ -74,7 +65,16 @@ interface DashboardMetrics {
     thisMonth: number;
     lastMonth: number;
     recommendationRate: number;
-    categoryAverages: Record<string, number>;
+    categoryAverages: {
+      cleanliness: number;
+      safety: number;
+      maintenance: number;
+      accessibility: number;
+      amenities: number;
+      activities: number;
+      staff: number;
+      naturalBeauty: number;
+    };
   };
   feedback: {
     total: number;
@@ -82,7 +82,12 @@ interface DashboardMetrics {
     resolved: number;
     thisMonth: number;
     lastMonth: number;
-    byType: Record<string, number>;
+    byType: {
+      share: number;
+      report_problem: number;
+      suggest_improvement: number;
+      propose_event: number;
+    };
     resolutionRate: number;
   };
 }
@@ -92,19 +97,19 @@ interface ParkData {
   parkName: string;
   visitors: number;
   evaluations: number;
+  avgRating: number;
   feedback: number;
   pendingFeedback: number;
-  avgRating: number;
 }
 
-interface TrendPoint {
+interface TrendData {
   date: string;
   visitors: number;
   evaluations: number;
   feedback: number;
 }
 
-const COLORS = ['#61B1A0', '#513C73', '#B275B0', '#B3C077', '#1E5AA6', '#198DCE', '#90D3EC', '#036668', '#003D49'];
+const COLORS = ['#00a587', '#10b981', '#34d399', '#6ee7b7', '#a7f3d0'];
 
 export default function VisitorsDashboard() {
   const [selectedPark, setSelectedPark] = useState<string>('all');
@@ -115,24 +120,28 @@ export default function VisitorsDashboard() {
   // Fetch parks data
   const { data: parksData } = useQuery({
     queryKey: ['/api/parks'],
+    suspense: false,
     retry: 1
   });
 
   // Fetch dashboard metrics
   const { data: dashboardData, isLoading: isDashboardLoading } = useQuery({
     queryKey: ['/api/visitors/dashboard-metrics', { park: selectedPark, dateRange }],
+    suspense: false,
     retry: 1
   });
 
   // Fetch parks performance data
   const { data: parksPerformance, isLoading: isParksLoading } = useQuery({
     queryKey: ['/api/visitors/parks-performance', { park: selectedPark, dateRange }],
+    suspense: false,
     retry: 1
   });
 
   // Fetch trend data
   const { data: trendData, isLoading: isTrendLoading } = useQuery({
     queryKey: ['/api/visitors/trends', { park: selectedPark, dateRange }],
+    suspense: false,
     retry: 1
   });
 
@@ -140,7 +149,7 @@ export default function VisitorsDashboard() {
   const metrics: DashboardMetrics = dashboardData?.metrics || {
     visitors: { total: 0, thisMonth: 0, lastMonth: 0, avgDaily: 0, uniqueParks: 0, totalRecords: 0 },
     evaluations: { total: 0, averageRating: 0, thisMonth: 0, lastMonth: 0, recommendationRate: 0, categoryAverages: {} },
-    feedback: { total: 0, pending: 0, resolved: 0, thisMonth: 0, lastMonth: 0, byType: { share: 0, report_problem: 0, suggest_improvement: 0, propose_event: 0 }, resolutionRate: 0 }
+    feedback: { total: 0, pending: 0, resolved: 0, thisMonth: 0, lastMonth: 0, byType: {}, resolutionRate: 0 }
   };
 
   const refreshData = () => {
@@ -149,37 +158,38 @@ export default function VisitorsDashboard() {
     queryClient.invalidateQueries({ queryKey: ['/api/visitors/trends'] });
     toast({
       title: "Datos actualizados",
-      description: "El dashboard ha sido actualizado con los datos más recientes.",
+      description: "El dashboard se ha actualizado con los datos más recientes"
     });
   };
 
-  const getChangePercentage = (current: number, previous: number): number => {
-    if (previous === 0) return 0;
-    return ((current - previous) / previous) * 100;
+  const getChangePercentage = (current: number, previous: number) => {
+    if (previous === 0) return current > 0 ? 100 : 0;
+    return Math.round(((current - previous) / previous) * 100);
   };
 
-  const formatNumber = (num: number): string => {
+  const formatNumber = (num: number) => {
     return num.toLocaleString('es-ES');
   };
 
   return (
     <AdminLayout
       title="Dashboard de Visitantes"
+      description="Vista integral de datos de visitantes, evaluaciones y retroalimentación"
     >
       <div className="space-y-6">
         {/* Header con controles */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-6 w-6" style={{ color: '#61B1A0' }} />
-              Dashboard de Análisis de Visitantes
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
-              <div className="flex flex-col sm:flex-row gap-4">
+        <Card className="bg-gray-50">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <BarChart3 className="w-8 h-8 text-gray-900" />
+              <h1 className="text-3xl font-bold text-gray-900">Dashboard de Visitantes</h1>
+            </div>
+            
+            <div className="flex flex-wrap gap-4 items-center">
+              <div className="flex items-center gap-2">
+                <Filter className="h-4 w-4 text-gray-600" />
                 <Select value={selectedPark} onValueChange={setSelectedPark}>
-                  <SelectTrigger className="w-60">
+                  <SelectTrigger className="w-48">
                     <SelectValue placeholder="Seleccionar parque" />
                   </SelectTrigger>
                   <SelectContent>
@@ -191,7 +201,10 @@ export default function VisitorsDashboard() {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
 
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-gray-600" />
                 <Select value={dateRange} onValueChange={setDateRange}>
                   <SelectTrigger className="w-40">
                     <SelectValue />
@@ -205,7 +218,7 @@ export default function VisitorsDashboard() {
                 </Select>
               </div>
 
-              <Button onClick={refreshData} size="sm" style={{ backgroundColor: '#61B1A0', color: 'white' }} className="hover:opacity-90">
+              <Button onClick={refreshData} size="sm" className="bg-[#00a587] hover:bg-[#067f5f]">
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Actualizar
               </Button>
@@ -213,99 +226,83 @@ export default function VisitorsDashboard() {
           </CardContent>
         </Card>
 
-        {/* Métricas principales CON DISEÑO CORPORATIVO FORZADO */}
+        {/* Métricas principales */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Visitantes */}
-          <Card className="corporate-dark-card border-teal-600" style={{ backgroundColor: CORPORATE_STYLES.dark }}>
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-lg font-medium text-white">Total Visitantes</CardTitle>
-              <div className="corporate-visitors-icon w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: CORPORATE_STYLES.visitors }}>
-                <Users className="h-7 w-7 text-white" />
-              </div>
+              <CardTitle className="text-sm font-medium">Total Visitantes</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-white">{formatNumber(metrics.visitors.total)}</div>
-              <div className="flex items-center mt-2">
-                <TrendingUp className="h-4 w-4 mr-1" style={{ color: CORPORATE_STYLES.visitors }} />
-                <span className="text-sm font-medium" style={{ color: CORPORATE_STYLES.visitors }}>
-                  {Math.abs(getChangePercentage(metrics.visitors.thisMonth, metrics.visitors.lastMonth))}% vs mes anterior
-                </span>
+              <div className="text-2xl font-bold">{formatNumber(metrics.visitors.total)}</div>
+              <div className="flex items-center text-xs text-muted-foreground">
+                {getChangePercentage(metrics.visitors.thisMonth, metrics.visitors.lastMonth) >= 0 ? (
+                  <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
+                ) : (
+                  <TrendingDown className="h-3 w-3 text-red-500 mr-1" />
+                )}
+                {Math.abs(getChangePercentage(metrics.visitors.thisMonth, metrics.visitors.lastMonth))}% vs mes anterior
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
-                <div className="h-2 rounded-full" style={{ width: '85%', backgroundColor: CORPORATE_STYLES.visitors }}></div>
-              </div>
-              <p className="text-xs text-white mt-1">Promedio diario: {formatNumber(metrics.visitors.avgDaily)}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Promedio diario: {formatNumber(metrics.visitors.avgDaily)}
+              </p>
             </CardContent>
           </Card>
 
           {/* Evaluaciones */}
-          <Card className="corporate-dark-card border-teal-600" style={{ backgroundColor: CORPORATE_STYLES.dark }}>
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-lg font-medium text-white">Evaluaciones</CardTitle>
-              <div className="corporate-evaluations-icon w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: CORPORATE_STYLES.evaluations }}>
-                <Star className="h-7 w-7 text-white" />
-              </div>
+              <CardTitle className="text-sm font-medium">Evaluaciones</CardTitle>
+              <Star className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-white">{formatNumber(metrics.evaluations.total)}</div>
-              <div className="flex items-center mt-2">
-                <Star className="h-4 w-4 mr-1" style={{ color: CORPORATE_STYLES.evaluations }} />
-                <span className="text-sm font-medium" style={{ color: CORPORATE_STYLES.evaluations }}>
-                  {metrics.evaluations.averageRating.toFixed(1)}/5.0 promedio
-                </span>
+              <div className="text-2xl font-bold">{formatNumber(metrics.evaluations.total)}</div>
+              <div className="flex items-center text-xs text-muted-foreground">
+                <Star className="h-3 w-3 text-yellow-500 mr-1" />
+                {metrics.evaluations.averageRating.toFixed(1)}/5.0 promedio
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
-                <div className="h-2 rounded-full" style={{ width: `${(metrics.evaluations.averageRating / 5) * 100}%`, backgroundColor: CORPORATE_STYLES.evaluations }}></div>
-              </div>
-              <p className="text-xs text-white mt-1">{metrics.evaluations.recommendationRate.toFixed(1)}% recomendación</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {metrics.evaluations.recommendationRate.toFixed(1)}% recomendación
+              </p>
             </CardContent>
           </Card>
 
           {/* Retroalimentación */}
-          <Card className="corporate-dark-card border-teal-600" style={{ backgroundColor: CORPORATE_STYLES.dark }}>
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-lg font-medium text-white">Retroalimentación</CardTitle>
-              <div className="corporate-feedback-icon w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: CORPORATE_STYLES.feedback }}>
-                <MessageSquare className="h-7 w-7 text-white" />
-              </div>
+              <CardTitle className="text-sm font-medium">Retroalimentación</CardTitle>
+              <MessageSquare className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-white">{formatNumber(metrics.feedback.total)}</div>
-              <div className="flex items-center mt-2">
-                <Clock className="h-4 w-4 mr-1" style={{ color: CORPORATE_STYLES.feedback }} />
-                <span className="text-sm font-medium" style={{ color: CORPORATE_STYLES.feedback }}>
-                  {formatNumber(metrics.feedback.pending)} pendientes
-                </span>
+              <div className="text-2xl font-bold">{formatNumber(metrics.feedback.total)}</div>
+              <div className="flex items-center text-xs text-muted-foreground">
+                <Clock className="h-3 w-3 text-orange-500 mr-1" />
+                {formatNumber(metrics.feedback.pending)} pendientes
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
-                <div className="h-2 rounded-full" style={{ width: `${metrics.feedback.resolutionRate}%`, backgroundColor: CORPORATE_STYLES.feedback }}></div>
-              </div>
-              <p className="text-xs text-white mt-1">{metrics.feedback.resolutionRate.toFixed(1)}% resueltos</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {metrics.feedback.resolutionRate.toFixed(1)}% resueltos
+              </p>
             </CardContent>
           </Card>
 
           {/* Satisfacción General */}
-          <Card className="corporate-dark-card border-teal-600" style={{ backgroundColor: CORPORATE_STYLES.dark }}>
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-lg font-medium text-white">Satisfacción</CardTitle>
-              <div className="corporate-satisfaction-icon w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: CORPORATE_STYLES.satisfaction }}>
-                <Award className="h-7 w-7 text-white" />
-              </div>
+              <CardTitle className="text-sm font-medium">Satisfacción</CardTitle>
+              <Award className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-white">
+              <div className="text-2xl font-bold">
                 {((metrics.evaluations.averageRating / 5) * 100).toFixed(0)}%
               </div>
-              <div className="flex items-center mt-2">
-                <Target className="h-4 w-4 mr-1" style={{ color: CORPORATE_STYLES.satisfaction }} />
-                <span className="text-sm font-medium" style={{ color: CORPORATE_STYLES.satisfaction }}>
-                  Índice de satisfacción
-                </span>
+              <div className="flex items-center text-xs text-muted-foreground">
+                <Target className="h-3 w-3 text-blue-500 mr-1" />
+                Índice de satisfacción
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
-                <div className="h-2 rounded-full" style={{ width: `${((metrics.evaluations.averageRating / 5) * 100)}%`, backgroundColor: CORPORATE_STYLES.satisfaction }}></div>
-              </div>
-              <p className="text-xs text-white mt-1">Basado en {formatNumber(metrics.evaluations.total)} evaluaciones</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Basado en {formatNumber(metrics.evaluations.total)} evaluaciones
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -320,11 +317,11 @@ export default function VisitorsDashboard() {
             <CardContent>
               {isTrendLoading ? (
                 <div className="h-64 flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderBottomColor: '#61B1A0' }}></div>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00a587]"></div>
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={(trendData as any)?.trends || []}>
+                  <LineChart data={trendData?.trends || []}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="date" />
                     <YAxis />
@@ -333,21 +330,21 @@ export default function VisitorsDashboard() {
                     <Line 
                       type="monotone" 
                       dataKey="visitors" 
-                      stroke="#61B1A0" 
+                      stroke="#00a587" 
                       name="Visitantes"
                       strokeWidth={2}
                     />
                     <Line 
                       type="monotone" 
                       dataKey="evaluations" 
-                      stroke="#1E5AA6" 
+                      stroke="#3b82f6" 
                       name="Evaluaciones"
                       strokeWidth={2}
                     />
                     <Line 
                       type="monotone" 
                       dataKey="feedback" 
-                      stroke="#B3C077" 
+                      stroke="#f59e0b" 
                       name="Retroalimentación"
                       strokeWidth={2}
                     />
@@ -394,7 +391,7 @@ export default function VisitorsDashboard() {
         {/* Evaluaciones por categoría */}
         <Card>
           <CardHeader>
-            <CardTitle>Evaluaciones por Categoría</CardTitle>
+            <CardTitle>Evaluación por Categorías</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={400}>
@@ -412,7 +409,7 @@ export default function VisitorsDashboard() {
                 <XAxis dataKey="category" angle={-45} textAnchor="end" height={100} />
                 <YAxis domain={[0, 5]} />
                 <Tooltip />
-                <Bar dataKey="rating" fill="#61B1A0" />
+                <Bar dataKey="rating" fill="#00a587" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -426,11 +423,11 @@ export default function VisitorsDashboard() {
           <CardContent>
             {isParksLoading ? (
               <div className="h-64 flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderBottomColor: '#61B1A0' }}></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00a587]"></div>
               </div>
             ) : (
               <div className="space-y-4">
-                {((parksPerformance as any)?.parks || []).map((park: ParkData) => (
+                {parksPerformance?.parks?.map((park: ParkData) => (
                   <div key={park.parkId} className="border rounded-lg p-4">
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="font-semibold">{park.parkName}</h3>
@@ -454,7 +451,7 @@ export default function VisitorsDashboard() {
                       </div>
                       <div>
                         <span className="text-muted-foreground">Pendientes:</span>
-                        <div className="font-medium" style={{ color: '#B3C077' }}>{formatNumber(park.pendingFeedback)}</div>
+                        <div className="font-medium text-orange-600">{formatNumber(park.pendingFeedback)}</div>
                       </div>
                     </div>
                   </div>
