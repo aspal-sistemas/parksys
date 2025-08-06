@@ -17,6 +17,7 @@ import {
   Upload,
   Clock,
   AlertCircle,
+  AlertTriangle,
   CheckCircle,
   Settings,
   Save,
