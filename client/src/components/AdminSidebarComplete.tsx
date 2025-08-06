@@ -115,7 +115,7 @@ interface ModuleNavProps {
 
 const NavItem: React.FC<NavItemProps> = ({ href, icon, children, active, moduleColor }) => {
   const iconWithClass = React.cloneElement(icon as React.ReactElement, {
-    className: cn((icon as React.ReactElement).props.className, 'menu-icon', moduleColor)
+    className: cn((icon as React.ReactElement).props.className, 'menu-icon', moduleColor || 'text-white')
   });
 
   return (
@@ -123,7 +123,7 @@ const NavItem: React.FC<NavItemProps> = ({ href, icon, children, active, moduleC
       <Button
         variant="ghost"
         className={cn(
-          "w-full justify-start text-sm font-normal h-9 text-teal-100 hover:bg-teal-600 hover:text-white",
+          "w-full justify-start text-sm font-normal h-9 text-white hover:bg-teal-600 hover:text-white",
           active && "bg-teal-500 text-white font-medium"
         )}
       >
@@ -148,7 +148,7 @@ const ModuleNav: React.FC<ModuleNavProps> = ({
         iconColor: 'text-white',
         textColor: 'text-white',
         hoverBg: 'hover:bg-teal-600',
-        bgColor: '#90D3EC'
+        bgColor: '#513C73'
       },
       'gestion': {
         iconColor: 'text-white',
@@ -257,14 +257,14 @@ const CollapsibleSubmenu: React.FC<{
     <div className="mb-3">
       <button
         onClick={() => onToggle(id)}
-        className="w-full flex items-center justify-between p-2 text-sm font-medium text-teal-100 hover:bg-teal-600 rounded-lg transition-colors"
+        className="w-full flex items-center justify-between p-2 text-sm font-medium text-white hover:bg-teal-600 rounded-lg transition-colors"
       >
         <div className="flex items-center">
-          {icon}
+          <span className="text-white">{React.cloneElement(icon as React.ReactElement, { className: 'h-4 w-4 text-white' })}</span>
           <span className="ml-2">{title}</span>
         </div>
         <ChevronRight 
-          className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-90' : ''} text-teal-200`}
+          className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-90' : ''} text-white`}
         />
       </button>
       {isExpanded && (
@@ -1155,7 +1155,7 @@ const AdminSidebarComplete: React.FC = () => {
           <ModuleNav 
             title={
               <div className="flex items-center gap-2">
-                <span>Recursos Humanos</span>
+                <span>RH</span>
                 <span className="px-1.5 py-0.5 text-xs font-semibold bg-orange-100 text-orange-800 rounded-full">BETA</span>
               </div>
             }
@@ -1192,43 +1192,7 @@ const AdminSidebarComplete: React.FC = () => {
             </NavItem>
           </ModuleNav>
 
-          {/* 7. CONFIGURACIÓN */}
-          <ModuleNav 
-            title={t('navigation.settings')} 
-            icon={<Settings className="h-5 w-5" />}
-            value="system"
-          >
-            <NavItem 
-              href="/admin/settings" 
-              icon={<Settings className="h-5 w-5" />}
-              active={location === '/admin/settings'}
-            >
-              {t('navigation.settings')}
-            </NavItem>
-            <NavItem 
-              href="/admin/users" 
-              icon={<UserCheck className="h-5 w-5" />}
-              active={location === '/admin/users'}
-            >
-              {t('navigation.users')}
-            </NavItem>
-            <NavItem 
-              href="/admin/permissions" 
-              icon={<Shield className="h-5 w-5" />}
-              active={location === '/admin/permissions'}
-            >
-              {t('navigation.permissions')}
-            </NavItem>
-            <NavItem 
-              href="/admin/users/notifications" 
-              icon={<Bell className="h-5 w-5" />}
-              active={location === '/admin/users/notifications'}
-            >
-              Notificaciones
-            </NavItem>
-          </ModuleNav>
-
-          {/* 8. SEGURIDAD - SISTEMA AVANZADO DE ROLES INTEGRADO */}
+          {/* 7. SEGURIDAD - SISTEMA AVANZADO DE ROLES INTEGRADO */}
           <ModuleNav 
             title="Seguridad" 
             icon={<Shield className="h-5 w-5" />}
@@ -1300,6 +1264,42 @@ const AdminSidebarComplete: React.FC = () => {
               active={location === '/admin/security/settings'}
             >
               Configuración
+            </NavItem>
+          </ModuleNav>
+
+          {/* 8. CONFIGURACIÓN */}
+          <ModuleNav 
+            title={t('navigation.settings')} 
+            icon={<Settings className="h-5 w-5" />}
+            value="system"
+          >
+            <NavItem 
+              href="/admin/settings" 
+              icon={<Settings className="h-5 w-5" />}
+              active={location === '/admin/settings'}
+            >
+              {t('navigation.settings')}
+            </NavItem>
+            <NavItem 
+              href="/admin/users" 
+              icon={<UserCheck className="h-5 w-5" />}
+              active={location === '/admin/users'}
+            >
+              {t('navigation.users')}
+            </NavItem>
+            <NavItem 
+              href="/admin/permissions" 
+              icon={<Shield className="h-5 w-5" />}
+              active={location === '/admin/permissions'}
+            >
+              {t('navigation.permissions')}
+            </NavItem>
+            <NavItem 
+              href="/admin/users/notifications" 
+              icon={<Bell className="h-5 w-5" />}
+              active={location === '/admin/users/notifications'}
+            >
+              Notificaciones
             </NavItem>
           </ModuleNav>
 
