@@ -1,312 +1,339 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { toast } from "@/hooks/use-toast";
-import { Bell, Settings, Users, Mail, AlertTriangle, CheckCircle, BarChart3, Clock, MessageCircle } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { 
+  Bell, 
+  Mail, 
+  Smartphone, 
+  AlertCircle, 
+  CheckCircle, 
+  Settings,
+  Save,
+  Send,
+  Eye,
+  EyeOff,
+  Users,
+  Shield,
+  Activity,
+  Calendar,
+  Clock,
+  Volume2,
+  VolumeX,
+  Filter,
+  Search
+} from "lucide-react";
 
-interface NotificationTemplate {
+interface NotificationChannel {
   id: string;
   name: string;
-  subject: string;
-  content: string;
-  type: string;
+  type: 'email' | 'sms' | 'push' | 'system';
   enabled: boolean;
+  priority: 'low' | 'medium' | 'high' | 'critical';
 }
 
 interface NotificationRule {
   id: string;
   name: string;
-  trigger: string;
-  severity: 'low' | 'medium' | 'high' | 'critical';
+  description: string;
+  event: string;
   channels: string[];
-  roles: string[];
   enabled: boolean;
+  recipients: string[];
 }
 
 export default function NotificacionesAdmin() {
-  const [activeTab, setActiveTab] = useState("global");
+  const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState("channels");
 
-  // Datos simulados de plantillas
-  const templates: NotificationTemplate[] = [
+  // Canales de notificación
+  const [channels, setChannels] = useState<NotificationChannel[]>([
     {
-      id: '1',
+      id: 'email_critical',
+      name: 'Email - Crítico',
+      type: 'email',
+      enabled: true,
+      priority: 'critical'
+    },
+    {
+      id: 'email_standard',
+      name: 'Email - Estándar',
+      type: 'email',
+      enabled: true,
+      priority: 'medium'
+    },
+    {
+      id: 'sms_urgent',
+      name: 'SMS - Urgente',
+      type: 'sms',
+      enabled: false,
+      priority: 'high'
+    },
+    {
+      id: 'system_notifications',
+      name: 'Notificaciones del Sistema',
+      type: 'system',
+      enabled: true,
+      priority: 'low'
+    }
+  ]);
+
+  // Reglas de notificación
+  const [rules, setRules] = useState<NotificationRule[]>([
+    {
+      id: 'security_breach',
+      name: 'Brecha de Seguridad',
+      description: 'Intentos de acceso no autorizado detectados',
+      event: 'security.breach',
+      channels: ['email_critical', 'sms_urgent'],
+      enabled: true,
+      recipients: ['admin', 'security-team']
+    },
+    {
+      id: 'system_maintenance',
+      name: 'Mantenimiento del Sistema',
+      description: 'Notificaciones sobre mantenimiento programado',
+      event: 'system.maintenance',
+      channels: ['email_standard', 'system_notifications'],
+      enabled: true,
+      recipients: ['all-users']
+    },
+    {
+      id: 'user_registration',
       name: 'Nuevo Usuario Registrado',
-      subject: 'Bienvenido al Sistema de Parques',
-      content: 'Su cuenta ha sido creada exitosamente. Puede acceder con sus credenciales.',
-      type: 'user_creation',
-      enabled: true
+      description: 'Cuando un nuevo usuario se registra en el sistema',
+      event: 'user.registration',
+      channels: ['email_standard'],
+      enabled: true,
+      recipients: ['hr-team']
     },
     {
-      id: '2',
-      name: 'Mantenimiento Programado',
-      subject: 'Mantenimiento del sistema programado',
-      content: 'El sistema estará en mantenimiento el {date} de {time_start} a {time_end}.',
-      type: 'maintenance',
-      enabled: true
-    },
-    {
-      id: '3',
-      name: 'Actividad Cancelada',
-      subject: 'Actividad {activity_name} ha sido cancelada',
-      content: 'Lamentamos informar que la actividad {activity_name} programada para {date} ha sido cancelada.',
-      type: 'activity_cancellation',
-      enabled: true
+      id: 'backup_failure',
+      name: 'Falla en Respaldo',
+      description: 'Cuando falla un proceso de respaldo automático',
+      event: 'backup.failure',
+      channels: ['email_critical'],
+      enabled: true,
+      recipients: ['admin', 'tech-team']
     }
-  ];
+  ]);
 
-  // Datos simulados de reglas
-  const rules: NotificationRule[] = [
-    {
-      id: '1',
-      name: 'Intentos de login fallidos',
-      trigger: 'failed_login_attempts >= 3',
-      severity: 'high',
-      channels: ['email', 'system'],
-      roles: ['super-admin', 'director-general'],
-      enabled: true
-    },
-    {
-      id: '2',
-      name: 'Respaldo completado',
-      trigger: 'backup_completed',
-      severity: 'low',
-      channels: ['system'],
-      roles: ['super-admin'],
-      enabled: true
-    },
-    {
-      id: '3',
-      name: 'Espacio de almacenamiento bajo',
-      trigger: 'storage_usage > 85%',
-      severity: 'medium',
-      channels: ['email', 'system'],
-      roles: ['super-admin', 'director-general'],
-      enabled: true
+  const toggleChannel = (channelId: string) => {
+    setChannels(prev => prev.map(channel => 
+      channel.id === channelId 
+        ? { ...channel, enabled: !channel.enabled }
+        : channel
+    ));
+    toast({
+      title: "Canal actualizado",
+      description: "La configuración del canal ha sido modificada",
+    });
+  };
+
+  const toggleRule = (ruleId: string) => {
+    setRules(prev => prev.map(rule => 
+      rule.id === ruleId 
+        ? { ...rule, enabled: !rule.enabled }
+        : rule
+    ));
+    toast({
+      title: "Regla actualizada",
+      description: "La regla de notificación ha sido modificada",
+    });
+  };
+
+  const sendTestNotification = (channelId: string) => {
+    toast({
+      title: "Notificación de prueba enviada",
+      description: `Se ha enviado una notificación de prueba al canal ${channelId}`,
+    });
+  };
+
+  const getChannelIcon = (type: string) => {
+    switch (type) {
+      case 'email': return <Mail className="h-4 w-4" />;
+      case 'sms': return <Smartphone className="h-4 w-4" />;
+      case 'push': return <Bell className="h-4 w-4" />;
+      case 'system': return <Activity className="h-4 w-4" />;
+      default: return <Bell className="h-4 w-4" />;
     }
-  ];
+  };
 
-  const getSeverityColor = (severity: string) => {
-    switch (severity) {
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
       case 'critical': return 'bg-red-100 text-red-800';
       case 'high': return 'bg-orange-100 text-orange-800';
       case 'medium': return 'bg-yellow-100 text-yellow-800';
-      default: return 'bg-green-100 text-green-800';
+      case 'low': return 'bg-green-100 text-green-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  const getPriorityName = (priority: string) => {
+    const names: Record<string, string> = {
+      'critical': 'Crítica',
+      'high': 'Alta',
+      'medium': 'Media',
+      'low': 'Baja'
+    };
+    return names[priority] || priority;
   };
 
   return (
     <div className="space-y-6">
-      {/* Header informativo */}
-      <Card className="bg-gradient-to-r from-blue-50 to-cyan-50 border-blue-200">
+      {/* Header */}
+      <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-blue-900">
             <Bell className="h-6 w-6" />
-            Sistema de Notificaciones
+            Configuración de Notificaciones Administrativas
           </CardTitle>
           <CardDescription className="text-blue-700">
-            Configure las notificaciones administrativas, plantillas de mensajes y reglas de escalamiento.
+            Configure canales de notificación, reglas de envío y destinatarios para eventos del sistema.
           </CardDescription>
         </CardHeader>
       </Card>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="global" className="flex items-center gap-2">
+          <TabsTrigger value="channels" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
-            Global
+            Canales
           </TabsTrigger>
-          <TabsTrigger value="plantillas" className="flex items-center gap-2">
-            <MessageCircle className="h-4 w-4" />
-            Plantillas
-          </TabsTrigger>
-          <TabsTrigger value="reglas" className="flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4" />
+          <TabsTrigger value="rules" className="flex items-center gap-2">
+            <Shield className="h-4 w-4" />
             Reglas
           </TabsTrigger>
-          <TabsTrigger value="canales" className="flex items-center gap-2">
-            <Mail className="h-4 w-4" />
-            Canales
+          <TabsTrigger value="recipients" className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            Destinatarios
+          </TabsTrigger>
+          <TabsTrigger value="history" className="flex items-center gap-2">
+            <Clock className="h-4 w-4" />
+            Historial
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="global" className="space-y-6">
-          {/* Configuración Global */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Configuración Global de Notificaciones</CardTitle>
-              <CardDescription>
-                Configure el comportamiento general del sistema de notificaciones
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label>Notificaciones habilitadas</Label>
-                      <p className="text-sm text-muted-foreground">Activar el sistema de notificaciones</p>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label>Notificaciones por email</Label>
-                      <p className="text-sm text-muted-foreground">Enviar notificaciones por correo</p>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label>Notificaciones en tiempo real</Label>
-                      <p className="text-sm text-muted-foreground">Mostrar alertas instantáneas</p>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="notification-frequency">Frecuencia de envío</Label>
-                    <Select defaultValue="immediate">
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="immediate">Inmediata</SelectItem>
-                        <SelectItem value="hourly">Cada hora</SelectItem>
-                        <SelectItem value="daily">Diaria</SelectItem>
-                        <SelectItem value="weekly">Semanal</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="max-notifications">Máximo por usuario/día</Label>
-                    <Input
-                      id="max-notifications"
-                      type="number"
-                      defaultValue="50"
-                      min="1"
-                      max="1000"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="retention-days">Retención (días)</Label>
-                    <Input
-                      id="retention-days"
-                      type="number"
-                      defaultValue="90"
-                      min="1"
-                      max="365"
-                    />
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Estadísticas */}
+        <TabsContent value="channels" className="space-y-6">
+          {/* Configuración de canales */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5" />
-                Estadísticas de Notificaciones
+                <Settings className="h-5 w-5 text-blue-600" />
+                Canales de Notificación
               </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-blue-600">247</div>
-                  <div className="text-sm text-muted-foreground">Enviadas hoy</div>
-                </div>
-                <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-green-600">98.2%</div>
-                  <div className="text-sm text-muted-foreground">Tasa de entrega</div>
-                </div>
-                <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-orange-600">12</div>
-                  <div className="text-sm text-muted-foreground">Fallos hoy</div>
-                </div>
-                <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-purple-600">1,524</div>
-                  <div className="text-sm text-muted-foreground">Este mes</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="plantillas" className="space-y-6">
-          {/* Plantillas de Notificación */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Plantillas de Notificación</CardTitle>
-                  <CardDescription>
-                    Administre las plantillas de mensajes para diferentes tipos de eventos
-                  </CardDescription>
-                </div>
-                <Button>
-                  <MessageCircle className="h-4 w-4 mr-2" />
-                  Nueva Plantilla
-                </Button>
-              </div>
+              <CardDescription>
+                Configure los diferentes canales para enviar notificaciones administrativas
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {templates.map((template) => (
-                  <div key={template.id} className="border rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-4">
+                {channels.map((channel) => (
+                  <div key={channel.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex items-center gap-4">
+                      <Switch
+                        checked={channel.enabled}
+                        onCheckedChange={() => toggleChannel(channel.id)}
+                      />
                       <div className="flex items-center gap-3">
-                        <Switch checked={template.enabled} />
+                        <div className={`p-2 rounded-lg ${
+                          channel.enabled ? 'bg-blue-100' : 'bg-gray-100'
+                        }`}>
+                          {getChannelIcon(channel.type)}
+                        </div>
                         <div>
-                          <h3 className="font-medium">{template.name}</h3>
-                          <p className="text-sm text-muted-foreground">{template.subject}</p>
+                          <h3 className="font-medium">{channel.name}</h3>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge className={getPriorityColor(channel.priority)}>
+                              {getPriorityName(channel.priority)}
+                            </Badge>
+                            <Badge variant="outline" className="text-xs">
+                              {channel.type.toUpperCase()}
+                            </Badge>
+                          </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline">{template.type}</Badge>
-                        <Button variant="outline" size="sm">
-                          Editar
-                        </Button>
-                      </div>
                     </div>
-                    <div className="bg-gray-50 p-3 rounded text-sm">
-                      {template.content}
+                    
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => sendTestNotification(channel.id)}
+                        disabled={!channel.enabled}
+                      >
+                        <Send className="h-4 w-4 mr-2" />
+                        Probar
+                      </Button>
+                      <Button variant="ghost" size="sm">
+                        <Settings className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
                 ))}
               </div>
+
+              {/* Configuración global de canales */}
+              <div className="mt-6 pt-6 border-t space-y-4">
+                <h3 className="font-medium">Configuración Global</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email-server">Servidor SMTP</Label>
+                    <Input id="email-server" defaultValue="smtp.gmail.com" />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="email-port">Puerto SMTP</Label>
+                    <Input id="email-port" type="number" defaultValue="587" />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="sms-provider">Proveedor SMS</Label>
+                    <Select defaultValue="twilio">
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="twilio">Twilio</SelectItem>
+                        <SelectItem value="nexmo">Nexmo</SelectItem>
+                        <SelectItem value="aws">AWS SNS</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="retry-attempts">Intentos de reenvío</Label>
+                    <Input id="retry-attempts" type="number" defaultValue="3" />
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="reglas" className="space-y-6">
-          {/* Reglas de Notificación */}
+        <TabsContent value="rules" className="space-y-6">
+          {/* Reglas de notificación */}
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle>Reglas de Escalamiento</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    <Shield className="h-5 w-5 text-purple-600" />
+                    Reglas de Notificación
+                  </CardTitle>
                   <CardDescription>
-                    Configure las reglas automáticas para diferentes tipos de eventos
+                    Configure cuándo y cómo enviar notificaciones basadas en eventos del sistema
                   </CardDescription>
                 </div>
-                <Button>
-                  <AlertTriangle className="h-4 w-4 mr-2" />
+                <Button className="bg-purple-600 hover:bg-purple-700">
+                  <Bell className="h-4 w-4 mr-2" />
                   Nueva Regla
                 </Button>
               </div>
@@ -314,41 +341,50 @@ export default function NotificacionesAdmin() {
             <CardContent>
               <div className="space-y-4">
                 {rules.map((rule) => (
-                  <div key={rule.id} className="border rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-4">
+                  <div key={rule.id} className="p-4 border rounded-lg">
+                    <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-3">
-                        <Switch checked={rule.enabled} />
+                        <Switch
+                          checked={rule.enabled}
+                          onCheckedChange={() => toggleRule(rule.id)}
+                        />
                         <div>
                           <h3 className="font-medium">{rule.name}</h3>
-                          <p className="text-sm text-muted-foreground">{rule.trigger}</p>
+                          <p className="text-sm text-muted-foreground">{rule.description}</p>
                         </div>
                       </div>
+                      
                       <div className="flex items-center gap-2">
-                        <Badge className={getSeverityColor(rule.severity)}>
-                          {rule.severity}
+                        <Badge variant="outline" className="text-xs">
+                          {rule.event}
                         </Badge>
-                        <Button variant="outline" size="sm">
-                          Editar
+                        <Button variant="ghost" size="sm">
+                          <Eye className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                       <div>
-                        <Label className="text-xs">Canales de notificación</Label>
-                        <div className="flex gap-1 mt-1">
-                          {rule.channels.map((channel) => (
-                            <Badge key={channel} variant="secondary" className="text-xs">
-                              {channel}
-                            </Badge>
-                          ))}
+                        <p className="font-medium mb-1">Canales:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {rule.channels.map(channelId => {
+                            const channel = channels.find(c => c.id === channelId);
+                            return channel ? (
+                              <Badge key={channelId} variant="secondary" className="text-xs">
+                                {channel.name}
+                              </Badge>
+                            ) : null;
+                          })}
                         </div>
                       </div>
+                      
                       <div>
-                        <Label className="text-xs">Roles notificados</Label>
-                        <div className="flex gap-1 mt-1">
-                          {rule.roles.map((role) => (
-                            <Badge key={role} variant="outline" className="text-xs">
-                              {role}
+                        <p className="font-medium mb-1">Destinatarios:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {rule.recipients.map(recipient => (
+                            <Badge key={recipient} variant="outline" className="text-xs">
+                              {recipient}
                             </Badge>
                           ))}
                         </div>
@@ -361,86 +397,154 @@ export default function NotificacionesAdmin() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="canales" className="space-y-6">
-          {/* Configuración de Canales */}
+        <TabsContent value="recipients" className="space-y-6">
+          {/* Gestión de destinatarios */}
           <Card>
             <CardHeader>
-              <CardTitle>Configuración de Canales</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5 text-green-600" />
+                Gestión de Destinatarios
+              </CardTitle>
               <CardDescription>
-                Configure los diferentes canales de entrega de notificaciones
+                Configure grupos y listas de destinatarios para las notificaciones
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Email */}
-              <div className="border rounded-lg p-4">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <Mail className="h-5 w-5 text-blue-600" />
-                    <div>
-                      <h3 className="font-medium">Email</h3>
-                      <p className="text-sm text-muted-foreground">Notificaciones por correo electrónico</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h3 className="font-medium mb-4">Grupos Predefinidos</h3>
+                  <div className="space-y-3">
+                    {[
+                      { id: 'admin', name: 'Administradores', count: 3 },
+                      { id: 'hr-team', name: 'Equipo de RH', count: 5 },
+                      { id: 'tech-team', name: 'Equipo Técnico', count: 4 },
+                      { id: 'security-team', name: 'Equipo de Seguridad', count: 2 },
+                      { id: 'all-users', name: 'Todos los Usuarios', count: 45 }
+                    ].map(group => (
+                      <div key={group.id} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div>
+                          <p className="font-medium">{group.name}</p>
+                          <p className="text-sm text-muted-foreground">{group.count} miembros</p>
+                        </div>
+                        <Button variant="ghost" size="sm">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                <div>
+                  <h3 className="font-medium mb-4">Listas Personalizadas</h3>
+                  <div className="space-y-3">
+                    <div className="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center">
+                      <Users className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                      <p className="text-sm text-gray-500">No hay listas personalizadas</p>
+                      <Button variant="outline" size="sm" className="mt-2">
+                        Crear Lista
+                      </Button>
                     </div>
-                  </div>
-                  <Switch defaultChecked />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Servidor SMTP</Label>
-                    <Input defaultValue="smtp.gmail.com" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Puerto</Label>
-                    <Input defaultValue="587" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Email remitente</Label>
-                    <Input defaultValue="notificaciones@parques.gob.mx" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Nombre remitente</Label>
-                    <Input defaultValue="Sistema de Parques" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Sistema */}
-              <div className="border rounded-lg p-4">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <Bell className="h-5 w-5 text-green-600" />
-                    <div>
-                      <h3 className="font-medium">Sistema</h3>
-                      <p className="text-sm text-muted-foreground">Notificaciones dentro de la aplicación</p>
-                    </div>
-                  </div>
-                  <Switch defaultChecked />
-                </div>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <Label>Mostrar notificaciones toast</Label>
-                    <Switch defaultChecked />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <Label>Sonido de notificación</Label>
-                    <Switch />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <Label>Badge de contador</Label>
-                    <Switch defaultChecked />
                   </div>
                 </div>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
+
+        <TabsContent value="history" className="space-y-6">
+          {/* Historial de notificaciones */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Clock className="h-5 w-5 text-indigo-600" />
+                    Historial de Notificaciones
+                  </CardTitle>
+                  <CardDescription>
+                    Registro de todas las notificaciones enviadas en los últimos 30 días
+                  </CardDescription>
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm">
+                    <Filter className="h-4 w-4 mr-2" />
+                    Filtrar
+                  </Button>
+                  <Button variant="outline" size="sm">
+                    <Search className="h-4 w-4 mr-2" />
+                    Buscar
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {[
+                  {
+                    id: 1,
+                    timestamp: '2025-01-07 14:30:00',
+                    event: 'Brecha de Seguridad',
+                    channel: 'Email',
+                    recipients: 3,
+                    status: 'delivered',
+                    priority: 'critical'
+                  },
+                  {
+                    id: 2,
+                    timestamp: '2025-01-07 12:15:00',
+                    event: 'Mantenimiento del Sistema',
+                    channel: 'Email + Sistema',
+                    recipients: 45,
+                    status: 'delivered',
+                    priority: 'medium'
+                  },
+                  {
+                    id: 3,
+                    timestamp: '2025-01-07 09:00:00',
+                    event: 'Nuevo Usuario Registrado',
+                    channel: 'Email',
+                    recipients: 5,
+                    status: 'failed',
+                    priority: 'low'
+                  }
+                ].map(notification => (
+                  <div key={notification.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-3 h-3 rounded-full ${
+                        notification.status === 'delivered' ? 'bg-green-500' :
+                        notification.status === 'failed' ? 'bg-red-500' : 'bg-yellow-500'
+                      }`} />
+                      <div>
+                        <p className="font-medium">{notification.event}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {notification.timestamp} • {notification.channel} • {notification.recipients} destinatarios
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <Badge className={getPriorityColor(notification.priority)}>
+                        {getPriorityName(notification.priority)}
+                      </Badge>
+                      <Badge variant={notification.status === 'delivered' ? 'default' : 'destructive'}>
+                        {notification.status === 'delivered' ? 'Entregado' : 'Falló'}
+                      </Badge>
+                      <Button variant="ghost" size="sm">
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
 
-      {/* Botones de acción */}
+      {/* Acciones globales */}
       <div className="flex justify-end gap-4">
         <Button variant="outline">
-          Probar Configuración
-        </Button>
-        <Button>
+          <Save className="h-4 w-4 mr-2" />
           Guardar Configuración
         </Button>
       </div>
