@@ -121,10 +121,10 @@ const NavItem: React.FC<NavItemProps> = ({ href, icon, children, active, moduleC
   return (
     <Link href={href}>
       <Button
-        variant={active ? "secondary" : "ghost"}
+        variant="ghost"
         className={cn(
-          "w-full justify-start text-sm font-normal h-9",
-          active && "bg-primary/10 text-primary font-medium"
+          "w-full justify-start text-sm font-normal h-9 text-teal-100 hover:bg-teal-600 hover:text-white",
+          active && "bg-teal-500 text-white font-medium"
         )}
       >
         {iconWithClass}
@@ -141,55 +141,55 @@ const ModuleNav: React.FC<ModuleNavProps> = ({
   value,
   defaultOpen
 }) => {
-  // Define color schemes for each module
+  // Define color schemes for each module - adapted for dark background #003D49
   const getModuleColors = (moduleValue: string) => {
     const colorSchemes = {
       'system': {
-        iconColor: 'text-emerald-600',
-        textColor: 'text-emerald-700',
-        hoverBg: 'hover:bg-emerald-50'
+        iconColor: 'text-emerald-300',
+        textColor: 'text-emerald-200',
+        hoverBg: 'hover:bg-teal-600'
       },
       'gestion': {
-        iconColor: 'text-green-600',
-        textColor: 'text-green-700', 
-        hoverBg: 'hover:bg-green-50'
+        iconColor: 'text-green-300',
+        textColor: 'text-green-200', 
+        hoverBg: 'hover:bg-teal-600'
       },
       'operations': {
-        iconColor: 'text-teal-600',
-        textColor: 'text-teal-700',
-        hoverBg: 'hover:bg-teal-50'
+        iconColor: 'text-teal-300',
+        textColor: 'text-teal-200',
+        hoverBg: 'hover:bg-teal-600'
       },
       'admin-finance': {
-        iconColor: 'text-cyan-600',
-        textColor: 'text-cyan-700',
-        hoverBg: 'hover:bg-cyan-50'
+        iconColor: 'text-cyan-300',
+        textColor: 'text-cyan-200',
+        hoverBg: 'hover:bg-teal-600'
       },
       'mkt-comm': {
-        iconColor: 'text-lime-600',
-        textColor: 'text-lime-700',
-        hoverBg: 'hover:bg-lime-50'
+        iconColor: 'text-lime-300',
+        textColor: 'text-lime-200',
+        hoverBg: 'hover:bg-teal-600'
       },
       'hr': {
-        iconColor: 'text-emerald-700',
-        textColor: 'text-emerald-800',
-        hoverBg: 'hover:bg-emerald-50'
+        iconColor: 'text-emerald-300',
+        textColor: 'text-emerald-200',
+        hoverBg: 'hover:bg-teal-600'
       },
       'security': {
-        iconColor: 'text-slate-600',
-        textColor: 'text-slate-700',
-        hoverBg: 'hover:bg-slate-50'
+        iconColor: 'text-slate-300',
+        textColor: 'text-slate-200',
+        hoverBg: 'hover:bg-teal-600'
       },
       'public': {
-        iconColor: 'text-blue-600',
-        textColor: 'text-blue-700',
-        hoverBg: 'hover:bg-blue-50'
+        iconColor: 'text-blue-300',
+        textColor: 'text-blue-200',
+        hoverBg: 'hover:bg-teal-600'
       }
     };
     
     return colorSchemes[moduleValue] || {
-      iconColor: 'text-gray-600',
-      textColor: 'text-gray-700',
-      hoverBg: 'hover:bg-gray-50'
+      iconColor: 'text-teal-300',
+      textColor: 'text-teal-200',
+      hoverBg: 'hover:bg-teal-600'
     };
   };
 
@@ -246,18 +246,18 @@ const CollapsibleSubmenu: React.FC<{
     <div className="mb-3">
       <button
         onClick={() => onToggle(id)}
-        className="w-full flex items-center justify-between p-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+        className="w-full flex items-center justify-between p-2 text-sm font-medium text-teal-100 hover:bg-teal-600 rounded-lg transition-colors"
       >
         <div className="flex items-center">
           {icon}
           <span className="ml-2">{title}</span>
         </div>
         <ChevronRight 
-          className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+          className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-90' : ''} text-teal-200`}
         />
       </button>
       {isExpanded && (
-        <div className="pl-4 border-l-2 border-gray-200 ml-2 space-y-1 mt-2">
+        <div className="pl-4 border-l-2 border-teal-500 ml-2 space-y-1 mt-2">
           {children}
         </div>
       )}
@@ -358,16 +358,16 @@ const AdminSidebarComplete: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-y-0 left-0 w-64 flex flex-col bg-white shadow-lg z-50" style={{ height: '100vh' }}>
+    <div className="fixed inset-y-0 left-0 w-64 flex flex-col shadow-lg z-50" style={{ height: '100vh', backgroundColor: '#003D49' }}>
       {/* Header */}
-      <div className="flex items-center justify-between p-6 border-b bg-white" style={{ minHeight: '80px' }}>
+      <div className="flex items-center justify-between p-6 border-b border-teal-600" style={{ minHeight: '80px', backgroundColor: '#003D49' }}>
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+          <div className="w-10 h-10 bg-teal-500 rounded-lg flex items-center justify-center">
             <Map className="h-6 w-6 text-white" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-gray-900">ParkSys</h1>
-            <p className="text-sm text-gray-600">Sistema de Parques</p>
+            <h1 className="text-lg font-bold text-white">ParkSys</h1>
+            <p className="text-sm text-teal-200">Sistema de Parques</p>
           </div>
         </div>
       </div>
@@ -1308,7 +1308,7 @@ const AdminSidebarComplete: React.FC = () => {
       </ScrollArea>
 
       {/* Footer */}
-      <div className="p-4 border-t bg-gray-50">
+      <div className="p-4 border-t border-teal-600" style={{ backgroundColor: '#003D49' }}>
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <UserProfileImage 
@@ -1318,12 +1318,12 @@ const AdminSidebarComplete: React.FC = () => {
               size="sm" 
             />
             <div className="flex flex-col">
-              <span className="text-sm font-medium text-gray-900">
+              <span className="text-sm font-medium text-white">
                 {user?.firstName && user?.lastName 
                   ? `${user.firstName} ${user.lastName}` 
                   : user?.fullName || user?.username || 'Usuario'}
               </span>
-              <span className="text-xs text-gray-500">{user?.role || 'usuario'}</span>
+              <span className="text-xs text-teal-300">{user?.role || 'usuario'}</span>
             </div>
           </div>
         </div>
@@ -1334,7 +1334,7 @@ const AdminSidebarComplete: React.FC = () => {
             variant="ghost" 
             size="sm"
             onClick={handleLogout}
-            className="text-gray-600 hover:text-gray-900"
+            className="text-teal-200 hover:text-white hover:bg-teal-600"
             title="Cerrar Sesión"
           >
             <LogOut className="h-4 w-4" />
