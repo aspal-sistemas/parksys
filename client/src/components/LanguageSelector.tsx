@@ -45,8 +45,11 @@ export function LanguageSelector() {
         <Button 
           variant="outline" 
           size="sm" 
-          className="gap-2" 
-          style={{ backgroundColor: '#D2EAEA' }}
+          className="gap-2 border" 
+          style={{ 
+            backgroundColor: '#D2EAEA',
+            borderColor: '#003D49'
+          }}
         >
           <Globe className="h-4 w-4" />
           <span className="text-lg">{currentLanguage.flag}</span>
