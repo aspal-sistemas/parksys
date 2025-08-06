@@ -204,7 +204,7 @@ const Header: React.FC = () => {
               {/* Páneles de Control */}
               <Link href="/admin">
                 <button
-                  className={`py-2 px-3 text-sm font-medium flex items-center rounded-lg border-2 transition-colors ${
+                  className={`py-2 px-3 text-sm font-medium flex items-center rounded-lg border transition-colors ${
                     location === '/admin' 
                       ? 'bg-primary text-white border-primary' 
                       : 'text-gray-600 hover:text-gray-800'
@@ -221,7 +221,7 @@ const Header: React.FC = () => {
               {/* Menú de Gestión */}
               <div className="relative group">
                 <button
-                  className="py-2 px-3 text-sm font-medium flex items-center rounded-lg border-2 text-gray-600 hover:text-gray-800 transition-colors"
+                  className="py-2 px-3 text-sm font-medium flex items-center rounded-lg border text-gray-600 hover:text-gray-800 transition-colors"
                   style={{ 
                     backgroundColor: '#D2EAEA',
                     borderColor: '#003D49'
@@ -260,7 +260,7 @@ const Header: React.FC = () => {
               {/* Menú O & M */}
               <div className="relative group">
                 <button
-                  className="py-2 px-3 text-sm font-medium flex items-center rounded-lg border-2 text-gray-600 hover:text-gray-800 transition-colors"
+                  className="py-2 px-3 text-sm font-medium flex items-center rounded-lg border text-gray-600 hover:text-gray-800 transition-colors"
                   style={{ 
                     backgroundColor: '#D2EAEA',
                     borderColor: '#003D49'
@@ -291,7 +291,7 @@ const Header: React.FC = () => {
               {/* Menú Admin */}
               <div className="relative group">
                 <button
-                  className="py-2 px-3 text-sm font-medium flex items-center rounded-lg border-2 text-gray-600 hover:text-gray-800 transition-colors"
+                  className="py-2 px-3 text-sm font-medium flex items-center rounded-lg border text-gray-600 hover:text-gray-800 transition-colors"
                   style={{ 
                     backgroundColor: '#D2EAEA',
                     borderColor: '#003D49'
@@ -322,7 +322,7 @@ const Header: React.FC = () => {
               {/* Menú Mkt y Comm */}
               <div className="relative group">
                 <button
-                  className="py-2 px-3 text-sm font-medium flex items-center rounded-lg border-2 text-gray-600 hover:text-gray-800 transition-colors"
+                  className="py-2 px-3 text-sm font-medium flex items-center rounded-lg border text-gray-600 hover:text-gray-800 transition-colors"
                   style={{ 
                     backgroundColor: '#D2EAEA',
                     borderColor: '#003D49'
@@ -353,7 +353,7 @@ const Header: React.FC = () => {
               {/* Menú RH */}
               <Link href="/admin/hr/employees">
                 <button
-                  className="py-2 px-3 text-sm font-medium rounded-lg border-2 text-gray-600 hover:text-gray-800 transition-colors"
+                  className="py-2 px-3 text-sm font-medium rounded-lg border text-gray-600 hover:text-gray-800 transition-colors"
                   style={{ 
                     backgroundColor: '#D2EAEA',
                     borderColor: '#003D49'
@@ -375,7 +375,7 @@ const Header: React.FC = () => {
               location !== '/admin/login' && (
                 <div className="flex items-center gap-2 mr-2">
                   <Link href="/">
-                    <Button variant="outline" size="sm" className="rounded-lg border-2" style={{ 
+                    <Button variant="outline" size="sm" className="rounded-lg border" style={{ 
                       backgroundColor: '#D2EAEA',
                       borderColor: '#003D49'
                     }}>
@@ -383,7 +383,7 @@ const Header: React.FC = () => {
                     </Button>
                   </Link>
                   <HelpCenter>
-                    <Button variant="outline" size="sm" className="w-9 h-9 p-0 rounded-lg border-2" style={{ 
+                    <Button variant="outline" size="sm" className="w-9 h-9 p-0 rounded-lg border" style={{ 
                       backgroundColor: '#D2EAEA',
                       borderColor: '#003D49'
                     }}>
