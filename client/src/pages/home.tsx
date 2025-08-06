@@ -5,7 +5,7 @@ import { Map, ArrowRight, MapPin, Trees, Users, Calendar, Sparkles, TrendingUp, 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import ParkCard from '@/components/ParkCard';
-import AdSpaceIntelligent from '@/components/AdSpaceIntelligent';
+import AdSpace from '@/components/AdSpace';
 import { ExtendedPark } from '@shared/schema';
 import logoImage from '@assets/logo_1751306368691.png';
 
@@ -108,11 +108,11 @@ const Home: React.FC = () => {
             
             {/* 🎯 PUBLICIDAD PILOTO - Hero Banner */}
             <div className="mb-8 relative z-20">
-              <AdSpaceIntelligent 
-                pageType="homepage" 
+              <AdSpace 
+                spaceId={10} 
                 position="hero" 
+                pageType="homepage" 
                 className="rounded-lg shadow-xl border-2 border-white/20 backdrop-blur-sm max-w-2xl"
-                enableAnalytics={true}
               />
             </div>
 
@@ -295,11 +295,11 @@ const Home: React.FC = () => {
           
           {/* Banner publicitario */}
           <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] my-8">
-            <AdSpaceIntelligent 
-              pageType="homepage" 
+            <AdSpace 
+              spaceId={14} 
               position="banner" 
+              pageType="homepage" 
               className="w-full"
-              enableAnalytics={true}
             />
           </div>
         </div>
