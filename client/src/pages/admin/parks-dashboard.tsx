@@ -461,10 +461,23 @@ const ParksDashboard = () => {
                   const colors = ['#B3C077', '#1E5AA6', '#198DCE', '#90D3EC'];
                   const backgroundColor = colors[index % colors.length];
                   
+                  // Función para traducir estados de conservación
+                  const translateStatus = (status: string) => {
+                    switch (status.toLowerCase()) {
+                      case 'good': return 'Excelente';
+                      case 'excellent': return 'Excelente';
+                      case 'fair': return 'Bueno';
+                      case 'regular': return 'Regular';
+                      case 'poor': return 'Malo';
+                      case 'bad': return 'Malo';
+                      default: return status;
+                    }
+                  };
+                  
                   return (
                     <div key={index} className="flex items-center space-x-3">
                       <div className="w-20 text-sm font-medium text-right text-gray-700 truncate">
-                        {item.status}
+                        {translateStatus(item.status)}
                       </div>
                       <div className="flex-1 flex items-center space-x-2">
                         <div className="flex-1 bg-gray-200 rounded-full h-6 relative">
