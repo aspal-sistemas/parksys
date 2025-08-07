@@ -1091,7 +1091,13 @@ const AdminSidebarComplete: React.FC = () => {
             title="Configuración y Seguridad" 
             icon={<Settings className="h-5 w-5" />}
             value="config-security"
-            defaultOpen={location.startsWith('/admin/security') || location.startsWith('/admin/settings') || location.startsWith('/admin/configuracion')}
+            defaultOpen={location.startsWith('/admin/configuracion-seguridad') || 
+                        location.startsWith('/admin/security') || 
+                        location.startsWith('/admin/settings') || 
+                        location.startsWith('/admin/users') || 
+                        location.startsWith('/admin/roles') || 
+                        location.startsWith('/admin/permissions') || 
+                        location.startsWith('/admin/role-assignments')}
           >
             {/* CONTROL DE ACCESO */}
             <CollapsibleSubmenu
@@ -1102,30 +1108,30 @@ const AdminSidebarComplete: React.FC = () => {
               onToggle={toggleSubmenu}
             >
               <NavItem 
-                href="/admin/roles" 
+                href="/admin/configuracion-seguridad/access/roles" 
                 icon={<UserCog className="h-4 w-4" />}
-                active={location === '/admin/roles'}
+                active={location === '/admin/configuracion-seguridad/access/roles'}
               >
                 Gestión de Roles
               </NavItem>
               <NavItem 
-                href="/admin/permissions/matrix" 
+                href="/admin/configuracion-seguridad/access/permissions" 
                 icon={<Grid className="h-4 w-4" />}
-                active={location === '/admin/permissions/matrix'}
+                active={location === '/admin/configuracion-seguridad/access/permissions'}
               >
                 Matriz de Permisos
               </NavItem>
               <NavItem 
-                href="/admin/role-assignments" 
+                href="/admin/configuracion-seguridad/access/assignments" 
                 icon={<UserCheck className="h-4 w-4" />}
-                active={location === '/admin/role-assignments'}
+                active={location === '/admin/configuracion-seguridad/access/assignments'}
               >
                 Asignación de Usuarios
               </NavItem>
               <NavItem 
-                href="/admin/users" 
+                href="/admin/configuracion-seguridad/access/users" 
                 icon={<Users className="h-4 w-4" />}
-                active={location === '/admin/users'}
+                active={location === '/admin/configuracion-seguridad/access/users'}
               >
                 Gestión de Usuarios
               </NavItem>
@@ -1140,25 +1146,11 @@ const AdminSidebarComplete: React.FC = () => {
               onToggle={toggleSubmenu}
             >
               <NavItem 
-                href="/admin/security/password-policy" 
-                icon={<Lock className="h-4 w-4" />}
-                active={location === '/admin/security/password-policy'}
+                href="/admin/configuracion-seguridad/policies" 
+                icon={<FileText className="h-4 w-4" />}
+                active={location === '/admin/configuracion-seguridad/policies'}
               >
-                Políticas de Contraseña
-              </NavItem>
-              <NavItem 
-                href="/admin/security/access-policy" 
-                icon={<Shield className="h-4 w-4" />}
-                active={location === '/admin/security/access-policy'}
-              >
-                Políticas de Acceso
-              </NavItem>
-              <NavItem 
-                href="/admin/security/session-policy" 
-                icon={<Clock className="h-4 w-4" />}
-                active={location === '/admin/security/session-policy'}
-              >
-                Políticas de Sesión
+                Panel de Políticas
               </NavItem>
             </CollapsibleSubmenu>
 
@@ -1171,25 +1163,11 @@ const AdminSidebarComplete: React.FC = () => {
               onToggle={toggleSubmenu}
             >
               <NavItem 
-                href="/admin/notifications/settings" 
-                icon={<Settings className="h-4 w-4" />}
-                active={location === '/admin/notifications/settings'}
+                href="/admin/configuracion-seguridad/notifications" 
+                icon={<Bell className="h-4 w-4" />}
+                active={location === '/admin/configuracion-seguridad/notifications'}
               >
-                Configuración
-              </NavItem>
-              <NavItem 
-                href="/admin/notifications/templates" 
-                icon={<Mail className="h-4 w-4" />}
-                active={location === '/admin/notifications/templates'}
-              >
-                Plantillas
-              </NavItem>
-              <NavItem 
-                href="/admin/notifications/history" 
-                icon={<History className="h-4 w-4" />}
-                active={location === '/admin/notifications/history'}
-              >
-                Historial
+                Panel de Notificaciones
               </NavItem>
             </CollapsibleSubmenu>
 
@@ -1202,25 +1180,11 @@ const AdminSidebarComplete: React.FC = () => {
               onToggle={toggleSubmenu}
             >
               <NavItem 
-                href="/admin/security/audit/login-attempts" 
-                icon={<AlertTriangle className="h-4 w-4" />}
-                active={location === '/admin/security/audit/login-attempts'}
+                href="/admin/configuracion-seguridad/audit" 
+                icon={<ClipboardList className="h-4 w-4" />}
+                active={location === '/admin/configuracion-seguridad/audit'}
               >
-                Intentos de Acceso
-              </NavItem>
-              <NavItem 
-                href="/admin/security/audit/user-activity" 
-                icon={<Activity className="h-4 w-4" />}
-                active={location === '/admin/security/audit/user-activity'}
-              >
-                Actividad de Usuarios
-              </NavItem>
-              <NavItem 
-                href="/admin/security/audit/system-logs" 
-                icon={<FileText className="h-4 w-4" />}
-                active={location === '/admin/security/audit/system-logs'}
-              >
-                Logs del Sistema
+                Panel de Auditoría
               </NavItem>
               <NavItem 
                 href="/admin/role-audits" 
@@ -1240,18 +1204,18 @@ const AdminSidebarComplete: React.FC = () => {
               onToggle={toggleSubmenu}
             >
               <NavItem 
+                href="/admin/configuracion-seguridad/maintenance" 
+                icon={<Settings className="h-4 w-4" />}
+                active={location === '/admin/configuracion-seguridad/maintenance'}
+              >
+                Panel de Mantenimiento
+              </NavItem>
+              <NavItem 
                 href="/admin/system/backup" 
                 icon={<Download className="h-4 w-4" />}
                 active={location === '/admin/system/backup'}
               >
                 Respaldos
-              </NavItem>
-              <NavItem 
-                href="/admin/system/maintenance" 
-                icon={<Settings className="h-4 w-4" />}
-                active={location === '/admin/system/maintenance'}
-              >
-                Mantenimiento
               </NavItem>
               <NavItem 
                 href="/admin/system/performance" 
