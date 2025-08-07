@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
+import logoPath from "@assets/iScreen Shoter - Acrobat - 250806102921_1754498797906.png";
 
 const loginSchema = z.object({
   username: z.string().min(1, { message: 'El nombre de usuario es requerido' }),
@@ -158,24 +159,21 @@ const AdminLogin: React.FC = () => {
   
   if (showForgotPassword) {
     return (
-      <div className="h-screen w-screen fixed inset-0 flex items-center justify-center bg-gray-50 px-4 z-[60]">
-        <Card className="w-full max-w-md">
+      <div className="h-screen w-screen fixed inset-0 flex items-center justify-center bg-white px-4 z-[60]">
+        <Card className="w-full max-w-md" style={{ backgroundColor: '#003D49' }}>
           <CardHeader className="space-y-1">
             <div className="flex items-center justify-center mb-4">
-              <svg className="h-10 w-10 text-primary" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M5 16c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm0-8c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm4 8c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm0-8c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm7.5-4c.28 0 .5.22.5.5s-.22.5-.5.5-.5-.22-.5-.5.22-.5.5-.5zM5 12c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm7 0c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm1-8.5c-.28 0-.5.22-.5.5s.22.5.5.5.5-.22.5-.5-.22-.5-.5-.5zM17 12c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm2-5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm0 8c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm-7-10c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm0 8c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm-4-8c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z"></path>
-              </svg>
-              <span className="ml-2 text-2xl font-heading font-semibold text-gray-900">ParkSys</span>
+              <img src={logoPath} alt="ParkSys" className="h-16 w-auto" />
             </div>
-            <CardTitle className="text-xl">Recuperar Contraseña</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-xl text-white">Recuperar Contraseña</CardTitle>
+            <CardDescription className="text-gray-200">
               Ingresa tu email para recibir un enlace de recuperación
             </CardDescription>
           </CardHeader>
           <form onSubmit={forgotPasswordForm.handleSubmit(onForgotPasswordSubmit)}>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email" className="text-white">Email</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
@@ -222,26 +220,23 @@ const AdminLogin: React.FC = () => {
   }
 
   return (
-    <div className="h-screen w-screen fixed inset-0 flex items-center justify-center bg-gray-50 px-4 z-[60]">
-      <Card className="w-full max-w-md">
+    <div className="h-screen w-screen fixed inset-0 flex items-center justify-center bg-white px-4 z-[60]">
+      <Card className="w-full max-w-md" style={{ backgroundColor: '#003D49' }}>
         <CardHeader className="space-y-1">
           <div className="flex items-center justify-center mb-4">
-            <a href="/" className="flex items-center hover:opacity-80 transition-opacity">
-              <svg className="h-10 w-10 text-primary" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M5 16c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm0-8c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm4 8c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm0-8c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm7.5-4c.28 0 .5.22.5.5s-.22.5-.5.5-.5-.22-.5-.5.22-.5.5-.5zM5 12c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm7 0c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm1-8.5c-.28 0-.5.22-.5.5s.22.5.5.5.5-.22.5-.5-.22-.5-.5-.5zM17 12c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1zm2-5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm0 8c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm-7-10c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm0 8c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm-4-8c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z"></path>
-              </svg>
-              <span className="ml-2 text-2xl font-heading font-semibold text-gray-900">ParkSys</span>
+            <a href="/" className="hover:opacity-80 transition-opacity">
+              <img src={logoPath} alt="ParkSys" className="h-16 w-auto" />
             </a>
           </div>
-          <CardTitle className="text-xl">Panel Administrativo</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-xl text-white">Panel Administrativo</CardTitle>
+          <CardDescription className="text-gray-200">
             Inicia sesión con tus credenciales institucionales
           </CardDescription>
         </CardHeader>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username">Usuario</Label>
+              <Label htmlFor="username" className="text-white">Usuario</Label>
               <Input
                 id="username"
                 placeholder="Ingresa tu nombre de usuario"
@@ -252,7 +247,7 @@ const AdminLogin: React.FC = () => {
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Contraseña</Label>
+              <Label htmlFor="password" className="text-white">Contraseña</Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -278,7 +273,7 @@ const AdminLogin: React.FC = () => {
               <div className="text-right">
                 <button
                   type="button"
-                  className="text-sm text-primary hover:underline"
+                  className="text-sm text-blue-300 hover:text-blue-100 hover:underline"
                   onClick={() => setShowForgotPassword(true)}
                 >
                   ¿Olvidaste tu contraseña?
@@ -292,11 +287,11 @@ const AdminLogin: React.FC = () => {
               Iniciar Sesión
             </Button>
             <div className="mt-4 text-center">
-              <p className="text-sm text-gray-500">
-                Usuario de prueba: <span className="font-medium">admin</span>
+              <p className="text-sm text-gray-300">
+                Usuario de prueba: <span className="font-medium text-white">admin</span>
               </p>
-              <p className="text-sm text-gray-500">
-                Contraseña: <span className="font-medium">admin123</span>
+              <p className="text-sm text-gray-300">
+                Contraseña: <span className="font-medium text-white">admin123</span>
               </p>
             </div>
           </CardFooter>

@@ -28,17 +28,49 @@ export function registerHRRoutes(app: any, apiRouter: Router, isAuthenticated: a
     try {
       console.log("🔍 Obteniendo empleados desde la tabla employees...");
       
-      // Usar Drizzle ORM en lugar de SQL crudo
-      const employeesList = await db
-        .select({
-          id: employees.id,
-          fullName: employees.fullName,
-          email: employees.email,
-          position: employees.position,
-          department: employees.department
-        })
-        .from(employees)
-        .orderBy(employees.fullName);
+      // Usar consulta SQL directa para obtener todos los campos
+      const results = await pool.query(`
+        SELECT 
+          id,
+          employee_code,
+          full_name,
+          email,
+          phone,
+          position,
+          department,
+          salary,
+          hire_date,
+          status,
+          work_schedule,
+          address,
+          emergency_contact,
+          emergency_phone,
+          education,
+          skills,
+          certifications
+        FROM employees 
+        ORDER BY id
+      `);
+      
+      const employeesList = results.rows.map(emp => ({
+        id: emp.id,
+        fullName: emp.full_name || '',
+        email: emp.email || '',
+        phone: emp.phone || '',
+        position: emp.position || '',
+        department: emp.department || '',
+        hireDate: emp.hire_date ? emp.hire_date.toISOString().split('T')[0] : '',
+        salary: emp.salary ? parseFloat(emp.salary) : 0,
+        status: emp.status || 'active',
+        address: emp.address || '',
+        emergencyContact: emp.emergency_contact || '',
+        emergencyPhone: emp.emergency_phone || '',
+        education: emp.education || '',
+        workSchedule: emp.work_schedule || '',
+        employeeCode: emp.employee_code || '',
+        skills: emp.skills || [],
+        certifications: emp.certifications || []
+      }));
       
       console.log(`✅ Encontrados ${employeesList.length} empleados desde tabla employees`);
       res.json(employeesList);
@@ -48,8 +80,217 @@ export function registerHRRoutes(app: any, apiRouter: Router, isAuthenticated: a
     }
   });
 
-  // Crear empleado con usuario automático
-  apiRouter.post("/employees", isAuthenticated, async (req: Request, res: Response) => {
+  // Crear empleado
+  apiRouter.post("/employees", async (req: Request, res: Response) => {
+    try {
+      console.log("Datos recibidos para crear empleado:", req.body);
+      
+      const {
+        fullName,
+        email,
+        phone,
+        position,
+        department,
+        salary,
+        hireDate,
+        status = 'active',
+        workSchedule,
+        address,
+        emergencyContact,
+        emergencyPhone,
+        education
+      } = req.body;
+
+      // Generar código de empleado automático
+      const codeResult = await pool.query(`
+        SELECT COALESCE(MAX(CAST(SUBSTRING(employee_code FROM 5) AS INTEGER)), 0) + 1 as next_code
+        FROM employees 
+        WHERE employee_code LIKE 'EMP-%'
+      `);
+      const nextCode = codeResult.rows[0]?.next_code || 1;
+      const employeeCode = `EMP-${String(nextCode).padStart(4, '0')}`;
+
+      const result = await pool.query(`
+        INSERT INTO employees (
+          employee_code, full_name, email, phone, position, department, 
+          salary, hire_date, status, work_schedule, address, 
+          emergency_contact, emergency_phone, education
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+        RETURNING *
+      `, [
+        employeeCode, fullName, email, phone, position, department,
+        salary ? parseFloat(salary) : null, hireDate || null, status, workSchedule,
+        address, emergencyContact, emergencyPhone, education
+      ]);
+
+      res.status(201).json(result.rows[0]);
+    } catch (error) {
+      console.error("❌ Error al crear empleado:", error);
+      res.status(500).json({ error: "Error interno del servidor", details: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
+  // Actualizar empleado
+  apiRouter.put("/employees/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const {
+        fullName,
+        email,
+        phone,
+        position,
+        department,
+        salary,
+        hireDate,
+        status,
+        workSchedule,
+        address,
+        emergencyContact,
+        emergencyPhone,
+        education
+      } = req.body;
+
+      const result = await pool.query(`
+        UPDATE employees SET
+          full_name = $2,
+          email = $3,
+          phone = $4,
+          position = $5,
+          department = $6,
+          salary = $7,
+          hire_date = $8,
+          status = $9,
+          work_schedule = $10,
+          address = $11,
+          emergency_contact = $12,
+          emergency_phone = $13,
+          education = $14,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE id = $1
+        RETURNING *
+      `, [
+        id, fullName, email, phone, position, department,
+        salary ? parseFloat(salary) : null, hireDate || null, status, workSchedule,
+        address, emergencyContact, emergencyPhone, education
+      ]);
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: "Empleado no encontrado" });
+      }
+
+      res.json(result.rows[0]);
+    } catch (error) {
+      console.error("❌ Error al actualizar empleado:", error);
+      res.status(500).json({ error: "Error interno del servidor", details: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
+  // Eliminar empleado
+  apiRouter.delete("/employees/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+
+      // Verificar si el empleado existe y obtener sus datos
+      const checkResult = await pool.query(`
+        SELECT id, user_id, full_name, employee_code FROM employees WHERE id = $1
+      `, [id]);
+
+      if (checkResult.rows.length === 0) {
+        return res.status(404).json({ error: "Empleado no encontrado" });
+      }
+
+      const employee = checkResult.rows[0];
+
+      // Verificar si tiene registros relacionados en otras tablas
+      const relationsCheck = await pool.query(`
+        SELECT 
+          (SELECT COUNT(*) FROM payroll_details WHERE employee_id = $1) as payroll_records,
+          (SELECT COUNT(*) FROM time_off_requests WHERE employee_id = $1) as vacation_records,
+          (SELECT COUNT(*) FROM time_records WHERE employee_id = $1) as time_records,
+          (SELECT COUNT(*) FROM vacation_balances WHERE employee_id = $1) as vacation_balances,
+          (SELECT COUNT(*) FROM work_schedules WHERE employee_id = $1) as work_schedules,
+          (SELECT COUNT(*) FROM daily_time_sheets WHERE employee_id = $1) as time_sheets,
+          (SELECT COUNT(*) FROM payroll_receipts WHERE employee_id = $1) as payroll_receipts
+      `, [id]);
+
+      const relations = relationsCheck.rows[0];
+      const totalRelations = Object.values(relations).reduce((sum: number, count: any) => sum + parseInt(count), 0);
+
+      console.log(`🔍 Verificando empleado ${employee.full_name}:`);
+      console.log(`   - Registros de nómina: ${relations.payroll_records}`);
+      console.log(`   - Solicitudes de vacaciones: ${relations.vacation_records}`);
+      console.log(`   - Registros de tiempo: ${relations.time_records}`);
+      console.log(`   - Balances de vacaciones: ${relations.vacation_balances}`);
+      console.log(`   - Horarios de trabajo: ${relations.work_schedules}`);
+      console.log(`   - Hojas de tiempo: ${relations.time_sheets}`);
+      console.log(`   - Recibos de nómina: ${relations.payroll_receipts}`);
+      console.log(`   - Total relaciones: ${totalRelations}`);
+
+      // Si tiene user_id O registros relacionados, desactivar en lugar de eliminar
+      if (employee.user_id || totalRelations > 0) {
+        let reason = [];
+        if (employee.user_id) reason.push("tiene usuario asociado");
+        if (totalRelations > 0) reason.push(`tiene ${totalRelations} registros relacionados en el sistema`);
+        
+        console.log(`🚨 Empleado NO se puede eliminar: ${reason.join(' y ')}`);
+        
+        const updateResult = await pool.query(`
+          UPDATE employees SET 
+            status = 'inactive',
+            updated_at = CURRENT_TIMESTAMP
+          WHERE id = $1 
+          RETURNING *
+        `, [id]);
+
+        const relationDetails = [];
+        if (relations.payroll_records > 0) relationDetails.push(`${relations.payroll_records} registros de nómina`);
+        if (relations.vacation_records > 0) relationDetails.push(`${relations.vacation_records} solicitudes de vacaciones`);
+        if (relations.time_records > 0) relationDetails.push(`${relations.time_records} registros de tiempo`);
+        if (relations.vacation_balances > 0) relationDetails.push(`${relations.vacation_balances} balances de vacaciones`);
+        if (relations.work_schedules > 0) relationDetails.push(`${relations.work_schedules} horarios`);
+        if (relations.time_sheets > 0) relationDetails.push(`${relations.time_sheets} hojas de tiempo`);
+        if (relations.payroll_receipts > 0) relationDetails.push(`${relations.payroll_receipts} recibos de nómina`);
+
+        return res.json({ 
+          message: `Empleado desactivado (no se puede eliminar por ${reason.join(' y ')})`,
+          employee: updateResult.rows[0],
+          action: "deactivated",
+          reason: reason.join(' y '),
+          relationDetails: relationDetails
+        });
+      }
+
+      // Si no tiene user_id ni registros relacionados, permitir eliminación
+      console.log(`✅ Empleado ${employee.full_name} se puede eliminar (sin registros relacionados)`);
+      
+      const result = await pool.query(`
+        DELETE FROM employees WHERE id = $1 RETURNING *
+      `, [id]);
+
+      res.json({ 
+        message: "Empleado eliminado exitosamente",
+        action: "deleted"
+      });
+    } catch (error) {
+      console.error("❌ Error al eliminar empleado:", error);
+      
+      // Manejar errores específicos de clave foránea
+      if (error instanceof Error && error.message.includes('foreign key constraint')) {
+        return res.status(400).json({ 
+          error: "No se puede eliminar: empleado tiene registros relacionados",
+          details: "Este empleado tiene datos asociados en el sistema de RH, nómina o control de tiempo"
+        });
+      }
+      
+      res.status(500).json({ 
+        error: "Error interno del servidor", 
+        details: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
+  });
+
+  // Crear empleado con usuario automático (método alternativo obsoleto)
+  apiRouter.post("/employees-with-user", isAuthenticated, async (req: Request, res: Response) => {
     try {
       console.log("Datos recibidos para crear empleado:", req.body);
       

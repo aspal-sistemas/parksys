@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, MapPin, Trees, Users, Search } from 'lucide-react';
 import heroImage from '@assets/group-of-tourists-walking-through-natural-reserve-2024-05-27-02-02-13-utc_1752940583323.jpg';
 import logoImage from '@assets/logo_1751306368691.png';
-import AdSpace from '@/components/AdSpace';
+import AdSpaceIntelligent from '@/components/AdSpaceIntelligent';
 const Parks: React.FC = () => {
   const [filters, setFilters] = useState<{
     search?: string;
@@ -36,7 +36,7 @@ const Parks: React.FC = () => {
     if (filters.search) params.append('search', filters.search);
     if (filters.parkType) params.append('parkType', filters.parkType);
     if (filters.postalCode) params.append('postalCode', filters.postalCode);
-    if (filters.municipality) params.append('municipality', filters.municipality);
+
     if (filters.amenityIds && filters.amenityIds.length > 0) {
       params.append('amenities', filters.amenityIds.join(','));
     }
@@ -155,9 +155,27 @@ const Parks: React.FC = () => {
         </div>
       </div>
 
-      {/* Espacio Publicitario - Header */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-3">
-        <AdSpace spaceId="1" position="header" pageType="parks" />
+      {/* Banner publicitario de ancho completo - MOVIDO DESPUÉS DEL HERO */}
+      <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] bg-gradient-to-r from-green-500 to-blue-600 py-4">
+        <div className="flex items-center justify-center h-20">
+          <AdSpaceIntelligent 
+            pageType="parks"
+            position="banner"
+            layoutConfig={{
+              responsive: true,
+              maxWidth: "100%",
+              minHeight: "80px"
+            }}
+            enableAnalytics={true}
+            autoRefresh={false}
+            className="w-full"
+          />
+          {/* Fallback visible para cuando no hay anuncios */}
+          <div className="text-white text-center">
+            <h3 className="text-xl font-bold">Espacio Publicitario Banner</h3>
+            <p className="text-sm opacity-90">Ancho completo - 150px altura</p>
+          </div>
+        </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -174,55 +192,27 @@ const Parks: React.FC = () => {
         </div>
         */}
 
-        {/* Banner publicitario */}
-        <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] my-8">
-          <AdSpace 
-            spaceId="31" 
-            position="banner" 
-            pageType="parks" 
-            className="w-full"
-          />
-        </div>
 
-        {/* Resultados con Sidebar */}
+
+        {/* Contenido Principal - Ancho completo */}
         <div className="mb-8" id="resultados-busqueda">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            {/* Contenido Principal */}
-            <div className="lg:col-span-3">
-              <div className="bg-white rounded-2xl shadow-sm border p-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                  <div>
-                    <h2 className="text-2xl font-bold text-gray-900">
-                      Bosques Urbanos de Guadalajara
-                    </h2>
-                  </div>
-
-                </div>
-                
-                <ExtendedParksList 
-                  parks={parks}
-                  isLoading={isLoading}
-                  onParkSelect={(park: ExtendedPark) => {
-                    setSelectedParkId(park.id);
-                    setModalOpen(true);
-                  }}
-                />
+          <div className="bg-white rounded-2xl shadow-sm border p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Bosques Urbanos de Guadalajara
+                </h2>
               </div>
             </div>
-
-            {/* Sidebar Publicitario */}
-            <div className="lg:col-span-1">
-              <div className="sticky top-4 space-y-6">
-                {/* Espacio publicitario principal */}
-                <AdSpace spaceId="2" position="card" pageType="parks" />
-                
-                {/* Espacios publicitarios administrables - Diseño Tipo Tarjeta */}
-                <AdSpace spaceId={39} position="card" pageType="parks" />
-                <AdSpace spaceId={40} position="card" pageType="parks" />
-                <AdSpace spaceId={41} position="card" pageType="parks" />
-                <AdSpace spaceId={42} position="card" pageType="parks" />
-              </div>
-            </div>
+            
+            <ExtendedParksList 
+              parks={parks}
+              isLoading={isLoading}
+              onParkSelect={(park: ExtendedPark) => {
+                setSelectedParkId(park.id);
+                setModalOpen(true);
+              }}
+            />
           </div>
         </div>
 
@@ -230,7 +220,17 @@ const Parks: React.FC = () => {
 
         {/* Espacio Publicitario - Footer */}
         <div className="mt-8 mb-6">
-          <AdSpace spaceId="3" position="footer" pageType="parks" />
+          <AdSpaceIntelligent 
+            pageType="parks" 
+            position="footer" 
+            layoutConfig={{
+              responsive: true,
+              maxWidth: "100%",
+              minHeight: "80px"
+            }}
+            enableAnalytics={true}
+            className="w-full"
+          />
         </div>
       </div>
 

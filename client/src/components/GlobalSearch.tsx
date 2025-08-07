@@ -115,19 +115,29 @@ const GlobalSearch: React.FC = () => {
     const instructors = instructorsData?.data || instructorsData || [];
     if (Array.isArray(instructors)) {
       instructors
-        .filter((instructor: any) => 
-          instructor.name?.toLowerCase().includes(searchLower) ||
-          instructor.specialties?.toLowerCase().includes(searchLower)
-        )
+        .filter((instructor: any) => {
+          const name = instructor.name || instructor.fullName || instructor.full_name || '';
+          const specialties = Array.isArray(instructor.specialties) 
+            ? instructor.specialties.join(' ').toLowerCase()
+            : (instructor.specialties || '').toString().toLowerCase();
+          
+          return name.toLowerCase().includes(searchLower) ||
+                 specialties.includes(searchLower);
+        })
         .slice(0, 2)
         .forEach((instructor: any) => {
+          const displayName = instructor.name || instructor.fullName || instructor.full_name || 'Instructor';
+          const displaySpecialties = Array.isArray(instructor.specialties) 
+            ? instructor.specialties.join(', ')
+            : (instructor.specialties || 'Especialidades variadas');
+            
           searchResults.push({
             id: `instructor-${instructor.id}`,
-            title: instructor.name,
-            description: `Instructor - ${instructor.specialties || 'Especialidades variadas'}`,
+            title: displayName,
+            description: `Instructor - ${displaySpecialties}`,
             type: 'instructor',
             url: `/instructors/${instructor.id}`,
-            image: instructor.profileImage
+            image: instructor.profileImage || instructor.profileImageUrl
           });
         });
     }

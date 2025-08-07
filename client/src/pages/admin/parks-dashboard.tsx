@@ -146,44 +146,43 @@ const ParksDashboard = () => {
     <AdminLayout>
       <div className="space-y-8">
         {/* Main Header con Card */}
-        <Card className="p-4 bg-gray-50">
+        <Card className="p-4" style={{backgroundColor: '#003D49'}}>
           <div className="flex items-center gap-2">
-            <Activity className="w-8 h-8 text-gray-900" />
+            <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{backgroundColor: '#513C73'}}>
+              <Activity className="w-5 h-5 text-white" />
+            </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-              <p className="text-gray-600 mt-2">Resumen General del Sistema</p>
+              <h1 className="text-3xl font-bold text-white">Dashboard</h1>
+              <p className="text-gray-200 mt-2">Resumen General del Sistema</p>
             </div>
           </div>
         </Card>
         
         {/* Sección 1: Información General */}
         <div className="space-y-4">
-          <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-            <div className="bg-green-500 rounded-full p-2">
-              <MapPin className="h-5 w-5 text-white" />
-            </div>
+          <h2 className="text-2xl font-bold text-gray-800">
             Información General
           </h2>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            <Card className="border-0 shadow-lg bg-gradient-to-br from-emerald-500 to-emerald-600 text-white">
+            <Card className="border-0 shadow-lg text-white" style={{backgroundColor: '#003D49'}}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-emerald-100">Total de Parques</CardTitle>
-              <div className="bg-white/20 rounded-full p-2">
+              <CardTitle className="text-base font-medium text-gray-100">Total de Parques</CardTitle>
+              <div className="rounded-full p-2" style={{backgroundColor: '#513C73'}}>
                 <MapPin className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{data.totalParks}</div>
-              <p className="text-xs text-emerald-100">
+              <p className="text-xs text-white">
                 {data.activeParks} activos
               </p>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+          <Card className="border-0 shadow-lg text-white" style={{backgroundColor: '#003D49'}}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-blue-100">Superficie Total</CardTitle>
-              <div className="bg-white/20 rounded-full p-2">
+              <CardTitle className="text-base font-medium text-gray-100">Superficie Total</CardTitle>
+              <div className="rounded-full p-2" style={{backgroundColor: '#513C73'}}>
                 <Trees className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
@@ -191,78 +190,63 @@ const ParksDashboard = () => {
               <div className="text-3xl font-bold text-white">
                 {data.totalSurface ? `${(data.totalSurface / 10000).toFixed(1)} ha` : 'N/A'}
               </div>
-              <p className="text-xs text-blue-100">
+              <p className="text-xs text-white">
                 Superficie total de parques
               </p>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-teal-500 to-teal-600 text-white">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-teal-100">Área Permeable</CardTitle>
-              <div className="bg-white/20 rounded-full p-2">
-                <Trees className="h-5 w-5 text-white" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-white">
-                {data.totalGreenArea ? `${(data.totalGreenArea / 10000).toFixed(1)} ha` : 'N/A'}
-              </div>
-              <p className="text-xs text-teal-100">
-                Superficie permeable total
-              </p>
-            </CardContent>
-          </Card>
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-500 to-purple-600 text-white">
+
+          <Card className="border-0 shadow-lg text-white" style={{backgroundColor: '#003D49'}}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-purple-100">Actividades</CardTitle>
-              <div className="bg-white/20 rounded-full p-2">
+              <CardTitle className="text-base font-medium text-gray-100">Actividades</CardTitle>
+              <div className="rounded-full p-2" style={{backgroundColor: '#513C73'}}>
                 <Calendar className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{data.totalActivities}</div>
-              <p className="text-xs text-purple-100">
+              <p className="text-xs text-white">
                 Eventos programados
               </p>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-orange-500 to-orange-600 text-white">
+          <Card className="border-0 shadow-lg text-white" style={{backgroundColor: '#003D49'}}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-orange-100">Voluntarios</CardTitle>
-              <div className="bg-white/20 rounded-full p-2">
+              <CardTitle className="text-base font-medium text-gray-100">Voluntarios</CardTitle>
+              <div className="rounded-full p-2" style={{backgroundColor: '#B275B0'}}>
                 <Users className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{data.totalVolunteers}</div>
-              <p className="text-xs text-orange-100">
+              <p className="text-xs text-white">
                 Activos en el sistema
               </p>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-green-500 to-green-600 text-white">
+          <Card className="border-0 shadow-lg text-white" style={{backgroundColor: '#003D49'}}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-green-100">Árboles</CardTitle>
-              <div className="bg-white/20 rounded-full p-2">
+              <CardTitle className="text-base font-medium text-gray-100">Árboles</CardTitle>
+              <div className="rounded-full p-2" style={{backgroundColor: '#513C73'}}>
                 <Trees className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{data.totalTrees}</div>
-              <p className="text-xs text-green-100">
+              <p className="text-xs text-white">
                 En inventario
               </p>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-pink-500 to-pink-600 text-white">
+          <Card className="border-0 shadow-lg text-white" style={{backgroundColor: '#003D49'}}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-pink-100">Visitantes</CardTitle>
-              <div className="bg-white/20 rounded-full p-2">
+              <CardTitle className="text-base font-medium text-gray-100">Visitantes</CardTitle>
+              <div className="rounded-full p-2" style={{backgroundColor: '#513C73'}}>
                 <TrendingUp className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
@@ -270,16 +254,16 @@ const ParksDashboard = () => {
               <div className="text-3xl font-bold text-white">
                 {data.totalVisitors ? data.totalVisitors.toLocaleString() : 'N/A'}
               </div>
-              <p className="text-xs text-pink-100">
+              <p className="text-xs text-white">
                 Visitantes totales
               </p>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-yellow-500 to-yellow-600 text-white">
+          <Card className="border-0 shadow-lg text-white" style={{backgroundColor: '#003D49'}}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-yellow-100">Calificación</CardTitle>
-              <div className="bg-white/20 rounded-full p-2">
+              <CardTitle className="text-base font-medium text-gray-100">Calificación</CardTitle>
+              <div className="rounded-full p-2" style={{backgroundColor: '#513C73'}}>
                 <CheckCircle className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
@@ -287,82 +271,82 @@ const ParksDashboard = () => {
               <div className="text-3xl font-bold text-white">
                 {data.averageRating ? data.averageRating.toFixed(1) : 'N/A'}
               </div>
-              <p className="text-xs text-yellow-100">
+              <p className="text-xs text-white">
                 Promedio de evaluaciones
               </p>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-red-500 to-red-600 text-white">
+          <Card className="border-0 shadow-lg text-white" style={{backgroundColor: '#003D49'}}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-red-100">En Mantenimiento</CardTitle>
-              <div className="bg-white/20 rounded-full p-2">
+              <CardTitle className="text-base font-medium text-gray-100">En Mantenimiento</CardTitle>
+              <div className="rounded-full p-2" style={{backgroundColor: '#B275B0'}}>
                 <AlertTriangle className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{data.maintenanceAreas}</div>
-              <p className="text-xs text-red-100">
+              <p className="text-xs text-white">
                 Áreas en mantenimiento
               </p>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-cyan-500 to-cyan-600 text-white">
+          <Card className="border-0 shadow-lg text-white" style={{backgroundColor: '#003D49'}}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-cyan-100">Amenidades</CardTitle>
-              <div className="bg-white/20 rounded-full p-2">
+              <CardTitle className="text-base font-medium text-gray-100">Amenidades</CardTitle>
+              <div className="rounded-full p-2" style={{backgroundColor: '#513C73'}}>
                 <Wrench className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{data.totalAmenities}</div>
-              <p className="text-xs text-cyan-100">
+              <p className="text-xs text-white">
                 Amenidades disponibles
               </p>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-indigo-500 to-indigo-600 text-white">
+          <Card className="border-0 shadow-lg text-white" style={{backgroundColor: '#003D49'}}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-indigo-100">Instructores</CardTitle>
-              <div className="bg-white/20 rounded-full p-2">
+              <CardTitle className="text-base font-medium text-gray-100">Instructores</CardTitle>
+              <div className="rounded-full p-2" style={{backgroundColor: '#513C73'}}>
                 <UserCheck className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{data.totalInstructors}</div>
-              <p className="text-xs text-indigo-100">
+              <p className="text-xs text-white">
                 Instructores activos
               </p>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-amber-500 to-amber-600 text-white">
+          <Card className="border-0 shadow-lg text-white" style={{backgroundColor: '#003D49'}}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-amber-100">Incidencias</CardTitle>
-              <div className="bg-white/20 rounded-full p-2">
+              <CardTitle className="text-base font-medium text-gray-100">Incidencias</CardTitle>
+              <div className="rounded-full p-2" style={{backgroundColor: '#B275B0'}}>
                 <AlertCircle className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{data.totalIncidents}</div>
-              <p className="text-xs text-amber-100">
+              <p className="text-xs text-white">
                 Incidencias (últimos 30 días)
               </p>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-slate-500 to-slate-600 text-white">
+          <Card className="border-0 shadow-lg text-white" style={{backgroundColor: '#003D49'}}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-100">Activos</CardTitle>
-              <div className="bg-white/20 rounded-full p-2">
+              <CardTitle className="text-base font-medium text-gray-100">Activos</CardTitle>
+              <div className="rounded-full p-2" style={{backgroundColor: '#B275B0'}}>
                 <Package className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{data.totalAssets}</div>
-              <p className="text-xs text-slate-100">
+              <p className="text-xs text-white">
                 Activos registrados
               </p>
             </CardContent>
@@ -379,11 +363,8 @@ const ParksDashboard = () => {
           <div className="grid gap-6 md:grid-cols-2">
             {/* Parques por municipio */}
             <Card className="border-0 shadow-lg">
-              <CardHeader className="bg-gradient-to-r from-emerald-50 to-green-50 rounded-t-lg">
-                <CardTitle className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                  <div className="bg-emerald-500 rounded-full p-2">
-                    <MapPin className="h-4 w-4 text-white" />
-                  </div>
+              <CardHeader className="bg-white rounded-t-lg">
+                <CardTitle className="text-lg font-bold text-gray-800">
                   Parques por Municipio
                 </CardTitle>
               </CardHeader>
@@ -392,6 +373,8 @@ const ParksDashboard = () => {
                   {data.parksByMunicipality?.map((item, index) => {
                     const maxCount = Math.max(...(data.parksByMunicipality?.map(p => p.count) || [1]));
                     const percentage = (item.count / maxCount) * 100;
+                    const colors = ['#D2EAEA', '#036668', '#003D49'];
+                    const backgroundColor = colors[index % colors.length];
                     
                     return (
                       <div key={index} className="flex items-center space-x-3">
@@ -401,10 +384,13 @@ const ParksDashboard = () => {
                         <div className="flex-1 flex items-center space-x-2">
                           <div className="flex-1 bg-gray-200 rounded-full h-6 relative">
                             <div 
-                              className="bg-gradient-to-r from-emerald-500 to-green-500 h-6 rounded-full flex items-center justify-end pr-3 transition-all duration-700 shadow-sm"
-                              style={{ width: `${Math.max(percentage, 5)}%` }}
+                              className="h-6 rounded-full flex items-center justify-end pr-3 transition-all duration-700 shadow-sm"
+                              style={{ 
+                                width: `${Math.max(percentage, 5)}%`,
+                                backgroundColor: backgroundColor
+                              }}
                             >
-                              <span className="text-white text-xs font-bold">
+                              <span className={`text-xs font-bold ${backgroundColor === '#D2EAEA' ? 'text-gray-800' : 'text-white'}`}>
                                 {item.count}
                               </span>
                             </div>
@@ -419,11 +405,8 @@ const ParksDashboard = () => {
 
             {/* Parques por tipo */}
             <Card className="border-0 shadow-lg">
-              <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-lg">
-                <CardTitle className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                  <div className="bg-blue-500 rounded-full p-2">
-                    <Activity className="h-4 w-4 text-white" />
-                  </div>
+              <CardHeader className="bg-white rounded-t-lg">
+                <CardTitle className="text-lg font-bold text-gray-800">
                   Distribución por Tipo
                 </CardTitle>
               </CardHeader>
@@ -432,6 +415,8 @@ const ParksDashboard = () => {
                   {data.parksByType?.map((item, index) => {
                     const maxCount = Math.max(...(data.parksByType?.map(p => p.count) || [1]));
                     const percentage = (item.count / maxCount) * 100;
+                    const colors = ['#B3C077', '#1E5AA6', '#198DCE', '#90D3EC'];
+                    const backgroundColor = colors[index % colors.length];
                     
                     return (
                       <div key={index} className="flex items-center space-x-3">
@@ -441,8 +426,11 @@ const ParksDashboard = () => {
                         <div className="flex-1 flex items-center space-x-2">
                           <div className="flex-1 bg-gray-200 rounded-full h-6 relative">
                             <div 
-                              className="bg-gradient-to-r from-blue-500 to-indigo-500 h-6 rounded-full flex items-center justify-end pr-3 transition-all duration-700 shadow-sm"
-                              style={{ width: `${Math.max(percentage, 5)}%` }}
+                              className="h-6 rounded-full flex items-center justify-end pr-3 transition-all duration-700 shadow-sm"
+                              style={{ 
+                                width: `${Math.max(percentage, 5)}%`,
+                                backgroundColor: backgroundColor
+                              }}
                             >
                               <span className="text-white text-xs font-bold">
                                 {item.count}
@@ -460,11 +448,8 @@ const ParksDashboard = () => {
 
           {/* Estado de conservación */}
           <Card className="border-0 shadow-lg">
-            <CardHeader className="bg-gradient-to-r from-teal-50 to-cyan-50 rounded-t-lg">
-              <CardTitle className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                <div className="bg-teal-500 rounded-full p-2">
-                  <CheckCircle className="h-4 w-4 text-white" />
-                </div>
+            <CardHeader className="bg-white rounded-t-lg">
+              <CardTitle className="text-lg font-bold text-gray-800">
                 Estado de Conservación
               </CardTitle>
             </CardHeader>
@@ -473,26 +458,35 @@ const ParksDashboard = () => {
                 {data.conservationStatus?.map((item, index) => {
                   const maxCount = Math.max(...(data.conservationStatus?.map(p => p.count) || [1]));
                   const percentage = (item.count / maxCount) * 100;
-                  const getStatusColor = (status: string) => {
+                  const colors = ['#036668', '#003D49', '#61B1A0'];
+                  const backgroundColor = colors[index % colors.length];
+                  
+                  // Función para traducir estados de conservación
+                  const translateStatus = (status: string) => {
                     switch (status.toLowerCase()) {
-                      case 'excelente': return 'bg-gradient-to-r from-green-500 to-green-600';
-                      case 'bueno': return 'bg-gradient-to-r from-emerald-500 to-green-500';
-                      case 'regular': return 'bg-gradient-to-r from-yellow-500 to-orange-500';
-                      case 'malo': return 'bg-gradient-to-r from-red-500 to-red-600';
-                      default: return 'bg-gradient-to-r from-gray-500 to-gray-600';
+                      case 'good': return 'Excelente';
+                      case 'excellent': return 'Excelente';
+                      case 'fair': return 'Bueno';
+                      case 'regular': return 'Regular';
+                      case 'poor': return 'Malo';
+                      case 'bad': return 'Malo';
+                      default: return status;
                     }
                   };
                   
                   return (
                     <div key={index} className="flex items-center space-x-3">
                       <div className="w-20 text-sm font-medium text-right text-gray-700 truncate">
-                        {item.status}
+                        {translateStatus(item.status)}
                       </div>
                       <div className="flex-1 flex items-center space-x-2">
                         <div className="flex-1 bg-gray-200 rounded-full h-6 relative">
                           <div 
-                            className={`${getStatusColor(item.status)} h-6 rounded-full flex items-center justify-end pr-3 transition-all duration-700 shadow-sm`}
-                            style={{ width: `${Math.max(percentage, 5)}%` }}
+                            className="h-6 rounded-full flex items-center justify-end pr-3 transition-all duration-700 shadow-sm"
+                            style={{ 
+                              width: `${Math.max(percentage, 5)}%`,
+                              backgroundColor: backgroundColor
+                            }}
                           >
                             <span className="text-white text-xs font-bold">
                               {item.count}
@@ -509,11 +503,8 @@ const ParksDashboard = () => {
 
           {/* Mapa de parques */}
           <Card className="border-0 shadow-xl">
-            <CardHeader className="bg-gradient-to-r from-emerald-50 to-blue-50 rounded-t-lg">
-              <CardTitle className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                <div className="bg-emerald-500 rounded-full p-2">
-                  <MapPin className="h-5 w-5 text-white" />
-                </div>
+            <CardHeader className="bg-white rounded-t-lg">
+              <CardTitle className="text-xl font-bold text-gray-800">
                 Ubicación de Parques
               </CardTitle>
               <CardDescription className="text-gray-600">

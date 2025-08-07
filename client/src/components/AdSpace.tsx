@@ -67,6 +67,16 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
     ? placementsResponse.data[0] 
     : null;
 
+  // Debug logging
+  React.useEffect(() => {
+    console.log(`🎯 AdSpace ${spaceId} (${pageType}/${position}):`, {
+      isLoading,
+      placementsResponse,
+      activePlacement,
+      hasData: !!activePlacement
+    });
+  }, [spaceId, pageType, position, isLoading, placementsResponse, activePlacement]);
+
 
 
 
@@ -142,9 +152,17 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
   // Removido handleClose para usuarios públicos
 
   // Si está cargando o no hay asignación activa, no mostrar nada
-  if (isLoading || !activePlacement) {
+  if (isLoading) {
+    console.log(`⏳ AdSpace ${spaceId} está cargando...`);
     return null;
   }
+  
+  if (!activePlacement) {
+    console.log(`❌ AdSpace ${spaceId} no tiene asignación activa`, { placementsResponse });
+    return null;
+  }
+  
+  console.log(`✅ AdSpace ${spaceId} renderizando anuncio:`, activePlacement.advertisement.title);
 
   const { advertisement } = activePlacement;
   
@@ -187,7 +205,11 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
           src={mediaUrl}
           alt={advertisement.altText || advertisement.title}
           className={className}
+          onLoad={() => {
+            console.log(`🖼️ Imagen cargada exitosamente: ${mediaUrl}`);
+          }}
           onError={(e) => {
+            console.error(`❌ Error cargando imagen: ${mediaUrl}`);
             e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDQwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0iI2ZmZiI+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSIzMDAiIGZpbGw9IiNmNGY0ZjQiLz48L2c+PC9zdmc+';
           }}
         />
@@ -249,12 +271,16 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
 
   const containerStyle = baseStyles[position as keyof typeof baseStyles] || baseStyles.sidebar;
 
+  console.log(`🎨 AdSpace ${spaceId} Container style:`, containerStyle);
+  console.log(`🎨 AdSpace ${spaceId} className adicional:`, className);
+
   return (
     <div 
       className={`${containerStyle} ${className} relative overflow-hidden hover:shadow-md transition-shadow duration-200 ${
         isCardType(position) ? '' : 'cursor-pointer'
       }`} 
       onClick={isCardType(position) ? undefined : handleAdClick}
+      style={{ minHeight: position === 'hero' ? '80px' : undefined }}
     >
       {/* Botón de cerrar removido para usuarios públicos */}
 

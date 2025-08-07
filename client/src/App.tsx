@@ -24,6 +24,8 @@ import AdminAmenities from "@/pages/admin/amenities";
 import AdminSettings from "@/pages/admin/settings";
 import AdminPayments from "@/pages/admin/payments";
 import AdminLogin from "@/pages/admin/login";
+import AdminInstructorInvitations from "@/pages/admin/instructor-invitations";
+import InstructorRegistration from "@/pages/public/instructor-registration";
 import TestAccess from "@/pages/test-access";
 import AdminVolunteers from "@/pages/admin/volunteers";
 import Landing from "@/pages/Landing";
@@ -39,11 +41,12 @@ import Header from "@/components/Header";
 function Router() {
   const [location] = useLocation();
   const isVentasRoute = location === '/ventas' || location === '/landing' || location === '/sales';
+  const isAdminRoute = location.startsWith('/admin');
   
   return (
     <div className="flex flex-col min-h-screen">
-      {!isVentasRoute && <Header />}
-      <div className={!isVentasRoute ? "pt-20" : ""}>
+      {!isVentasRoute && !isAdminRoute && <Header />}
+      <div className={!isVentasRoute && !isAdminRoute ? "pt-20" : ""}>
         <Switch>
         <Route path="/" component={Home} />
         <Route path="/home" component={Home} />
@@ -142,6 +145,7 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/VolunteerRegistration')))}
           </Suspense>
         </Route>
+        <Route path="/instructors/register" component={InstructorRegistration} />
         <Route path="/tree-species">
           <Suspense fallback={<div className="p-8 text-center">Cargando especies arbóreas...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/TreeSpecies')))}
@@ -216,6 +220,12 @@ function Router() {
           </Suspense>
         </Route>
         
+        {/* Ruta del módulo de Configuración y Seguridad */}
+        <Route path="/admin/configuracion-seguridad">
+          <Suspense fallback={<div className="p-8 text-center">Cargando configuración y seguridad...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/configuracion-seguridad')))}
+          </Suspense>
+        </Route>
 
         <Route path="/admin/parks-dashboard">
           <Suspense fallback={<div className="p-8 text-center">Cargando dashboard de parques...</div>}>
@@ -419,6 +429,12 @@ function Router() {
              ya que ahora se gestiona desde el módulo de Usuarios */}
         
         {/* Rutas para el módulo de instructores */}
+        <Route path="/admin/instructors/applications">
+          <Suspense fallback={<div className="p-8 text-center">Cargando aplicaciones de instructores...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/instructors/applications')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/instructors/invitations" component={AdminInstructorInvitations} />
         <Route path="/admin/instructors/evaluations">
           <Suspense fallback={<div className="p-8 text-center">Cargando evaluaciones de instructores...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/admin/instructors/evaluations/index')))}

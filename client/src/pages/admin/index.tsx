@@ -11,28 +11,18 @@ import {
   DollarSign,
   HeartHandshake,
   Briefcase,
-  Shield,
   MessageSquare,
   TrendingUp,
-  TrendingDown,
   Activity,
   CheckCircle,
-  AlertCircle,
-  Clock,
-  Plus,
-  UserCheck,
-  Lock,
-  Crown,
-  Star,
-  Settings as SettingsIcon
+  AlertCircle
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import AdminLayout from '@/components/AdminLayout';
-import { RoleBadge, SYSTEM_ROLES } from '@/components/RoleBadge';
-import { usePermissions } from '@/components/RoleGuard';
+
 import { 
   LineChart, 
   Line, 
@@ -54,7 +44,6 @@ import {
 // Dashboard mejorado con gráficas e indicadores
 const AdminDashboard: React.FC = () => {
   const { t } = useTranslation('common');
-  const permissions = usePermissions(); // Sistema de roles integrado
   
   // Consultas de datos reales
   const { data: parksResponse } = useQuery({ queryKey: ['/api/parks'] });
@@ -84,12 +73,12 @@ const AdminDashboard: React.FC = () => {
   ];
 
   const moduleUsageData = [
-    { name: t('dashboard.modules.parks', 'Parques'), value: 95, color: '#00a587' },
-    { name: t('dashboard.modules.hr', 'RH'), value: 88, color: '#067f5f' },
-    { name: t('dashboard.modules.finance', 'Finanzas'), value: 92, color: '#bcd256' },
-    { name: t('dashboard.modules.activities', 'Actividades'), value: 78, color: '#8498a5' },
-    { name: t('dashboard.modules.volunteers', 'Voluntarios'), value: 65, color: '#059669' },
-    { name: t('dashboard.modules.concessions', 'Concesiones'), value: 72, color: '#0ea5e9' }
+    { name: t('dashboard.modules.parks', 'Parques'), value: 95, color: '#513C73' },
+    { name: t('dashboard.modules.hr', 'RH'), value: 88, color: '#B275B0' },
+    { name: t('dashboard.modules.finance', 'Finanzas'), value: 92, color: '#B3C077' },
+    { name: t('dashboard.modules.activities', 'Actividades'), value: 78, color: '#1E5AA6' },
+    { name: t('dashboard.modules.volunteers', 'Voluntarios'), value: 65, color: '#198DCE' },
+    { name: t('dashboard.modules.concessions', 'Concesiones'), value: 72, color: '#90D3EC' }
   ];
 
   const financialData = [
@@ -103,115 +92,125 @@ const AdminDashboard: React.FC = () => {
   ];
 
   const parkTypeData = [
-    { name: t('dashboard.parkCategories.urban', 'Urbanos'), value: 8, color: '#00a587' },
-    { name: t('dashboard.parkCategories.metropolitan', 'Metropolitanos'), value: 5, color: '#067f5f' },
-    { name: t('dashboard.parkCategories.neighborhood', 'Vecinales'), value: 4, color: '#bcd256' },
-    { name: t('dashboard.parkCategories.linear', 'Lineales'), value: 3, color: '#8498a5' },
-    { name: t('dashboard.parkCategories.natural', 'Naturales'), value: 2, color: '#059669' }
+    { name: t('dashboard.parkCategories.urban', 'Urbanos'), value: 8, color: '#513C73' },
+    { name: t('dashboard.parkCategories.metropolitan', 'Metropolitanos'), value: 5, color: '#B275B0' },
+    { name: t('dashboard.parkCategories.neighborhood', 'Vecinales'), value: 4, color: '#1E5AA6' },
+    { name: t('dashboard.parkCategories.linear', 'Lineales'), value: 3, color: '#198DCE' },
+    { name: t('dashboard.parkCategories.natural', 'Naturales'), value: 2, color: '#90D3EC' }
   ];
 
-  // Datos del sistema de roles - INTEGRACIÓN DEL SISTEMA AVANZADO
-  const roleStatsData = [
-    { role: 'super-admin', users: 2, activity: 95 },
-    { role: 'director-general', users: 3, activity: 88 },
-    { role: 'coordinador-parques', users: 8, activity: 92 },
-    { role: 'coordinador-actividades', users: 6, activity: 85 },
-    { role: 'admin-financiero', users: 4, activity: 90 },
-    { role: 'operador-parque', users: 15, activity: 78 },
-    { role: 'consultor-auditor', users: 5, activity: 65 }
-  ];
 
-  const totalActiveUsers = roleStatsData.reduce((sum, role) => sum + role.users, 0);
-  const averageActivity = Math.round(roleStatsData.reduce((sum, role) => sum + role.activity, 0) / roleStatsData.length);
 
   return (
     <AdminLayout 
       title={t('dashboard.title', 'Dashboard Ejecutivo')} 
       subtitle={t('dashboard.subtitle', 'Panel de control integral del sistema ParkSys')}
     >
-      {/* Métricas principales */}
+      {/* Encabezado del Panel de Control */}
+      <div className="border-b pb-4 mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Panel de Control</h1>
+        <p className="text-gray-600 mt-2">Resumen ejecutivo del sistema de gestión de parques</p>
+      </div>
+
+      {/* Fila 1: Métricas principales */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
         {/* Parques */}
-        <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
+        <Card className="border-teal-600" style={{ backgroundColor: '#003D49' }}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-green-800">
+            <CardTitle className="text-lg font-medium text-white">
               {t('dashboard.metrics.totalParks', 'Total de Parques')}
             </CardTitle>
-            <MapPin className="h-5 w-5 text-green-600" />
+            <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#B3C077' }}>
+              <MapPin className="h-7 w-7 text-white" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-green-900">{parksArray.length}</div>
+            <div className="text-3xl font-bold text-white">{parksArray.length}</div>
             <div className="flex items-center mt-2">
-              <TrendingUp className="h-4 w-4 text-green-600 mr-1" />
-              <span className="text-sm text-green-600 font-medium">{t('dashboard.metrics.growthThisMonth', '+2 este mes')}</span>
+              <TrendingUp className="h-4 w-4 mr-1" style={{ color: '#B3C077' }} />
+              <span className="text-sm font-medium" style={{ color: '#B3C077' }}>{t('dashboard.metrics.growthThisMonth', '+2 este mes')}</span>
             </div>
-            <Progress value={85} className="mt-3" />
-            <p className="text-xs text-green-700 mt-1">{t('dashboard.metrics.capacityTarget', '85% de capacidad objetivo')}</p>
+            <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
+              <div className="h-2 rounded-full" style={{ width: '85%', backgroundColor: '#B3C077' }}></div>
+            </div>
+            <p className="text-xs text-white mt-1">{t('dashboard.metrics.capacityTarget', '85% de capacidad objetivo')}</p>
           </CardContent>
         </Card>
         
         {/* Personal RH */}
-        <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-200">
+        <Card className="border-teal-600" style={{ backgroundColor: '#003D49' }}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-blue-800">
+            <CardTitle className="text-lg font-medium text-white">
               {t('dashboard.metrics.activeStaff', 'Personal Activo')}
             </CardTitle>
-            <Briefcase className="h-5 w-5 text-blue-600" />
+            <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#198DCE' }}>
+              <Briefcase className="h-7 w-7 text-white" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-blue-900">{employeesArray.length}</div>
+            <div className="text-3xl font-bold text-white">{employeesArray.length}</div>
             <div className="flex items-center mt-2">
-              <TrendingUp className="h-4 w-4 text-blue-600 mr-1" />
-              <span className="text-sm text-blue-600 font-medium">{t('dashboard.metrics.staffGrowthThisMonth', '+5 este mes')}</span>
+              <TrendingUp className="h-4 w-4 mr-1" style={{ color: '#198DCE' }} />
+              <span className="text-sm font-medium" style={{ color: '#198DCE' }}>{t('dashboard.metrics.staffGrowthThisMonth', '+5 este mes')}</span>
             </div>
-            <Progress value={92} className="mt-3" />
-            <p className="text-xs text-blue-700 mt-1">{t('dashboard.metrics.averageAttendance', '92% asistencia promedio')}</p>
+            <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
+              <div className="h-2 rounded-full" style={{ width: '92%', backgroundColor: '#198DCE' }}></div>
+            </div>
+            <p className="text-xs text-white mt-1">{t('dashboard.metrics.averageAttendance', '92% asistencia promedio')}</p>
           </CardContent>
         </Card>
         
         {/* Actividades */}
-        <Card className="bg-gradient-to-br from-purple-50 to-violet-50 border-purple-200">
+        <Card className="border-teal-600" style={{ backgroundColor: '#003D49' }}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-purple-800">
+            <CardTitle className="text-lg font-medium text-white">
               {t('dashboard.metrics.activeActivities', 'Actividades Activas')}
             </CardTitle>
-            <Calendar className="h-5 w-5 text-purple-600" />
+            <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#B275B0' }}>
+              <Calendar className="h-7 w-7 text-white" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-purple-900">{activitiesArray.length}</div>
+            <div className="text-3xl font-bold text-white">{activitiesArray.length}</div>
             <div className="flex items-center mt-2">
-              <Activity className="h-4 w-4 text-purple-600 mr-1" />
-              <span className="text-sm text-purple-600 font-medium">{t('dashboard.metrics.activitiesThisWeek', '15 esta semana')}</span>
+              <Activity className="h-4 w-4 mr-1" style={{ color: '#B275B0' }} />
+              <span className="text-sm font-medium" style={{ color: '#B275B0' }}>{t('dashboard.metrics.activitiesThisWeek', '15 esta semana')}</span>
             </div>
-            <Progress value={78} className="mt-3" />
-            <p className="text-xs text-purple-700 mt-1">{t('dashboard.metrics.averageParticipation', '78% participación promedio')}</p>
+            <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
+              <div className="h-2 rounded-full" style={{ width: '78%', backgroundColor: '#B275B0' }}></div>
+            </div>
+            <p className="text-xs text-white mt-1">{t('dashboard.metrics.averageParticipation', '78% participación promedio')}</p>
           </CardContent>
         </Card>
         
         {/* Finanzas */}
-        <Card className="bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-200">
+        <Card className="border-teal-600" style={{ backgroundColor: '#003D49' }}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-amber-800">
+            <CardTitle className="text-lg font-medium text-white">
               {t('dashboard.metrics.monthlyBalance', 'Balance Mensual')}
             </CardTitle>
-            <DollarSign className="h-5 w-5 text-amber-600" />
+            <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#90D3EC' }}>
+              <DollarSign className="h-7 w-7 text-white" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-amber-900">$54K</div>
+            <div className="text-3xl font-bold text-white">$54K</div>
             <div className="flex items-center mt-2">
-              <TrendingUp className="h-4 w-4 text-amber-600 mr-1" />
-              <span className="text-sm text-amber-600 font-medium">{t('dashboard.metrics.vsLastMonth', '+18% vs mes anterior')}</span>
+              <TrendingUp className="h-4 w-4 mr-1" style={{ color: '#90D3EC' }} />
+              <span className="text-sm font-medium" style={{ color: '#90D3EC' }}>{t('dashboard.metrics.vsLastMonth', '+18% vs mes anterior')}</span>
             </div>
-            <Progress value={68} className="mt-3" />
-            <p className="text-xs text-amber-700 mt-1">{t('dashboard.metrics.annualBudget', '68% del presupuesto anual')}</p>
+            <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
+              <div className="h-2 rounded-full" style={{ width: '68%', backgroundColor: '#90D3EC' }}></div>
+            </div>
+            <p className="text-xs text-white mt-1">{t('dashboard.metrics.annualBudget', '68% del presupuesto anual')}</p>
           </CardContent>
         </Card>
       </div>
 
 
 
-      {/* Gráficas principales */}
-      <div className="grid gap-6 md:grid-cols-3 mb-8">
+      {/* Fila 2: Tendencias principales */}
+      <div className="grid gap-6 md:grid-cols-2 mb-8">
         {/* Tendencias mensuales */}
         <Card className="col-span-1">
           <CardHeader>
@@ -226,39 +225,10 @@ const AdminDashboard: React.FC = () => {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Line type="monotone" dataKey="parques" stroke="#00a587" strokeWidth={3} name={t('dashboard.modules.parks', 'Parques')} />
-                <Line type="monotone" dataKey="actividades" stroke="#8498a5" strokeWidth={3} name={t('dashboard.modules.activities', 'Actividades')} />
-                <Line type="monotone" dataKey="voluntarios" stroke="#059669" strokeWidth={3} name={t('dashboard.modules.volunteers', 'Voluntarios')} />
+                <Line type="monotone" dataKey="parques" stroke="#B3C077" strokeWidth={3} name={t('dashboard.modules.parks', 'Parques')} />
+                <Line type="monotone" dataKey="actividades" stroke="#B275B0" strokeWidth={3} name={t('dashboard.modules.activities', 'Actividades')} />
+                <Line type="monotone" dataKey="voluntarios" stroke="#198DCE" strokeWidth={3} name={t('dashboard.modules.volunteers', 'Voluntarios')} />
               </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* NUEVA GRÁFICA: Distribución de Roles - SISTEMA AVANZADO INTEGRADO */}
-        <Card className="col-span-1">
-          <CardHeader>
-            <CardTitle>Distribución de Roles</CardTitle>
-            <CardDescription>Usuarios asignados por nivel jerárquico del sistema</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={roleStatsData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="role" 
-                  angle={-45}
-                  textAnchor="end"
-                  height={100}
-                  fontSize={10}
-                  tickFormatter={(value) => SYSTEM_ROLES.find(r => r.id === value)?.displayName || value}
-                />
-                <YAxis />
-                <Tooltip 
-                  labelFormatter={(value) => SYSTEM_ROLES.find(r => r.id === value)?.displayName || value}
-                  formatter={(value, name) => [value, name === 'users' ? 'Usuarios' : 'Actividad %']}
-                />
-                <Bar dataKey="users" fill="#6366f1" name="Usuarios" />
-              </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
@@ -270,7 +240,7 @@ const AdminDashboard: React.FC = () => {
             <CardDescription>{t('dashboard.charts.moduleAdoptionDescription', 'Porcentaje de uso activo por módulo del sistema')}</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-6">
               {moduleUsageData.map((module, index) => (
                 <div key={index} className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
@@ -280,18 +250,28 @@ const AdminDashboard: React.FC = () => {
                     ></div>
                     <span className="text-sm font-medium">{module.name}</span>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Progress value={module.value} className="w-20" />
-                    <span className="text-sm font-bold w-10">{module.value}%</span>
+                  <div className="flex items-center space-x-3">
+                    <div className="w-80 bg-gray-200 rounded-full h-8">
+                      <div 
+                        className="h-8 rounded-full flex items-center justify-center text-white text-sm font-bold" 
+                        style={{ 
+                          width: `${module.value}%`, 
+                          backgroundColor: module.color 
+                        }}
+                      >
+                        {module.value}%
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
           </CardContent>
         </Card>
+
       </div>
 
-      {/* Segunda fila de gráficas */}
+      {/* Fila 3: Flujo Financiero y Tipos de Parques */}
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         {/* Flujo financiero */}
         <Card className="col-span-1">
@@ -311,18 +291,18 @@ const AdminDashboard: React.FC = () => {
                   type="monotone" 
                   dataKey="ingresos" 
                   stackId="1" 
-                  stroke="#00a587" 
-                  fill="#00a587" 
-                  fillOpacity={0.6}
+                  stroke="#B3C077" 
+                  fill="#B3C077" 
+                  fillOpacity={1.0}
                   name={t('dashboard.charts.income', 'Ingresos')}
                 />
                 <Area 
                   type="monotone" 
                   dataKey="egresos" 
                   stackId="2" 
-                  stroke="#ef4444" 
-                  fill="#ef4444" 
-                  fillOpacity={0.6}
+                  stroke="#B275B0" 
+                  fill="#B275B0" 
+                  fillOpacity={1.0}
                   name={t('dashboard.charts.expenses', 'Egresos')}
                 />
               </AreaChart>
@@ -359,95 +339,35 @@ const AdminDashboard: React.FC = () => {
         </Card>
       </div>
 
-      {/* Sistema de Roles - Información secundaria justo antes de indicadores críticos */}
-      <div className="grid gap-6 md:grid-cols-3 mb-6">
-        <Card className="bg-gradient-to-br from-indigo-50 to-blue-50 border-indigo-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-indigo-800">
-              Sistema de Roles
-            </CardTitle>
-            <Shield className="h-5 w-5 text-indigo-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-indigo-900">{SYSTEM_ROLES.length}</div>
-            <div className="flex items-center mt-2">
-              <UserCheck className="h-4 w-4 text-indigo-600 mr-1" />
-              <span className="text-sm text-indigo-600 font-medium">{totalActiveUsers} usuarios</span>
-            </div>
-            <Progress value={averageActivity} className="mt-3" />
-            <p className="text-xs text-indigo-700 mt-1">{averageActivity}% actividad</p>
-          </CardContent>
-        </Card>
 
-        <Card className="bg-gradient-to-br from-rose-50 to-pink-50 border-rose-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-rose-800">
-              Mi Rol
-            </CardTitle>
-            <Crown className="h-5 w-5 text-rose-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="mb-2">
-              <RoleBadge roleId={permissions.userRole} size="sm" />
-            </div>
-            <div className="text-sm text-rose-700">
-              <div className="flex items-center justify-between mb-1">
-                <span>Nivel:</span>
-                <span className="font-medium">{permissions.roleLevel}/10</span>
-              </div>
-              <Progress value={permissions.roleLevel * 10} className="mt-2" />
-            </div>
-          </CardContent>
-        </Card>
 
-        <Card className="bg-gradient-to-br from-emerald-50 to-green-50 border-emerald-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-emerald-800">
-              Permisos
-            </CardTitle>
-            <Lock className="h-5 w-5 text-emerald-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-emerald-900">7</div>
-            <div className="flex items-center mt-2">
-              <SettingsIcon className="h-4 w-4 text-emerald-600 mr-1" />
-              <span className="text-sm text-emerald-600 font-medium">Módulos</span>
-            </div>
-            <div className="mt-2">
-              <Badge variant="outline" className="text-emerald-600 border-emerald-300 text-xs">
-                Admin completo
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
 
-      {/* KPIs y alertas */}
-      <div className="grid gap-6 md:grid-cols-3 mb-8">
+
+      {/* Fila 4: Indicadores Críticos y Estado del Sistema */}
+      <div className="grid gap-6 md:grid-cols-2 mb-8">
         {/* Indicadores críticos */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center">
-              <AlertCircle className="h-5 w-5 mr-2 text-amber-500" />
+            <CardTitle>
               {t('dashboard.kpis.criticalIndicators', 'Indicadores Críticos')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-sm">{t('dashboard.kpis.pendingMaintenance', 'Mantenimiento Pendiente')}</span>
-              <Badge variant="destructive">{t('dashboard.kpis.urgentItems', '3 urgentes')}</Badge>
+              <Badge style={{ backgroundColor: '#B3C077', color: 'white' }}>{t('dashboard.kpis.urgentItems', '3 urgentes')}</Badge>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm">{t('dashboard.kpis.availableBudget', 'Presupuesto Disponible')}</span>
-              <Badge variant="outline" className="text-amber-600">{t('dashboard.kpis.remainingBudget', '32% restante')}</Badge>
+              <Badge style={{ backgroundColor: '#1E5AA6', color: 'white' }}>{t('dashboard.kpis.remainingBudget', '32% restante')}</Badge>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm">{t('dashboard.kpis.upcomingEvents', 'Eventos Próximos')}</span>
-              <Badge variant="secondary">{t('dashboard.kpis.thisWeekEvents', '8 esta semana')}</Badge>
+              <Badge style={{ backgroundColor: '#198DCE', color: 'white' }}>{t('dashboard.kpis.thisWeekEvents', '8 esta semana')}</Badge>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm">{t('dashboard.kpis.expiringContracts', 'Contratos por Vencer')}</span>
-              <Badge variant="destructive">{t('dashboard.kpis.thisMonthContracts', '2 este mes')}</Badge>
+              <Badge style={{ backgroundColor: '#90D3EC', color: 'white' }}>{t('dashboard.kpis.thisMonthContracts', '2 este mes')}</Badge>
             </div>
           </CardContent>
         </Card>
@@ -455,97 +375,41 @@ const AdminDashboard: React.FC = () => {
         {/* Estado del sistema */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center">
-              <CheckCircle className="h-5 w-5 mr-2 text-green-500" />
+            <CardTitle>
               {t('dashboard.kpis.systemStatus', 'Estado del Sistema')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-sm">{t('dashboard.kpis.activeUsers24h', 'Usuarios Activos (24h)')}</span>
-              <Badge variant="outline" className="text-green-600">{usersArray.length}</Badge>
+              <Badge style={{ backgroundColor: '#B3C077', color: 'white' }}>{usersArray.length}</Badge>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm">{t('dashboard.kpis.systemUptime', 'Uptime del Sistema')}</span>
-              <Badge variant="outline" className="text-green-600">99.8%</Badge>
+              <Badge style={{ backgroundColor: '#1E5AA6', color: 'white' }}>99.8%</Badge>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm">{t('dashboard.kpis.automaticBackup', 'Backup Automático')}</span>
-              <Badge variant="outline" className="text-green-600">{t('dashboard.kpis.updated', 'Actualizado')}</Badge>
+              <Badge style={{ backgroundColor: '#198DCE', color: 'white' }}>{t('dashboard.kpis.updated', 'Actualizado')}</Badge>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm">{t('dashboard.kpis.security', 'Seguridad')}</span>
-              <Badge variant="outline" className="text-green-600">{t('dashboard.kpis.optimal', 'Óptima')}</Badge>
+              <Badge style={{ backgroundColor: '#90D3EC', color: 'white' }}>{t('dashboard.kpis.optimal', 'Óptima')}</Badge>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* NUEVA SECCIÓN: Acciones Rápidas Basadas en Roles - SISTEMA AVANZADO */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Star className="h-5 w-5 mr-2 text-purple-500" />
-              Acciones Rápidas
-            </CardTitle>
-            <CardDescription>
-              Acciones disponibles según tu rol: <RoleBadge roleId={permissions.userRole} size="sm" />
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {permissions.canAdmin('Gestión') && (
-              <Link href="/admin/parks/create">
-                <Button variant="outline" size="sm" className="w-full justify-start">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Crear Nuevo Parque
-                </Button>
-              </Link>
-            )}
-            {permissions.canWrite('Marketing') && (
-              <Link href="/admin/activities/create">
-                <Button variant="outline" size="sm" className="w-full justify-start">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  Nueva Actividad
-                </Button>
-              </Link>
-            )}
-            {permissions.canAdmin('Seguridad') && (
-              <Link href="/admin/roles">
-                <Button variant="outline" size="sm" className="w-full justify-start">
-                  <Shield className="h-4 w-4 mr-2" />
-                  Gestionar Roles
-                </Button>
-              </Link>
-            )}
-            {permissions.canWrite('Finanzas') && (
-              <Link href="/admin/finance">
-                <Button variant="outline" size="sm" className="w-full justify-start">
-                  <DollarSign className="h-4 w-4 mr-2" />
-                  Revisar Finanzas
-                </Button>
-              </Link>
-            )}
-            {permissions.canRead('RH') && (
-              <Link href="/admin/hr">
-                <Button variant="outline" size="sm" className="w-full justify-start">
-                  <Users className="h-4 w-4 mr-2" />
-                  Recursos Humanos
-                </Button>
-              </Link>
-            )}
           </CardContent>
         </Card>
       </div>
 
-      {/* Resumen de módulos principales */}
+      {/* Fila 5: Resumen de módulos principales */}
       <div className="grid gap-6 md:grid-cols-4 mb-8">
         <Card className="text-center">
           <CardContent className="pt-6">
-            <HeartHandshake className="h-12 w-12 mx-auto mb-3 text-red-500" />
+            <HeartHandshake className="h-12 w-12 mx-auto mb-3" style={{ color: '#61B1A0' }} />
             <h3 className="font-semibold mb-1">{t('dashboard.moduleSummary.volunteers', 'Voluntarios')}</h3>
             <p className="text-2xl font-bold mb-2">{volunteersArray.length}</p>
             <p className="text-sm text-gray-600">{t('dashboard.moduleSummary.activeThisMonth', '38 activos este mes')}</p>
             <Link href="/admin/volunteers">
-              <Button variant="outline" size="sm" className="mt-3">
+              <Button variant="outline" size="sm" className="mt-3" style={{ backgroundColor: '#61B1A0', color: 'white', borderColor: '#61B1A0' }}>
                 {t('dashboard.moduleSummary.manage', 'Gestionar')}
               </Button>
             </Link>
@@ -554,12 +418,12 @@ const AdminDashboard: React.FC = () => {
 
         <Card className="text-center">
           <CardContent className="pt-6">
-            <Building className="h-12 w-12 mx-auto mb-3 text-blue-500" />
+            <Building className="h-12 w-12 mx-auto mb-3" style={{ color: '#513C73' }} />
             <h3 className="font-semibold mb-1">{t('dashboard.moduleSummary.concessions', 'Concesiones')}</h3>
             <p className="text-2xl font-bold mb-2">{concessionsArray.length}</p>
             <p className="text-sm text-gray-600">{t('dashboard.moduleSummary.activeContracts', '9 contratos activos')}</p>
             <Link href="/admin/concessions">
-              <Button variant="outline" size="sm" className="mt-3">
+              <Button variant="outline" size="sm" className="mt-3" style={{ backgroundColor: '#513C73', color: 'white', borderColor: '#513C73' }}>
                 {t('dashboard.moduleSummary.manage', 'Gestionar')}
               </Button>
             </Link>
@@ -568,12 +432,12 @@ const AdminDashboard: React.FC = () => {
 
         <Card className="text-center">
           <CardContent className="pt-6">
-            <TreePine className="h-12 w-12 mx-auto mb-3 text-green-500" />
+            <TreePine className="h-12 w-12 mx-auto mb-3" style={{ color: '#B275B0' }} />
             <h3 className="font-semibold mb-1">{t('dashboard.moduleSummary.forestry', 'Arbolado')}</h3>
             <p className="text-2xl font-bold mb-2">50</p>
             <p className="text-sm text-gray-600">{t('dashboard.moduleSummary.catalogedSpecies', '14 especies catalogadas')}</p>
             <Link href="/admin/trees">
-              <Button variant="outline" size="sm" className="mt-3">
+              <Button variant="outline" size="sm" className="mt-3" style={{ backgroundColor: '#B275B0', color: 'white', borderColor: '#B275B0' }}>
                 {t('dashboard.moduleSummary.manage', 'Gestionar')}
               </Button>
             </Link>
@@ -582,12 +446,12 @@ const AdminDashboard: React.FC = () => {
 
         <Card className="text-center">
           <CardContent className="pt-6">
-            <MessageSquare className="h-12 w-12 mx-auto mb-3 text-purple-500" />
+            <MessageSquare className="h-12 w-12 mx-auto mb-3" style={{ color: '#B3C077' }} />
             <h3 className="font-semibold mb-1">{t('dashboard.moduleSummary.communication', 'Comunicación')}</h3>
             <p className="text-2xl font-bold mb-2">2,847</p>
             <p className="text-sm text-gray-600">{t('dashboard.moduleSummary.emailsSent', 'emails enviados')}</p>
             <Link href="/admin/communications">
-              <Button variant="outline" size="sm" className="mt-3">
+              <Button variant="outline" size="sm" className="mt-3" style={{ backgroundColor: '#B3C077', color: 'white', borderColor: '#B3C077' }}>
                 {t('dashboard.moduleSummary.manage', 'Gestionar')}
               </Button>
             </Link>

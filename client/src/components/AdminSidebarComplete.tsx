@@ -115,16 +115,16 @@ interface ModuleNavProps {
 
 const NavItem: React.FC<NavItemProps> = ({ href, icon, children, active, moduleColor }) => {
   const iconWithClass = React.cloneElement(icon as React.ReactElement, {
-    className: cn((icon as React.ReactElement).props.className, 'menu-icon', moduleColor)
+    className: cn((icon as React.ReactElement).props.className, 'menu-icon', moduleColor || 'text-white')
   });
 
   return (
     <Link href={href}>
       <Button
-        variant={active ? "secondary" : "ghost"}
+        variant="ghost"
         className={cn(
-          "w-full justify-start text-sm font-normal h-9",
-          active && "bg-primary/10 text-primary font-medium"
+          "w-full justify-start text-sm font-normal h-9 text-white hover:bg-teal-600 hover:text-white",
+          active && "bg-teal-500 text-white font-medium"
         )}
       >
         {iconWithClass}
@@ -141,55 +141,64 @@ const ModuleNav: React.FC<ModuleNavProps> = ({
   value,
   defaultOpen
 }) => {
-  // Define color schemes for each module
+  // Define color schemes for each module - adapted for dark background #003D49
   const getModuleColors = (moduleValue: string) => {
     const colorSchemes = {
       'system': {
-        iconColor: 'text-emerald-600',
-        textColor: 'text-emerald-700',
-        hoverBg: 'hover:bg-emerald-50'
+        iconColor: 'text-white',
+        textColor: 'text-white',
+        hoverBg: 'hover:bg-teal-600',
+        bgColor: '#61B1A0'
       },
       'gestion': {
-        iconColor: 'text-green-600',
-        textColor: 'text-green-700', 
-        hoverBg: 'hover:bg-green-50'
+        iconColor: 'text-white',
+        textColor: 'text-white', 
+        hoverBg: 'hover:bg-teal-600',
+        bgColor: '#513C73'
       },
       'operations': {
-        iconColor: 'text-teal-600',
-        textColor: 'text-teal-700',
-        hoverBg: 'hover:bg-teal-50'
+        iconColor: 'text-white',
+        textColor: 'text-white',
+        hoverBg: 'hover:bg-teal-600',
+        bgColor: '#B275B0'
       },
       'admin-finance': {
-        iconColor: 'text-cyan-600',
-        textColor: 'text-cyan-700',
-        hoverBg: 'hover:bg-cyan-50'
+        iconColor: 'text-white',
+        textColor: 'text-white',
+        hoverBg: 'hover:bg-teal-600',
+        bgColor: '#B3C077'
       },
       'mkt-comm': {
-        iconColor: 'text-lime-600',
-        textColor: 'text-lime-700',
-        hoverBg: 'hover:bg-lime-50'
+        iconColor: 'text-white',
+        textColor: 'text-white',
+        hoverBg: 'hover:bg-teal-600',
+        bgColor: '#1E5AA6'
       },
       'hr': {
-        iconColor: 'text-emerald-700',
-        textColor: 'text-emerald-800',
-        hoverBg: 'hover:bg-emerald-50'
+        iconColor: 'text-white',
+        textColor: 'text-white',
+        hoverBg: 'hover:bg-teal-600',
+        bgColor: '#198DCE'
       },
       'security': {
-        iconColor: 'text-slate-600',
-        textColor: 'text-slate-700',
-        hoverBg: 'hover:bg-slate-50'
+        iconColor: 'text-white',
+        textColor: 'text-white',
+        hoverBg: 'hover:bg-teal-600',
+        bgColor: '#90D3EC'
       },
       'public': {
-        iconColor: 'text-blue-600',
-        textColor: 'text-blue-700',
-        hoverBg: 'hover:bg-blue-50'
+        iconColor: 'text-white',
+        textColor: 'text-white',
+        hoverBg: 'hover:bg-teal-600',
+        bgColor: '#1E5AA6'
       }
     };
     
-    return colorSchemes[moduleValue] || {
-      iconColor: 'text-gray-600',
-      textColor: 'text-gray-700',
-      hoverBg: 'hover:bg-gray-50'
+    return colorSchemes[moduleValue as keyof typeof colorSchemes] || {
+      iconColor: 'text-white',
+      textColor: 'text-white',
+      hoverBg: 'hover:bg-teal-600',
+      bgColor: '#90D3EC'
     };
   };
 
@@ -201,9 +210,11 @@ const ModuleNav: React.FC<ModuleNavProps> = ({
 
   return (
     <AccordionItem value={value} className="border-0">
-      <AccordionTrigger className={cn("py-2 hover:no-underline", colors.hoverBg)}>
+      <AccordionTrigger className={cn("py-2 hover:no-underline [&>svg]:text-white", colors.hoverBg)}>
         <div className={cn("flex items-center text-sm font-medium", colors.textColor)}>
-          <div className="mr-2">{iconWithClass}</div>
+          <div className="mr-2 flex items-center justify-center w-8 h-8 rounded-full" style={{ backgroundColor: colors.bgColor }}>
+            {iconWithClass}
+          </div>
           {title}
         </div>
       </AccordionTrigger>
@@ -212,17 +223,17 @@ const ModuleNav: React.FC<ModuleNavProps> = ({
           {React.Children.map(children, (child) => {
             if (React.isValidElement(child)) {
               if (child.type === NavItem) {
-                return React.cloneElement(child, { moduleColor: colors.iconColor });
+                return React.cloneElement(child, { moduleColor: colors.iconColor } as any);
               }
               // Si es un div, procesar sus hijos recursivamente pero evitar bucles infinitos
               if (child.type === 'div') {
                 const processedChildren = React.Children.map(child.props.children, (grandChild) => {
                   if (React.isValidElement(grandChild) && grandChild.type === NavItem) {
-                    return React.cloneElement(grandChild, { moduleColor: colors.iconColor });
+                    return React.cloneElement(grandChild, { moduleColor: colors.iconColor } as any);
                   }
                   return grandChild;
                 });
-                return React.cloneElement(child, { children: processedChildren });
+                return React.cloneElement(child, { children: processedChildren } as any);
               }
             }
             return child;
@@ -246,18 +257,18 @@ const CollapsibleSubmenu: React.FC<{
     <div className="mb-3">
       <button
         onClick={() => onToggle(id)}
-        className="w-full flex items-center justify-between p-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+        className="w-full flex items-center justify-between p-2 text-sm font-medium text-white hover:bg-teal-600 rounded-lg transition-colors"
       >
         <div className="flex items-center">
-          {icon}
+          <span className="text-white">{React.cloneElement(icon as React.ReactElement, { className: 'h-4 w-4 text-white' })}</span>
           <span className="ml-2">{title}</span>
         </div>
         <ChevronRight 
-          className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+          className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-90' : ''} text-white`}
         />
       </button>
       {isExpanded && (
-        <div className="pl-4 border-l-2 border-gray-200 ml-2 space-y-1 mt-2">
+        <div className="pl-4 border-l-2 border-teal-500 ml-2 space-y-1 mt-2">
           {children}
         </div>
       )}
@@ -287,11 +298,20 @@ const AdminSidebarComplete: React.FC = () => {
     if (location.startsWith('/admin/visitors')) return 'visitantes';
     if (location.startsWith('/admin/parks')) return 'parques';
     if (location.startsWith('/admin/trees')) return 'arbolado';
-    if (location.startsWith('/admin/organizador') || location.startsWith('/admin/activities')) return 'actividades';
+    if (location.startsWith('/admin/organizador') || location.startsWith('/admin/activities') || location.startsWith('/admin/instructors')) return 'actividades';
     if (location.startsWith('/admin/events') || location.startsWith('/admin/eventos-ambu')) return 'eventos';
     if (location.startsWith('/admin/space-reservations')) return 'reservas';
     if (location.startsWith('/admin/amenities')) return 'amenidades';
     if (location.startsWith('/admin/roles') || location.startsWith('/admin/permissions') || location.startsWith('/admin/role-')) return 'roles-sistema';
+    if (location.startsWith('/admin/assets')) return 'activos';
+    if (location.startsWith('/admin/incidents')) return 'incidencias';
+    if (location.startsWith('/admin/volunteers')) return 'voluntarios';
+    if (location.startsWith('/admin/finance')) return 'finanzas';
+    if (location.startsWith('/admin/accounting')) return 'contabilidad';
+    if (location.startsWith('/admin/concessions')) return 'concesiones';
+    if (location.startsWith('/admin/marketing')) return 'marketing';
+    if (location.startsWith('/admin/advertising')) return 'advertising';
+    if (location.startsWith('/admin/communications')) return 'comunicacion';
     return null;
   };
   
@@ -358,121 +378,26 @@ const AdminSidebarComplete: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-y-0 left-0 w-64 flex flex-col bg-white shadow-lg z-50" style={{ height: '100vh' }}>
-      {/* Header */}
-      <div className="flex items-center justify-between p-6 border-b bg-white" style={{ minHeight: '80px' }}>
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-            <Map className="h-6 w-6 text-white" />
-          </div>
-          <div>
-            <h1 className="text-lg font-bold text-gray-900">ParkSys</h1>
-            <p className="text-sm text-gray-600">Sistema de Parques</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Buscador del sistema */}
-      <SidebarSearch />
-
-      {/* Navigation */}
+    <div className="fixed left-0 w-64 flex flex-col shadow-lg z-40" style={{ top: '80px', height: 'calc(100vh - 80px)', backgroundColor: '#003D49' }}>
+            {/* Navigation */}
       <ScrollArea className="flex-1 px-3 py-2 w-full">
         <Accordion
           type="multiple"
           defaultValue={defaultAccordion}
           className="space-y-1"
         >
+          {/* Barra de búsqueda */}
+          <div className="p-0">
+            <SidebarSearch />
+          </div>
 
-
-
-          {/* 1. CONFIGURACIÓN */}
-          <ModuleNav 
-            title={t('navigation.settings')} 
-            icon={<Settings className="h-5 w-5" />}
-            value="system"
-          >
-            <NavItem 
-              href="/admin/settings" 
-              icon={<Settings className="h-5 w-5" />}
-              active={location === '/admin/settings'}
-            >
-              {t('navigation.settings')}
-            </NavItem>
-            <NavItem 
-              href="/admin/users" 
-              icon={<UserCheck className="h-5 w-5" />}
-              active={location === '/admin/users'}
-            >
-              {t('navigation.users')}
-            </NavItem>
-            <NavItem 
-              href="/admin/permissions" 
-              icon={<Shield className="h-5 w-5" />}
-              active={location === '/admin/permissions'}
-            >
-              {t('navigation.permissions')}
-            </NavItem>
-            <NavItem 
-              href="/admin/users/notifications" 
-              icon={<Bell className="h-5 w-5" />}
-              active={location === '/admin/users/notifications'}
-            >
-              Notificaciones
-            </NavItem>
-          </ModuleNav>
-
-          {/* 2. GESTIÓN - MENÚ PRINCIPAL CON SUBMENÚS COLAPSABLES */}
+          {/* 1. GESTIÓN - MENÚ PRINCIPAL CON SUBMENÚS COLAPSABLES */}
           <ModuleNav 
             title="Gestión" 
             icon={<FolderOpen className="h-5 w-5" />}
             value="gestion"
             defaultOpen={location.startsWith('/admin/visitors') || location.startsWith('/admin/parks') || location.startsWith('/admin/trees') || location.startsWith('/admin/organizador') || location.startsWith('/admin/activities') || location.startsWith('/admin/events') || location.startsWith('/admin/space-reservations')}
           >
-            {/* VISITANTES */}
-            <CollapsibleSubmenu
-              id="visitantes"
-              title="Visitantes"
-              icon={<Users className="h-4 w-4" />}
-              isExpanded={expandedSubmenus.includes('visitantes')}
-              onToggle={toggleSubmenu}
-            >
-              <NavItem 
-                href="/admin/visitors/dashboard" 
-                icon={<Activity className="h-4 w-4" />}
-                active={location === '/admin/visitors/dashboard'}
-              >
-                Dashboard
-              </NavItem>
-              <NavItem 
-                href="/admin/visitors/count" 
-                icon={<Users className="h-4 w-4" />}
-                active={location === '/admin/visitors/count'}
-              >
-                Conteo
-              </NavItem>
-              <NavItem 
-                href="/admin/visitors/evaluations" 
-                icon={<Star className="h-4 w-4" />}
-                active={location === '/admin/visitors/evaluations'}
-              >
-                Evaluaciones
-              </NavItem>
-              <NavItem 
-                href="/admin/visitors/criteria" 
-                icon={<Settings className="h-4 w-4" />}
-                active={location === '/admin/visitors/criteria'}
-              >
-                Criterios
-              </NavItem>
-              <NavItem 
-                href="/admin/visitors/feedback" 
-                icon={<MessageSquare className="h-4 w-4" />}
-                active={location === '/admin/visitors/feedback'}
-              >
-                Retroalimentación
-              </NavItem>
-            </CollapsibleSubmenu>
-
             {/* PARQUES */}
             <CollapsibleSubmenu
               id="parques"
@@ -482,16 +407,78 @@ const AdminSidebarComplete: React.FC = () => {
               onToggle={toggleSubmenu}
             >
               <NavItem 
-                href="/admin/parks/visitor-dashboard" 
+                href="/admin/parks" 
+                icon={<Map className="h-4 w-4" />}
+                active={location === '/admin/parks'}
+              >
+                {t('navigation.management')}
+              </NavItem>
+            </CollapsibleSubmenu>
+
+            {/* ACTIVIDADES */}
+            <CollapsibleSubmenu
+              id="actividades"
+              title="Actividades"
+              icon={<Calendar className="h-4 w-4" />}
+              isExpanded={expandedSubmenus.includes('actividades')}
+              onToggle={toggleSubmenu}
+            >
+              <NavItem 
+                href="/admin/activities" 
+                icon={<Activity className="h-4 w-4" />}
+                active={location === '/admin/activities'}
+              >
+                {t('navigation.listing')}
+              </NavItem>
+              <NavItem 
+                href="/admin/organizador/catalogo/crear" 
+                icon={<Plus className="h-4 w-4" />}
+                active={location.startsWith('/admin/organizador/catalogo/crear')}
+              >
+                Nueva Actividad
+              </NavItem>
+              <NavItem 
+                href="/admin/activities/calendar" 
+                icon={<Calendar className="h-4 w-4" />}
+                active={location.startsWith('/admin/activities/calendar')}
+              >
+                Cal. Actividades
+              </NavItem>
+              <NavItem 
+                href="/admin/activities/registrations" 
+                icon={<UserCheck className="h-4 w-4" />}
+                active={location.startsWith('/admin/activities/registrations')}
+              >
+                Inscripciones
+              </NavItem>
+              <NavItem 
+                href="/admin/instructors" 
+                icon={<GraduationCap className="h-4 w-4" />}
+                active={location === '/admin/instructors'}
+              >
+                {t('navigation.instructors')}
+              </NavItem>
+            </CollapsibleSubmenu>
+
+            {/* AMENIDADES */}
+            <CollapsibleSubmenu
+              id="amenidades"
+              title="Amenidades"
+              icon={<Package className="h-4 w-4" />}
+              isExpanded={expandedSubmenus.includes('amenidades')}
+              onToggle={toggleSubmenu}
+            >
+              <NavItem 
+                href="/admin/amenities-dashboard" 
                 icon={<BarChart className="h-4 w-4" />}
-                active={location === '/admin/parks/visitor-dashboard'}
+                active={location === '/admin/amenities-dashboard'}
               >
                 {t('navigation.operativeSummary')}
               </NavItem>
               <NavItem 
-                href="/admin/parks" 
-                icon={<Map className="h-4 w-4" />}
-                active={location === '/admin/parks'}
+                href="/admin/amenities" 
+                icon={<Package className="h-4 w-4" />}
+                active={location === '/admin/amenities'}
               >
                 {t('navigation.management')}
               </NavItem>
@@ -535,65 +522,44 @@ const AdminSidebarComplete: React.FC = () => {
               </NavItem>
             </CollapsibleSubmenu>
 
-            {/* ACTIVIDADES */}
+            {/* VISITANTES */}
             <CollapsibleSubmenu
-              id="actividades"
-              title="Actividades"
-              icon={<Calendar className="h-4 w-4" />}
-              isExpanded={expandedSubmenus.includes('actividades')}
+              id="visitantes"
+              title="Visitantes"
+              icon={<Users className="h-4 w-4" />}
+              isExpanded={expandedSubmenus.includes('visitantes')}
               onToggle={toggleSubmenu}
             >
               <NavItem 
-                href="/admin/organizador" 
-                icon={<BarChart3 className="h-4 w-4" />}
-                active={location.startsWith('/admin/organizador')}
+                href="/admin/visitors/count" 
+                icon={<Users className="h-4 w-4" />}
+                active={location === '/admin/visitors/count'}
               >
-                Dashboard
+                Conteo
               </NavItem>
               <NavItem 
-                href="/admin/activities/categories" 
-                icon={<Tag className="h-4 w-4" />}
-                active={location.startsWith('/admin/activities/categories')}
+                href="/admin/visitors/evaluations" 
+                icon={<Star className="h-4 w-4" />}
+                active={location === '/admin/visitors/evaluations'}
               >
-                Categorías
+                Evaluaciones
               </NavItem>
               <NavItem 
-                href="/admin/activities" 
-                icon={<Activity className="h-4 w-4" />}
-                active={location === '/admin/activities'}
+                href="/admin/visitors/criteria" 
+                icon={<Settings className="h-4 w-4" />}
+                active={location === '/admin/visitors/criteria'}
               >
-                {t('navigation.listing')}
+                Criterios
               </NavItem>
               <NavItem 
-                href="/admin/organizador/catalogo/crear" 
-                icon={<Plus className="h-4 w-4" />}
-                active={location.startsWith('/admin/organizador/catalogo/crear')}
+                href="/admin/visitors/feedback" 
+                icon={<MessageSquare className="h-4 w-4" />}
+                active={location === '/admin/visitors/feedback'}
               >
-                Nueva Actividad
-              </NavItem>
-              <NavItem 
-                href="/admin/activities/calendar" 
-                icon={<Calendar className="h-4 w-4" />}
-                active={location.startsWith('/admin/activities/calendar')}
-              >
-                Cal. Actividades
-              </NavItem>
-              <NavItem 
-                href="/admin/activities/registrations" 
-                icon={<UserCheck className="h-4 w-4" />}
-                active={location.startsWith('/admin/activities/registrations')}
-              >
-                Inscripciones
-              </NavItem>
-              <NavItem 
-                href="/admin/instructors" 
-                icon={<GraduationCap className="h-4 w-4" />}
-                active={location === '/admin/instructors'}
-              >
-                {t('navigation.instructors')}
+                Retroalimentación
               </NavItem>
             </CollapsibleSubmenu>
-
+            
             {/* EVENTOS */}
             <CollapsibleSubmenu
               id="eventos"
@@ -681,30 +647,6 @@ const AdminSidebarComplete: React.FC = () => {
                 active={location.startsWith('/admin/space-reservations/calendar')}
               >
                 Cal. Reservas
-              </NavItem>
-            </CollapsibleSubmenu>
-
-            {/* AMENIDADES */}
-            <CollapsibleSubmenu
-              id="amenidades"
-              title="Amenidades"
-              icon={<Package className="h-4 w-4" />}
-              isExpanded={expandedSubmenus.includes('amenidades')}
-              onToggle={toggleSubmenu}
-            >
-              <NavItem 
-                href="/admin/amenities-dashboard" 
-                icon={<BarChart className="h-4 w-4" />}
-                active={location === '/admin/amenities-dashboard'}
-              >
-                {t('navigation.operativeSummary')}
-              </NavItem>
-              <NavItem 
-                href="/admin/amenities" 
-                icon={<Package className="h-4 w-4" />}
-                active={location === '/admin/amenities'}
-              >
-                {t('navigation.management')}
               </NavItem>
             </CollapsibleSubmenu>
           </ModuleNav>
@@ -1175,7 +1117,7 @@ const AdminSidebarComplete: React.FC = () => {
           <ModuleNav 
             title={
               <div className="flex items-center gap-2">
-                <span>Recursos Humanos</span>
+                <span>RH</span>
                 <span className="px-1.5 py-0.5 text-xs font-semibold bg-orange-100 text-orange-800 rounded-full">BETA</span>
               </div>
             }
@@ -1212,9 +1154,7 @@ const AdminSidebarComplete: React.FC = () => {
             </NavItem>
           </ModuleNav>
 
-
-
-          {/* 8. SEGURIDAD - SISTEMA AVANZADO DE ROLES INTEGRADO */}
+          {/* 7. SEGURIDAD - SISTEMA AVANZADO DE ROLES INTEGRADO */}
           <ModuleNav 
             title="Seguridad" 
             icon={<Shield className="h-5 w-5" />}
@@ -1289,6 +1229,42 @@ const AdminSidebarComplete: React.FC = () => {
             </NavItem>
           </ModuleNav>
 
+          {/* 8. CONFIGURACIÓN - COLOR: #61B1A0 */}
+          <ModuleNav 
+            title={t('navigation.settings')} 
+            icon={<Settings className="h-5 w-5" />}
+            value="system"
+          >
+            <NavItem 
+              href="/admin/settings" 
+              icon={<Settings className="h-5 w-5" />}
+              active={location === '/admin/settings'}
+            >
+              {t('navigation.settings')}
+            </NavItem>
+            <NavItem 
+              href="/admin/users" 
+              icon={<UserCheck className="h-5 w-5" />}
+              active={location === '/admin/users'}
+            >
+              {t('navigation.users')}
+            </NavItem>
+            <NavItem 
+              href="/admin/permissions" 
+              icon={<Shield className="h-5 w-5" />}
+              active={location === '/admin/permissions'}
+            >
+              {t('navigation.permissions')}
+            </NavItem>
+            <NavItem 
+              href="/admin/users/notifications" 
+              icon={<Bell className="h-5 w-5" />}
+              active={location === '/admin/users/notifications'}
+            >
+              Notificaciones
+            </NavItem>
+          </ModuleNav>
+
 
 
 
@@ -1300,38 +1276,27 @@ const AdminSidebarComplete: React.FC = () => {
         </Accordion>
       </ScrollArea>
 
-      {/* Footer */}
-      <div className="p-4 border-t bg-gray-50">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <UserProfileImage 
-              userId={(user as any)?.id || 0} 
-              role={(user as any)?.role || 'user'} 
-              name={(user as any)?.fullName || (user as any)?.username || 'Usuario'} 
-              size="sm" 
-            />
-            <div className="flex flex-col">
-              <span className="text-sm font-medium text-gray-900">
-                {user?.firstName && user?.lastName 
-                  ? `${user.firstName} ${user.lastName}` 
-                  : user?.fullName || user?.username || 'Usuario'}
-              </span>
-              <span className="text-xs text-gray-500">{user?.role || 'usuario'}</span>
-            </div>
-          </div>
-        </div>
-        
-        <div className="flex items-center justify-between">
-          <LanguageSelector />
-          <Button 
-            variant="ghost" 
-            size="sm"
-            onClick={handleLogout}
-            className="text-gray-600 hover:text-gray-900"
-            title="Cerrar Sesión"
+      {/* Footer con logo de ParkSys */}
+      <div className="p-4 border-t border-teal-600" style={{ backgroundColor: '#003D49' }}>
+        <div className="flex flex-col items-center justify-center gap-0">
+          <img 
+            src="/attached_assets/iScreen Shoter - Acrobat - 250806102921_1754500660875.png" 
+            alt="ParkSys - Sistema de parques" 
+            className="h-18 w-auto opacity-80 hover:opacity-100 transition-opacity"
+          />
+          <a 
+            href="https://parquesdemexico.org/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full py-2 px-4 rounded-full text-sm font-medium transition-all duration-200 hover:bg-opacity-80 block text-center"
+            style={{ 
+              backgroundColor: '#003D49',
+              color: '#61B1A0',
+              border: '1px solid #61B1A0'
+            }}
           >
-            <LogOut className="h-4 w-4" />
-          </Button>
+            By Parques de México
+          </a>
         </div>
       </div>
     </div>

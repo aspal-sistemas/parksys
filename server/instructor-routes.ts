@@ -1,7 +1,7 @@
 import { Request, Response, Router } from 'express';
 import { eq, and, desc } from 'drizzle-orm';
 import { db } from './db';
-import { users, instructors, parks, activities } from '../shared/schema';
+import { instructors, parks, activities } from '../shared/schema';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
@@ -70,7 +70,7 @@ export function registerInstructorRoutes(app: any, apiRouter: Router, isAuthenti
           qualifications: instructors.qualifications,
           preferredParkId: instructors.preferredParkId,
           createdAt: instructors.createdAt,
-          userId: instructors.userId,
+          status: instructors.status,
           rating: instructors.rating,
           activitiesCount: instructors.activitiesCount,
         })

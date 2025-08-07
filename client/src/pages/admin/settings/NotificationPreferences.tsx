@@ -144,7 +144,7 @@ export default function NotificationPreferences() {
   // Crear datos simulados cuando la API no está disponible
   const mockUserPreferences: UserPreferences | null = selectedUserId && usersData ? {
     userId: selectedUserId,
-    role: usersData.find((u: any) => u.id === selectedUserId)?.role || 'admin',
+    role: usersData.find((u: any) => u.id === selectedUserId)?.roleName || usersData.find((u: any) => u.id === selectedUserId)?.role || 'admin',
     fullName: usersData.find((u: any) => u.id === selectedUserId)?.fullName || usersData.find((u: any) => u.id === selectedUserId)?.name || 'Usuario',
     email: usersData.find((u: any) => u.id === selectedUserId)?.email || 'email@example.com',
     preferences: {
@@ -201,7 +201,12 @@ export default function NotificationPreferences() {
   // Seleccionar automáticamente el primer usuario admin
   useEffect(() => {
     if (usersData && usersData.length > 0 && !selectedUserId) {
-      const adminUser = usersData.find((user: any) => user.role === 'admin' || user.role === 'super_admin');
+      const adminUser = usersData.find((user: any) => 
+        user.roleName === 'Super Administrador' || 
+        user.roleName === 'Administrador' || 
+        user.roleName === 'Director' ||
+        user.role === 'admin' || user.role === 'super_admin' // Fallback para compatibilidad
+      );
       if (adminUser) {
         setSelectedUserId(adminUser.id);
       }
@@ -234,16 +239,23 @@ export default function NotificationPreferences() {
 
   const getRoleColor = (role: string) => {
     switch (role) {
-      case 'admin':
-        return 'bg-red-100 text-red-800';
+      case 'Super Administrador':
       case 'super_admin':
         return 'bg-purple-100 text-purple-800';
+      case 'Administrador':
+      case 'admin':
+        return 'bg-red-100 text-red-800';
+      case 'Director':
+      case 'Gerente':
       case 'manager':
         return 'bg-blue-100 text-blue-800';
+      case 'Instructor':
       case 'instructor':
         return 'bg-green-100 text-green-800';
+      case 'Voluntario':
       case 'volunteer':
         return 'bg-orange-100 text-orange-800';
+      case 'Concesionario':
       case 'concessionaire':
         return 'bg-yellow-100 text-yellow-800';
       default:
@@ -253,27 +265,41 @@ export default function NotificationPreferences() {
 
   const getRoleLabel = (role: string) => {
     switch (role) {
+      case 'super_admin':
+        return 'Super Administrador';
       case 'admin':
         return 'Administrador';
-      case 'super_admin':
-        return 'Super Admin';
       case 'manager':
-        return 'Gestor';
+        return 'Director/Gerente';
       case 'instructor':
         return 'Instructor';
       case 'volunteer':
         return 'Voluntario';
       case 'concessionaire':
         return 'Concesionario';
+      // Los roles ya en español se devuelven tal como están
+      case 'Super Administrador':
+      case 'Administrador':
+      case 'Director':
+      case 'Gerente':
+      case 'Instructor':
+      case 'Voluntario':
+      case 'Concesionario':
+        return role;
       default:
         return role;
     }
   };
 
   // Filtrar usuarios por roles relevantes
-  const relevantUsers = usersData?.filter((user: any) => 
-    ['admin', 'super_admin', 'manager', 'instructor', 'volunteer', 'concessionaire'].includes(user.role)
-  ) || [];
+  const relevantUsers = usersData?.filter((user: any) => {
+    // Usar roleName primero, luego role como fallback
+    const userRole = user.roleName || user.role;
+    return [
+      'Super Administrador', 'Administrador', 'Director', 'Gerente', 'Instructor', 'Voluntario', 'Concesionario',
+      'admin', 'super_admin', 'manager', 'instructor', 'volunteer', 'concessionaire'
+    ].includes(userRole);
+  }) || [];
 
   // Aplicar filtros de búsqueda y rol
   const filteredUsers = relevantUsers.filter((user: any) => {
@@ -281,13 +307,14 @@ export default function NotificationPreferences() {
       (user.fullName || user.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (user.email || "").toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesRole = roleFilter === "all" || user.role === roleFilter;
+    const userRole = user.roleName || user.role;
+    const matchesRole = roleFilter === "all" || userRole === roleFilter;
     
     return matchesSearch && matchesRole;
   });
 
   // Obtener roles únicos para el filtro
-  const availableRoles = Array.from(new Set(relevantUsers.map((user: any) => user.role)));
+  const availableRoles = Array.from(new Set(relevantUsers.map((user: any) => user.roleName || user.role)));
 
   // Limpiar filtros
   const clearFilters = () => {
@@ -429,8 +456,8 @@ export default function NotificationPreferences() {
                               <div className="font-medium text-sm">{user.fullName || user.name}</div>
                               <div className="text-xs text-gray-500">{user.email}</div>
                             </div>
-                            <Badge className={getRoleColor(user.role)} variant="secondary">
-                              {getRoleLabel(user.role)}
+                            <Badge className={getRoleColor(user.roleName || user.role)} variant="secondary">
+                              {getRoleLabel(user.roleName || user.role)}
                             </Badge>
                           </div>
                         </div>

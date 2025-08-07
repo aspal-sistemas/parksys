@@ -31,9 +31,10 @@ router.get("/:id/notification-preferences", async (req: Request, res: Response) 
     }
 
     const query = `
-      SELECT notification_preferences, role, full_name, email
-      FROM users 
-      WHERE id = $1
+      SELECT u.notification_preferences, r.name as role, u.full_name, u.email
+      FROM users u
+      LEFT JOIN roles r ON u.role_id = r.id
+      WHERE u.id = $1
     `;
     
     const result = await pool.query(query, [userId]);
@@ -77,7 +78,7 @@ router.put("/:id/notification-preferences", async (req: Request, res: Response) 
       UPDATE users 
       SET notification_preferences = $1, updated_at = NOW()
       WHERE id = $2
-      RETURNING id, full_name, email, role, notification_preferences
+      RETURNING id, full_name, email, role_id, notification_preferences
     `;
     
     const result = await pool.query(query, [JSON.stringify(validatedPreferences), userId]);
@@ -107,20 +108,21 @@ router.get("/notification-preferences/summary", async (req: Request, res: Respon
   try {
     const query = `
       SELECT 
-        role,
+        r.name as role,
         COUNT(*) as total_users,
-        COUNT(CASE WHEN (notification_preferences->>'feedback')::boolean = true OR notification_preferences IS NULL THEN 1 END) as feedback_enabled,
-        COUNT(CASE WHEN (notification_preferences->>'feedback_share')::boolean = true OR notification_preferences IS NULL THEN 1 END) as feedback_share_enabled,
-        COUNT(CASE WHEN (notification_preferences->>'feedback_report_problem')::boolean = true OR notification_preferences IS NULL THEN 1 END) as feedback_report_problem_enabled,
-        COUNT(CASE WHEN (notification_preferences->>'feedback_suggest_improvement')::boolean = true OR notification_preferences IS NULL THEN 1 END) as feedback_suggest_improvement_enabled,
-        COUNT(CASE WHEN (notification_preferences->>'feedback_propose_event')::boolean = true OR notification_preferences IS NULL THEN 1 END) as feedback_propose_event_enabled,
-        COUNT(CASE WHEN (notification_preferences->>'events')::boolean = true OR notification_preferences IS NULL THEN 1 END) as events_enabled,
-        COUNT(CASE WHEN (notification_preferences->>'maintenance')::boolean = true OR notification_preferences IS NULL THEN 1 END) as maintenance_enabled,
-        COUNT(CASE WHEN (notification_preferences->>'payroll')::boolean = true OR notification_preferences IS NULL THEN 1 END) as payroll_enabled
-      FROM users 
-      WHERE role IN ('admin', 'super_admin', 'manager', 'instructor', 'volunteer', 'concessionaire')
-      GROUP BY role
-      ORDER BY role
+        COUNT(CASE WHEN (u.notification_preferences->>'feedback')::boolean = true OR u.notification_preferences IS NULL THEN 1 END) as feedback_enabled,
+        COUNT(CASE WHEN (u.notification_preferences->>'feedback_share')::boolean = true OR u.notification_preferences IS NULL THEN 1 END) as feedback_share_enabled,
+        COUNT(CASE WHEN (u.notification_preferences->>'feedback_report_problem')::boolean = true OR u.notification_preferences IS NULL THEN 1 END) as feedback_report_problem_enabled,
+        COUNT(CASE WHEN (u.notification_preferences->>'feedback_suggest_improvement')::boolean = true OR u.notification_preferences IS NULL THEN 1 END) as feedback_suggest_improvement_enabled,
+        COUNT(CASE WHEN (u.notification_preferences->>'feedback_propose_event')::boolean = true OR u.notification_preferences IS NULL THEN 1 END) as feedback_propose_event_enabled,
+        COUNT(CASE WHEN (u.notification_preferences->>'events')::boolean = true OR u.notification_preferences IS NULL THEN 1 END) as events_enabled,
+        COUNT(CASE WHEN (u.notification_preferences->>'maintenance')::boolean = true OR u.notification_preferences IS NULL THEN 1 END) as maintenance_enabled,
+        COUNT(CASE WHEN (u.notification_preferences->>'payroll')::boolean = true OR u.notification_preferences IS NULL THEN 1 END) as payroll_enabled
+      FROM users u
+      LEFT JOIN roles r ON u.role_id = r.id
+      WHERE r.name IN ('admin', 'super_admin', 'manager', 'instructor', 'volunteer', 'concessionaire')
+      GROUP BY r.name
+      ORDER BY r.name
     `;
     
     const result = await pool.query(query);

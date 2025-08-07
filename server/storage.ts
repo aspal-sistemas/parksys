@@ -438,31 +438,75 @@ export class DatabaseStorage implements IStorage {
       // Eliminar todas las referencias que apuntan al usuario
       // Orden importante: eliminar dependencias antes que las tablas padre
       
-      // 1. Eliminar de time_off_requests (referencias a employees)
+      // 1. Eliminar registros que dependen de employees
       await db.execute(sql`DELETE FROM time_off_requests WHERE employee_id IN (SELECT id FROM employees WHERE user_id = ${id})`);
-      console.log(`✅ Referencias de time_off_requests eliminadas para usuario ${id}`);
+      await db.execute(sql`DELETE FROM time_records WHERE employee_id IN (SELECT id FROM employees WHERE user_id = ${id})`);
+      await db.execute(sql`DELETE FROM payroll_details WHERE employee_id IN (SELECT id FROM employees WHERE user_id = ${id})`);
+      await db.execute(sql`DELETE FROM payroll_receipts WHERE employee_id IN (SELECT id FROM employees WHERE user_id = ${id})`);
+      await db.execute(sql`DELETE FROM vacation_balances WHERE employee_id IN (SELECT id FROM employees WHERE user_id = ${id})`);
+      await db.execute(sql`DELETE FROM work_schedules WHERE employee_id IN (SELECT id FROM employees WHERE user_id = ${id})`);
+      await db.execute(sql`DELETE FROM daily_time_sheets WHERE employee_id IN (SELECT id FROM employees WHERE user_id = ${id})`);
+      console.log(`✅ Dependencias de employees eliminadas para usuario ${id}`);
       
-      // 2. Eliminar de employees
+      // 2. Eliminar registros que referencian directamente al usuario
+      await db.execute(sql`DELETE FROM active_concession_images WHERE uploaded_by = ${id}`);
+      await db.execute(sql`DELETE FROM active_concessions WHERE concessionaire_id = ${id}`);
+      await db.execute(sql`UPDATE activity_registrations SET approved_by = NULL WHERE approved_by = ${id}`);
+      await db.execute(sql`DELETE FROM ad_media_files WHERE uploaded_by = ${id}`);
+      await db.execute(sql`UPDATE asset_images SET uploaded_by_id = NULL WHERE uploaded_by_id = ${id}`);
+      await db.execute(sql`UPDATE contract_income_reports SET verified_by = NULL WHERE verified_by = ${id}`);
+      await db.execute(sql`UPDATE contract_monthly_payments SET calculated_by = NULL WHERE calculated_by = ${id}`);
+      await db.execute(sql`UPDATE contract_renewals SET created_by = NULL WHERE created_by = ${id}`);
+      await db.execute(sql`UPDATE daily_time_sheets SET approved_by = NULL WHERE approved_by = ${id}`);
+      console.log(`✅ Referencias directas del usuario eliminadas/actualizadas para usuario ${id}`);
+      
+      // 3. Eliminar incidentes y dependencias
+      await db.execute(sql`DELETE FROM incident_assignments WHERE assigned_to_user_id = ${id} OR assigned_by_user_id = ${id}`);
+      await db.execute(sql`DELETE FROM incident_attachments WHERE uploaded_by_user_id = ${id}`);
+      await db.execute(sql`DELETE FROM incident_comments WHERE user_id = ${id}`);
+      await db.execute(sql`DELETE FROM incident_history WHERE user_id = ${id}`);
+      await db.execute(sql`DELETE FROM incident_notifications WHERE user_id = ${id}`);
+      await db.execute(sql`UPDATE incidents SET assigned_to_user_id = NULL WHERE assigned_to_user_id = ${id}`);
+      console.log(`✅ Referencias de incidentes eliminadas para usuario ${id}`);
+      
+      // 4. Actualizar evaluaciones e invitaciones
+      await db.execute(sql`UPDATE instructor_evaluations SET moderated_by = NULL WHERE moderated_by = ${id}`);
+      await db.execute(sql`UPDATE instructor_invitations SET invited_by = NULL WHERE invited_by = ${id}`);
+      await db.execute(sql`UPDATE park_evaluations SET moderated_by = NULL WHERE moderated_by = ${id}`);
+      await db.execute(sql`UPDATE park_feedback SET assigned_to = NULL WHERE assigned_to = ${id}`);
+      console.log(`✅ Referencias de evaluaciones actualizadas para usuario ${id}`);
+      
+      // 5. Eliminar/actualizar otros registros
+      await db.execute(sql`UPDATE payroll_receipts SET generated_by_id = NULL WHERE generated_by_id = ${id}`);
+      await db.execute(sql`UPDATE time_records SET registered_by = NULL WHERE registered_by = ${id}`);
+      await db.execute(sql`UPDATE tree_maintenances SET performed_by = NULL WHERE performed_by = ${id}`);
+      await db.execute(sql`UPDATE trees SET created_by = NULL WHERE created_by = ${id}`);
+      await db.execute(sql`UPDATE time_off_requests SET approved_by = NULL WHERE approved_by = ${id}`);
+      await db.execute(sql`DELETE FROM vacation_requests WHERE requested_by = ${id} OR approved_by = ${id}`);
+      await db.execute(sql`UPDATE visitor_counts SET registered_by = NULL WHERE registered_by = ${id}`);
+      await db.execute(sql`UPDATE work_schedules SET created_by = NULL WHERE created_by = ${id}`);
+      console.log(`✅ Otras referencias actualizadas para usuario ${id}`);
+      
+      // 6. Eliminar registros de empleados
       await db.execute(sql`DELETE FROM employees WHERE user_id = ${id}`);
       console.log(`✅ Registro de employees eliminado para usuario ${id}`);
       
-      // 3. Eliminar de instructors (nueva dependencia detectada)
-      await db.execute(sql`DELETE FROM instructors WHERE user_id = ${id}`);
-      console.log(`✅ Registro de instructors eliminado para usuario ${id}`);
+      // 7. concessionaire_profiles ya no tiene user_id en la nueva arquitectura
+      console.log(`ℹ️ concessionaire_profiles es ahora independiente, no hay user_id que eliminar`);
       
-      // 4. Eliminar de concessionaire_profiles (nueva dependencia detectada)
-      await db.execute(sql`DELETE FROM concessionaire_profiles WHERE user_id = ${id}`);
-      console.log(`✅ Registro de concessionaire_profiles eliminado para usuario ${id}`);
+      // 8. Manejar todas las referencias críticas a users.id
+      await db.execute(sql`UPDATE active_concessions SET concessionaire_id = NULL WHERE concessionaire_id = ${id}`);
+      await db.execute(sql`UPDATE incidents SET assigned_to_user_id = NULL WHERE assigned_to_user_id = ${id}`);
+      await db.execute(sql`UPDATE incident_assignments SET assigned_to_user_id = NULL WHERE assigned_to_user_id = ${id}`);
+      await db.execute(sql`UPDATE incident_assignments SET assigned_by_user_id = NULL WHERE assigned_by_user_id = ${id}`);
+      await db.execute(sql`UPDATE park_feedback SET assigned_to = NULL WHERE assigned_to = ${id}`);
+      await db.execute(sql`UPDATE vacation_requests SET employee_id = NULL WHERE employee_id = ${id}`);
+      await db.execute(sql`UPDATE vacation_requests SET requested_by = NULL WHERE requested_by = ${id}`);
+      console.log(`✅ Todas las referencias críticas actualizadas para usuario ${id}`);
+
+      // Nota: instructors, volunteers ya no tienen user_id en la nueva arquitectura
       
-      // 5. Eliminar de volunteers (si la tabla existe)
-      try {
-        await db.execute(sql`DELETE FROM volunteers WHERE user_id = ${id}`);
-        console.log(`✅ Registro de volunteers eliminado para usuario ${id}`);
-      } catch (error) {
-        console.log(`ℹ️ Tabla volunteers no existe o no tiene dependencias para usuario ${id}`);
-      }
-      
-      // 6. Finalmente eliminar el usuario de la tabla users
+      // 8. Finalmente eliminar el usuario de la tabla users
       const result = await db.delete(users).where(eq(users.id, id));
       console.log(`✅ Usuario ${id} eliminado exitosamente de la tabla users`);
       return true;

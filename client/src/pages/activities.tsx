@@ -369,6 +369,18 @@ function ActivitiesPage() {
   return (
     <PublicLayout>
       <div className="bg-gradient-to-br from-green-50 to-blue-50">
+      {/* Header Ad Space */}
+      <div className="w-full bg-white border-b">
+        <div className="max-w-7xl mx-auto px-4 py-2">
+          <AdSpace 
+            spaceId="6" 
+            position="header" 
+            pageType="activities" 
+            className="w-full"
+          />
+        </div>
+      </div>
+
       {/* Hero Section */}
       <section 
         className="relative py-24 px-4 text-center text-white"
@@ -607,6 +619,13 @@ function ActivitiesPage() {
               <AdSpace 
                 spaceId="17" 
                 position="card" 
+                pageType="activities" 
+              />
+              
+              {/* Espacio 4 (Activities Sidebar) */}
+              <AdSpace 
+                spaceId="4" 
+                position="sidebar" 
                 pageType="activities" 
               />
             </div>

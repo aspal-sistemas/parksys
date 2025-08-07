@@ -16,6 +16,8 @@ import { createParkEvaluationsTables } from "./create-park-evaluations-tables";
 import { db } from "./db";
 import { incomeCategories, expenseCategories } from "../shared/finance-schema";
 import { eq } from "drizzle-orm";
+import { registerInstructorInvitationRoutes } from "./instructorInvitationRoutes";
+import { registerInstructorApplicationRoutes } from "./instructorApplicationRoutes";
 
 const app = express();
 
@@ -219,6 +221,9 @@ app.get('/status', (req: Request, res: Response) => {
 // Servir archivos estáticos del directorio public ANTES de otras rutas
 app.use(express.static(path.join(process.cwd(), 'public')));
 
+// Servir archivos adjuntos desde attached_assets
+app.use('/attached_assets', express.static(path.join(process.cwd(), 'attached_assets')));
+
 // Servir archivos de publicidad desde uploads/advertising
 app.use('/uploads/advertising', express.static(path.join(process.cwd(), 'uploads/advertising')));
 
@@ -342,7 +347,7 @@ app.get("/api/activities/:id", async (req: Request, res: Response) => {
     if (activity.target_market) {
       if (Array.isArray(activity.target_market)) {
         // Ya es un array, usarlo directamente pero corregir formato
-        targetMarket = activity.target_market.map(market => {
+        targetMarket = activity.target_market.map((market: any) => {
           // Corregir "adultosmayores" a "adultos mayores"
           if (market === 'adultosmayores') {
             return 'adultos mayores';
@@ -354,7 +359,7 @@ app.get("/api/activities/:id", async (req: Request, res: Response) => {
         try {
           // Intentar parsear como JSON
           const parsed = JSON.parse(activity.target_market);
-          targetMarket = parsed.map(market => {
+          targetMarket = parsed.map((market: any) => {
             if (market === 'adultosmayores') {
               return 'adultos mayores';
             }
@@ -598,10 +603,10 @@ app.get("/api/activity-registrations/stats/:activityId", async (req, res) => {
     const activity = result.rows[0];
     
     // Calcular plazas disponibles usando la capacidad total, no max_registrations
-    const totalCapacity = activity.capacity || 0;
-    const totalRegistrations = parseInt(activity.total_registrations) || 0;
-    const approvedRegistrations = parseInt(activity.approved_registrations) || 0;
-    const pendingRegistrations = parseInt(activity.pending_registrations) || 0;
+    const totalCapacity = Number(activity.capacity) || 0;
+    const totalRegistrations = parseInt(String(activity.total_registrations)) || 0;
+    const approvedRegistrations = parseInt(String(activity.approved_registrations)) || 0;
+    const pendingRegistrations = parseInt(String(activity.pending_registrations)) || 0;
     
     // Las plazas disponibles se calculan con la capacidad total
     const availableSlots = Math.max(0, totalCapacity - totalRegistrations);
@@ -621,7 +626,7 @@ app.get("/api/activity-registrations/stats/:activityId", async (req, res) => {
       totalRegistrations,
       approved: approvedRegistrations,
       pending: pendingRegistrations,
-      rejected: parseInt(activity.rejected_registrations) || 0,
+      rejected: parseInt(String(activity.rejected_registrations)) || 0,
       availableSlots
     };
 
@@ -644,6 +649,10 @@ app.get("/api/activity-registrations/stats/:activityId", async (req, res) => {
 
 // Registrar las rutas de actividades - TEMPORALMENTE COMENTADO PARA USAR ENDPOINT PRINCIPAL
 app.use('/api', activityRouter);
+
+// Registrar rutas de invitaciones de instructores
+registerInstructorInvitationRoutes(app);
+registerInstructorApplicationRoutes(app);
 
 // Registrar las rutas de prueba
 app.use('/api/test', testRouter);

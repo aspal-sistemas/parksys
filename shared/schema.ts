@@ -183,9 +183,10 @@ export type InsertActualExpense = z.infer<typeof insertActualExpenseSchema>;
 // ========== MÓDULO DE RECURSOS HUMANOS ==========
 
 // Tabla de empleados - Matching actual database structure
+// Tabla employees - Catálogo independiente de activos humanos
 export const employees = pgTable("employees", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id),
+  userId: integer("user_id").references(() => users.id), // Nullable - Solo si el empleado también es usuario organizacional
   employeeCode: varchar("employee_code", { length: 20 }).unique(),
   fullName: varchar("full_name", { length: 100 }).notNull(),
   email: varchar("email", { length: 100 }).notNull(),
@@ -438,8 +439,7 @@ export const users = pgTable("users", {
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
   email: text("email").notNull(),
-  role: text("role").notNull().default("admin"), // Mantener por compatibilidad
-  roleId: integer("role_id").references(() => roles.id), // Nueva referencia a roles
+  roleId: integer("role_id").references(() => roles.id), // Referencia a roles
   fullName: text("full_name").notNull(),
   municipalityId: integer("municipality_id"),
   phone: text("phone"),
@@ -660,13 +660,18 @@ export const incidents = pgTable("incidents", {
   resolvedAt: timestamp("resolved_at")
 });
 
+// Tabla volunteers - Catálogo independiente alimentado desde /volunteers/register
 export const volunteers = pgTable("volunteers", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
+  fullName: text("full_name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone"),
+  age: integer("age"),
+  gender: text("gender").notNull(),
+  address: text("address"),
   emergencyContactName: text("emergency_contact_name"),
   emergencyContactPhone: text("emergency_contact_phone"),
   emergencyContactRelation: text("emergency_contact_relation"),
-  address: text("address"),
   preferredParkId: integer("preferred_park_id"),
   previousExperience: text("previous_experience"),
   availableDays: text("available_days").array(),
@@ -905,12 +910,15 @@ export const insertVolunteerRecognitionSchema = createInsertSchema(volunteerReco
   updatedAt: true
 });
 
-// Perfiles de concesionarios
+// Perfiles de concesionarios - Catálogo independiente sin user_id
 export const concessionaireProfiles = pgTable("concessionaire_profiles", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id),
   type: varchar("type", { length: 50 }).notNull(), // persona_fisica, persona_moral
   rfc: varchar("rfc", { length: 20 }).notNull().unique(),
+  businessName: varchar("business_name", { length: 200 }),
+  contactPerson: varchar("contact_person", { length: 200 }),
+  email: varchar("email", { length: 255 }),
+  phone: varchar("phone", { length: 20 }),
   taxAddress: text("tax_address").notNull(),
   legalRepresentative: varchar("legal_representative", { length: 200 }),
   registrationDate: date("registration_date").notNull().defaultNow(),
@@ -932,7 +940,7 @@ export const insertConcessionaireProfileSchema = createInsertSchema(concessionai
 // Documentos de concesionarios
 export const concessionaireDocuments = pgTable("concessionaire_documents", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id),
+  concessionaireProfileId: integer("concessionaire_profile_id").notNull().references(() => concessionaireProfiles.id),
   documentType: varchar("document_type", { length: 50 }).notNull(), // rfc, identificacion, acta_constitutiva, poder_notarial, etc.
   documentName: varchar("document_name", { length: 200 }).notNull(),
   documentUrl: varchar("document_url", { length: 255 }).notNull(),
@@ -940,7 +948,7 @@ export const concessionaireDocuments = pgTable("concessionaire_documents", {
   expiryDate: date("expiry_date"),
   isVerified: boolean("is_verified").default(false),
   verificationDate: timestamp("verification_date"),
-  verifiedById: integer("verified_by_id"),
+  verifiedById: integer("verified_by_id").references(() => users.id),
   notes: text("notes"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
@@ -956,47 +964,48 @@ export const insertConcessionaireDocumentSchema = createInsertSchema(concessiona
 });
 
 // Relaciones para las tablas de concesionarios
-export const concessionaireProfilesRelations = relations(concessionaireProfiles, ({ one, many }) => ({
-  user: one(users, {
-    fields: [concessionaireProfiles.userId],
-    references: [users.id]
-  })
+export const concessionaireProfilesRelations = relations(concessionaireProfiles, ({ many }) => ({
+  documents: many(concessionaireDocuments)
 }));
 
 export const concessionaireDocumentsRelations = relations(concessionaireDocuments, ({ one }) => ({
-  user: one(users, {
-    fields: [concessionaireDocuments.userId],
+  concessionaireProfile: one(concessionaireProfiles, {
+    fields: [concessionaireDocuments.concessionaireProfileId],
+    references: [concessionaireProfiles.id]
+  }),
+  verifiedBy: one(users, {
+    fields: [concessionaireDocuments.verifiedById],
     references: [users.id]
   })
 }));
 
-// Relaciones de usuarios - incluyendo perfiles de concesionarios y roles
+// Relaciones de usuarios - solo roles, sin conexión directa a concessionaires
 export const usersRelations = relations(users, ({ one, many }) => ({
   userRole: one(roles, {
     fields: [users.roleId],
     references: [roles.id],
-  }),
-  concessionaireProfile: one(concessionaireProfiles, {
-    fields: [users.id],
-    references: [concessionaireProfiles.userId]
   })
 }));
 
 // Definición de tablas de instructores
+// Tabla instructors - Catálogo independiente con registro por invitación
 export const instructors = pgTable("instructors", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
   fullName: text("full_name").notNull(),
-  firstName: text("first_name").notNull(),
-  lastName: text("last_name").notNull(),
+  firstName: text("first_name"),
+  lastName: text("last_name"),
   email: text("email").notNull(),
   phone: text("phone"),
+  age: integer("age"),
+  gender: text("gender"),
+  address: text("address"),
   specialties: text("specialties").array(),
   certifications: text("certifications").array(),
   experienceYears: integer("experience_years").default(0),
   availableDays: text("available_days").array(),
+  availableHours: text("available_hours"),
   preferredParkId: integer("preferred_park_id"),
-  status: text("status").default("active"),
+  status: text("status").default("pending"), // pending, active, rejected, inactive
   bio: text("bio"),
   qualifications: text("qualifications"),
   profileImageUrl: text("profile_image_url"),
@@ -1004,8 +1013,42 @@ export const instructors = pgTable("instructors", {
   hourlyRate: real("hourly_rate").default(0),
   rating: real("rating").default(0),
   activitiesCount: integer("activities_count").default(0),
+  // Campos para el proceso de aplicación
+  applicationCampaignId: integer("application_campaign_id").references(() => instructorApplicationCampaigns.id),
+  applicationDate: timestamp("application_date").defaultNow(),
+  evaluatedBy: integer("evaluated_by").references(() => users.id),
+  evaluatedAt: timestamp("evaluated_at"),
+  evaluationNotes: text("evaluation_notes"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow()
+});
+
+// Tabla para campañas de aplicaciones de instructores
+export const instructorApplicationCampaigns = pgTable("instructor_application_campaigns", {
+  id: serial("id").primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  isActive: boolean("is_active").default(false),
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date").notNull(),
+  maxApplications: integer("max_applications"), // Límite opcional de aplicaciones
+  currentApplications: integer("current_applications").default(0),
+  createdBy: integer("created_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+
+// Tabla para invitaciones de instructores por email (mantener para compatibilidad)
+export const instructorInvitations = pgTable("instructor_invitations", {
+  id: serial("id").primaryKey(),
+  email: varchar("email", { length: 255 }).notNull().unique(),
+  invitationToken: varchar("invitation_token", { length: 255 }).notNull().unique(),
+  invitedBy: integer("invited_by").references(() => users.id),
+  invitedAt: timestamp("invited_at").defaultNow(),
+  expiresAt: timestamp("expires_at").notNull(),
+  usedAt: timestamp("used_at"),
+  status: varchar("status", { length: 50 }).default("pending"), // pending, used, expired
+  createdAt: timestamp("created_at").defaultNow()
 });
 
 export const instructorAssignments = pgTable("instructor_assignments", {
@@ -1071,12 +1114,61 @@ export const instructorRecognitions = pgTable("instructor_recognitions", {
 // Tipos para las tablas de instructores
 export type Instructor = typeof instructors.$inferSelect;
 export type InsertInstructor = typeof instructors.$inferInsert;
+export type InstructorInvitation = typeof instructorInvitations.$inferSelect;
+export type InsertInstructorInvitation = typeof instructorInvitations.$inferInsert;
+export type InstructorApplicationCampaign = typeof instructorApplicationCampaigns.$inferSelect;
+export type InsertInstructorApplicationCampaign = typeof instructorApplicationCampaigns.$inferInsert;
 
 export const insertInstructorSchema = createInsertSchema(instructors).omit({ 
   id: true,
   createdAt: true,
-  updatedAt: true
+  updatedAt: true,
+  applicationDate: true,
+  evaluatedBy: true,
+  evaluatedAt: true,
+  evaluationNotes: true
 });
+
+export const insertInstructorApplicationCampaignSchema = createInsertSchema(instructorApplicationCampaigns).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  currentApplications: true
+});
+
+// Schema para aplicaciones públicas de instructores
+export const instructorApplicationSchema = createInsertSchema(instructors).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  applicationDate: true,
+  evaluatedBy: true,
+  evaluatedAt: true,
+  evaluationNotes: true,
+  rating: true,
+  activitiesCount: true,
+  status: true // Se asigna automáticamente como "pending"
+}).extend({
+  applicationCampaignId: z.number().positive("ID de campaña requerido"),
+  fullName: z.string().min(2, "Nombre completo debe tener al menos 2 caracteres"),
+  email: z.string().email("Email inválido"),
+  phone: z.string().min(10, "Teléfono debe tener al menos 10 dígitos").optional(),
+  experienceYears: z.number().min(0).max(50).default(0),
+  specialties: z.array(z.string()).min(1, "Debe especificar al menos una especialidad"),
+  bio: z.string().min(50, "La biografía debe tener al menos 50 caracteres").optional(),
+  qualifications: z.string().optional()
+});
+
+export const insertInstructorInvitationSchema = createInsertSchema(instructorInvitations).omit({
+  id: true,
+  createdAt: true,
+  invitationToken: true,
+  invitedAt: true,
+  usedAt: true,
+  status: true,
+});
+
+// Nota: Los tipos Volunteer, Employee y sus esquemas de inserción ya están definidos más adelante en el archivo
 
 export type InstructorAssignment = typeof instructorAssignments.$inferSelect;
 export type InsertInstructorAssignment = typeof instructorAssignments.$inferInsert;
