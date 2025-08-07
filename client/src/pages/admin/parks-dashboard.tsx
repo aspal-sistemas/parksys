@@ -146,43 +146,42 @@ const ParksDashboard = () => {
     <AdminLayout>
       <div className="space-y-8">
         {/* Main Header con Card */}
-        <Card className="p-4 bg-gray-50">
+        <Card className="p-4" style={{backgroundColor: '#003D49'}}>
           <div className="flex items-center gap-2">
-            <Activity className="w-8 h-8 text-gray-900" />
+            <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{backgroundColor: '#513C73'}}>
+              <Activity className="w-5 h-5 text-white" />
+            </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-              <p className="text-gray-600 mt-2">Resumen General del Sistema</p>
+              <h1 className="text-3xl font-bold text-white">Dashboard</h1>
+              <p className="text-gray-200 mt-2">Resumen General del Sistema</p>
             </div>
           </div>
         </Card>
         
         {/* Sección 1: Información General */}
         <div className="space-y-4">
-          <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-            <div className="bg-green-500 rounded-full p-2">
-              <MapPin className="h-5 w-5 text-white" />
-            </div>
+          <h2 className="text-2xl font-bold text-gray-800">
             Información General
           </h2>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            <Card className="border-0 shadow-lg bg-gradient-to-br from-emerald-500 to-emerald-600 text-white">
+            <Card className="border-0 shadow-lg text-white" style={{backgroundColor: '#003D49'}}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-emerald-100">Total de Parques</CardTitle>
+              <CardTitle className="text-base font-medium text-gray-100">Total de Parques</CardTitle>
               <div className="bg-white/20 rounded-full p-2">
                 <MapPin className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{data.totalParks}</div>
-              <p className="text-xs text-emerald-100">
+              <p className="text-xs text-gray-300">
                 {data.activeParks} activos
               </p>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+          <Card className="border-0 shadow-lg text-white" style={{backgroundColor: '#003D49'}}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-blue-100">Superficie Total</CardTitle>
+              <CardTitle className="text-base font-medium text-gray-100">Superficie Total</CardTitle>
               <div className="bg-white/20 rounded-full p-2">
                 <Trees className="h-5 w-5 text-white" />
               </div>
@@ -191,77 +190,62 @@ const ParksDashboard = () => {
               <div className="text-3xl font-bold text-white">
                 {data.totalSurface ? `${(data.totalSurface / 10000).toFixed(1)} ha` : 'N/A'}
               </div>
-              <p className="text-xs text-blue-100">
+              <p className="text-xs text-gray-300">
                 Superficie total de parques
               </p>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-teal-500 to-teal-600 text-white">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-teal-100">Área Permeable</CardTitle>
-              <div className="bg-white/20 rounded-full p-2">
-                <Trees className="h-5 w-5 text-white" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-white">
-                {data.totalGreenArea ? `${(data.totalGreenArea / 10000).toFixed(1)} ha` : 'N/A'}
-              </div>
-              <p className="text-xs text-teal-100">
-                Superficie permeable total
-              </p>
-            </CardContent>
-          </Card>
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-500 to-purple-600 text-white">
+
+          <Card className="border-0 shadow-lg text-white" style={{backgroundColor: '#003D49'}}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-purple-100">Actividades</CardTitle>
+              <CardTitle className="text-base font-medium text-gray-100">Actividades</CardTitle>
               <div className="bg-white/20 rounded-full p-2">
                 <Calendar className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{data.totalActivities}</div>
-              <p className="text-xs text-purple-100">
+              <p className="text-xs text-gray-300">
                 Eventos programados
               </p>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-orange-500 to-orange-600 text-white">
+          <Card className="border-0 shadow-lg text-white" style={{backgroundColor: '#003D49'}}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-orange-100">Voluntarios</CardTitle>
+              <CardTitle className="text-base font-medium text-gray-100">Voluntarios</CardTitle>
               <div className="bg-white/20 rounded-full p-2">
                 <Users className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{data.totalVolunteers}</div>
-              <p className="text-xs text-orange-100">
+              <p className="text-xs text-gray-300">
                 Activos en el sistema
               </p>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-green-500 to-green-600 text-white">
+          <Card className="border-0 shadow-lg text-white" style={{backgroundColor: '#003D49'}}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-green-100">Árboles</CardTitle>
+              <CardTitle className="text-base font-medium text-gray-100">Árboles</CardTitle>
               <div className="bg-white/20 rounded-full p-2">
                 <Trees className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{data.totalTrees}</div>
-              <p className="text-xs text-green-100">
+              <p className="text-xs text-gray-300">
                 En inventario
               </p>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-pink-500 to-pink-600 text-white">
+          <Card className="border-0 shadow-lg text-white" style={{backgroundColor: '#003D49'}}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-pink-100">Visitantes</CardTitle>
+              <CardTitle className="text-base font-medium text-gray-100">Visitantes</CardTitle>
               <div className="bg-white/20 rounded-full p-2">
                 <TrendingUp className="h-5 w-5 text-white" />
               </div>
@@ -270,15 +254,15 @@ const ParksDashboard = () => {
               <div className="text-3xl font-bold text-white">
                 {data.totalVisitors ? data.totalVisitors.toLocaleString() : 'N/A'}
               </div>
-              <p className="text-xs text-pink-100">
+              <p className="text-xs text-gray-300">
                 Visitantes totales
               </p>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-yellow-500 to-yellow-600 text-white">
+          <Card className="border-0 shadow-lg text-white" style={{backgroundColor: '#003D49'}}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-yellow-100">Calificación</CardTitle>
+              <CardTitle className="text-base font-medium text-gray-100">Calificación</CardTitle>
               <div className="bg-white/20 rounded-full p-2">
                 <CheckCircle className="h-5 w-5 text-white" />
               </div>
@@ -287,82 +271,82 @@ const ParksDashboard = () => {
               <div className="text-3xl font-bold text-white">
                 {data.averageRating ? data.averageRating.toFixed(1) : 'N/A'}
               </div>
-              <p className="text-xs text-yellow-100">
+              <p className="text-xs text-gray-300">
                 Promedio de evaluaciones
               </p>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-red-500 to-red-600 text-white">
+          <Card className="border-0 shadow-lg text-white" style={{backgroundColor: '#003D49'}}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-red-100">En Mantenimiento</CardTitle>
+              <CardTitle className="text-base font-medium text-gray-100">En Mantenimiento</CardTitle>
               <div className="bg-white/20 rounded-full p-2">
                 <AlertTriangle className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{data.maintenanceAreas}</div>
-              <p className="text-xs text-red-100">
+              <p className="text-xs text-gray-300">
                 Áreas en mantenimiento
               </p>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-cyan-500 to-cyan-600 text-white">
+          <Card className="border-0 shadow-lg text-white" style={{backgroundColor: '#003D49'}}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-cyan-100">Amenidades</CardTitle>
+              <CardTitle className="text-base font-medium text-gray-100">Amenidades</CardTitle>
               <div className="bg-white/20 rounded-full p-2">
                 <Wrench className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{data.totalAmenities}</div>
-              <p className="text-xs text-cyan-100">
+              <p className="text-xs text-gray-300">
                 Amenidades disponibles
               </p>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-indigo-500 to-indigo-600 text-white">
+          <Card className="border-0 shadow-lg text-white" style={{backgroundColor: '#003D49'}}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-indigo-100">Instructores</CardTitle>
+              <CardTitle className="text-base font-medium text-gray-100">Instructores</CardTitle>
               <div className="bg-white/20 rounded-full p-2">
                 <UserCheck className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{data.totalInstructors}</div>
-              <p className="text-xs text-indigo-100">
+              <p className="text-xs text-gray-300">
                 Instructores activos
               </p>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-amber-500 to-amber-600 text-white">
+          <Card className="border-0 shadow-lg text-white" style={{backgroundColor: '#003D49'}}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-amber-100">Incidencias</CardTitle>
+              <CardTitle className="text-base font-medium text-gray-100">Incidencias</CardTitle>
               <div className="bg-white/20 rounded-full p-2">
                 <AlertCircle className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{data.totalIncidents}</div>
-              <p className="text-xs text-amber-100">
+              <p className="text-xs text-gray-300">
                 Incidencias (últimos 30 días)
               </p>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-slate-500 to-slate-600 text-white">
+          <Card className="border-0 shadow-lg text-white" style={{backgroundColor: '#003D49'}}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-100">Activos</CardTitle>
+              <CardTitle className="text-base font-medium text-gray-100">Activos</CardTitle>
               <div className="bg-white/20 rounded-full p-2">
                 <Package className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{data.totalAssets}</div>
-              <p className="text-xs text-slate-100">
+              <p className="text-xs text-gray-300">
                 Activos registrados
               </p>
             </CardContent>
