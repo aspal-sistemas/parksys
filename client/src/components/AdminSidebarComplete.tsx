@@ -370,10 +370,7 @@ const AdminSidebarComplete: React.FC = () => {
 
   return (
     <div className="fixed left-0 w-64 flex flex-col shadow-lg z-40" style={{ top: '80px', height: 'calc(100vh - 80px)', backgroundColor: '#003D49' }}>
-      {/* Buscador del sistema */}
-      <SidebarSearch />
-
-      {/* Navigation */}
+            {/* Navigation */}
       <ScrollArea className="flex-1 px-3 py-2 w-full">
         <Accordion
           type="multiple"
@@ -390,51 +387,6 @@ const AdminSidebarComplete: React.FC = () => {
             value="gestion"
             defaultOpen={location.startsWith('/admin/visitors') || location.startsWith('/admin/parks') || location.startsWith('/admin/trees') || location.startsWith('/admin/organizador') || location.startsWith('/admin/activities') || location.startsWith('/admin/events') || location.startsWith('/admin/space-reservations')}
           >
-            {/* VISITANTES */}
-            <CollapsibleSubmenu
-              id="visitantes"
-              title="Visitantes"
-              icon={<Users className="h-4 w-4" />}
-              isExpanded={expandedSubmenus.includes('visitantes')}
-              onToggle={toggleSubmenu}
-            >
-              <NavItem 
-                href="/admin/visitors/dashboard" 
-                icon={<Activity className="h-4 w-4" />}
-                active={location === '/admin/visitors/dashboard'}
-              >
-                Dashboard
-              </NavItem>
-              <NavItem 
-                href="/admin/visitors/count" 
-                icon={<Users className="h-4 w-4" />}
-                active={location === '/admin/visitors/count'}
-              >
-                Conteo
-              </NavItem>
-              <NavItem 
-                href="/admin/visitors/evaluations" 
-                icon={<Star className="h-4 w-4" />}
-                active={location === '/admin/visitors/evaluations'}
-              >
-                Evaluaciones
-              </NavItem>
-              <NavItem 
-                href="/admin/visitors/criteria" 
-                icon={<Settings className="h-4 w-4" />}
-                active={location === '/admin/visitors/criteria'}
-              >
-                Criterios
-              </NavItem>
-              <NavItem 
-                href="/admin/visitors/feedback" 
-                icon={<MessageSquare className="h-4 w-4" />}
-                active={location === '/admin/visitors/feedback'}
-              >
-                Retroalimentación
-              </NavItem>
-            </CollapsibleSubmenu>
-
             {/* PARQUES */}
             <CollapsibleSubmenu
               id="parques"
@@ -444,16 +396,78 @@ const AdminSidebarComplete: React.FC = () => {
               onToggle={toggleSubmenu}
             >
               <NavItem 
-                href="/admin/parks/dashboard" 
+                href="/admin/parks" 
+                icon={<Map className="h-4 w-4" />}
+                active={location === '/admin/parks'}
+              >
+                {t('navigation.management')}
+              </NavItem>
+            </CollapsibleSubmenu>
+
+            {/* ACTIVIDADES */}
+            <CollapsibleSubmenu
+              id="actividades"
+              title="Actividades"
+              icon={<Calendar className="h-4 w-4" />}
+              isExpanded={expandedSubmenus.includes('actividades')}
+              onToggle={toggleSubmenu}
+            >
+              <NavItem 
+                href="/admin/activities" 
+                icon={<Activity className="h-4 w-4" />}
+                active={location === '/admin/activities'}
+              >
+                {t('navigation.listing')}
+              </NavItem>
+              <NavItem 
+                href="/admin/organizador/catalogo/crear" 
+                icon={<Plus className="h-4 w-4" />}
+                active={location.startsWith('/admin/organizador/catalogo/crear')}
+              >
+                Nueva Actividad
+              </NavItem>
+              <NavItem 
+                href="/admin/activities/calendar" 
+                icon={<Calendar className="h-4 w-4" />}
+                active={location.startsWith('/admin/activities/calendar')}
+              >
+                Cal. Actividades
+              </NavItem>
+              <NavItem 
+                href="/admin/activities/registrations" 
+                icon={<UserCheck className="h-4 w-4" />}
+                active={location.startsWith('/admin/activities/registrations')}
+              >
+                Inscripciones
+              </NavItem>
+              <NavItem 
+                href="/admin/instructors" 
+                icon={<GraduationCap className="h-4 w-4" />}
+                active={location === '/admin/instructors'}
+              >
+                {t('navigation.instructors')}
+              </NavItem>
+            </CollapsibleSubmenu>
+
+            {/* AMENIDADES */}
+            <CollapsibleSubmenu
+              id="amenidades"
+              title="Amenidades"
+              icon={<Package className="h-4 w-4" />}
+              isExpanded={expandedSubmenus.includes('amenidades')}
+              onToggle={toggleSubmenu}
+            >
+              <NavItem 
+                href="/admin/amenities-dashboard" 
                 icon={<BarChart className="h-4 w-4" />}
-                active={location === '/admin/parks/dashboard'}
+                active={location === '/admin/amenities-dashboard'}
               >
                 {t('navigation.operativeSummary')}
               </NavItem>
               <NavItem 
-                href="/admin/parks" 
-                icon={<Map className="h-4 w-4" />}
-                active={location === '/admin/parks'}
+                href="/admin/amenities" 
+                icon={<Package className="h-4 w-4" />}
+                active={location === '/admin/amenities'}
               >
                 {t('navigation.management')}
               </NavItem>
@@ -497,65 +511,44 @@ const AdminSidebarComplete: React.FC = () => {
               </NavItem>
             </CollapsibleSubmenu>
 
-            {/* ACTIVIDADES */}
+            {/* VISITANTES */}
             <CollapsibleSubmenu
-              id="actividades"
-              title="Actividades"
-              icon={<Calendar className="h-4 w-4" />}
-              isExpanded={expandedSubmenus.includes('actividades')}
+              id="visitantes"
+              title="Visitantes"
+              icon={<Users className="h-4 w-4" />}
+              isExpanded={expandedSubmenus.includes('visitantes')}
               onToggle={toggleSubmenu}
             >
               <NavItem 
-                href="/admin/organizador" 
-                icon={<BarChart3 className="h-4 w-4" />}
-                active={location.startsWith('/admin/organizador')}
+                href="/admin/visitors/count" 
+                icon={<Users className="h-4 w-4" />}
+                active={location === '/admin/visitors/count'}
               >
-                Dashboard
+                Conteo
               </NavItem>
               <NavItem 
-                href="/admin/activities/categories" 
-                icon={<Tag className="h-4 w-4" />}
-                active={location.startsWith('/admin/activities/categories')}
+                href="/admin/visitors/evaluations" 
+                icon={<Star className="h-4 w-4" />}
+                active={location === '/admin/visitors/evaluations'}
               >
-                Categorías
+                Evaluaciones
               </NavItem>
               <NavItem 
-                href="/admin/activities" 
-                icon={<Activity className="h-4 w-4" />}
-                active={location === '/admin/activities'}
+                href="/admin/visitors/criteria" 
+                icon={<Settings className="h-4 w-4" />}
+                active={location === '/admin/visitors/criteria'}
               >
-                {t('navigation.listing')}
+                Criterios
               </NavItem>
               <NavItem 
-                href="/admin/organizador/catalogo/crear" 
-                icon={<Plus className="h-4 w-4" />}
-                active={location.startsWith('/admin/organizador/catalogo/crear')}
+                href="/admin/visitors/feedback" 
+                icon={<MessageSquare className="h-4 w-4" />}
+                active={location === '/admin/visitors/feedback'}
               >
-                Nueva Actividad
-              </NavItem>
-              <NavItem 
-                href="/admin/activities/calendar" 
-                icon={<Calendar className="h-4 w-4" />}
-                active={location.startsWith('/admin/activities/calendar')}
-              >
-                Cal. Actividades
-              </NavItem>
-              <NavItem 
-                href="/admin/activities/registrations" 
-                icon={<UserCheck className="h-4 w-4" />}
-                active={location.startsWith('/admin/activities/registrations')}
-              >
-                Inscripciones
-              </NavItem>
-              <NavItem 
-                href="/admin/instructors" 
-                icon={<GraduationCap className="h-4 w-4" />}
-                active={location === '/admin/instructors'}
-              >
-                {t('navigation.instructors')}
+                Retroalimentación
               </NavItem>
             </CollapsibleSubmenu>
-
+            
             {/* EVENTOS */}
             <CollapsibleSubmenu
               id="eventos"
@@ -643,30 +636,6 @@ const AdminSidebarComplete: React.FC = () => {
                 active={location.startsWith('/admin/space-reservations/calendar')}
               >
                 Cal. Reservas
-              </NavItem>
-            </CollapsibleSubmenu>
-
-            {/* AMENIDADES */}
-            <CollapsibleSubmenu
-              id="amenidades"
-              title="Amenidades"
-              icon={<Package className="h-4 w-4" />}
-              isExpanded={expandedSubmenus.includes('amenidades')}
-              onToggle={toggleSubmenu}
-            >
-              <NavItem 
-                href="/admin/amenities-dashboard" 
-                icon={<BarChart className="h-4 w-4" />}
-                active={location === '/admin/amenities-dashboard'}
-              >
-                {t('navigation.operativeSummary')}
-              </NavItem>
-              <NavItem 
-                href="/admin/amenities" 
-                icon={<Package className="h-4 w-4" />}
-                active={location === '/admin/amenities'}
-              >
-                {t('navigation.management')}
               </NavItem>
             </CollapsibleSubmenu>
           </ModuleNav>

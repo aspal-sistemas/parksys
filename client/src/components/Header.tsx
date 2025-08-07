@@ -245,59 +245,56 @@ const Header: React.FC = () => {
 
               {/* Menús administrativos - Solo mostrar en páginas administrativas */}
               {isAdmin && (
-                <nav className="flex items-center space-x-6 ml-6">
+                <nav className="flex items-center space-x-4 ml-1">
                   {/* Menú Dashboard */}
-                  <Link href="/admin/dashboard" className="flex flex-col items-center hover:opacity-80">
-                    <div className="w-9 h-9 flex items-center justify-center rounded-full transition-colors">
+                  <Link href="/admin" className="flex flex-col items-center hover:opacity-80">
+                    <div className="w-9 h-5 flex items-center justify-center rounded-full transition-colors">
                       <Gauge className="h-5 w-5 text-gray-700" />
                     </div>
-                    <span className="text-xs text-gray-600 mt-1">Dashboard</span>
                   </Link>
 
                   {/* Menú Gestión */}
                   <div className="relative group">
                     <div className="flex flex-col items-center">
-                      <button className="w-9 h-9 flex items-center justify-center rounded-full hover:opacity-80 transition-colors">
+                      <button className="w-9 h-5 flex items-center justify-center rounded-full hover:opacity-80 transition-colors">
                         <FolderOpen className="h-5 w-5 text-gray-700" />
-                      </button>
-                      <div className="flex items-center gap-1 mt-1">
-                        <span className="text-xs text-gray-600">Gestión</span>
                         <ChevronDown className="h-3 w-3 text-gray-500" />
-                      </div>
+                      </button>
                     </div>
 
                     {/* Dropdown menu */}
                     <div className="absolute left-0 top-full mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                       <div className="py-1">
                         <Link
-                          href="/admin/parks"
+                          href="/admin/parks/dashboard"
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                         >
                           Parques
                         </Link>
                         <Link
-                          href="/admin/activities"
+                              href="/admin/organizador"
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                         >
                           Actividades
                         </Link>
                         <Link
-                          href="/admin/events"
+                        href="/admin/amenities-dashboard"
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                         >
-                          Eventos
+                          Amenidades
                         </Link>
                         <Link
-                          href="/admin/visitor-management"
+                        href="/admin/trees/dashboard"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                        >
+                          Arbolado
+                        </Link>
+                        <Link
+                              href="/admin/visitors/dashboard"
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                         >
                           Visitantes
-                        </Link>
-                        <Link
-                          href="/admin/spaces"
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                        >
-                          Espacios
+                        
                         </Link>
                       </div>
                     </div>
@@ -306,13 +303,10 @@ const Header: React.FC = () => {
                   {/* Menú O & M */}
                   <div className="relative group">
                     <div className="flex flex-col items-center">
-                      <button className="w-9 h-9 flex items-center justify-center rounded-full hover:opacity-80 transition-colors">
+                      <button className="w-9 h-5 flex items-center justify-center rounded-full hover:opacity-80 transition-colors">
                         <Wrench className="h-5 w-5 text-gray-700" />
-                      </button>
-                      <div className="flex items-center gap-1 mt-1">
-                        <span className="text-xs text-gray-600">O & M</span>
                         <ChevronDown className="h-3 w-3 text-gray-500" />
-                      </div>
+                      </button>
                     </div>
 
                     {/* Dropdown menu */}
@@ -325,13 +319,13 @@ const Header: React.FC = () => {
                           Activos
                         </Link>
                         <Link
-                          href="/admin/incidents"
+                          href="/admin/incidents/dashboard"
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                         >
                           Incidencias
                         </Link>
                         <Link
-                          href="/admin/volunteers"
+                          href="/admin/volunteers/dashboard"
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                         >
                           Voluntarios
@@ -343,20 +337,17 @@ const Header: React.FC = () => {
                   {/* Menú Admin & Finanzas */}
                   <div className="relative group">
                     <div className="flex flex-col items-center">
-                      <button className="w-9 h-9 flex items-center justify-center rounded-full hover:opacity-80 transition-colors">
+                      <button className="w-9 h-5 flex items-center justify-center rounded-full hover:opacity-80 transition-colors">
                         <DollarSign className="h-5 w-5 text-gray-700" />
-                      </button>
-                      <div className="flex items-center gap-1 mt-1">
-                        <span className="text-xs text-gray-600">Admin & Finanzas</span>
                         <ChevronDown className="h-3 w-3 text-gray-500" />
-                      </div>
+                      </button>
                     </div>
 
                     {/* Dropdown menu */}
                     <div className="absolute left-0 top-full mt-1 w-56 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                       <div className="py-1">
                         <Link
-                          href="/admin/finance"
+                          href="/admin/finance/reports"
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                         >
                           Finanzas
@@ -382,11 +373,8 @@ const Header: React.FC = () => {
                     <div className="flex flex-col items-center">
                       <button className="w-9 h-9 flex items-center justify-center rounded-full hover:opacity-80 transition-colors">
                         <Megaphone className="h-5 w-5 text-gray-700" />
-                      </button>
-                      <div className="flex items-center gap-1 mt-1">
-                        <span className="text-xs text-gray-600">MKT & Comm</span>
                         <ChevronDown className="h-3 w-3 text-gray-500" />
-                      </div>
+                      </button>
                     </div>
 
                     {/* Dropdown menu */}
@@ -415,47 +403,11 @@ const Header: React.FC = () => {
                   </div>
 
                   {/* Menú RH */}
-                  <div className="relative group">
-                    <div className="flex flex-col items-center">
-                      <button className="w-9 h-9 flex items-center justify-center rounded-full hover:opacity-80 transition-colors">
-                        <Users className="h-5 w-5 text-gray-700" />
-                      </button>
-                      <div className="flex items-center gap-1 mt-1">
-                        <span className="text-xs text-gray-600">RH</span>
-                        <ChevronDown className="h-3 w-3 text-gray-500" />
-                      </div>
+                  <Link href="/admin/hr/dashboard" className="flex flex-col items-center hover:opacity-80">
+                    <div className="w-9 h-5 flex items-center justify-center rounded-full transition-colors">
+                      <Users className="h-5 w-5 text-gray-700" />
                     </div>
-
-                    {/* Dropdown menu */}
-                    <div className="absolute left-0 top-full mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                      <div className="py-1">
-                        <Link
-                          href="/admin/hr/employees"
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                        >
-                          Empleados
-                        </Link>
-                        <Link
-                          href="/admin/hr/payroll"
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                        >
-                          Nómina
-                        </Link>
-                        <Link
-                          href="/admin/hr/time-off"
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                        >
-                          Tiempo Libre
-                        </Link>
-                        <Link
-                          href="/admin/hr/organigram"
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                        >
-                          Organigrama
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
+                  </Link>
                 </nav>
               )}
             </div>
