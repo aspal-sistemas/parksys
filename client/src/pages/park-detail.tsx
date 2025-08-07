@@ -21,6 +21,7 @@ import AmenityIcon from '@/components/AmenityIcon';
 import ParkQuickActions from '@/components/ParkQuickActions';
 import { ParkImageManager } from '@/components/ParkImageManager';
 import { useAuth } from '@/hooks/useAuth';
+import AdSpace from '@/components/AdSpace';
 
 const ParkDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -112,6 +113,16 @@ const ParkDetail: React.FC = () => {
           </div>
         </div>
         
+        {/* Espacio publicitario superior */}
+        <div className="mb-6">
+          <AdSpace 
+            spaceId={33} 
+            position="banner" 
+            pageType="park-landing" 
+            className="w-full"
+          />
+        </div>
+
         {/* Main content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
           {/* Left column */}
@@ -125,19 +136,31 @@ const ParkDetail: React.FC = () => {
               />
             </div>
             
-            {/* Image gallery */}
+            {/* Image gallery - Galería de miniaturas mejorada */}
             {additionalImages.length > 0 && (
               <div className="grid grid-cols-5 gap-2 mb-6">
                 {additionalImages.slice(0, 5).map((imageUrl, idx) => (
-                  <img 
-                    key={idx}
-                    src={imageUrl} 
-                    alt={`Vista del parque ${idx + 1}`} 
-                    className="w-full h-20 object-cover rounded"
-                  />
+                  <div key={idx} className="relative group cursor-pointer">
+                    <img 
+                      src={imageUrl} 
+                      alt={`Vista del parque ${idx + 1}`} 
+                      className="w-full h-20 object-cover rounded transition-all duration-200 group-hover:scale-105 group-hover:shadow-lg"
+                    />
+                    <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-30 transition-opacity duration-200 rounded"></div>
+                  </div>
                 ))}
               </div>
             )}
+            
+            {/* Espacio publicitario en contenido */}
+            <div className="mb-6">
+              <AdSpace 
+                spaceId={30} 
+                position="card" 
+                pageType="park-landing" 
+                className="w-full"
+              />
+            </div>
             
             {/* Tabs */}
             <Tabs defaultValue="info" className="mt-6">
@@ -145,7 +168,6 @@ const ParkDetail: React.FC = () => {
                 <TabsTrigger value="info">Información</TabsTrigger>
                 <TabsTrigger value="amenities">Amenidades</TabsTrigger>
                 <TabsTrigger value="activities">Actividades</TabsTrigger>
-                <TabsTrigger value="documents">Documentos</TabsTrigger>
                 <TabsTrigger value="images">Imágenes</TabsTrigger>
               </TabsList>
               
@@ -184,7 +206,15 @@ const ParkDetail: React.FC = () => {
                     {park.conservationStatus && (
                       <div className="flex justify-between border-b pb-2">
                         <span className="text-gray-600">Estado de conservación:</span>
-                        <span className="font-medium">{park.conservationStatus}</span>
+                        <span className={`font-medium px-2 py-1 rounded-full text-sm ${
+                          park.conservationStatus.toLowerCase() === 'excelente' ? 'bg-green-100 text-green-800' :
+                          park.conservationStatus.toLowerCase() === 'bueno' ? 'bg-blue-100 text-blue-800' :
+                          park.conservationStatus.toLowerCase() === 'regular' ? 'bg-yellow-100 text-yellow-800' :
+                          park.conservationStatus.toLowerCase() === 'malo' ? 'bg-red-100 text-red-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {park.conservationStatus}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -266,39 +296,6 @@ const ParkDetail: React.FC = () => {
                 ) : (
                   <div className="text-center py-10 bg-gray-50 rounded-lg">
                     <p className="text-gray-500">No hay actividades programadas actualmente.</p>
-                  </div>
-                )}
-              </TabsContent>
-              
-              <TabsContent value="documents" className="mt-4">
-                {park.documents && park.documents.length > 0 ? (
-                  <div className="space-y-3">
-                    {park.documents.map(document => (
-                      <a 
-                        key={document.id}
-                        href={document.fileUrl} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                      >
-                        <FileText className={`h-10 w-10 mr-4 ${
-                          document.fileType?.includes('pdf') ? 'text-red-500' : 'text-blue-500'
-                        }`} />
-                        <div className="flex-1">
-                          <h3 className="font-medium">{document.title}</h3>
-                          {document.fileSize && (
-                            <p className="text-sm text-gray-500">{document.fileSize}</p>
-                          )}
-                        </div>
-                        <Button variant="ghost" size="sm">
-                          Descargar
-                        </Button>
-                      </a>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-10 bg-gray-50 rounded-lg">
-                    <p className="text-gray-500">No hay documentos disponibles para este parque.</p>
                   </div>
                 )}
               </TabsContent>
@@ -387,6 +384,16 @@ const ParkDetail: React.FC = () => {
               </div>
             </div>
             
+            {/* Espacio publicitario lateral */}
+            <div className="mb-6">
+              <AdSpace 
+                spaceId={2} 
+                position="card" 
+                pageType="parks" 
+                className="w-full"
+              />
+            </div>
+            
             {/* Quick actions */}
             <ParkQuickActions 
               parkId={Number(id)}
@@ -409,6 +416,44 @@ const ParkDetail: React.FC = () => {
                   <AlertCircle className="h-4 w-4 mr-2" />
                   Reportar un problema
                 </Button>
+              </div>
+            </div>
+
+            {/* Documentos y Reglamentos */}
+            <div className="bg-white border border-gray-200 rounded-lg overflow-hidden mb-6">
+              <div className="p-4">
+                <h3 className="font-medium text-lg mb-4 flex items-center">
+                  <FileText className="h-5 w-5 mr-2" />
+                  Documentos y Reglamentos
+                </h3>
+                {park.documents && park.documents.length > 0 ? (
+                  <div className="space-y-2">
+                    {park.documents.map(document => (
+                      <a 
+                        key={document.id}
+                        href={document.fileUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex items-center p-3 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors"
+                      >
+                        <FileText className={`h-6 w-6 mr-3 ${
+                          document.fileType?.includes('pdf') ? 'text-red-500' : 'text-blue-500'
+                        }`} />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm truncate">{document.title}</p>
+                          {document.fileSize && (
+                            <p className="text-xs text-gray-500">{document.fileSize}</p>
+                          )}
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-6 bg-gray-50 rounded-lg">
+                    <FileText className="h-8 w-8 mx-auto text-gray-400 mb-2" />
+                    <p className="text-gray-500 text-sm">No hay documentos disponibles</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
