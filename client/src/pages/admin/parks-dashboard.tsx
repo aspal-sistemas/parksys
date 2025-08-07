@@ -373,7 +373,7 @@ const ParksDashboard = () => {
                   {data.parksByMunicipality?.map((item, index) => {
                     const maxCount = Math.max(...(data.parksByMunicipality?.map(p => p.count) || [1]));
                     const percentage = (item.count / maxCount) * 100;
-                    const colors = ['#B3C077', '#1E5AA6', '#198DCE', '#90D3EC'];
+                    const colors = ['#D2EAEA', '#036668', '#003D49'];
                     const backgroundColor = colors[index % colors.length];
                     
                     return (
@@ -390,7 +390,7 @@ const ParksDashboard = () => {
                                 backgroundColor: backgroundColor
                               }}
                             >
-                              <span className="text-white text-xs font-bold">
+                              <span className={`text-xs font-bold ${backgroundColor === '#D2EAEA' ? 'text-gray-800' : 'text-white'}`}>
                                 {item.count}
                               </span>
                             </div>
