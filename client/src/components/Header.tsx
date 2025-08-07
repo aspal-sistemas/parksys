@@ -222,7 +222,7 @@ const Header: React.FC = () => {
               <div className="relative group">
                 <div className="flex flex-col items-center">
                   <button className="w-9 h-9 flex items-center justify-center rounded-full hover:opacity-80 transition-colors">
-                    <FolderOpen className="h-4 w-4 text-gray-700" />
+                    <FolderOpen className="h-6 w-6 text-gray-700" />
                   </button>
                   <div className="flex items-center gap-1 mt-1">
                     <span className="text-xs text-gray-600">Gestión</span>
