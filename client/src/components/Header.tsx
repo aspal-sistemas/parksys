@@ -221,11 +221,13 @@ const Header: React.FC = () => {
               {/* Menú de Gestión */}
               <div className="relative group">
                 <div className="flex flex-col items-center">
-                  <button className="w-9 h-9 flex items-center justify-center rounded-full hover:opacity-80 transition-colors relative">
+                  <button className="w-9 h-9 flex items-center justify-center rounded-full hover:opacity-80 transition-colors">
                     <FolderOpen className="h-4 w-4 text-gray-700" />
-                    <ChevronDown className="absolute -bottom-0.5 -right-0.5 h-3 w-3 text-gray-700 bg-white border border-gray-300 rounded-full p-0.5" />
                   </button>
-                  <span className="text-xs text-gray-600 mt-1">Gestión</span>
+                  <div className="flex items-center gap-1 mt-1">
+                    <span className="text-xs text-gray-600">Gestión</span>
+                    <ChevronDown className="h-3 w-3 text-gray-500" />
+                  </div>
                 </div>
                 
                 {/* Dropdown menu */}
