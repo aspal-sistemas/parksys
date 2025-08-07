@@ -369,16 +369,7 @@ const AdminSidebarComplete: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-y-0 left-0 w-64 flex flex-col shadow-lg z-50" style={{ height: '100vh', backgroundColor: '#003D49' }}>
-      {/* Header */}
-      <div className="flex items-center justify-center p-6 border-b border-teal-600" style={{ minHeight: '80px', backgroundColor: '#D2EAEA' }}>
-        <img 
-          src="/attached_assets/images_1754508335227.png" 
-          alt="Agencia de Bosques Urbanos" 
-          className="h-12 w-auto object-contain"
-        />
-      </div>
-
+    <div className="fixed left-0 w-64 flex flex-col shadow-lg z-40" style={{ top: '80px', height: 'calc(100vh - 80px)', backgroundColor: '#003D49' }}>
       {/* Buscador del sistema */}
       <SidebarSearch />
 
@@ -392,16 +383,7 @@ const AdminSidebarComplete: React.FC = () => {
 
 
 
-          {/* 1. PANEL DE CONTROL - ENLACE DIRECTO */}
-          <NavItem 
-            href="/admin" 
-            icon={<Home className="h-5 w-5" />}
-            active={location === '/admin' || location === '/admin/'}
-          >
-            Panel de Control
-          </NavItem>
-
-          {/* 2. GESTIÓN - MENÚ PRINCIPAL CON SUBMENÚS COLAPSABLES */}
+          {/* 1. GESTIÓN - MENÚ PRINCIPAL CON SUBMENÚS COLAPSABLES */}
           <ModuleNav 
             title="Gestión" 
             icon={<FolderOpen className="h-5 w-5" />}

@@ -41,11 +41,12 @@ import Header from "@/components/Header";
 function Router() {
   const [location] = useLocation();
   const isVentasRoute = location === '/ventas' || location === '/landing' || location === '/sales';
+  const isAdminRoute = location.startsWith('/admin');
   
   return (
     <div className="flex flex-col min-h-screen">
-      {!isVentasRoute && <Header />}
-      <div className={!isVentasRoute ? "pt-20" : ""}>
+      {!isVentasRoute && !isAdminRoute && <Header />}
+      <div className={!isVentasRoute && !isAdminRoute ? "pt-20" : ""}>
         <Switch>
         <Route path="/" component={Home} />
         <Route path="/home" component={Home} />
