@@ -298,11 +298,20 @@ const AdminSidebarComplete: React.FC = () => {
     if (location.startsWith('/admin/visitors')) return 'visitantes';
     if (location.startsWith('/admin/parks')) return 'parques';
     if (location.startsWith('/admin/trees')) return 'arbolado';
-    if (location.startsWith('/admin/organizador') || location.startsWith('/admin/activities')) return 'actividades';
+    if (location.startsWith('/admin/organizador') || location.startsWith('/admin/activities') || location.startsWith('/admin/instructors')) return 'actividades';
     if (location.startsWith('/admin/events') || location.startsWith('/admin/eventos-ambu')) return 'eventos';
     if (location.startsWith('/admin/space-reservations')) return 'reservas';
     if (location.startsWith('/admin/amenities')) return 'amenidades';
     if (location.startsWith('/admin/roles') || location.startsWith('/admin/permissions') || location.startsWith('/admin/role-')) return 'roles-sistema';
+    if (location.startsWith('/admin/assets')) return 'activos';
+    if (location.startsWith('/admin/incidents')) return 'incidencias';
+    if (location.startsWith('/admin/volunteers')) return 'voluntarios';
+    if (location.startsWith('/admin/finance')) return 'finanzas';
+    if (location.startsWith('/admin/accounting')) return 'contabilidad';
+    if (location.startsWith('/admin/concessions')) return 'concesiones';
+    if (location.startsWith('/admin/marketing')) return 'marketing';
+    if (location.startsWith('/admin/advertising')) return 'advertising';
+    if (location.startsWith('/admin/communications')) return 'comunicacion';
     return null;
   };
   
