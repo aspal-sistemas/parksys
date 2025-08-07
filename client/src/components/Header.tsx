@@ -5,9 +5,8 @@ import {
   X,
   ChevronDown,
   LogIn,
-  Home,
-  HelpCircle,
   LogOut,
+  HelpCircle,
   FolderOpen,
   Wrench,
   DollarSign,
@@ -81,384 +80,395 @@ const Header: React.FC = () => {
       className="fixed top-0 left-0 right-0 z-50 shadow-sm border-b border-gray-200"
       style={{ backgroundColor: isAdmin ? "#D2EAEA" : "white" }}
     >
-      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center h-20">
-          <div className="flex items-center">
-            {/* Logo administrativo - Solo mostrar en páginas administrativas */}
-            {isAdmin && (
-              <div className="flex-shrink-0 flex items-center mr-6">
-                <img
-                  src={agencyLogo}
-                  alt="Agencia de Bosques Urbanos"
-                  className="h-10 w-auto object-contain"
-                />
-              </div>
-            )}
-            
-            {/* Logo y navegación - Solo mostrar para páginas públicas */}
-            {!isAdmin && (
-              <>
-                <Link href="/">
-                  <div className="flex-shrink-0 flex items-center cursor-pointer">
-                    <img
-                      src={logoImage}
-                      alt="Logo Bosques Urbanos de Guadalajara"
-                      className="h-10 w-auto"
-                    />
-                  </div>
-                </Link>
-
-                {/* Desktop navigation */}
-                <nav className="hidden md:ml-8 md:flex md:space-x-6">
-                  <Link
-                    href="/"
-                    className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium ${
-                      location === "/"
-                        ? "border-primary text-gray-900"
-                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                    }`}
-                  >
-                    Inicio
+      <div className="flex items-center h-20">
+        {/* Logo administrativo - Posicionado absolutamente al extremo izquierdo */}
+        {isAdmin && (
+          <div className="absolute left-0 top-0 bottom-0 w-64 flex items-center justify-center z-10" style={{ backgroundColor: '#D2EAEA' }}>
+            <img
+              src={agencyLogo}
+              alt="Agencia de Bosques Urbanos"
+              className="h-10 w-auto object-contain"
+            />
+          </div>
+        )}
+        
+        <div className={`${isAdmin ? 'ml-64' : ''} max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 w-full`}>
+          <div className="flex items-center h-20">
+            <div className="flex items-center">
+              {/* Logo y navegación - Solo mostrar para páginas públicas */}
+              {!isAdmin && (
+                <>
+                  <Link href="/">
+                    <div className="flex-shrink-0 flex items-center cursor-pointer">
+                      <img
+                        src={logoImage}
+                        alt="Logo Bosques Urbanos de Guadalajara"
+                        className="h-10 w-auto"
+                      />
+                    </div>
                   </Link>
 
-                  <Link
-                    href="/parks"
-                    className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium ${
-                      location === "/parks"
-                        ? "border-primary text-gray-900"
-                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                    }`}
-                  >
-                    Parques
-                  </Link>
-
-                  {/* Menú de Contenido con dropdown */}
-                  <div className="relative group">
-                    <button
-                      className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium flex items-center ${
-                        isContentActive
+                  {/* Desktop navigation */}
+                  <nav className="hidden md:ml-8 md:flex md:space-x-6">
+                    <Link
+                      href="/"
+                      className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium ${
+                        location === "/"
                           ? "border-primary text-gray-900"
                           : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                       }`}
                     >
-                      Contenido
-                      <ChevronDown className="ml-1 h-3 w-3" />
-                    </button>
+                      Inicio
+                    </Link>
+
+                    <Link
+                      href="/parks"
+                      className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium ${
+                        location === "/parks"
+                          ? "border-primary text-gray-900"
+                          : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                      }`}
+                    >
+                      Parques
+                    </Link>
+
+                    {/* Menú de Contenido con dropdown */}
+                    <div className="relative group">
+                      <button
+                        className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium flex items-center ${
+                          isContentActive
+                            ? "border-primary text-gray-900"
+                            : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                        }`}
+                      >
+                        Contenido
+                        <ChevronDown className="ml-1 h-3 w-3" />
+                      </button>
+
+                      {/* Dropdown menu */}
+                      <div className="absolute left-0 top-full mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                        <div className="py-1">
+                          <Link
+                            href="/activities"
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                          >
+                            Actividades
+                          </Link>
+                          <Link
+                            href="/events"
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                          >
+                            Eventos
+                          </Link>
+                          <Link
+                            href="/calendar"
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                          >
+                            Calendario
+                          </Link>
+                          <Link
+                            href="/concessions"
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                          >
+                            Servicios Comerciales
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Menú de Biodiversidad con dropdown */}
+                    <div className="relative group">
+                      <button
+                        className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium flex items-center ${
+                          isBiodiversityActive
+                            ? "border-primary text-gray-900"
+                            : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                        }`}
+                      >
+                        Biodiversidad
+                        <ChevronDown className="ml-1 h-3 w-3" />
+                      </button>
+
+                      {/* Dropdown menu */}
+                      <div className="absolute left-0 top-full mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                        <div className="py-1">
+                          <Link
+                            href="/tree-species"
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                          >
+                            Especies de Árboles
+                          </Link>
+                          <Link
+                            href="/fauna"
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                          >
+                            Fauna
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Menú de Usuarios con dropdown */}
+                    <div className="relative group">
+                      <button
+                        className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium flex items-center ${
+                          isUsersActive
+                            ? "border-primary text-gray-900"
+                            : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                        }`}
+                      >
+                        Usuarios
+                        <ChevronDown className="ml-1 h-3 w-3" />
+                      </button>
+
+                      {/* Dropdown menu */}
+                      <div className="absolute left-0 top-full mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                        <div className="py-1">
+                          <Link
+                            href="/volunteers"
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                          >
+                            Voluntarios
+                          </Link>
+                          <Link
+                            href="/instructors"
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-900"
+                          >
+                            Instructores
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  </nav>
+                </>
+              )}
+
+              {/* Menús administrativos - Solo mostrar en páginas administrativas */}
+              {isAdmin && (
+                <nav className="flex items-center space-x-6 ml-6">
+                  {/* Menú Dashboard */}
+                  <Link href="/admin/dashboard" className="flex flex-col items-center hover:opacity-80">
+                    <div className="w-9 h-9 flex items-center justify-center rounded-full transition-colors">
+                      <Gauge className="h-5 w-5 text-gray-700" />
+                    </div>
+                    <span className="text-xs text-gray-600 mt-1">Dashboard</span>
+                  </Link>
+
+                  {/* Menú Gestión */}
+                  <div className="relative group">
+                    <div className="flex flex-col items-center">
+                      <button className="w-9 h-9 flex items-center justify-center rounded-full hover:opacity-80 transition-colors">
+                        <FolderOpen className="h-5 w-5 text-gray-700" />
+                      </button>
+                      <div className="flex items-center gap-1 mt-1">
+                        <span className="text-xs text-gray-600">Gestión</span>
+                        <ChevronDown className="h-3 w-3 text-gray-500" />
+                      </div>
+                    </div>
 
                     {/* Dropdown menu */}
                     <div className="absolute left-0 top-full mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                       <div className="py-1">
                         <Link
-                          href="/activities"
+                          href="/admin/parks"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                        >
+                          Parques
+                        </Link>
+                        <Link
+                          href="/admin/activities"
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                         >
                           Actividades
                         </Link>
                         <Link
-                          href="/reservations"
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                        >
-                          Reserva de Espacios
-                        </Link>
-                        <Link
-                          href="/events"
+                          href="/admin/events"
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                         >
                           Eventos
                         </Link>
                         <Link
-                          href="/calendar"
+                          href="/admin/visitor-management"
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                         >
-                          Calendario
+                          Visitantes
                         </Link>
                         <Link
-                          href="/concessions"
+                          href="/admin/spaces"
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                         >
-                          Servicios Comerciales
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Menú de Biodiversidad con dropdown */}
-                  <div className="relative group">
-                    <button
-                      className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium flex items-center ${
-                        isBiodiversityActive
-                          ? "border-primary text-gray-900"
-                          : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                      }`}
-                    >
-                      Biodiversidad
-                      <ChevronDown className="ml-1 h-3 w-3" />
-                    </button>
-
-                    {/* Dropdown menu */}
-                    <div className="absolute left-0 top-full mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                      <div className="py-1">
-                        <Link
-                          href="/tree-species"
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                        >
-                          Arbolado
-                        </Link>
-                        <Link
-                          href="/fauna"
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                        >
-                          Fauna
+                          Espacios
                         </Link>
                       </div>
                     </div>
                   </div>
 
-                  {/* Menú de Usuarios con dropdown */}
+                  {/* Menú O & M */}
                   <div className="relative group">
-                    <button
-                      className={`border-b-2 pt-1 pb-3 px-1 text-sm font-medium flex items-center ${
-                        isUsersActive
-                          ? "border-primary text-gray-900"
-                          : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                      }`}
-                    >
-                      Usuarios
-                      <ChevronDown className="ml-1 h-3 w-3" />
-                    </button>
+                    <div className="flex flex-col items-center">
+                      <button className="w-9 h-9 flex items-center justify-center rounded-full hover:opacity-80 transition-colors">
+                        <Wrench className="h-5 w-5 text-gray-700" />
+                      </button>
+                      <div className="flex items-center gap-1 mt-1">
+                        <span className="text-xs text-gray-600">O & M</span>
+                        <ChevronDown className="h-3 w-3 text-gray-500" />
+                      </div>
+                    </div>
 
                     {/* Dropdown menu */}
                     <div className="absolute left-0 top-full mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                       <div className="py-1">
                         <Link
-                          href="/volunteers"
+                          href="/admin/assets/dashboard"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                        >
+                          Activos
+                        </Link>
+                        <Link
+                          href="/admin/incidents"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                        >
+                          Incidencias
+                        </Link>
+                        <Link
+                          href="/admin/volunteers"
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                         >
                           Voluntarios
                         </Link>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Menú Admin & Finanzas */}
+                  <div className="relative group">
+                    <div className="flex flex-col items-center">
+                      <button className="w-9 h-9 flex items-center justify-center rounded-full hover:opacity-80 transition-colors">
+                        <DollarSign className="h-5 w-5 text-gray-700" />
+                      </button>
+                      <div className="flex items-center gap-1 mt-1">
+                        <span className="text-xs text-gray-600">Admin & Finanzas</span>
+                        <ChevronDown className="h-3 w-3 text-gray-500" />
+                      </div>
+                    </div>
+
+                    {/* Dropdown menu */}
+                    <div className="absolute left-0 top-full mt-1 w-56 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                      <div className="py-1">
                         <Link
-                          href="/instructors"
+                          href="/admin/finance"
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                         >
-                          Instructores
+                          Finanzas
+                        </Link>
+                        <Link
+                          href="/admin/accounting/dashboard"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                        >
+                          Contabilidad
+                        </Link>
+                        <Link
+                          href="/admin/concessions/reports"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                        >
+                          Concesiones
                         </Link>
                       </div>
                     </div>
                   </div>
 
-                  {/* Enlace de registro de voluntarios removido */}
-                  {/* Botón "Acerca de" removido del menú principal */}
+                  {/* Menú MKT & Comm */}
+                  <div className="relative group">
+                    <div className="flex flex-col items-center">
+                      <button className="w-9 h-9 flex items-center justify-center rounded-full hover:opacity-80 transition-colors">
+                        <Megaphone className="h-5 w-5 text-gray-700" />
+                      </button>
+                      <div className="flex items-center gap-1 mt-1">
+                        <span className="text-xs text-gray-600">MKT & Comm</span>
+                        <ChevronDown className="h-3 w-3 text-gray-500" />
+                      </div>
+                    </div>
+
+                    {/* Dropdown menu */}
+                    <div className="absolute left-0 top-full mt-1 w-56 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                      <div className="py-1">
+                        <Link
+                          href="/admin/marketing"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                        >
+                          Marketing
+                        </Link>
+                        <Link
+                          href="/admin/advertising"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                        >
+                          Publicidad
+                        </Link>
+                        <Link
+                          href="/admin/communications"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                        >
+                          Comunicaciones
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Menú RH */}
+                  <div className="relative group">
+                    <div className="flex flex-col items-center">
+                      <button className="w-9 h-9 flex items-center justify-center rounded-full hover:opacity-80 transition-colors">
+                        <Users className="h-5 w-5 text-gray-700" />
+                      </button>
+                      <div className="flex items-center gap-1 mt-1">
+                        <span className="text-xs text-gray-600">RH</span>
+                        <ChevronDown className="h-3 w-3 text-gray-500" />
+                      </div>
+                    </div>
+
+                    {/* Dropdown menu */}
+                    <div className="absolute left-0 top-full mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                      <div className="py-1">
+                        <Link
+                          href="/admin/hr/employees"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                        >
+                          Empleados
+                        </Link>
+                        <Link
+                          href="/admin/hr/payroll"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                        >
+                          Nómina
+                        </Link>
+                        <Link
+                          href="/admin/hr/time-off"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                        >
+                          Tiempo Libre
+                        </Link>
+                        <Link
+                          href="/admin/hr/organigram"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                        >
+                          Organigrama
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
                 </nav>
-              </>
-            )}
-          </div>
-
-          {/* Navegación para administradores - movida hacia la derecha */}
-          {isAdmin && location !== "/admin/login" && (
-            <div className="flex items-center gap-3 flex-1 justify-end mr-4">
-              {/* Dashboard */}
-              <Link href="/admin">
-                <div className="flex flex-col items-center">
-                  <button className="w-9 h-9 flex items-center justify-center rounded-full hover:opacity-80 transition-colors">
-                    <Gauge className="h-5 w-5 text-gray-700" />
-                  </button>
-                  <span className="text-xs text-gray-600 mt-1">Dashboard</span>
-                </div>
-              </Link>
-
-              {/* Menú de Gestión */}
-              <div className="relative group">
-                <div className="flex flex-col items-center">
-                  <button className="w-9 h-9 flex items-center justify-center rounded-full hover:opacity-80 transition-colors">
-                    <FolderOpen className="h-5 w-5 text-gray-700" />
-                  </button>
-                  <div className="flex items-center gap-1 mt-1">
-                    <span className="text-xs text-gray-600">Gestión</span>
-                    <ChevronDown className="h-3 w-3 text-gray-500" />
-                  </div>
-                </div>
-
-                {/* Dropdown menu */}
-                <div className="absolute left-0 top-full mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                  <div className="py-1">
-                    <Link
-                      href="/admin/visitors/dashboard"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                    >
-                      Visitantes
-                    </Link>
-                    <Link
-                      href="/admin/parks/dashboard"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                    >
-                      Parques
-                    </Link>
-                    <Link
-                      href="/admin/trees/dashboard"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                    >
-                      Arbolado
-                    </Link>
-                    <Link
-                      href="/admin/organizador"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                    >
-                      Actividades
-                    </Link>
-                    <Link
-                      href="/admin/amenities-dashboard"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                    >
-                      Amenidades
-                    </Link>
-                  </div>
-                </div>
-              </div>
-
-              {/* Menú O & M */}
-              <div className="relative group">
-                <div className="flex flex-col items-center">
-                  <button className="w-9 h-9 flex items-center justify-center rounded-full hover:opacity-80 transition-colors">
-                    <Wrench className="h-5 w-5 text-gray-700" />
-                  </button>
-                  <div className="flex items-center gap-1 mt-1">
-                    <span className="text-xs text-gray-600">O & M</span>
-                    <ChevronDown className="h-3 w-3 text-gray-500" />
-                  </div>
-                </div>
-
-                {/* Dropdown menu */}
-                <div className="absolute left-0 top-full mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                  <div className="py-1">
-                    <Link
-                      href="/admin/assets/dashboard"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                    >
-                      Activos
-                    </Link>
-                    <Link
-                      href="/admin/incidents"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                    >
-                      Incidencias
-                    </Link>
-                    <Link
-                      href="/admin/volunteers"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                    >
-                      Voluntarios
-                    </Link>
-                  </div>
-                </div>
-              </div>
-
-              {/* Menú Admin & Finanzas */}
-              <div className="relative group">
-                <div className="flex flex-col items-center">
-                  <button className="w-9 h-9 flex items-center justify-center rounded-full hover:opacity-80 transition-colors">
-                    <DollarSign className="h-5 w-5 text-gray-700" />
-                  </button>
-                  <div className="flex items-center gap-1 mt-1">
-                    <span className="text-xs text-gray-600">Admin & Finanzas</span>
-                    <ChevronDown className="h-3 w-3 text-gray-500" />
-                  </div>
-                </div>
-
-                {/* Dropdown menu */}
-                <div className="absolute left-0 top-full mt-1 w-56 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                  <div className="py-1">
-                    <Link
-                      href="/admin/finance"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                    >
-                      Finanzas
-                    </Link>
-                    <Link
-                      href="/admin/accounting/dashboard"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                    >
-                      Contabilidad
-                    </Link>
-                    <Link
-                      href="/admin/concessions/reports"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                    >
-                      Concesiones
-                    </Link>
-                  </div>
-                </div>
-              </div>
-
-              {/* Menú MKT & Comm */}
-              <div className="relative group">
-                <div className="flex flex-col items-center">
-                  <button className="w-9 h-9 flex items-center justify-center rounded-full hover:opacity-80 transition-colors">
-                    <Megaphone className="h-5 w-5 text-gray-700" />
-                  </button>
-                  <div className="flex items-center gap-1 mt-1">
-                    <span className="text-xs text-gray-600">MKT & Comm</span>
-                    <ChevronDown className="h-3 w-3 text-gray-500" />
-                  </div>
-                </div>
-
-                {/* Dropdown menu */}
-                <div className="absolute left-0 top-full mt-1 w-56 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                  <div className="py-1">
-                    <Link
-                      href="/admin/marketing"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                    >
-                      Marketing
-                    </Link>
-                    <Link
-                      href="/admin/advertising"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                    >
-                      Publicidad
-                    </Link>
-                    <Link
-                      href="/admin/communications"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                    >
-                      Comunicaciones
-                    </Link>
-                  </div>
-                </div>
-              </div>
-
-              {/* Menú RH */}
-              <Link href="/admin/hr/employees">
-                <div className="flex flex-col items-center">
-                  <button className="w-9 h-9 flex items-center justify-center rounded-full hover:opacity-80 transition-colors">
-                    <Users className="h-5 w-5 text-gray-700" />
-                  </button>
-                  <span className="text-xs text-gray-600 mt-1">RH</span>
-                </div>
-              </Link>
+              )}
             </div>
-          )}
 
-          {/* Búsqueda Global y Ver Sitio Público - lado derecho */}
-          <div className="flex items-center gap-3 flex-shrink-0">
-            {/* Búsqueda Global - Solo en sitio público */}
-            {!isAdmin && <GlobalSearch />}
+            {/* Right side - Search, help, language, user */}
+            <div className="flex-1 flex items-center justify-end gap-4">
+              {/* Global search */}
+              <div className="hidden lg:block max-w-md">
+                <GlobalSearch />
+              </div>
 
-            {isAdmin ? (
-              location !== "/admin/login" && (
-                <div className="flex items-center gap-2 mr-2">
-                  <Link href="/">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="rounded-lg border"
-                      style={{
-                        backgroundColor: "#D2EAEA",
-                        borderColor: "#003D49",
-                      }}
-                    >
-                      Sitio
-                    </Button>
-                  </Link>
+              {isAdmin && user ? (
+                <div className="flex items-center gap-2">
                   <HelpCenter>
                     <Button
                       variant="outline"
@@ -507,29 +517,29 @@ const Header: React.FC = () => {
                     <LogOut className="h-4 w-4" />
                   </Button>
                 </div>
-              )
-            ) : (
-              <Link href="/admin/login">
-                <div className="w-10 h-10 bg-emerald-500 hover:bg-emerald-600 rounded-lg flex items-center justify-center transition-colors duration-200 shadow-md hover:shadow-lg">
-                  <LogIn className="h-5 w-5 text-white" />
-                </div>
-              </Link>
-            )}
+              ) : (
+                <Link href="/admin/login">
+                  <div className="w-10 h-10 bg-emerald-500 hover:bg-emerald-600 rounded-lg flex items-center justify-center transition-colors duration-200 shadow-md hover:shadow-lg">
+                    <LogIn className="h-5 w-5 text-white" />
+                  </div>
+                </Link>
+              )}
 
-            {/* Mobile menu button */}
-            {!isAdmin && (
-              <button
-                type="button"
-                className="md:hidden ml-2 p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100"
-                onClick={toggleMobileMenu}
-              >
-                {mobileMenuOpen ? (
-                  <X className="h-6 w-6" />
-                ) : (
-                  <Menu className="h-6 w-6" />
-                )}
-              </button>
-            )}
+              {/* Mobile menu button */}
+              {!isAdmin && (
+                <button
+                  type="button"
+                  className="md:hidden ml-2 p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100"
+                  onClick={toggleMobileMenu}
+                >
+                  {mobileMenuOpen ? (
+                    <X className="h-6 w-6" />
+                  ) : (
+                    <Menu className="h-6 w-6" />
+                  )}
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -651,7 +661,7 @@ const Header: React.FC = () => {
                         : "text-gray-600 hover:bg-gray-50"
                     }`}
                   >
-                    Arbolado
+                    Especies de Árboles
                   </Link>
 
                   <Link
@@ -710,9 +720,6 @@ const Header: React.FC = () => {
                 </div>
               )}
             </div>
-
-            {/* Enlace móvil de registro de voluntarios removido */}
-            {/* Botón móvil "Acerca de" removido del menú */}
           </div>
         </div>
       )}
