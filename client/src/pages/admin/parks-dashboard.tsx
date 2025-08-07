@@ -167,13 +167,13 @@ const ParksDashboard = () => {
             <Card className="border-0 shadow-lg text-white" style={{backgroundColor: '#003D49'}}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-base font-medium text-gray-100">Total de Parques</CardTitle>
-              <div className="bg-white/20 rounded-full p-2">
+              <div className="rounded-full p-2" style={{backgroundColor: '#513C73'}}>
                 <MapPin className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{data.totalParks}</div>
-              <p className="text-xs text-gray-300">
+              <p className="text-xs" style={{color: '#513C73'}}>
                 {data.activeParks} activos
               </p>
             </CardContent>
@@ -182,7 +182,7 @@ const ParksDashboard = () => {
           <Card className="border-0 shadow-lg text-white" style={{backgroundColor: '#003D49'}}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-base font-medium text-gray-100">Superficie Total</CardTitle>
-              <div className="bg-white/20 rounded-full p-2">
+              <div className="rounded-full p-2" style={{backgroundColor: '#513C73'}}>
                 <Trees className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
@@ -190,7 +190,7 @@ const ParksDashboard = () => {
               <div className="text-3xl font-bold text-white">
                 {data.totalSurface ? `${(data.totalSurface / 10000).toFixed(1)} ha` : 'N/A'}
               </div>
-              <p className="text-xs text-gray-300">
+              <p className="text-xs" style={{color: '#513C73'}}>
                 Superficie total de parques
               </p>
             </CardContent>
@@ -201,13 +201,13 @@ const ParksDashboard = () => {
           <Card className="border-0 shadow-lg text-white" style={{backgroundColor: '#003D49'}}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-base font-medium text-gray-100">Actividades</CardTitle>
-              <div className="bg-white/20 rounded-full p-2">
+              <div className="rounded-full p-2" style={{backgroundColor: '#513C73'}}>
                 <Calendar className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{data.totalActivities}</div>
-              <p className="text-xs text-gray-300">
+              <p className="text-xs" style={{color: '#513C73'}}>
                 Eventos programados
               </p>
             </CardContent>
@@ -231,13 +231,13 @@ const ParksDashboard = () => {
           <Card className="border-0 shadow-lg text-white" style={{backgroundColor: '#003D49'}}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-base font-medium text-gray-100">Árboles</CardTitle>
-              <div className="bg-white/20 rounded-full p-2">
+              <div className="rounded-full p-2" style={{backgroundColor: '#513C73'}}>
                 <Trees className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{data.totalTrees}</div>
-              <p className="text-xs text-gray-300">
+              <p className="text-xs" style={{color: '#513C73'}}>
                 En inventario
               </p>
             </CardContent>
@@ -246,7 +246,7 @@ const ParksDashboard = () => {
           <Card className="border-0 shadow-lg text-white" style={{backgroundColor: '#003D49'}}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-base font-medium text-gray-100">Visitantes</CardTitle>
-              <div className="bg-white/20 rounded-full p-2">
+              <div className="rounded-full p-2" style={{backgroundColor: '#513C73'}}>
                 <TrendingUp className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
@@ -254,7 +254,7 @@ const ParksDashboard = () => {
               <div className="text-3xl font-bold text-white">
                 {data.totalVisitors ? data.totalVisitors.toLocaleString() : 'N/A'}
               </div>
-              <p className="text-xs text-gray-300">
+              <p className="text-xs" style={{color: '#513C73'}}>
                 Visitantes totales
               </p>
             </CardContent>
@@ -263,7 +263,7 @@ const ParksDashboard = () => {
           <Card className="border-0 shadow-lg text-white" style={{backgroundColor: '#003D49'}}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-base font-medium text-gray-100">Calificación</CardTitle>
-              <div className="bg-white/20 rounded-full p-2">
+              <div className="rounded-full p-2" style={{backgroundColor: '#513C73'}}>
                 <CheckCircle className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
@@ -271,7 +271,7 @@ const ParksDashboard = () => {
               <div className="text-3xl font-bold text-white">
                 {data.averageRating ? data.averageRating.toFixed(1) : 'N/A'}
               </div>
-              <p className="text-xs text-gray-300">
+              <p className="text-xs" style={{color: '#513C73'}}>
                 Promedio de evaluaciones
               </p>
             </CardContent>
@@ -280,13 +280,13 @@ const ParksDashboard = () => {
           <Card className="border-0 shadow-lg text-white" style={{backgroundColor: '#003D49'}}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-base font-medium text-gray-100">En Mantenimiento</CardTitle>
-              <div className="bg-white/20 rounded-full p-2">
+              <div className="rounded-full p-2" style={{backgroundColor: '#B275B0'}}>
                 <AlertTriangle className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{data.maintenanceAreas}</div>
-              <p className="text-xs text-gray-300">
+              <p className="text-xs" style={{color: '#B275B0'}}>
                 Áreas en mantenimiento
               </p>
             </CardContent>
@@ -295,13 +295,13 @@ const ParksDashboard = () => {
           <Card className="border-0 shadow-lg text-white" style={{backgroundColor: '#003D49'}}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-base font-medium text-gray-100">Amenidades</CardTitle>
-              <div className="bg-white/20 rounded-full p-2">
+              <div className="rounded-full p-2" style={{backgroundColor: '#513C73'}}>
                 <Wrench className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{data.totalAmenities}</div>
-              <p className="text-xs text-gray-300">
+              <p className="text-xs" style={{color: '#513C73'}}>
                 Amenidades disponibles
               </p>
             </CardContent>
@@ -310,13 +310,13 @@ const ParksDashboard = () => {
           <Card className="border-0 shadow-lg text-white" style={{backgroundColor: '#003D49'}}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-base font-medium text-gray-100">Instructores</CardTitle>
-              <div className="bg-white/20 rounded-full p-2">
+              <div className="rounded-full p-2" style={{backgroundColor: '#513C73'}}>
                 <UserCheck className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{data.totalInstructors}</div>
-              <p className="text-xs text-gray-300">
+              <p className="text-xs" style={{color: '#513C73'}}>
                 Instructores activos
               </p>
             </CardContent>
@@ -325,13 +325,13 @@ const ParksDashboard = () => {
           <Card className="border-0 shadow-lg text-white" style={{backgroundColor: '#003D49'}}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-base font-medium text-gray-100">Incidencias</CardTitle>
-              <div className="bg-white/20 rounded-full p-2">
+              <div className="rounded-full p-2" style={{backgroundColor: '#B275B0'}}>
                 <AlertCircle className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{data.totalIncidents}</div>
-              <p className="text-xs text-gray-300">
+              <p className="text-xs" style={{color: '#B275B0'}}>
                 Incidencias (últimos 30 días)
               </p>
             </CardContent>
@@ -340,13 +340,13 @@ const ParksDashboard = () => {
           <Card className="border-0 shadow-lg text-white" style={{backgroundColor: '#003D49'}}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-base font-medium text-gray-100">Activos</CardTitle>
-              <div className="bg-white/20 rounded-full p-2">
+              <div className="rounded-full p-2" style={{backgroundColor: '#B275B0'}}>
                 <Package className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{data.totalAssets}</div>
-              <p className="text-xs text-gray-300">
+              <p className="text-xs" style={{color: '#B275B0'}}>
                 Activos registrados
               </p>
             </CardContent>
