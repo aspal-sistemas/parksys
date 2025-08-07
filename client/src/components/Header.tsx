@@ -22,6 +22,7 @@ import { LanguageSelector } from "@/components/LanguageSelector";
 import UserProfileImage from "@/components/UserProfileImage";
 import { useAuth } from "@/hooks/useAuth";
 import logoImage from "@assets/logo_1751306368691.png";
+import agencyLogo from "@assets/images_1754508335227.png";
 
 const Header: React.FC = () => {
   const [location] = useLocation();
@@ -83,6 +84,17 @@ const Header: React.FC = () => {
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center h-20">
           <div className="flex items-center">
+            {/* Logo administrativo - Solo mostrar en páginas administrativas */}
+            {isAdmin && (
+              <div className="flex-shrink-0 flex items-center mr-6">
+                <img
+                  src={agencyLogo}
+                  alt="Agencia de Bosques Urbanos"
+                  className="h-10 w-auto object-contain"
+                />
+              </div>
+            )}
+            
             {/* Logo y navegación - Solo mostrar para páginas públicas */}
             {!isAdmin && (
               <>

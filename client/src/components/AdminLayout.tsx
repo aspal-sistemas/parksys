@@ -21,9 +21,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ title, subtitle, children }) 
       </div>
       
       {/* Sidebar fijo global - debajo del header */}
-      <div className="pt-20">
-        <AdminSidebarComplete />
-      </div>
+      <AdminSidebarComplete />
       
       {/* Mobile sidebar overlay */}
       {mobileSidebarOpen && (
@@ -35,7 +33,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ title, subtitle, children }) 
       
       {/* Main Content con margen izquierdo para el sidebar y superior para el header */}
       <div className="ml-64 pt-20 flex flex-col min-h-screen">
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-4">
           {children}
         </main>
       </div>
