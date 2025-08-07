@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'wouter';
-import { Menu, X, ChevronDown, LogIn, Home, HelpCircle, LogOut, Folder } from 'lucide-react';
+import { Menu, X, ChevronDown, LogIn, Home, HelpCircle, LogOut, FolderOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import GlobalSearch from '@/components/GlobalSearch';
 import { HelpCenter } from '@/components/HelpCenter';
@@ -225,7 +225,7 @@ const Header: React.FC = () => {
                   style={{ 
                     backgroundColor: '#513C73'
                   }}>
-                  <Folder className="h-4 w-4 text-white" />
+                  <FolderOpen className="h-4 w-4 text-white" />
                   <ChevronDown className="absolute -bottom-0.5 -right-0.5 h-3 w-3 text-white bg-gray-800 rounded-full p-0.5" />
                 </button>
                 
