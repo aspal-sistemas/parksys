@@ -363,11 +363,8 @@ const ParksDashboard = () => {
           <div className="grid gap-6 md:grid-cols-2">
             {/* Parques por municipio */}
             <Card className="border-0 shadow-lg">
-              <CardHeader className="bg-gradient-to-r from-emerald-50 to-green-50 rounded-t-lg">
-                <CardTitle className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                  <div className="bg-emerald-500 rounded-full p-2">
-                    <MapPin className="h-4 w-4 text-white" />
-                  </div>
+              <CardHeader className="bg-white rounded-t-lg">
+                <CardTitle className="text-lg font-bold text-gray-800">
                   Parques por Municipio
                 </CardTitle>
               </CardHeader>
@@ -385,10 +382,10 @@ const ParksDashboard = () => {
                         <div className="flex-1 flex items-center space-x-2">
                           <div className="flex-1 bg-gray-200 rounded-full h-6 relative">
                             <div 
-                              className="bg-gradient-to-r from-emerald-500 to-green-500 h-6 rounded-full flex items-center justify-end pr-3 transition-all duration-700 shadow-sm"
+                              className="bg-white h-6 rounded-full flex items-center justify-end pr-3 transition-all duration-700 shadow-sm border border-gray-300"
                               style={{ width: `${Math.max(percentage, 5)}%` }}
                             >
-                              <span className="text-white text-xs font-bold">
+                              <span className="text-gray-800 text-xs font-bold">
                                 {item.count}
                               </span>
                             </div>
@@ -403,11 +400,8 @@ const ParksDashboard = () => {
 
             {/* Parques por tipo */}
             <Card className="border-0 shadow-lg">
-              <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-lg">
-                <CardTitle className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                  <div className="bg-blue-500 rounded-full p-2">
-                    <Activity className="h-4 w-4 text-white" />
-                  </div>
+              <CardHeader className="bg-white rounded-t-lg">
+                <CardTitle className="text-lg font-bold text-gray-800">
                   Distribución por Tipo
                 </CardTitle>
               </CardHeader>
@@ -425,10 +419,10 @@ const ParksDashboard = () => {
                         <div className="flex-1 flex items-center space-x-2">
                           <div className="flex-1 bg-gray-200 rounded-full h-6 relative">
                             <div 
-                              className="bg-gradient-to-r from-blue-500 to-indigo-500 h-6 rounded-full flex items-center justify-end pr-3 transition-all duration-700 shadow-sm"
+                              className="bg-white h-6 rounded-full flex items-center justify-end pr-3 transition-all duration-700 shadow-sm border border-gray-300"
                               style={{ width: `${Math.max(percentage, 5)}%` }}
                             >
-                              <span className="text-white text-xs font-bold">
+                              <span className="text-gray-800 text-xs font-bold">
                                 {item.count}
                               </span>
                             </div>
@@ -444,11 +438,8 @@ const ParksDashboard = () => {
 
           {/* Estado de conservación */}
           <Card className="border-0 shadow-lg">
-            <CardHeader className="bg-gradient-to-r from-teal-50 to-cyan-50 rounded-t-lg">
-              <CardTitle className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                <div className="bg-teal-500 rounded-full p-2">
-                  <CheckCircle className="h-4 w-4 text-white" />
-                </div>
+            <CardHeader className="bg-white rounded-t-lg">
+              <CardTitle className="text-lg font-bold text-gray-800">
                 Estado de Conservación
               </CardTitle>
             </CardHeader>
@@ -458,13 +449,7 @@ const ParksDashboard = () => {
                   const maxCount = Math.max(...(data.conservationStatus?.map(p => p.count) || [1]));
                   const percentage = (item.count / maxCount) * 100;
                   const getStatusColor = (status: string) => {
-                    switch (status.toLowerCase()) {
-                      case 'excelente': return 'bg-gradient-to-r from-green-500 to-green-600';
-                      case 'bueno': return 'bg-gradient-to-r from-emerald-500 to-green-500';
-                      case 'regular': return 'bg-gradient-to-r from-yellow-500 to-orange-500';
-                      case 'malo': return 'bg-gradient-to-r from-red-500 to-red-600';
-                      default: return 'bg-gradient-to-r from-gray-500 to-gray-600';
-                    }
+                    return 'bg-white border border-gray-300';
                   };
                   
                   return (
@@ -478,7 +463,7 @@ const ParksDashboard = () => {
                             className={`${getStatusColor(item.status)} h-6 rounded-full flex items-center justify-end pr-3 transition-all duration-700 shadow-sm`}
                             style={{ width: `${Math.max(percentage, 5)}%` }}
                           >
-                            <span className="text-white text-xs font-bold">
+                            <span className="text-gray-800 text-xs font-bold">
                               {item.count}
                             </span>
                           </div>
@@ -493,11 +478,8 @@ const ParksDashboard = () => {
 
           {/* Mapa de parques */}
           <Card className="border-0 shadow-xl">
-            <CardHeader className="bg-gradient-to-r from-emerald-50 to-blue-50 rounded-t-lg">
-              <CardTitle className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                <div className="bg-emerald-500 rounded-full p-2">
-                  <MapPin className="h-5 w-5 text-white" />
-                </div>
+            <CardHeader className="bg-white rounded-t-lg">
+              <CardTitle className="text-xl font-bold text-gray-800">
                 Ubicación de Parques
               </CardTitle>
               <CardDescription className="text-gray-600">
