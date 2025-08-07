@@ -173,7 +173,7 @@ const ParksDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{data.totalParks}</div>
-              <p className="text-xs" style={{color: '#513C73'}}>
+              <p className="text-xs text-white">
                 {data.activeParks} activos
               </p>
             </CardContent>
@@ -190,7 +190,7 @@ const ParksDashboard = () => {
               <div className="text-3xl font-bold text-white">
                 {data.totalSurface ? `${(data.totalSurface / 10000).toFixed(1)} ha` : 'N/A'}
               </div>
-              <p className="text-xs" style={{color: '#513C73'}}>
+              <p className="text-xs text-white">
                 Superficie total de parques
               </p>
             </CardContent>
@@ -207,7 +207,7 @@ const ParksDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{data.totalActivities}</div>
-              <p className="text-xs" style={{color: '#513C73'}}>
+              <p className="text-xs text-white">
                 Eventos programados
               </p>
             </CardContent>
@@ -216,13 +216,13 @@ const ParksDashboard = () => {
           <Card className="border-0 shadow-lg text-white" style={{backgroundColor: '#003D49'}}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-base font-medium text-gray-100">Voluntarios</CardTitle>
-              <div className="bg-white/20 rounded-full p-2">
+              <div className="rounded-full p-2" style={{backgroundColor: '#B275B0'}}>
                 <Users className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{data.totalVolunteers}</div>
-              <p className="text-xs text-gray-300">
+              <p className="text-xs text-white">
                 Activos en el sistema
               </p>
             </CardContent>
@@ -237,7 +237,7 @@ const ParksDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{data.totalTrees}</div>
-              <p className="text-xs" style={{color: '#513C73'}}>
+              <p className="text-xs text-white">
                 En inventario
               </p>
             </CardContent>
@@ -254,7 +254,7 @@ const ParksDashboard = () => {
               <div className="text-3xl font-bold text-white">
                 {data.totalVisitors ? data.totalVisitors.toLocaleString() : 'N/A'}
               </div>
-              <p className="text-xs" style={{color: '#513C73'}}>
+              <p className="text-xs text-white">
                 Visitantes totales
               </p>
             </CardContent>
@@ -271,7 +271,7 @@ const ParksDashboard = () => {
               <div className="text-3xl font-bold text-white">
                 {data.averageRating ? data.averageRating.toFixed(1) : 'N/A'}
               </div>
-              <p className="text-xs" style={{color: '#513C73'}}>
+              <p className="text-xs text-white">
                 Promedio de evaluaciones
               </p>
             </CardContent>
@@ -286,7 +286,7 @@ const ParksDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{data.maintenanceAreas}</div>
-              <p className="text-xs" style={{color: '#B275B0'}}>
+              <p className="text-xs text-white">
                 Áreas en mantenimiento
               </p>
             </CardContent>
@@ -301,7 +301,7 @@ const ParksDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{data.totalAmenities}</div>
-              <p className="text-xs" style={{color: '#513C73'}}>
+              <p className="text-xs text-white">
                 Amenidades disponibles
               </p>
             </CardContent>
@@ -316,7 +316,7 @@ const ParksDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{data.totalInstructors}</div>
-              <p className="text-xs" style={{color: '#513C73'}}>
+              <p className="text-xs text-white">
                 Instructores activos
               </p>
             </CardContent>
@@ -331,7 +331,7 @@ const ParksDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{data.totalIncidents}</div>
-              <p className="text-xs" style={{color: '#B275B0'}}>
+              <p className="text-xs text-white">
                 Incidencias (últimos 30 días)
               </p>
             </CardContent>
@@ -346,7 +346,7 @@ const ParksDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{data.totalAssets}</div>
-              <p className="text-xs" style={{color: '#B275B0'}}>
+              <p className="text-xs text-white">
                 Activos registrados
               </p>
             </CardContent>
