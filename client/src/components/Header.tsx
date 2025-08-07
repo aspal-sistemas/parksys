@@ -21,7 +21,7 @@ import { LanguageSelector } from "@/components/LanguageSelector";
 import UserProfileImage from "@/components/UserProfileImage";
 import { useAuth } from "@/hooks/useAuth";
 import logoImage from "@assets/logo_1751306368691.png";
-import agencyLogo from "@assets/images_1754508335227.png";
+import agencyLogo from "@assets/logo ambu_1754602816490.png";
 
 const Header: React.FC = () => {
   const [location] = useLocation();
@@ -245,7 +245,13 @@ const Header: React.FC = () => {
 
               {/* Menús administrativos - Solo mostrar en páginas administrativas */}
               {isAdmin && (
-                <nav className="flex items-center space-x-4 ml-1">
+                <>
+                  {/* Leyenda Métricas */}
+                  <div className="text-lg font-semibold text-gray-700 mr-6">
+                    Métricas
+                  </div>
+                  
+                  <nav className="flex items-center space-x-4 ml-1">
                   {/* Menú Dashboard */}
                   <Link href="/admin" className="flex flex-col items-center hover:opacity-80">
                     <div className="w-9 h-5 flex items-center justify-center rounded-full transition-colors">
@@ -409,15 +415,18 @@ const Header: React.FC = () => {
                     </div>
                   </Link>
                 </nav>
+                </>
               )}
             </div>
 
-            {/* Right side - Search, help, language, user */}
+            {/* Right side - Help, language, user */}
             <div className="flex-1 flex items-center justify-end gap-4">
-              {/* Global search */}
-              <div className="hidden lg:block max-w-md">
-                <GlobalSearch />
-              </div>
+              {/* Global search - Solo para páginas públicas */}
+              {!isAdmin && (
+                <div className="hidden lg:block max-w-md">
+                  <GlobalSearch />
+                </div>
+              )}
 
               {isAdmin && user ? (
                 <div className="flex items-center gap-2">

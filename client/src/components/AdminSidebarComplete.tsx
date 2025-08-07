@@ -386,8 +386,10 @@ const AdminSidebarComplete: React.FC = () => {
           defaultValue={defaultAccordion}
           className="space-y-1"
         >
-
-
+          {/* Barra de búsqueda */}
+          <div className="p-0">
+            <SidebarSearch />
+          </div>
 
           {/* 1. GESTIÓN - MENÚ PRINCIPAL CON SUBMENÚS COLAPSABLES */}
           <ModuleNav 
