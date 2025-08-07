@@ -13,6 +13,7 @@ import {
   Megaphone,
   Users,
   Gauge,
+  Home,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import GlobalSearch from "@/components/GlobalSearch";
@@ -87,7 +88,7 @@ const Header: React.FC = () => {
             <img
               src={agencyLogo}
               alt="Agencia de Bosques Urbanos"
-              className="h-10 w-auto object-contain"
+              className="h-12 w-auto object-contain"
             />
           </div>
         )}
@@ -101,9 +102,9 @@ const Header: React.FC = () => {
                   <Link href="/">
                     <div className="flex-shrink-0 flex items-center cursor-pointer">
                       <img
-                        src={logoImage}
-                        alt="Logo Bosques Urbanos de Guadalajara"
-                        className="h-10 w-auto"
+                        src={agencyLogo}
+                        alt="Agencia de Bosques Urbanos"
+                        className="h-12 w-auto"
                       />
                     </div>
                   </Link>
@@ -247,7 +248,7 @@ const Header: React.FC = () => {
               {isAdmin && (
                 <>
                   {/* Leyenda Métricas */}
-                  <div className="text-lg font-semibold text-gray-700 mr-6">
+                  <div className="text-lg font-semibold text-gray-700 mr-2">
                     Métricas
                   </div>
                   
@@ -444,6 +445,23 @@ const Header: React.FC = () => {
                     </Button>
                   </HelpCenter>
                   <LanguageSelector />
+                  
+                  {/* Botón para acceder a la página pública */}
+                  <Link href="/">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-9 h-9 p-0 rounded-lg border"
+                      style={{
+                        backgroundColor: "#D2EAEA",
+                        borderColor: "#003D49",
+                      }}
+                      title="Ver página pública"
+                    >
+                      <Home className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                  
                   <div className="flex items-center gap-2">
                     <UserProfileImage
                       userId={(user as any)?.id || 0}

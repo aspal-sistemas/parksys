@@ -31,7 +31,6 @@ import {
   Building,
   CreditCard,
   ClipboardCheck,
-  Upload,
   Boxes,
   Box,
   CalendarDays,
@@ -94,7 +93,10 @@ import {
   Image,
   Scale,
   Monitor,
-  Grid
+  Grid,
+  History,
+  Download,
+  Upload
 } from 'lucide-react';
 
 interface NavItemProps {
@@ -469,13 +471,6 @@ const AdminSidebarComplete: React.FC = () => {
               onToggle={toggleSubmenu}
             >
               <NavItem 
-                href="/admin/amenities-dashboard" 
-                icon={<BarChart className="h-4 w-4" />}
-                active={location === '/admin/amenities-dashboard'}
-              >
-                {t('navigation.operativeSummary')}
-              </NavItem>
-              <NavItem 
                 href="/admin/amenities" 
                 icon={<Package className="h-4 w-4" />}
                 active={location === '/admin/amenities'}
@@ -492,13 +487,6 @@ const AdminSidebarComplete: React.FC = () => {
               isExpanded={expandedSubmenus.includes('arbolado')}
               onToggle={toggleSubmenu}
             >
-              <NavItem 
-                href="/admin/trees/dashboard" 
-                icon={<BarChart className="h-4 w-4" />}
-                active={location === '/admin/trees/dashboard'}
-              >
-                Dashboard
-              </NavItem>
               <NavItem 
                 href="/admin/trees/inventory" 
                 icon={<Archive className="h-4 w-4" />}
@@ -674,13 +662,6 @@ const AdminSidebarComplete: React.FC = () => {
               onToggle={toggleSubmenu}
             >
               <NavItem 
-                href="/admin/assets" 
-                icon={<BarChart className="h-4 w-4" />}
-                active={location === '/admin/assets'}
-              >
-                {t('navigation.operativeSummary')}
-              </NavItem>
-              <NavItem 
                 href="/admin/assets/categories" 
                 icon={<Tag className="h-4 w-4" />}
                 active={location.startsWith('/admin/assets/categories')}
@@ -808,13 +789,6 @@ const AdminSidebarComplete: React.FC = () => {
               onToggle={toggleSubmenu}
             >
               <NavItem 
-                href="/admin/finance/reports" 
-                icon={<FileText className="h-4 w-4" />}
-                active={location === '/admin/finance/reports'}
-              >
-                Dashboard
-              </NavItem>
-              <NavItem 
                 href="/admin/finance/budget-planning" 
                 icon={<Target className="h-4 w-4" />}
                 active={location === '/admin/finance/budget-planning'}
@@ -852,13 +826,6 @@ const AdminSidebarComplete: React.FC = () => {
               isExpanded={expandedSubmenus.includes('contabilidad')}
               onToggle={toggleSubmenu}
             >
-              <NavItem 
-                href="/admin/accounting/dashboard" 
-                icon={<BarChart className="h-4 w-4" />}
-                active={location === '/admin/accounting/dashboard'}
-              >
-                Dashboard
-              </NavItem>
               <NavItem 
                 href="/admin/accounting/categories" 
                 icon={<FolderTree className="h-4 w-4" />}
@@ -912,13 +879,6 @@ const AdminSidebarComplete: React.FC = () => {
               onToggle={toggleSubmenu}
             >
               <NavItem 
-                href="/admin/concessions/reports" 
-                icon={<BarChart3 className="h-4 w-4" />}
-                active={location.startsWith('/admin/concessions/reports')}
-              >
-                Dashboard
-              </NavItem>
-              <NavItem 
                 href="/admin/concessions/catalog" 
                 icon={<ListChecks className="h-4 w-4" />}
                 active={location.startsWith('/admin/concessions/catalog')}
@@ -965,13 +925,6 @@ const AdminSidebarComplete: React.FC = () => {
               onToggle={toggleSubmenu}
             >
               <NavItem 
-                href="/admin/marketing" 
-                icon={<BarChart className="h-4 w-4" />}
-                active={location === '/admin/marketing'}
-              >
-                Dashboard
-              </NavItem>
-              <NavItem 
                 href="/admin/marketing/sponsors" 
                 icon={<Building className="h-4 w-4" />}
                 active={location.startsWith('/admin/marketing/sponsors')}
@@ -1017,13 +970,6 @@ const AdminSidebarComplete: React.FC = () => {
               onToggle={toggleSubmenu}
             >
               <NavItem 
-                href="/admin/advertising" 
-                icon={<BarChart className="h-4 w-4" />}
-                active={location === '/admin/advertising'}
-              >
-                Dashboard
-              </NavItem>
-              <NavItem 
                 href="/admin/advertising/spaces" 
                 icon={<LayoutGrid className="h-4 w-4" />}
                 active={location.startsWith('/admin/advertising/spaces')}
@@ -1068,13 +1014,6 @@ const AdminSidebarComplete: React.FC = () => {
               isExpanded={expandedSubmenus.includes('comunicacion')}
               onToggle={toggleSubmenu}
             >
-              <NavItem 
-                href="/admin/communications" 
-                icon={<BarChart className="h-4 w-4" />}
-                active={location === '/admin/communications'}
-              >
-                Dashboard
-              </NavItem>
               <NavItem 
                 href="/admin/communications/templates" 
                 icon={<FileText className="h-4 w-4" />}
@@ -1125,13 +1064,6 @@ const AdminSidebarComplete: React.FC = () => {
             value="hr"
           >
             <NavItem 
-              href="/admin/hr/dashboard" 
-              icon={<BarChart className="h-5 w-5" />}
-              active={location === '/admin/hr/dashboard'}
-            >
-              Dashboard
-            </NavItem>
-            <NavItem 
               href="/admin/hr/employees" 
               icon={<Users className="h-5 w-5" />}
               active={location === '/admin/hr/employees'}
@@ -1154,31 +1086,24 @@ const AdminSidebarComplete: React.FC = () => {
             </NavItem>
           </ModuleNav>
 
-          {/* 7. SEGURIDAD - SISTEMA AVANZADO DE ROLES INTEGRADO */}
+          {/* 7. CONFIGURACIÓN Y SEGURIDAD */}
           <ModuleNav 
-            title="Seguridad" 
-            icon={<Shield className="h-5 w-5" />}
-            value="security"
+            title="Configuración y Seguridad" 
+            icon={<Settings className="h-5 w-5" />}
+            value="config-security"
+            defaultOpen={location.startsWith('/admin/security') || location.startsWith('/admin/settings') || location.startsWith('/admin/configuracion')}
           >
-            <NavItem 
-              href="/admin/security" 
-              icon={<Shield className="h-5 w-5" />}
-              active={location === '/admin/security'}
-            >
-              Dashboard
-            </NavItem>
-            
-            {/* NUEVA SECCIÓN: Sistema de Roles Avanzado */}
+            {/* CONTROL DE ACCESO */}
             <CollapsibleSubmenu
-              id="roles-sistema"
-              title="Sistema de Roles"
-              icon={<UserCog className="h-4 w-4" />}
-              isExpanded={expandedSubmenus.includes('roles-sistema')}
+              id="control-acceso"
+              title="Control de Acceso"
+              icon={<Shield className="h-4 w-4" />}
+              isExpanded={expandedSubmenus.includes('control-acceso')}
               onToggle={toggleSubmenu}
             >
               <NavItem 
                 href="/admin/roles" 
-                icon={<Shield className="h-4 w-4" />}
+                icon={<UserCog className="h-4 w-4" />}
                 active={location === '/admin/roles'}
               >
                 Gestión de Roles
@@ -1198,35 +1123,151 @@ const AdminSidebarComplete: React.FC = () => {
                 Asignación de Usuarios
               </NavItem>
               <NavItem 
-                href="/admin/role-audits" 
+                href="/admin/users" 
+                icon={<Users className="h-4 w-4" />}
+                active={location === '/admin/users'}
+              >
+                Gestión de Usuarios
+              </NavItem>
+            </CollapsibleSubmenu>
+
+            {/* POLÍTICAS */}
+            <CollapsibleSubmenu
+              id="politicas"
+              title="Políticas"
+              icon={<FileText className="h-4 w-4" />}
+              isExpanded={expandedSubmenus.includes('politicas')}
+              onToggle={toggleSubmenu}
+            >
+              <NavItem 
+                href="/admin/security/password-policy" 
+                icon={<Lock className="h-4 w-4" />}
+                active={location === '/admin/security/password-policy'}
+              >
+                Políticas de Contraseña
+              </NavItem>
+              <NavItem 
+                href="/admin/security/access-policy" 
+                icon={<Shield className="h-4 w-4" />}
+                active={location === '/admin/security/access-policy'}
+              >
+                Políticas de Acceso
+              </NavItem>
+              <NavItem 
+                href="/admin/security/session-policy" 
+                icon={<Clock className="h-4 w-4" />}
+                active={location === '/admin/security/session-policy'}
+              >
+                Políticas de Sesión
+              </NavItem>
+            </CollapsibleSubmenu>
+
+            {/* NOTIFICACIONES */}
+            <CollapsibleSubmenu
+              id="notificaciones"
+              title="Notificaciones"
+              icon={<Bell className="h-4 w-4" />}
+              isExpanded={expandedSubmenus.includes('notificaciones')}
+              onToggle={toggleSubmenu}
+            >
+              <NavItem 
+                href="/admin/notifications/settings" 
+                icon={<Settings className="h-4 w-4" />}
+                active={location === '/admin/notifications/settings'}
+              >
+                Configuración
+              </NavItem>
+              <NavItem 
+                href="/admin/notifications/templates" 
+                icon={<Mail className="h-4 w-4" />}
+                active={location === '/admin/notifications/templates'}
+              >
+                Plantillas
+              </NavItem>
+              <NavItem 
+                href="/admin/notifications/history" 
+                icon={<History className="h-4 w-4" />}
+                active={location === '/admin/notifications/history'}
+              >
+                Historial
+              </NavItem>
+            </CollapsibleSubmenu>
+
+            {/* AUDITORÍA */}
+            <CollapsibleSubmenu
+              id="auditoria"
+              title="Auditoría"
+              icon={<ClipboardList className="h-4 w-4" />}
+              isExpanded={expandedSubmenus.includes('auditoria')}
+              onToggle={toggleSubmenu}
+            >
+              <NavItem 
+                href="/admin/security/audit/login-attempts" 
+                icon={<AlertTriangle className="h-4 w-4" />}
+                active={location === '/admin/security/audit/login-attempts'}
+              >
+                Intentos de Acceso
+              </NavItem>
+              <NavItem 
+                href="/admin/security/audit/user-activity" 
                 icon={<Activity className="h-4 w-4" />}
+                active={location === '/admin/security/audit/user-activity'}
+              >
+                Actividad de Usuarios
+              </NavItem>
+              <NavItem 
+                href="/admin/security/audit/system-logs" 
+                icon={<FileText className="h-4 w-4" />}
+                active={location === '/admin/security/audit/system-logs'}
+              >
+                Logs del Sistema
+              </NavItem>
+              <NavItem 
+                href="/admin/role-audits" 
+                icon={<UserCheck className="h-4 w-4" />}
                 active={location === '/admin/role-audits'}
               >
                 Auditoría de Roles
               </NavItem>
             </CollapsibleSubmenu>
 
-            <NavItem 
-              href="/admin/security/password" 
-              icon={<Lock className="h-5 w-5" />}
-              active={location === '/admin/security/password'}
+            {/* MANTENIMIENTO */}
+            <CollapsibleSubmenu
+              id="mantenimiento-sistema"
+              title="Mantenimiento"
+              icon={<Database className="h-4 w-4" />}
+              isExpanded={expandedSubmenus.includes('mantenimiento-sistema')}
+              onToggle={toggleSubmenu}
             >
-              Cambiar Contraseña
-            </NavItem>
-            <NavItem 
-              href="/admin/security/audit" 
-              icon={<ClipboardList className="h-5 w-5" />}
-              active={location === '/admin/security/audit'}
-            >
-              Auditoría General
-            </NavItem>
-            <NavItem 
-              href="/admin/security/settings" 
-              icon={<Settings className="h-5 w-5" />}
-              active={location === '/admin/security/settings'}
-            >
-              Configuración
-            </NavItem>
+              <NavItem 
+                href="/admin/system/backup" 
+                icon={<Download className="h-4 w-4" />}
+                active={location === '/admin/system/backup'}
+              >
+                Respaldos
+              </NavItem>
+              <NavItem 
+                href="/admin/system/maintenance" 
+                icon={<Settings className="h-4 w-4" />}
+                active={location === '/admin/system/maintenance'}
+              >
+                Mantenimiento
+              </NavItem>
+              <NavItem 
+                href="/admin/system/performance" 
+                icon={<TrendingUp className="h-4 w-4" />}
+                active={location === '/admin/system/performance'}
+              >
+                Rendimiento
+              </NavItem>
+              <NavItem 
+                href="/admin/system/updates" 
+                icon={<Upload className="h-4 w-4" />}
+                active={location === '/admin/system/updates'}
+              >
+                Actualizaciones
+              </NavItem>
+            </CollapsibleSubmenu>
           </ModuleNav>
 
           {/* 8. CONFIGURACIÓN - COLOR: #61B1A0 */}
