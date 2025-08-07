@@ -373,6 +373,8 @@ const ParksDashboard = () => {
                   {data.parksByMunicipality?.map((item, index) => {
                     const maxCount = Math.max(...(data.parksByMunicipality?.map(p => p.count) || [1]));
                     const percentage = (item.count / maxCount) * 100;
+                    const colors = ['#B3C077', '#1E5AA6', '#198DCE', '#90D3EC'];
+                    const backgroundColor = colors[index % colors.length];
                     
                     return (
                       <div key={index} className="flex items-center space-x-3">
@@ -382,10 +384,13 @@ const ParksDashboard = () => {
                         <div className="flex-1 flex items-center space-x-2">
                           <div className="flex-1 bg-gray-200 rounded-full h-6 relative">
                             <div 
-                              className="bg-white h-6 rounded-full flex items-center justify-end pr-3 transition-all duration-700 shadow-sm border border-gray-300"
-                              style={{ width: `${Math.max(percentage, 5)}%` }}
+                              className="h-6 rounded-full flex items-center justify-end pr-3 transition-all duration-700 shadow-sm"
+                              style={{ 
+                                width: `${Math.max(percentage, 5)}%`,
+                                backgroundColor: backgroundColor
+                              }}
                             >
-                              <span className="text-gray-800 text-xs font-bold">
+                              <span className="text-white text-xs font-bold">
                                 {item.count}
                               </span>
                             </div>
@@ -410,6 +415,8 @@ const ParksDashboard = () => {
                   {data.parksByType?.map((item, index) => {
                     const maxCount = Math.max(...(data.parksByType?.map(p => p.count) || [1]));
                     const percentage = (item.count / maxCount) * 100;
+                    const colors = ['#B3C077', '#1E5AA6', '#198DCE', '#90D3EC'];
+                    const backgroundColor = colors[index % colors.length];
                     
                     return (
                       <div key={index} className="flex items-center space-x-3">
@@ -419,10 +426,13 @@ const ParksDashboard = () => {
                         <div className="flex-1 flex items-center space-x-2">
                           <div className="flex-1 bg-gray-200 rounded-full h-6 relative">
                             <div 
-                              className="bg-white h-6 rounded-full flex items-center justify-end pr-3 transition-all duration-700 shadow-sm border border-gray-300"
-                              style={{ width: `${Math.max(percentage, 5)}%` }}
+                              className="h-6 rounded-full flex items-center justify-end pr-3 transition-all duration-700 shadow-sm"
+                              style={{ 
+                                width: `${Math.max(percentage, 5)}%`,
+                                backgroundColor: backgroundColor
+                              }}
                             >
-                              <span className="text-gray-800 text-xs font-bold">
+                              <span className="text-white text-xs font-bold">
                                 {item.count}
                               </span>
                             </div>
@@ -448,9 +458,8 @@ const ParksDashboard = () => {
                 {data.conservationStatus?.map((item, index) => {
                   const maxCount = Math.max(...(data.conservationStatus?.map(p => p.count) || [1]));
                   const percentage = (item.count / maxCount) * 100;
-                  const getStatusColor = (status: string) => {
-                    return 'bg-white border border-gray-300';
-                  };
+                  const colors = ['#B3C077', '#1E5AA6', '#198DCE', '#90D3EC'];
+                  const backgroundColor = colors[index % colors.length];
                   
                   return (
                     <div key={index} className="flex items-center space-x-3">
@@ -460,10 +469,13 @@ const ParksDashboard = () => {
                       <div className="flex-1 flex items-center space-x-2">
                         <div className="flex-1 bg-gray-200 rounded-full h-6 relative">
                           <div 
-                            className={`${getStatusColor(item.status)} h-6 rounded-full flex items-center justify-end pr-3 transition-all duration-700 shadow-sm`}
-                            style={{ width: `${Math.max(percentage, 5)}%` }}
+                            className="h-6 rounded-full flex items-center justify-end pr-3 transition-all duration-700 shadow-sm"
+                            style={{ 
+                              width: `${Math.max(percentage, 5)}%`,
+                              backgroundColor: backgroundColor
+                            }}
                           >
-                            <span className="text-gray-800 text-xs font-bold">
+                            <span className="text-white text-xs font-bold">
                               {item.count}
                             </span>
                           </div>
