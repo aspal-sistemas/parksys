@@ -9,6 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { AdminSidebarComplete } from "@/components/AdminSidebarComplete";
+import { Header } from "@/components/Header";
 import { 
   Shield, 
   Key, 
@@ -164,7 +166,13 @@ export default function Politicas() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-background">
+      <Header />
+      <div className="flex">
+        <AdminSidebarComplete />
+        <div className="flex-1 overflow-auto">
+          <div className="container mx-auto px-4 py-8">
+            <div className="space-y-6">
       {/* Header informativo */}
       <Card className="bg-gradient-to-r from-red-50 to-pink-50 border-red-200">
         <CardHeader>
@@ -593,6 +601,10 @@ export default function Politicas() {
           <Save className="h-4 w-4 mr-2" />
           Guardar Todas las Políticas
         </Button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

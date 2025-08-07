@@ -551,6 +551,21 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/system/email-settings')))}
           </Suspense>
         </Route>
+        <Route path="/admin/system/backup">
+          <Suspense fallback={<div className="p-8 text-center">Cargando sistema de respaldos...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/system/backup')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/system/performance">
+          <Suspense fallback={<div className="p-8 text-center">Cargando monitor de rendimiento...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/system/performance')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/system/updates">
+          <Suspense fallback={<div className="p-8 text-center">Cargando centro de actualizaciones...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/system/updates')))}
+          </Suspense>
+        </Route>
         <Route path="/admin/communications">
           <Suspense fallback={<div className="p-8 text-center">Cargando dashboard de comunicaciones...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/admin/communications')))}

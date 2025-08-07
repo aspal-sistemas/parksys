@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
 import { useToast } from "@/hooks/use-toast";
+import { AdminSidebarComplete } from "@/components/AdminSidebarComplete";
+import { Header } from "@/components/Header";
 import { 
   FileSearch, 
   Shield, 
@@ -234,7 +236,13 @@ export default function Auditoria() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-background">
+      <Header />
+      <div className="flex">
+        <AdminSidebarComplete />
+        <div className="flex-1 overflow-auto">
+          <div className="container mx-auto px-4 py-8">
+            <div className="space-y-6">
       {/* Header */}
       <Card className="bg-gradient-to-r from-purple-50 to-indigo-50 border-purple-200">
         <CardHeader>
@@ -657,7 +665,12 @@ export default function Auditoria() {
             </CardContent>
           </Card>
         </TabsContent>
-      </Tabs>
+              </Tabs>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
