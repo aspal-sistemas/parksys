@@ -13,6 +13,7 @@ import {
   DollarSign,
   Megaphone,
   Users,
+  Gauge,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import GlobalSearch from "@/components/GlobalSearch";
@@ -243,23 +244,14 @@ const Header: React.FC = () => {
           {/* Navegación para administradores - movida hacia la derecha */}
           {isAdmin && location !== "/admin/login" && (
             <div className="flex items-center gap-3 flex-1 justify-end mr-4">
-              {/* Páneles de Control */}
+              {/* Dashboard */}
               <Link href="/admin">
-                <button
-                  className={`py-2 px-3 text-sm font-medium flex items-center rounded-lg border transition-colors ${
-                    location === "/admin"
-                      ? "bg-primary text-white border-primary"
-                      : "text-gray-600 hover:text-gray-800"
-                  }`}
-                  style={{
-                    backgroundColor:
-                      location !== "/admin" ? "#D2EAEA" : undefined,
-                    borderColor: "#003D49",
-                  }}
-                >
-                  <Home className="mr-2 h-4 w-4" />
-                  Páneles de Control
-                </button>
+                <div className="flex flex-col items-center">
+                  <button className="w-9 h-9 flex items-center justify-center rounded-full hover:opacity-80 transition-colors">
+                    <Gauge className="h-5 w-5 text-gray-700" />
+                  </button>
+                  <span className="text-xs text-gray-600 mt-1">Dashboard</span>
+                </div>
               </Link>
 
               {/* Menú de Gestión */}
