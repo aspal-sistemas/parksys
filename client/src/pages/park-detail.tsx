@@ -113,16 +113,6 @@ const ParkDetail: React.FC = () => {
           </div>
         </div>
         
-        {/* Espacio publicitario superior */}
-        <div className="mb-6">
-          <AdSpace 
-            spaceId={33} 
-            position="banner" 
-            pageType="park-landing" 
-            className="w-full"
-          />
-        </div>
-
         {/* Main content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
           {/* Left column */}
@@ -151,16 +141,6 @@ const ParkDetail: React.FC = () => {
                 ))}
               </div>
             )}
-            
-            {/* Espacio publicitario en contenido */}
-            <div className="mb-6">
-              <AdSpace 
-                spaceId={30} 
-                position="card" 
-                pageType="park-landing" 
-                className="w-full"
-              />
-            </div>
             
             {/* Tabs */}
             <Tabs defaultValue="info" className="mt-6">
