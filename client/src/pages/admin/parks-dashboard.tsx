@@ -458,7 +458,7 @@ const ParksDashboard = () => {
                 {data.conservationStatus?.map((item, index) => {
                   const maxCount = Math.max(...(data.conservationStatus?.map(p => p.count) || [1]));
                   const percentage = (item.count / maxCount) * 100;
-                  const colors = ['#B3C077', '#1E5AA6', '#198DCE', '#90D3EC'];
+                  const colors = ['#036668', '#003D49', '#61B1A0'];
                   const backgroundColor = colors[index % colors.length];
                   
                   // Función para traducir estados de conservación
