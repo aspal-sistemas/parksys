@@ -9,8 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
 import { useToast } from "@/hooks/use-toast";
-import { AdminSidebarComplete } from "@/components/AdminSidebarComplete";
-import { Header } from "@/components/Header";
+import AdminSidebarComplete from "@/components/AdminSidebarComplete";
+import Header from "@/components/Header";
 import { 
   FileSearch, 
   Shield, 
@@ -665,8 +665,7 @@ export default function Auditoria() {
             </CardContent>
           </Card>
         </TabsContent>
-              </Tabs>
-              </div>
+      </Tabs>
             </div>
           </div>
         </div>
