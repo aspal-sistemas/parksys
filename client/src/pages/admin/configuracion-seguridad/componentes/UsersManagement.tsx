@@ -464,7 +464,7 @@ export default function UsersManagement() {
                       </TableCell>
                       <TableCell>
                         <div>
-                          <RoleBadge roleId={user.roleName} />
+                          <RoleBadge roleId={user.roleId?.toString() || '1'} />
                           {user.position && (
                             <p className="text-xs text-gray-500 mt-1">{user.position}</p>
                           )}
