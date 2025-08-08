@@ -558,6 +558,7 @@ export function registerReservableSpacesRoutes(app: Express) {
   app.delete("/api/reservable-spaces/:id", async (req, res) => {
     try {
       const { id } = req.params;
+      const force = req.query.force === 'true';
       
       // Verificar que el espacio existe
       const existingSpace = await db
@@ -579,13 +580,13 @@ export function registerReservableSpacesRoutes(app: Express) {
             eq(spaceReservations.spaceId, parseInt(id)),
             sql`${spaceReservations.status} != 'cancelled'`
           )
-        )
-        .limit(1);
+        );
 
-      if (activeReservations.length > 0) {
+      if (activeReservations.length > 0 && !force) {
         return res.status(400).json({ 
           error: "No se puede eliminar el espacio porque tiene reservas activas",
-          hasActiveReservations: true
+          hasActiveReservations: true,
+          activeReservationsCount: activeReservations.length
         });
       }
 

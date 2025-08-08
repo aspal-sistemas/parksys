@@ -125,8 +125,9 @@ export default function ReservableSpacesPage() {
 
   // Mutación para eliminar espacios
   const deleteSpaceMutation = useMutation({
-    mutationFn: async (spaceId: number) => {
-      const response = await fetch(`/api/reservable-spaces/${spaceId}`, {
+    mutationFn: async ({ spaceId, force = false }: { spaceId: number; force?: boolean }) => {
+      const url = `/api/reservable-spaces/${spaceId}${force ? '?force=true' : ''}`;
+      const response = await fetch(url, {
         method: 'DELETE',
       });
       
@@ -134,6 +135,7 @@ export default function ReservableSpacesPage() {
         const errorData = await response.json().catch(() => ({}));
         const error = new Error(errorData.error || 'Error al eliminar el espacio');
         (error as any).hasActiveReservations = errorData.hasActiveReservations;
+        (error as any).activeReservationsCount = errorData.activeReservationsCount;
         throw error;
       }
       return response.json();
@@ -147,18 +149,19 @@ export default function ReservableSpacesPage() {
     },
     onError: (error: any) => {
       const isActiveReservationsError = error.hasActiveReservations;
+      const count = error.activeReservationsCount || 0;
       toast({
         title: 'No se puede eliminar',
         description: isActiveReservationsError 
-          ? 'El espacio tiene reservas activas. Cancela las reservas primero para poder eliminarlo.'
+          ? `El espacio tiene ${count} reserva${count > 1 ? 's' : ''} activa${count > 1 ? 's' : ''}. Elimina las reservas primero o usa la opción de eliminación forzada.`
           : 'No se pudo eliminar el espacio. Inténtalo de nuevo.',
         variant: 'destructive',
       });
     },
   });
 
-  const handleDeleteSpace = (spaceId: number) => {
-    deleteSpaceMutation.mutate(spaceId);
+  const handleDeleteSpace = (spaceId: number, force: boolean = false) => {
+    deleteSpaceMutation.mutate({ spaceId, force });
   };
 
   if (isLoading) {
@@ -414,13 +417,22 @@ export default function ReservableSpacesPage() {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={() => handleDeleteSpace(space.id)}
-                        className="bg-red-600 hover:bg-red-700"
-                        disabled={deleteSpaceMutation.isPending}
-                      >
-                        {deleteSpaceMutation.isPending ? 'Eliminando...' : 'Eliminar'}
-                      </AlertDialogAction>
+                      <div className="flex gap-2">
+                        <AlertDialogAction
+                          onClick={() => handleDeleteSpace(space.id, false)}
+                          className="bg-amber-600 hover:bg-amber-700"
+                          disabled={deleteSpaceMutation.isPending}
+                        >
+                          Intentar Eliminar
+                        </AlertDialogAction>
+                        <AlertDialogAction
+                          onClick={() => handleDeleteSpace(space.id, true)}
+                          className="bg-red-600 hover:bg-red-700"
+                          disabled={deleteSpaceMutation.isPending}
+                        >
+                          {deleteSpaceMutation.isPending ? 'Eliminando...' : 'Forzar Eliminación'}
+                        </AlertDialogAction>
+                      </div>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
