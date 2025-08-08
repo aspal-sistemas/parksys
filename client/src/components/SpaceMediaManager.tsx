@@ -95,6 +95,8 @@ export function SpaceMediaManager({ spaceId, isEditMode = false }: SpaceMediaMan
         method: "POST" as const,
         url: "/api/spaces/upload",
         formData: true, // Indica que usaremos FormData
+        fields: {},
+        headers: {}
       };
     } catch (error) {
       console.error("Error getting upload parameters:", error);
@@ -102,19 +104,28 @@ export function SpaceMediaManager({ spaceId, isEditMode = false }: SpaceMediaMan
     }
   };
 
-  const handleImageUploadComplete = async (result: any) => {
-    if (!spaceId || !result.successful?.[0]?.response?.uploadURL) {
-      toast({
-        title: "Error",
-        description: "Error en la subida del archivo",
-        variant: "destructive",
-      });
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !spaceId) {
       return;
     }
-    
+
     setLoading(true);
     try {
-      const uploadedUrl = result.successful[0].response.uploadURL;
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const uploadResponse = await fetch('/api/spaces/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error(`Error ${uploadResponse.status}: ${uploadResponse.statusText}`);
+      }
+
+      const uploadData = await uploadResponse.json();
+      const uploadedUrl = uploadData.uploadURL;
       
       const response = await fetch(`/api/spaces/${spaceId}/images`, {
         method: "POST",
@@ -140,6 +151,9 @@ export function SpaceMediaManager({ spaceId, isEditMode = false }: SpaceMediaMan
         title: "Imagen agregada",
         description: "La imagen se ha agregado exitosamente al espacio.",
       });
+      
+      // Reset file input
+      event.target.value = '';
     } catch (error) {
       console.error("Error uploading image:", error);
       toast({
@@ -152,12 +166,74 @@ export function SpaceMediaManager({ spaceId, isEditMode = false }: SpaceMediaMan
     }
   };
 
+  const handleDocumentUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !spaceId || !newDocumentTitle) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const uploadResponse = await fetch('/api/spaces/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error(`Error ${uploadResponse.status}: ${uploadResponse.statusText}`);
+      }
+
+      const uploadData = await uploadResponse.json();
+      const uploadedUrl = uploadData.uploadURL;
+
+      const response = await fetch(`/api/spaces/${spaceId}/documents`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          documentUrl: uploadedUrl,
+          title: newDocumentTitle,
+          description: newDocumentDescription,
+          fileSize: file.size,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+
+      await loadDocuments();
+      setNewDocumentTitle("");
+      setNewDocumentDescription("");
+      toast({
+        title: "Documento agregado",
+        description: "El documento se ha agregado exitosamente al espacio.",
+      });
+      
+      // Reset file input
+      event.target.value = '';
+    } catch (error) {
+      console.error("Error uploading document:", error);
+      toast({
+        title: "Error",
+        description: "Error al agregar el documento.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleDocumentUploadComplete = async (result: any) => {
-    if (!spaceId || !result.successful?.[0]?.uploadURL) return;
+    if (!spaceId || !result.successful?.[0]?.response?.uploadURL) return;
     
     setLoading(true);
     try {
-      const uploadedUrl = result.successful[0].uploadURL;
+      const uploadedUrl = result.successful[0].response.uploadURL;
       
       const response = await fetch(`/api/spaces/${spaceId}/documents`, {
         method: "POST",
@@ -320,17 +396,20 @@ export function SpaceMediaManager({ spaceId, isEditMode = false }: SpaceMediaMan
               </div>
             </div>
             
-            <ObjectUploader
-              maxNumberOfFiles={1}
-              maxFileSize={10 * 1024 * 1024}
-              onGetUploadParameters={getUploadParameters}
-              onComplete={handleImageUploadComplete}
-            >
-              <div className="flex items-center gap-2">
-                <Image className="w-4 h-4" />
-                Subir Imagen
-              </div>
-            </ObjectUploader>
+            <div className="space-y-2">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileUpload}
+                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                disabled={loading}
+              />
+              {loading && (
+                <div className="text-sm text-blue-600">
+                  Subiendo imagen...
+                </div>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -397,17 +476,25 @@ export function SpaceMediaManager({ spaceId, isEditMode = false }: SpaceMediaMan
               </div>
             </div>
             
-            <ObjectUploader
-              maxNumberOfFiles={1}
-              maxFileSize={20 * 1024 * 1024}
-              onGetUploadParameters={getUploadParameters}
-              onComplete={handleDocumentUploadComplete}
-            >
-              <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4" />
-                Subir Documento PDF
-              </div>
-            </ObjectUploader>
+            <div className="space-y-2">
+              <input
+                type="file"
+                accept=".pdf,.doc,.docx"
+                onChange={handleDocumentUpload}
+                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+                disabled={loading || !newDocumentTitle}
+              />
+              {!newDocumentTitle && (
+                <p className="text-sm text-red-500">
+                  Primero ingresa un título para el documento
+                </p>
+              )}
+              {loading && (
+                <div className="text-sm text-green-600">
+                  Subiendo documento...
+                </div>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>
