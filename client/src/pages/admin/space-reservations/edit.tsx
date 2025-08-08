@@ -682,7 +682,12 @@ export default function EditReservationPage() {
                     </div>
                     <div className="flex justify-between">
                       <span>Fecha de creación:</span>
-                      <span>{new Date(reservation.created_at).toLocaleDateString()}</span>
+                      <span>
+                        {reservation.created_at ? 
+                          new Date(reservation.created_at).toLocaleDateString() : 
+                          'No disponible'
+                        }
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span>Estado actual:</span>

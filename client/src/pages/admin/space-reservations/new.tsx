@@ -222,7 +222,8 @@ export default function NewReservationPage() {
     if (!selectedSpace) return new Date().toISOString().split('T')[0];
     
     const minDate = new Date();
-    minDate.setDate(minDate.getDate() + selectedSpace.advance_booking_days);
+    const advanceDays = selectedSpace.advance_booking_days || 0;
+    minDate.setDate(minDate.getDate() + advanceDays);
     return minDate.toISOString().split('T')[0];
   };
 
