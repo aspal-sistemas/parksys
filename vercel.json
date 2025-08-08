@@ -1,5 +1,10 @@
 {
   "version": 2,
+  "functions": {
+    "server/index.ts": {
+      "runtime": "nodejs20.x"
+    }
+  },
   "routes": [
     {
       "src": "/api/(.*)",
@@ -20,18 +25,6 @@
       ]
     },
     {
-      "src": "/uploads/(.*)",
-      "dest": "/server/index.ts"
-    },
-    {
-      "src": "/objects/(.*)",
-      "dest": "/server/index.ts"
-    },
-    {
-      "src": "/assets/(.*)",
-      "dest": "/server/index.ts"
-    },
-    {
       "src": "/(.*)",
       "dest": "/dist/$1"
     }
@@ -39,13 +32,6 @@
   "env": {
     "NODE_ENV": "production"
   },
-  "functions": {
-    "server/index.ts": {
-      "maxDuration": 30,
-      "runtime": "nodejs20.x"
-    }
-  },
-  "installCommand": "npm install",
   "buildCommand": "vite build",
   "outputDirectory": "dist"
 }
