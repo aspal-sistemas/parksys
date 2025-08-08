@@ -129,8 +129,12 @@ export default function ReservableSpacesPage() {
       const response = await fetch(`/api/reservable-spaces/${spaceId}`, {
         method: 'DELETE',
       });
+      
       if (!response.ok) {
-        throw new Error('Error al eliminar el espacio');
+        const errorData = await response.json().catch(() => ({}));
+        const error = new Error(errorData.error || 'Error al eliminar el espacio');
+        (error as any).hasActiveReservations = errorData.hasActiveReservations;
+        throw error;
       }
       return response.json();
     },
@@ -141,10 +145,13 @@ export default function ReservableSpacesPage() {
         description: 'El espacio reservable ha sido eliminado correctamente.',
       });
     },
-    onError: (error) => {
+    onError: (error: any) => {
+      const isActiveReservationsError = error.hasActiveReservations;
       toast({
-        title: 'Error',
-        description: 'No se pudo eliminar el espacio. Inténtalo de nuevo.',
+        title: 'No se puede eliminar',
+        description: isActiveReservationsError 
+          ? 'El espacio tiene reservas activas. Cancela las reservas primero para poder eliminarlo.'
+          : 'No se pudo eliminar el espacio. Inténtalo de nuevo.',
         variant: 'destructive',
       });
     },
