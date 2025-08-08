@@ -55,10 +55,9 @@ export function registerReservableSpacesRoutes(app: Express) {
           if (img.imageUrl.startsWith('http://') || img.imageUrl.startsWith('https://')) {
             return img.imageUrl;
           }
-          // Si es una URL del object storage, formar URL completa
+          // Si es una URL del object storage, mantenerla como está para ser servida por el servidor
           if (img.imageUrl.startsWith('/objects/uploads/')) {
-            const objectId = img.imageUrl.replace('/objects/uploads/', '');
-            return `https://replicate.cloud/v1/objects/${objectId}`;
+            return img.imageUrl;
           }
           // Para otros casos, asumir que es una URL relativa
           return img.imageUrl;
@@ -129,10 +128,9 @@ export function registerReservableSpacesRoutes(app: Express) {
         if (img.imageUrl.startsWith('http://') || img.imageUrl.startsWith('https://')) {
           return img.imageUrl;
         }
-        // Si es una URL del object storage, formar URL completa
+        // Si es una URL del object storage, mantenerla como está para ser servida por el servidor
         if (img.imageUrl.startsWith('/objects/uploads/')) {
-          const objectId = img.imageUrl.replace('/objects/uploads/', '');
-          return `https://replicate.cloud/v1/objects/${objectId}`;
+          return img.imageUrl;
         }
         // Para otros casos, asumir que es una URL relativa
         return img.imageUrl;
