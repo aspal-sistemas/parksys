@@ -9,7 +9,7 @@ import ExtendedParksList from '@/components/ExtendedParksList';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, MapPin, Trees, Users, Search } from 'lucide-react';
 import heroImage from '@assets/group-of-tourists-walking-through-natural-reserve-2024-05-27-02-02-13-utc_1752940583323.jpg';
-import logoImage from '@assets/logo_1751306368691.png';
+import logoImage from '@assets/logo ambu_1754602816490.png';
 import AdSpaceIntelligent from '@/components/AdSpaceIntelligent';
 const Parks: React.FC = () => {
   const [filters, setFilters] = useState<{

@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import ParkCard from '@/components/ParkCard';
 import AdSpace from '@/components/AdSpace';
 import { ExtendedPark } from '@shared/schema';
-import logoImage from '@assets/logo_1751306368691.png';
+import logoImage from '@assets/logo ambu_1754602816490.png';
 
 const Home: React.FC = () => {
   // Estado para forzar actualización de anuncios estáticos
