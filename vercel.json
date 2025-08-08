@@ -1,9 +1,28 @@
+El error se debe a que la propiedad de enrutamiento **`routes`** no puede ser utilizada simultáneamente con la propiedad **`headers`** a nivel de raíz. Para corregirlo, debes integrar los `headers` dentro de la regla de `routes` correspondiente.
+
+A continuación, se muestra el archivo `vercel.json` corregido, donde los encabezados de CORS se han movido a la regla de enrutamiento de la API:
+
+```json
 {
   "version": 2,
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/server/index.ts"
+      "dest": "/server/index.ts",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization"
+        }
+      ]
     },
     {
       "src": "/uploads/(.*)",
@@ -31,25 +50,6 @@
       "runtime": "nodejs20.x"
     }
   },
-  "headers": [
-    {
-      "source": "/api/(.*)",
-      "headers": [
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "*"
-        },
-        {
-          "key": "Access-Control-Allow-Methods",
-          "value": "GET, POST, PUT, DELETE, OPTIONS"
-        },
-        {
-          "key": "Access-Control-Allow-Headers",
-          "value": "Content-Type, Authorization"
-        }
-      ]
-    }
-  ],
   "installCommand": "npm install",
   "buildCommand": "vite build",
   "outputDirectory": "dist"
