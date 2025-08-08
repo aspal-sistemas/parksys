@@ -17,6 +17,7 @@ import { CalendarClock, MapPin, Users, DollarSign, Clock, AlertCircle, CheckCirc
 import { useLocation, useParams } from 'wouter';
 import { useToast } from '@/hooks/use-toast';
 import AdminLayout from '@/components/AdminLayout';
+import { SpaceMediaManager } from '@/components/SpaceMediaManager';
 
 // Validation schema
 const editReservationSchema = z.object({
@@ -600,6 +601,28 @@ export default function EditReservationPage() {
             </div>
           </form>
         </Form>
+
+        {/* Multimedia Management */}
+        <Card className="w-full mt-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ArrowLeft className="h-5 w-5" />
+              Gestión Multimedia
+            </CardTitle>
+            <CardDescription>
+              Gestiona las imágenes y documentos de esta reserva
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {reservation ? (
+              <SpaceMediaManager spaceId={reservation.space_id} isEditMode={true} />
+            ) : (
+              <p className="text-gray-500 text-center py-4">
+                Cargando multimedia...
+              </p>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </AdminLayout>
   );
