@@ -434,7 +434,7 @@ const RolesManagement: React.FC = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Link href="/admin/role-audits">
+            <Link href="/admin/configuracion-seguridad/audit/role-audits">
               <Button className="w-full">
                 Ver Auditoría
               </Button>

@@ -370,7 +370,7 @@ const AdminSidebarComplete: React.FC = () => {
     // Otros módulos
     if (location.startsWith('/admin/users') || location.startsWith('/admin/permissions') || location.startsWith('/admin/settings')) return ['system'];
     if (location.startsWith('/admin/hr')) return ['hr'];
-    if (location.startsWith('/admin/security') || location.startsWith('/admin/roles') || location.startsWith('/admin/role-assignments') || location.startsWith('/admin/role-audits')) return ['security'];
+    if (location.startsWith('/admin/security') || location.startsWith('/admin/roles') || location.startsWith('/admin/role-assignments') || location.startsWith('/admin/configuracion-seguridad/audit/role-audits')) return ['security'];
     if (location.startsWith('/admin/configuracion-seguridad') || location.startsWith('/admin/system/')) return ['config-security'];
     if (location.startsWith('/admin/documents') || location.startsWith('/admin/comments')) return ['system'];
     return []; // Sin módulos abiertos por defecto
@@ -1194,9 +1194,9 @@ const AdminSidebarComplete: React.FC = () => {
                 Panel de Auditoría
               </NavItem>
               <NavItem 
-                href="/admin/role-audits" 
+                href="/admin/configuracion-seguridad/audit/role-audits" 
                 icon={<UserCheck className="h-4 w-4" />}
-                active={location === '/admin/role-audits'}
+                active={location === '/admin/configuracion-seguridad/audit/role-audits'}
               >
                 Auditoría de Roles
               </NavItem>

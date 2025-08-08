@@ -1345,9 +1345,9 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/role-assignments')))}
           </Suspense>
         </Route>
-        <Route path="/admin/role-audits">
+        <Route path="/admin/configuracion-seguridad/audit/role-audits">
           <Suspense fallback={<div className="p-8 text-center">Cargando auditoría de roles...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/role-audits')))}
+            {React.createElement(React.lazy(() => import('@/pages/admin/configuracion-seguridad/audit/role-audits')))}
           </Suspense>
         </Route>
 
