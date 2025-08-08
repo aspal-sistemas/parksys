@@ -5,8 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import AdminSidebarComplete from "@/components/AdminSidebarComplete";
-import Header from "@/components/Header";
+import AdminLayout from "@/components/AdminLayout";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import { 
@@ -210,13 +209,8 @@ export default function SystemUpdates() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <div className="flex h-screen">
-        <AdminSidebarComplete />
-        <div className="flex-1 overflow-auto ml-64 mt-16">
-          <div className="container mx-auto px-6 py-6 max-w-7xl">
-            <div className="space-y-6">
+    <AdminLayout>
+      <div className="space-y-6">
               {/* Header */}
               <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
                 <CardHeader>
@@ -450,10 +444,7 @@ export default function SystemUpdates() {
                   </Card>
                 </TabsContent>
               </Tabs>
-            </div>
-          </div>
-        </div>
       </div>
-    </div>
+    </AdminLayout>
   );
 }
