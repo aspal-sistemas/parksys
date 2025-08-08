@@ -129,28 +129,9 @@ export function registerReservableSpacesRoutes(app: Express) {
           return img.imageUrl;
         }
         
-        // CORRECCIÓN AUTOMÁTICA: Si es una URL problemática de object storage, corregir
-        if (img.imageUrl.startsWith('/objects/uploads/')) {
-          console.log(`🔧 URL problemática detectada al servir imagen: ${img.imageUrl}. Corrigiendo...`);
-          
-          try {
-            const fs = require('fs');
-            const path = require('path');
-            const advertisingDir = path.join(process.cwd(), 'uploads', 'advertising');
-            
-            const files = fs.readdirSync(advertisingDir).filter((file: string) => 
-              /\.(jpg|jpeg|png|webp)$/i.test(file)
-            );
-            
-            if (files.length > 0) {
-              const randomImage = files[Math.floor(Math.random() * files.length)];
-              const correctedUrl = `/uploads/advertising/${randomImage}`;
-              console.log(`✅ URL corregida de ${img.imageUrl} a ${correctedUrl}`);
-              return correctedUrl;
-            }
-          } catch (fsError) {
-            console.error('Error accediendo al directorio de imágenes:', fsError);
-          }
+        // Para rutas /objects/, mantenerlas como están para que el servidor las pueda servir
+        if (img.imageUrl.startsWith('/objects/')) {
+          return img.imageUrl;
         }
         
         // Para otros casos, asumir que es una URL relativa válida
@@ -417,32 +398,15 @@ export function registerReservableSpacesRoutes(app: Express) {
 
       let finalImageUrl: string;
       
-      // VERIFICACIÓN PREVIA: Detectar URLs problemáticas directamente
-      if (imageUrl.includes('storage.googleapis.com') || imageUrl.startsWith('/objects/uploads/') || imageUrl.includes('replit-objstore')) {
-        console.log(`🔧 URL problemática detectada: ${imageUrl}. Corrigiendo automáticamente.`);
-        
-        // Lista de imágenes válidas conocidas
-        const validImages = [
-          '/uploads/advertising/ad-1752858630865-113221435.jpg',
-          '/uploads/advertising/ad-1752858659731-955102958.png',
-          '/uploads/advertising/ad-1752859364733-918608832.jpg',
-          '/uploads/advertising/ad-1752780981925-906795629.jpg',
-          '/uploads/advertising/ad-1752770397772-840165480.jpg',
-          '/uploads/advertising/ad-1752939423513-705588666.jpeg'
-        ];
-        
-        // Usar una imagen válida aleatoria
-        const randomImage = validImages[Math.floor(Math.random() * validImages.length)];
-        finalImageUrl = randomImage;
-        console.log(`✅ Imagen corregida automáticamente: ${finalImageUrl}`);
-      } else {
-        try {
-          const objectStorageService = new ObjectStorageService();
-          finalImageUrl = objectStorageService.normalizeObjectEntityPath(imageUrl);
-        } catch (storageError) {
-          console.error('Error con ObjectStorageService:', storageError);
-          finalImageUrl = imageUrl;
-        }
+      // Procesar la URL real de la imagen subida
+      try {
+        const objectStorageService = new ObjectStorageService();
+        finalImageUrl = objectStorageService.normalizeObjectEntityPath(imageUrl);
+        console.log(`✅ Imagen procesada correctamente: ${finalImageUrl}`);
+      } catch (storageError) {
+        console.error('Error procesando imagen con ObjectStorageService:', storageError);
+        // Fallback: usar la URL tal como viene
+        finalImageUrl = imageUrl;
       }
 
       // Si es imagen principal, quitar la marca de las demás
