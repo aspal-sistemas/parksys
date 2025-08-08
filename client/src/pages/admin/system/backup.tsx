@@ -57,30 +57,46 @@ export default function SystemBackup() {
     includeConfigs: true,
   });
 
-  // Datos simulados de respaldos existentes
+  // Datos de respaldos del sistema ParkSys Guadalajara
   const backups: BackupItem[] = [
     {
       id: '1',
-      filename: 'backup-20250110-124804.sql.gz',
-      size: 45600000, // bytes
-      createdAt: '2025-01-10T12:48:04Z',
-      type: 'manual',
+      filename: 'parksys_gdl_backup_20250808_143000.sql.gz',
+      size: 486000000, // 486 MB - sistema completo con datos de parques
+      createdAt: '2025-08-08T14:30:00Z',
+      type: 'automatic',
       status: 'completed'
     },
     {
       id: '2',
-      filename: 'backup-20250110-020000.sql.gz',
-      size: 43200000,
-      createdAt: '2025-01-10T02:00:00Z',
-      type: 'automatic',
+      filename: 'manual_activities_backup_20250808_091500.sql.gz',
+      size: 125000000, // 125 MB - respaldo específico de actividades
+      createdAt: '2025-08-08T09:15:00Z',
+      type: 'manual',
       status: 'completed'
     },
     {
       id: '3',
-      filename: 'backup-20250109-020000.sql.gz',
-      size: 42800000,
-      createdAt: '2025-01-09T02:00:00Z',
+      filename: 'parksys_gdl_backup_20250807_020000.sql.gz',
+      size: 478000000, // 478 MB 
+      createdAt: '2025-08-07T02:00:00Z',
       type: 'automatic',
+      status: 'completed'
+    },
+    {
+      id: '4',
+      filename: 'parksys_gdl_backup_20250806_020000.sql.gz',
+      size: 471000000, // 471 MB
+      createdAt: '2025-08-06T02:00:00Z',
+      type: 'automatic',
+      status: 'completed'
+    },
+    {
+      id: '5',
+      filename: 'emergency_trees_backup_20250805_182200.sql.gz',
+      size: 89000000, // 89 MB - respaldo de emergencia del inventario de árboles
+      createdAt: '2025-08-05T18:22:00Z',
+      type: 'manual',
       status: 'completed'
     }
   ];

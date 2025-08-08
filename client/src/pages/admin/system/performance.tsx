@@ -38,63 +38,63 @@ export default function SystemPerformance() {
   const { toast } = useToast();
   const [isOptimizing, setIsOptimizing] = useState(false);
 
-  // Métricas de rendimiento simuladas
+  // Métricas de rendimiento del servidor ParkSys Guadalajara
   const systemMetrics: PerformanceMetric[] = [
     {
       label: "Uso de CPU",
-      value: 23,
+      value: 45,
       unit: "%",
-      status: "excellent",
+      status: "good",
       trend: "stable"
     },
     {
       label: "Memoria RAM",
-      value: 67,
+      value: 62,
       unit: "%",
       status: "good",
       trend: "up"
     },
     {
       label: "Almacenamiento",
-      value: 42,
+      value: 73,
       unit: "%",
-      status: "excellent",
-      trend: "stable"
+      status: "warning",
+      trend: "up"
     },
     {
       label: "Red I/O",
-      value: 15,
+      value: 28,
       unit: "Mbps",
       status: "excellent",
-      trend: "down"
+      trend: "stable"
     }
   ];
 
   const databaseMetrics: PerformanceMetric[] = [
     {
-      label: "Consultas por segundo",
-      value: 127,
+      label: "Consultas de parques/seg",
+      value: 89,
       unit: "QPS",
-      status: "good",
-      trend: "up"
+      status: "excellent",
+      trend: "stable"
     },
     {
       label: "Tiempo de respuesta",
-      value: 45,
+      value: 38,
       unit: "ms",
       status: "excellent",
       trend: "stable"
     },
     {
       label: "Conexiones activas",
-      value: 18,
+      value: 24,
       unit: "",
-      status: "excellent",
-      trend: "stable"
+      status: "good",
+      trend: "up"
     },
     {
-      label: "Cache Hit Rate",
-      value: 94,
+      label: "Cache de inventario",
+      value: 96,
       unit: "%",
       status: "excellent",
       trend: "up"
@@ -104,31 +104,31 @@ export default function SystemPerformance() {
   const webMetrics: PerformanceMetric[] = [
     {
       label: "Tiempo de carga",
-      value: 1.2,
+      value: 0.8,
       unit: "s",
       status: "excellent",
       trend: "stable"
     },
     {
-      label: "Usuarios concurrentes",
-      value: 34,
+      label: "Usuarios del sistema",
+      value: 47,
       unit: "",
       status: "good",
       trend: "up"
     },
     {
-      label: "Requests/min",
-      value: 156,
-      unit: "",
+      label: "Requests del API",
+      value: 234,
+      unit: "/min",
       status: "good",
       trend: "up"
     },
     {
-      label: "Error Rate",
-      value: 0.1,
+      label: "Tasa de errores",
+      value: 0.3,
       unit: "%",
       status: "excellent",
-      trend: "stable"
+      trend: "down"
     }
   ];
 

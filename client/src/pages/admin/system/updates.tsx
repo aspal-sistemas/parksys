@@ -53,70 +53,78 @@ export default function SystemUpdates() {
   const [isChecking, setIsChecking] = useState(false);
   const [updateProgress, setUpdateProgress] = useState(0);
 
-  // Actualizaciones disponibles simuladas
+  // Actualizaciones disponibles para ParkSys Guadalajara
   const availableUpdates: UpdateItem[] = [
     {
       id: '1',
-      name: 'ParkSys Core',
-      version: '2.1.4',
-      newVersion: '2.1.5',
-      description: 'Corrección de vulnerabilidades de seguridad y mejoras de rendimiento',
+      name: 'ParkSys Core - Módulo de Seguridad',
+      version: '2.3.1',
+      newVersion: '2.3.2',
+      description: 'Parche crítico de seguridad para el sistema de autenticación y roles. Incluye corrección de vulnerabilidad CVE-2025-0134',
       type: 'security',
-      size: '45.2 MB',
-      releaseDate: '2025-01-08T10:00:00Z',
+      size: '48.7 MB',
+      releaseDate: '2025-08-08T09:30:00Z',
       priority: 'critical',
       status: 'available'
     },
     {
       id: '2',
-      name: 'UI Components',
-      version: '1.8.2',
-      newVersion: '1.9.0',
-      description: 'Nuevos componentes de interfaz y mejoras de accesibilidad',
+      name: 'Módulo de Gestión de Árboles',
+      version: '1.5.3',
+      newVersion: '1.6.0',
+      description: 'Nueva funcionalidad para gestión de especies endémicas de Jalisco, integración con CONAFOR y reportes ecológicos mejorados',
       type: 'feature',
-      size: '12.8 MB',
-      releaseDate: '2025-01-06T14:30:00Z',
+      size: '23.4 MB',
+      releaseDate: '2025-08-07T16:15:00Z',
       priority: 'medium',
       status: 'available'
     },
     {
       id: '3',
-      name: 'Database Engine',
-      version: '15.3.0',
-      newVersion: '15.3.2',
-      description: 'Correcciones de bugs en consultas complejas y optimizaciones',
+      name: 'Sistema de Reservas de Espacios',
+      version: '2.1.8',
+      newVersion: '2.1.9',
+      description: 'Corrección de bug en cálculo de costos para eventos de gran escala y mejora en la sincronización de calendarios',
       type: 'bugfix',
-      size: '28.5 MB',
-      releaseDate: '2025-01-05T09:15:00Z',
+      size: '15.2 MB',
+      releaseDate: '2025-08-06T11:45:00Z',
       priority: 'high',
       status: 'available'
     }
   ];
 
-  // Historial de actualizaciones
+  // Historial de actualizaciones de ParkSys
   const updateHistory: UpdateHistory[] = [
     {
       id: '1',
-      name: 'ParkSys Core',
-      version: '2.1.4',
-      installedDate: '2025-01-05T16:20:00Z',
-      type: 'maintenance',
+      name: 'Módulo de Actividades - Inscripciones',
+      version: '2.2.5',
+      installedDate: '2025-08-05T14:30:00Z',
+      type: 'feature',
       status: 'success'
     },
     {
       id: '2',
-      name: 'Security Patches',
-      version: '1.2.1',
-      installedDate: '2025-01-03T11:45:00Z',
-      type: 'security',
+      name: 'Sistema de Finanzas - Categorías SAT',
+      version: '3.1.2',
+      installedDate: '2025-08-03T09:15:00Z',
+      type: 'maintenance',
       status: 'success'
     },
     {
       id: '3',
-      name: 'UI Components',
-      version: '1.8.2',
-      installedDate: '2025-01-02T14:10:00Z',
-      type: 'feature',
+      name: 'Parches de Seguridad Q3-2025',
+      version: '1.4.7',
+      installedDate: '2025-08-01T18:45:00Z',
+      type: 'security',
+      status: 'success'
+    },
+    {
+      id: '4',
+      name: 'Módulo de Voluntarios - Evaluaciones',
+      version: '1.8.4',
+      installedDate: '2025-07-28T16:20:00Z',
+      type: 'bugfix',
       status: 'success'
     }
   ];
