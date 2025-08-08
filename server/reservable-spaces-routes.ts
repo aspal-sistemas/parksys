@@ -25,7 +25,6 @@ export function registerReservableSpacesRoutes(app: Express) {
           isActive: reservableSpaces.isActive,
           requiresApproval: reservableSpaces.requiresApproval,
           advanceBookingDays: reservableSpaces.advanceBookingDays,
-          images: reservableSpaces.images,
           coordinates: reservableSpaces.coordinates,
           parkId: reservableSpaces.parkId,
           parkName: parks.name,
@@ -37,8 +36,42 @@ export function registerReservableSpacesRoutes(app: Express) {
         .where(eq(reservableSpaces.isActive, true))
         .orderBy(reservableSpaces.name);
 
-      console.log(`🎪 Encontrados ${spaces.length} espacios reservables`);
-      res.json(spaces);
+      // Obtener imágenes para cada espacio
+      const spacesWithImages = await Promise.all(spaces.map(async (space) => {
+        const images = await db
+          .select({
+            imageUrl: spaceImages.imageUrl,
+            isPrimary: spaceImages.isPrimary
+          })
+          .from(spaceImages)
+          .where(eq(spaceImages.spaceId, space.id))
+          .orderBy(desc(spaceImages.isPrimary));
+
+        console.log(`🖼️ Espacio ${space.name} (ID: ${space.id}) tiene ${images.length} imágenes:`, images.map(img => img.imageUrl));
+
+        // Formar URLs completas para las imágenes y string separado por comas
+        const imageUrls = images.map(img => {
+          // Si ya es una URL completa (http/https), mantenerla tal como está
+          if (img.imageUrl.startsWith('http://') || img.imageUrl.startsWith('https://')) {
+            return img.imageUrl;
+          }
+          // Si es una URL del object storage, formar URL completa
+          if (img.imageUrl.startsWith('/objects/uploads/')) {
+            const objectId = img.imageUrl.replace('/objects/uploads/', '');
+            return `https://replicate.cloud/v1/objects/${objectId}`;
+          }
+          // Para otros casos, asumir que es una URL relativa
+          return img.imageUrl;
+        }).join(',');
+        
+        return {
+          ...space,
+          images: imageUrls.length > 0 ? imageUrls : null
+        };
+      }));
+
+      console.log(`🎪 Encontrados ${spacesWithImages.length} espacios reservables`);
+      res.json(spacesWithImages);
     } catch (error) {
       console.error("Error al obtener espacios reservables:", error);
       res.status(500).json({ error: "Error al obtener espacios reservables" });
@@ -65,7 +98,6 @@ export function registerReservableSpacesRoutes(app: Express) {
           isActive: reservableSpaces.isActive,
           requiresApproval: reservableSpaces.requiresApproval,
           advanceBookingDays: reservableSpaces.advanceBookingDays,
-          images: reservableSpaces.images,
           coordinates: reservableSpaces.coordinates,
           parkId: reservableSpaces.parkId,
           parkName: parks.name,
@@ -81,8 +113,38 @@ export function registerReservableSpacesRoutes(app: Express) {
         return res.status(404).json({ error: "Espacio no encontrado" });
       }
 
-      console.log(`🏛️ Espacio encontrado: ${space[0].name}`);
-      res.json(space[0]);
+      // Obtener imágenes del espacio
+      const images = await db
+        .select({
+          imageUrl: spaceImages.imageUrl,
+          isPrimary: spaceImages.isPrimary
+        })
+        .from(spaceImages)
+        .where(eq(spaceImages.spaceId, parseInt(id)))
+        .orderBy(desc(spaceImages.isPrimary));
+
+      // Formar URLs completas para las imágenes y string separado por comas
+      const imageUrls = images.map(img => {
+        // Si ya es una URL completa (http/https), mantenerla tal como está
+        if (img.imageUrl.startsWith('http://') || img.imageUrl.startsWith('https://')) {
+          return img.imageUrl;
+        }
+        // Si es una URL del object storage, formar URL completa
+        if (img.imageUrl.startsWith('/objects/uploads/')) {
+          const objectId = img.imageUrl.replace('/objects/uploads/', '');
+          return `https://replicate.cloud/v1/objects/${objectId}`;
+        }
+        // Para otros casos, asumir que es una URL relativa
+        return img.imageUrl;
+      }).join(',');
+      
+      const spaceWithImages = {
+        ...space[0],
+        images: imageUrls.length > 0 ? imageUrls : null
+      };
+
+      console.log(`🏛️ Espacio encontrado: ${spaceWithImages.name}`);
+      res.json(spaceWithImages);
     } catch (error) {
       console.error("Error al obtener detalles del espacio:", error);
       res.status(500).json({ error: "Error al obtener detalles del espacio" });
