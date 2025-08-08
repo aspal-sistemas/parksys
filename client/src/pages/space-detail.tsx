@@ -335,7 +335,7 @@ function SpaceDetailPage() {
                 <img
                   src={images[selectedImageIndex]}
                   alt={space.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain bg-gray-100"
                 />
                 <div className="absolute inset-0 bg-black/20"></div>
                 

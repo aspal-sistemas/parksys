@@ -275,7 +275,7 @@ export function SpaceMediaManager({ spaceId, isEditMode = false }: SpaceMediaMan
                   <img
                     src={image.imageUrl}
                     alt={image.caption || "Imagen del espacio"}
-                    className="w-full h-48 object-cover rounded-lg"
+                    className="w-full h-48 object-contain bg-gray-100 rounded-lg"
                   />
                   {image.isPrimary && (
                     <Badge className="absolute top-2 left-2 bg-yellow-500">
