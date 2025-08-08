@@ -350,6 +350,21 @@ const Landing = () => {
                     </div>
                   </div>
                 </Link>
+
+                <Link href="/reservations">
+                  <div className="bg-white border-2 border-gray-200 hover:border-orange-400 rounded-xl p-6 transition-all duration-300 hover:shadow-lg group cursor-pointer">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-orange-100 group-hover:bg-orange-200 rounded-lg flex items-center justify-center transition-colors">
+                        <Building className="h-6 w-6 text-orange-600" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="text-lg font-bold text-gray-900">Reserva de Espacios</h4>
+                        <p className="text-gray-600">Espacios reservables con precios y disponibilidad</p>
+                      </div>
+                      <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-orange-600 transition-colors" />
+                    </div>
+                  </div>
+                </Link>
               </div>
 
               <div className="bg-gradient-to-r from-yellow-400 to-orange-400 rounded-xl p-6 text-center">
