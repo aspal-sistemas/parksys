@@ -16,7 +16,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { SpaceMediaManager } from "@/components/SpaceMediaManager";
-import { ArrowLeft, MapPin, Users, Clock, DollarSign } from "lucide-react";
+import { ArrowLeft, MapPin, Users, Clock, DollarSign, Camera, FileImage } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 
 const newSpaceSchema = z.object({
@@ -81,16 +81,28 @@ export default function NewSpacePage() {
         ...data,
         parkId: parseInt(data.parkId),
       });
-      return await response.json();
+      return response.json();
     },
     onSuccess: (data) => {
       if (data?.space?.id) {
         setCreatedSpaceId(data.space.id);
+        toast({
+          title: "Espacio creado exitosamente",
+          description: "Ahora puedes agregar imágenes y documentos en la sección de multimedia que aparece a continuación.",
+        });
+        // Scroll hacia la sección de multimedia
+        setTimeout(() => {
+          document.querySelector('[data-section="multimedia"]')?.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }, 100);
+      } else {
+        toast({
+          title: "Espacio creado",
+          description: "El espacio reservable ha sido creado exitosamente.",
+        });
       }
-      toast({
-        title: "Espacio creado",
-        description: "El espacio reservable ha sido creado exitosamente. Ahora puedes agregar imágenes y documentos.",
-      });
       queryClient.invalidateQueries({ queryKey: ["/api/reservable-spaces"] });
     },
     onError: (error: any) => {
@@ -134,6 +146,13 @@ export default function NewSpacePage() {
           </div>
           <h1 className="text-3xl font-bold text-gray-900">Nuevo Espacio Reservable</h1>
           <p className="text-gray-600">Crea un nuevo espacio que los ciudadanos pueden reservar para eventos</p>
+          {!createdSpaceId && (
+            <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-700">
+                <strong>Nota:</strong> Después de crear el espacio básico, podrás agregar imágenes y documentos en la sección de multimedia.
+              </p>
+            </div>
+          )}
         </div>
 
         <Card>
@@ -459,38 +478,61 @@ export default function NewSpacePage() {
           </CardContent>
         </Card>
 
-        {/* Gestión de Multimedia - Solo aparece después de crear el espacio */}
-        {createdSpaceId && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Multimedia del Espacio</CardTitle>
-              <CardDescription>
-                Agrega imágenes y documentos al espacio reservable
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <SpaceMediaManager spaceId={createdSpaceId} isEditMode={true} />
-              
-              {/* Botones de navegación después de agregar multimedia */}
-              <div className="flex justify-end gap-3 pt-6 border-t mt-6">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setLocation("/admin/space-reservations/spaces")}
-                >
-                  Finalizar y Volver a la Lista
-                </Button>
-                <Button
-                  type="button"
-                  onClick={() => setLocation(`/admin/space-reservations/spaces/edit/${createdSpaceId}`)}
-                  className="bg-blue-600 hover:bg-blue-700"
-                >
-                  Continuar Editando
-                </Button>
+        {/* Gestión de Multimedia */}
+        <Card data-section="multimedia">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Camera className="w-5 h-5 text-blue-600" />
+              Multimedia del Espacio
+            </CardTitle>
+            <CardDescription>
+              {createdSpaceId 
+                ? "Agrega imágenes y documentos al espacio reservable"
+                : "Una vez creado el espacio, podrás agregar imágenes y documentos aquí"
+              }
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {createdSpaceId ? (
+              <>
+                <SpaceMediaManager spaceId={createdSpaceId} isEditMode={true} />
+                
+                {/* Botones de navegación después de agregar multimedia */}
+                <div className="flex justify-end gap-3 pt-6 border-t mt-6">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setLocation("/admin/space-reservations/spaces")}
+                  >
+                    Finalizar y Volver a la Lista
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={() => setLocation(`/admin/space-reservations/spaces/edit/${createdSpaceId}`)}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    Continuar Editando
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                <div className="mx-auto w-12 h-12 text-gray-400 mb-4">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-full h-full">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Multimedia no disponible aún</h3>
+                <p className="text-gray-600 mb-4">
+                  Primero debes crear el espacio reservable para poder agregar imágenes y documentos.
+                </p>
+                <p className="text-sm text-gray-500">
+                  Completa el formulario de arriba y haz clic en "Crear Espacio" para habilitar esta sección.
+                </p>
               </div>
-            </CardContent>
-          </Card>
-        )}
+            )}
+          </CardContent>
+        </Card>
       </div>
     </AdminLayout>
   );
