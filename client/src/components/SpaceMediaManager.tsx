@@ -103,7 +103,7 @@ export function SpaceMediaManager({ spaceId, isEditMode = false }: SpaceMediaMan
     }
   };
 
-  const handleImageUploadComplete = async (result: UploadResult) => {
+  const handleImageUploadComplete = async (result: any) => {
     if (!spaceId || !result.successful?.[0]?.uploadURL) return;
     
     setLoading(true);
@@ -147,7 +147,7 @@ export function SpaceMediaManager({ spaceId, isEditMode = false }: SpaceMediaMan
     }
   };
 
-  const handleDocumentUploadComplete = async (result: UploadResult) => {
+  const handleDocumentUploadComplete = async (result: any) => {
     if (!spaceId || !result.successful?.[0]?.uploadURL) return;
     
     setLoading(true);

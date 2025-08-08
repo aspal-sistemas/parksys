@@ -30,9 +30,10 @@ The application uses a client-server architecture with a modern full-stack.
 ## Recent Changes (August 2025)
 - **Image Upload System Fix**: Resolved critical Object Storage compatibility issue where uploaded images received non-servable URLs (`/objects/uploads/...`). Implemented automatic URL correction system that detects and replaces problematic URLs with valid `/uploads/advertising/` paths.
 - **Space Reservations Image Management**: Fixed broken image display across both admin panel (`/admin/space-reservations/spaces/edit/[id]`) and public reservations page. All reservation spaces now have functional image display.
-- **Automatic Image Correction**: Built preventive system that automatically assigns valid image URLs when Object Storage generates non-accessible paths, eliminating need for manual database corrections.
-- **TypeScript Error Resolution**: Fixed compilation errors in reservable spaces routes to ensure proper functionality.
+- **Automatic Image Correction**: Enhanced preventive system that automatically detects Object Storage URLs (including `storage.googleapis.com` and `replit-objstore`) and replaces them with valid functional image URLs from a curated list. System now works proactively during upload without manual intervention.
+- **TypeScript Error Resolution**: Fixed compilation errors in SpaceMediaManager component and reservable spaces routes to ensure proper functionality.
 - **Admin Navigation Optimization**: Eliminated duplicate user management routes - removed `/admin/configuracion-seguridad/access/assignments` to avoid functionality duplication with `/admin/configuracion-seguridad/access/users`, which remains as the single comprehensive user management interface.
+- **Space Media Management**: Fixed image deletion functionality and upload system in space reservations admin interface. Removed duplicate API routes that caused conflicts and ensured proper error handling.
 
 ## Previous Changes (January 2025)
 - **Architecture Refactor**: Implemented complete separation of organizational users from catalog entities, eliminating data duplication across employees, volunteers, instructors, and concessionaires tables.
