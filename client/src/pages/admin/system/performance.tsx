@@ -201,10 +201,10 @@ export default function SystemPerformance() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <div className="flex">
+      <div className="flex h-screen">
         <AdminSidebarComplete />
-        <div className="flex-1 overflow-auto">
-          <div className="container mx-auto px-4 py-8">
+        <div className="flex-1 overflow-auto ml-64 mt-16">
+          <div className="container mx-auto px-6 py-6 max-w-7xl">
             <div className="space-y-6">
               {/* Header */}
               <Card className="bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200">
