@@ -100,14 +100,8 @@ function SpaceCard({ space, viewMode }: { space: ReservableSpace; viewMode: 'gri
   const processImageUrl = (url: string): string => {
     if (!url) return '';
     
-    // Si es una URL de Object Storage que empieza con /objects/uploads/
-    if (url.startsWith('/objects/uploads/')) {
-      // Convertir a ruta servible
-      const objectId = url.replace('/objects/uploads/', '');
-      return `/uploads/object-storage/${objectId}`;
-    }
-    
-    // Si ya es una ruta válida, devolverla tal como está
+    // Las URLs de Object Storage (/objects/uploads/) ya están configuradas 
+    // para servirse correctamente desde el servidor
     return url;
   };
 
