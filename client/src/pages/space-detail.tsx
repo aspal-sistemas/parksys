@@ -225,7 +225,17 @@ function SpaceDetailPage() {
     );
   }
 
-  const images = space.images ? space.images.split(',').filter(Boolean) : [];
+  // Función para procesar URLs de imágenes
+  const processImageUrl = (url: string): string => {
+    if (!url) return '';
+    
+    // Las URLs de Object Storage (/objects/uploads/) ya están configuradas 
+    // para servirse correctamente desde el servidor
+    return url;
+  };
+
+  const rawImages = space.images ? space.images.split(',').filter(Boolean) : [];
+  const images = rawImages.map(processImageUrl);
   const hourlyRate = parseFloat(space.hourlyRate);
   const SpaceIcon = spaceTypeIcons[space.spaceType as keyof typeof spaceTypeIcons] || Building;
   const spaceTypeLabel = spaceTypeLabels[space.spaceType as keyof typeof spaceTypeLabels] || space.spaceType;
@@ -335,7 +345,7 @@ function SpaceDetailPage() {
                 <img
                   src={images[selectedImageIndex]}
                   alt={space.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain bg-gray-100"
                 />
                 <div className="absolute inset-0 bg-black/20"></div>
                 

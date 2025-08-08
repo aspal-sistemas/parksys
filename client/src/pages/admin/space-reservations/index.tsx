@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -7,10 +7,12 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { CalendarClock, MapPin, Users, DollarSign, Phone, Mail, Eye, Edit, Trash2, Calendar, Search, Filter } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import { useLocation } from 'wouter';
 import AdminLayout from '@/components/AdminLayout';
+import { useToast } from '@/hooks/use-toast';
 
 interface SpaceReservation {
   id: number;
@@ -63,6 +65,8 @@ export default function SpaceReservationsPage() {
   const [selectedReservation, setSelectedReservation] = useState<SpaceReservation | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const { data: reservations = [], isLoading, error } = useQuery<SpaceReservation[]>({
     queryKey: ['/api/space-reservations'],
@@ -111,6 +115,40 @@ export default function SpaceReservationsPage() {
 
   const handleNewReservation = () => {
     setLocation('/admin/space-reservations/new');
+  };
+
+  // Mutación para eliminar reservas
+  const deleteReservationMutation = useMutation({
+    mutationFn: async (reservationId: number) => {
+      const response = await fetch(`/api/space-reservations/${reservationId}`, {
+        method: 'DELETE',
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Error al eliminar la reserva');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/space-reservations'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/space-reservations/stats'] });
+      toast({
+        title: 'Reserva eliminada',
+        description: 'La reserva ha sido cancelada y eliminada correctamente.',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: 'No se pudo eliminar la reserva. Inténtalo de nuevo.',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const handleDeleteReservation = (reservationId: number) => {
+    deleteReservationMutation.mutate(reservationId);
   };
 
   if (isLoading) {
@@ -292,6 +330,41 @@ export default function SpaceReservationsPage() {
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
+                        {(reservation.status === 'pending' || reservation.status === 'confirmed') && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-red-600 hover:text-red-800 hover:bg-red-50"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>¿Eliminar reserva activa?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Esta acción no se puede deshacer. La reserva de "{reservation.space_name}" para {reservation.customer_name} será cancelada y eliminada permanentemente.
+                                  <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded text-amber-800 text-sm">
+                                    <strong>⚠️ Advertencia:</strong> Esta reserva está <strong>{statusLabels[reservation.status]}</strong>. 
+                                    Considera notificar al cliente antes de eliminarla.
+                                  </div>
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDeleteReservation(reservation.id)}
+                                  className="bg-red-600 hover:bg-red-700"
+                                  disabled={deleteReservationMutation.isPending}
+                                >
+                                  {deleteReservationMutation.isPending ? 'Eliminando...' : 'Eliminar Reserva'}
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>

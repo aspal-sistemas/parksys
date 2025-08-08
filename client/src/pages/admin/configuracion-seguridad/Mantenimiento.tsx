@@ -9,8 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { AdminSidebarComplete } from "@/components/AdminSidebarComplete";
-import { Header } from "@/components/Header";
+import AdminLayout from "@/components/AdminLayout";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import { 
@@ -45,7 +44,7 @@ interface BackupItem {
 
 export default function Mantenimiento() {
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState("respaldos");
+  const [activeTab, setActiveTab] = useState("resumen");
   const [isCreatingBackup, setIsCreatingBackup] = useState(false);
   const [backupProgress, setBackupProgress] = useState(0);
 
@@ -154,59 +153,186 @@ export default function Mantenimiento() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <div className="flex">
-        <AdminSidebarComplete />
-        <div className="flex-1 overflow-auto">
-          <div className="container mx-auto px-4 py-8">
-            <div className="space-y-6">
-      {/* Header informativo */}
-      <Card className="bg-gradient-to-r from-green-50 to-teal-50 border-green-200">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-green-900">
-            <HardDrive className="h-6 w-6" />
-            Sistema de Mantenimiento
-          </CardTitle>
-          <CardDescription className="text-green-700">
-            Gestión de respaldos, optimización del sistema y tareas de mantenimiento automatizado.
-          </CardDescription>
-        </CardHeader>
-      </Card>
+    <AdminLayout>
+      <div className="space-y-6">
+              {/* Header informativo */}
+              <Card className="bg-gradient-to-r from-green-50 to-teal-50 border-green-200">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-green-900">
+                    <HardDrive className="h-6 w-6" />
+                    Sistema de Mantenimiento
+                  </CardTitle>
+                  <CardDescription className="text-green-700">
+                    Gestión de respaldos, optimización del sistema y tareas de mantenimiento automatizado.
+                  </CardDescription>
+                </CardHeader>
+              </Card>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="respaldos" className="flex items-center gap-2">
-            <Database className="h-4 w-4" />
-            Respaldos
-          </TabsTrigger>
-          <TabsTrigger value="optimizacion" className="flex items-center gap-2">
-            <Zap className="h-4 w-4" />
-            Optimización
-          </TabsTrigger>
-          <TabsTrigger value="limpieza" className="flex items-center gap-2">
-            <RefreshCw className="h-4 w-4" />
-            Limpieza
-          </TabsTrigger>
-          <TabsTrigger value="monitoreo" className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4" />
-            Monitoreo
-          </TabsTrigger>
-        </TabsList>
+              {/* Enlaces rápidos a submódulos */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => window.location.href = '/admin/configuracion-seguridad/maintenance/backup'}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-blue-100 rounded-lg">
+                        <Database className="h-5 w-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-blue-900">Respaldos</h3>
+                        <p className="text-sm text-blue-700">Gestión de copias de seguridad</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
-        <TabsContent value="respaldos" className="space-y-6">
-          {/* Configuración de respaldos automáticos */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Settings className="h-5 w-5 text-blue-600" />
-                Configuración de Respaldos Automáticos
-              </CardTitle>
-              <CardDescription>
-                Configure la frecuencia y opciones de los respaldos automáticos
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
+                <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => window.location.href = '/admin/configuracion-seguridad/maintenance/performance'}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-purple-100 rounded-lg">
+                        <BarChart3 className="h-5 w-5 text-purple-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-purple-900">Rendimiento</h3>
+                        <p className="text-sm text-purple-700">Monitor del sistema</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => window.location.href = '/admin/configuracion-seguridad/maintenance/updates'}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-green-100 rounded-lg">
+                        <Upload className="h-5 w-5 text-green-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-green-900">Actualizaciones</h3>
+                        <p className="text-sm text-green-700">Gestión de actualizaciones</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+                <TabsList className="grid w-full grid-cols-4">
+                  <TabsTrigger value="resumen" className="flex items-center gap-2">
+                    <HardDrive className="h-4 w-4" />
+                    Resumen
+                  </TabsTrigger>
+                  <TabsTrigger value="optimizacion" className="flex items-center gap-2">
+                    <Zap className="h-4 w-4" />
+                    Optimización
+                  </TabsTrigger>
+                  <TabsTrigger value="limpieza" className="flex items-center gap-2">
+                    <RefreshCw className="h-4 w-4" />
+                    Limpieza
+                  </TabsTrigger>
+                  <TabsTrigger value="monitoreo" className="flex items-center gap-2">
+                    <BarChart3 className="h-4 w-4" />
+                    Monitoreo
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="resumen" className="space-y-6">
+                  {/* Resumen del sistema */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <Card>
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-medium text-muted-foreground">Último Respaldo</p>
+                            <p className="text-2xl font-bold">Hace 2 horas</p>
+                            <p className="text-xs text-muted-foreground">Sistema automático</p>
+                          </div>
+                          <div className="p-3 bg-green-100 rounded-full">
+                            <CheckCircle className="h-6 w-6 text-green-600" />
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-medium text-muted-foreground">Rendimiento</p>
+                            <p className="text-2xl font-bold">Óptimo</p>
+                            <p className="text-xs text-muted-foreground">CPU 45% | RAM 62%</p>
+                          </div>
+                          <div className="p-3 bg-blue-100 rounded-full">
+                            <BarChart3 className="h-6 w-6 text-blue-600" />
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-medium text-muted-foreground">Actualizaciones</p>
+                            <p className="text-2xl font-bold">3 disponibles</p>
+                            <p className="text-xs text-muted-foreground">1 crítica pendiente</p>
+                          </div>
+                          <div className="p-3 bg-orange-100 rounded-full">
+                            <AlertTriangle className="h-6 w-6 text-orange-600" />
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Estado del sistema */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Settings className="h-5 w-5 text-gray-600" />
+                        Estado del Sistema
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="h-5 w-5 text-green-600" />
+                            <span className="font-medium">Base de Datos</span>
+                          </div>
+                          <Badge variant="secondary" className="bg-green-100 text-green-800">Funcionando</Badge>
+                        </div>
+                        
+                        <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="h-5 w-5 text-green-600" />
+                            <span className="font-medium">Servidor Web</span>
+                          </div>
+                          <Badge variant="secondary" className="bg-green-100 text-green-800">Funcionando</Badge>
+                        </div>
+                        
+                        <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                          <div className="flex items-center gap-2">
+                            <AlertTriangle className="h-5 w-5 text-yellow-600" />
+                            <span className="font-medium">Cache del Sistema</span>
+                          </div>
+                          <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">Requiere limpieza</Badge>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="respaldos" className="space-y-6">
+                  {/* Configuración de respaldos automáticos */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Settings className="h-5 w-5 text-blue-600" />
+                        Configuración de Respaldos Automáticos
+                      </CardTitle>
+                      <CardDescription>
+                        Configure la frecuencia y opciones de los respaldos automáticos
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
@@ -730,15 +856,11 @@ export default function Mantenimiento() {
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
               </Tabs>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
-    </div>
+    </AdminLayout>
   );
 }

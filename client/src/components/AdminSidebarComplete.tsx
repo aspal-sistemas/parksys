@@ -286,6 +286,9 @@ const AdminSidebarComplete: React.FC = () => {
   // Estados para controlar los submenús colapsables dentro de "Gestión"
   const [expandedSubmenus, setExpandedSubmenus] = useState<string[]>([]);
   
+  // Estado controlado para los acordeones principales
+  const [openAccordions, setOpenAccordions] = useState<string[]>([]);
+  
   // Función para manejar el toggle de submenús dentro de "Gestión"
   const toggleSubmenu = (submenuId: string) => {
     setExpandedSubmenus(prev => 
@@ -319,7 +322,7 @@ const AdminSidebarComplete: React.FC = () => {
     if (location.startsWith('/admin/configuracion-seguridad/policies')) return 'politicas';
     if (location.startsWith('/admin/configuracion-seguridad/notifications')) return 'notificaciones';
     if (location.startsWith('/admin/configuracion-seguridad/audit')) return 'auditoria';
-    if (location.startsWith('/admin/configuracion-seguridad/maintenance') || location.startsWith('/admin/system/')) return 'mantenimiento-sistema';
+    if (location.startsWith('/admin/configuracion-seguridad/maintenance')) return 'mantenimiento-sistema';
     return null;
   };
   
@@ -328,6 +331,17 @@ const AdminSidebarComplete: React.FC = () => {
     const activeSubmenu = getActiveSubmenu();
     if (activeSubmenu && !expandedSubmenus.includes(activeSubmenu)) {
       setExpandedSubmenus([activeSubmenu]);
+    }
+  }, [location]);
+
+  // Mantener acordeones abiertos basado en la navegación
+  useEffect(() => {
+    const activeModules = getActiveModule();
+    if (activeModules.length > 0) {
+      setOpenAccordions(prev => {
+        const newAccordions = Array.from(new Set([...prev, ...activeModules]));
+        return newAccordions;
+      });
     }
   }, [location]);
   
@@ -367,16 +381,27 @@ const AdminSidebarComplete: React.FC = () => {
       return ['mkt-comm'];
     }
     
+    // Rutas que pertenecen al módulo "Configuración y Seguridad"
+    if (location.startsWith('/admin/configuracion-seguridad/')) {
+      return ['config-security'];
+    }
+    
     // Otros módulos
     if (location.startsWith('/admin/users') || location.startsWith('/admin/permissions') || location.startsWith('/admin/settings')) return ['system'];
     if (location.startsWith('/admin/hr')) return ['hr'];
-    if (location.startsWith('/admin/security') || location.startsWith('/admin/roles') || location.startsWith('/admin/role-assignments') || location.startsWith('/admin/configuracion-seguridad/audit/role-audits')) return ['security'];
-    if (location.startsWith('/admin/configuracion-seguridad') || location.startsWith('/admin/system/')) return ['config-security'];
+    if (location.startsWith('/admin/security') || location.startsWith('/admin/roles') || location.startsWith('/admin/role-assignments')) return ['security'];
+    if (location.startsWith('/admin/configuracion-seguridad/maintenance')) return ['security'];
     if (location.startsWith('/admin/documents') || location.startsWith('/admin/comments')) return ['system'];
     return []; // Sin módulos abiertos por defecto
   };
   
-  const defaultAccordion = getActiveModule();
+  // Inicializar acordeones al montar el componente
+  useEffect(() => {
+    const activeModules = getActiveModule();
+    if (activeModules.length > 0) {
+      setOpenAccordions(activeModules);
+    }
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -392,7 +417,8 @@ const AdminSidebarComplete: React.FC = () => {
       <ScrollArea className="flex-1 px-3 py-2 w-full">
         <Accordion
           type="multiple"
-          defaultValue={defaultAccordion}
+          value={openAccordions}
+          onValueChange={setOpenAccordions}
           className="space-y-1"
         >
           {/* Barra de búsqueda */}
@@ -1212,23 +1238,23 @@ const AdminSidebarComplete: React.FC = () => {
                 Panel de Mantenimiento
               </NavItem>
               <NavItem 
-                href="/admin/system/backup" 
+                href="/admin/configuracion-seguridad/maintenance/backup" 
                 icon={<Download className="h-4 w-4" />}
-                active={location === '/admin/system/backup'}
+                active={location === '/admin/configuracion-seguridad/maintenance/backup'}
               >
                 Respaldos
               </NavItem>
               <NavItem 
-                href="/admin/system/performance" 
+                href="/admin/configuracion-seguridad/maintenance/performance" 
                 icon={<TrendingUp className="h-4 w-4" />}
-                active={location === '/admin/system/performance'}
+                active={location === '/admin/configuracion-seguridad/maintenance/performance'}
               >
                 Rendimiento
               </NavItem>
               <NavItem 
-                href="/admin/system/updates" 
+                href="/admin/configuracion-seguridad/maintenance/updates" 
                 icon={<Upload className="h-4 w-4" />}
-                active={location === '/admin/system/updates'}
+                active={location === '/admin/configuracion-seguridad/maintenance/updates'}
               >
                 Actualizaciones
               </NavItem>

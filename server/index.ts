@@ -19,6 +19,7 @@ import { eq } from "drizzle-orm";
 import { registerInstructorInvitationRoutes } from "./instructorInvitationRoutes";
 import { registerInstructorApplicationRoutes } from "./instructorApplicationRoutes";
 import { registerAuditRoutes } from "./audit-routes";
+import { ObjectStorageService } from "./objectStorage";
 
 const app = express();
 
@@ -231,8 +232,82 @@ app.use('/uploads/advertising', express.static(path.join(process.cwd(), 'uploads
 // Servir archivos de uploads generales
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
-// Servir archivos de Object Storage desde uploads
-app.use('/objects/uploads', express.static(path.join(process.cwd(), 'uploads')));
+// Servir archivos de espacios desde uploads/spaces
+app.use('/uploads/spaces', express.static(path.join(process.cwd(), 'uploads/spaces')));
+
+// Endpoint para servir archivos de Object Storage
+app.get('/objects/uploads/:objectId', async (req: Request, res: Response) => {
+  try {
+    const { objectId } = req.params;
+    console.log(`🔍 Solicitando archivo de Object Storage: ${objectId}`);
+    console.log(`🔧 PUBLIC_OBJECT_SEARCH_PATHS: ${process.env.PUBLIC_OBJECT_SEARCH_PATHS}`);
+    
+    const objectStorageService = new ObjectStorageService();
+    
+    // Primero intentar obtener el archivo desde el directorio privado usando getObjectEntityFile
+    let file = null;
+    const objectPath = `/objects/uploads/${objectId}`;
+    
+    try {
+      console.log(`🔎 Buscando archivo privado: ${objectPath}`);
+      file = await objectStorageService.getObjectEntityFile(objectPath);
+      console.log(`✅ Archivo encontrado en directorio privado: ${objectPath}`);
+    } catch (privateError) {
+      console.log(`⚠️ No encontrado en directorio privado, buscando en públicos...`);
+      
+      // Si no se encuentra en privado, buscar en directorios públicos
+      const searchPaths = [
+        `uploads/${objectId}`,
+        objectId,
+        `spaces/${objectId}`,
+        `public/uploads/${objectId}`,
+        `public/${objectId}`
+      ];
+      
+      for (const searchPath of searchPaths) {
+        console.log(`🔎 Buscando público en: ${searchPath}`);
+        file = await objectStorageService.searchPublicObject(searchPath);
+        if (file) {
+          console.log(`✅ Archivo encontrado en público: ${searchPath}`);
+          break;
+        }
+      }
+    }
+    
+    if (!file) {
+      // Como último intento, listar archivos disponibles en el bucket para debuggear
+      try {
+        const bucketName = 'replit-objstore-9ca2db9b-bad3-42a4-a139-f19b5a74d7e2';
+        const bucket = (await import('./objectStorage')).objectStorageClient.bucket(bucketName);
+        const [files] = await bucket.getFiles({ prefix: 'public/' });
+        console.log(`📋 Archivos disponibles en bucket (${files.length} archivos):`, 
+          files.slice(0, 20).map(f => f.name));
+        
+        // Buscar archivos que contengan el objectId
+        const matchingFiles = files.filter(f => f.name.includes(objectId));
+        console.log(`🎯 Archivos que contienen ${objectId}:`, matchingFiles.map(f => f.name));
+        
+        if (matchingFiles.length > 0) {
+          const foundFile = matchingFiles[0];
+          console.log(`✅ Archivo encontrado por coincidencia: ${foundFile.name}`);
+          await objectStorageService.downloadObject(foundFile, res);
+          return;
+        }
+      } catch (bucketError) {
+        console.error(`Error explorando bucket:`, bucketError);
+      }
+      
+      console.log(`❌ Archivo definitivamente no encontrado: ${objectId}`);
+      return res.status(404).json({ error: 'File not found' });
+    }
+    
+    console.log(`✅ Archivo encontrado, descargando: ${objectId}`);
+    await objectStorageService.downloadObject(file, res);
+  } catch (error) {
+    console.error(`Error al servir archivo de Object Storage ${req.params.objectId}:`, error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 // ENDPOINT COMBINADO para la matriz de flujo de efectivo
 app.get("/cash-flow-matrix-data", async (req: Request, res: Response) => {

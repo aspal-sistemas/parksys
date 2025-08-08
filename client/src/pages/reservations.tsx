@@ -96,8 +96,18 @@ function SpaceCard({ space, viewMode }: { space: ReservableSpace; viewMode: 'gri
   const spaceTypeLabel = spaceTypeLabels[space.spaceType as keyof typeof spaceTypeLabels] || space.spaceType;
   const SpaceIcon = spaceTypeIcons[space.spaceType as keyof typeof spaceTypeIcons] || Building;
   
+  // Función para procesar URLs de imágenes
+  const processImageUrl = (url: string): string => {
+    if (!url) return '';
+    
+    // Las URLs de Object Storage (/objects/uploads/) ya están configuradas 
+    // para servirse correctamente desde el servidor
+    return url;
+  };
+
   const hourlyRate = parseFloat(space.hourlyRate);
-  const images = space.images ? space.images.split(',').filter(Boolean) : [];
+  const rawImages = space.images ? space.images.split(',').filter(Boolean) : [];
+  const images = rawImages.map(processImageUrl);
   const primaryImage = images[0];
   
   if (viewMode === 'list') {
@@ -182,7 +192,7 @@ function SpaceCard({ space, viewMode }: { space: ReservableSpace; viewMode: 'gri
             <img 
               src={primaryImage} 
               alt={space.name}
-              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+              className="w-full h-full object-contain bg-gray-100 transition-transform duration-300 group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-black/20"></div>
           </>

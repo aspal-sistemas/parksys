@@ -142,7 +142,7 @@ export function registerMaintenanceRoutes(app: any, apiRouter: Router, isAuthent
           description,
           date,
           status: status || 'completed',
-          cost: cost ? parseFloat(cost) : null,
+          cost: cost ? cost.toString() : null,
           performedBy: performedBy || null,
           notes: notes || null,
         })
@@ -179,10 +179,9 @@ export function registerMaintenanceRoutes(app: any, apiRouter: Router, isAuthent
           description,
           date,
           status,
-          cost: cost ? parseFloat(cost) : null,
+          cost: cost ? cost.toString() : null,
           performedBy,
           notes,
-          updatedAt: new Date(),
         })
         .where(eq(assetMaintenances.id, maintenanceId))
         .returning();
@@ -218,12 +217,11 @@ export function registerMaintenanceRoutes(app: any, apiRouter: Router, isAuthent
         .set({
           maintenanceType,
           description,
-          date: date ? new Date(date) : undefined,
+          date,
           status,
-          cost: cost ? parseFloat(cost) : null,
+          cost: cost ? cost.toString() : null,
           performedBy,
           notes,
-          updatedAt: new Date(),
         })
         .where(eq(assetMaintenances.id, maintenanceId))
         .returning();
@@ -249,7 +247,6 @@ export function registerMaintenanceRoutes(app: any, apiRouter: Router, isAuthent
         .update(assetMaintenances)
         .set({
           status,
-          updatedAt: new Date(),
         })
         .where(eq(assetMaintenances.id, maintenanceId))
         .returning();

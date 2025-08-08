@@ -1324,6 +1324,24 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/configuracion-seguridad/Mantenimiento')))}
           </Suspense>
         </Route>
+        
+        <Route path="/admin/configuracion-seguridad/maintenance/backup">
+          <Suspense fallback={<div className="p-8 text-center">Cargando respaldos...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/system/backup')))}
+          </Suspense>
+        </Route>
+        
+        <Route path="/admin/configuracion-seguridad/maintenance/performance">
+          <Suspense fallback={<div className="p-8 text-center">Cargando rendimiento...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/system/performance')))}
+          </Suspense>
+        </Route>
+        
+        <Route path="/admin/configuracion-seguridad/maintenance/updates">
+          <Suspense fallback={<div className="p-8 text-center">Cargando actualizaciones...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/system/updates')))}
+          </Suspense>
+        </Route>
 
         {/* COMPATIBILIDAD: Rutas antigas con redirección */}
         <Route path="/admin/roles">

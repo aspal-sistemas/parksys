@@ -1,9 +1,24 @@
 import { Express } from "express";
 import { eq, and, desc, count, sql } from "drizzle-orm";
 import { db } from "./db";
-import { reservableSpaces, spaceReservations, parks, spaceImages, spaceDocuments } from "../shared/schema";
+import { reservableSpaces, spaceReservations, parks, spaceImages, spaceDocuments, spaceAvailability } from "../shared/schema";
 import { insertSpaceImageSchema, insertSpaceDocumentSchema } from "../shared/schema";
 import { ObjectStorageService } from "./objectStorage";
+import multer from "multer";
+import path from "path";
+
+// Configuración de multer para subida de archivos
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/spaces');
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ storage });
 
 export function registerReservableSpacesRoutes(app: Express) {
   
@@ -334,6 +349,79 @@ export function registerReservableSpacesRoutes(app: Express) {
     }
   });
 
+  // Crear un nuevo espacio reservable
+  app.post("/api/reservable-spaces", async (req, res) => {
+    try {
+      const {
+        name,
+        description,
+        parkId,
+        spaceType,
+        capacity,
+        hourlyRate,
+        minimumHours,
+        maximumHours,
+        amenities,
+        rules,
+        isActive,
+        requiresApproval,
+        advanceBookingDays,
+        coordinates
+      } = req.body;
+
+      // Validar campos requeridos
+      if (!name || !parkId || !spaceType) {
+        return res.status(400).json({ error: "Nombre, parque y tipo de espacio son requeridos" });
+      }
+
+      // Validar que el parque existe
+      const park = await db
+        .select()
+        .from(parks)
+        .where(eq(parks.id, parseInt(parkId)))
+        .limit(1);
+
+      if (park.length === 0) {
+        return res.status(404).json({ error: "Parque no encontrado" });
+      }
+
+      // Crear el espacio
+      const newSpace = await db
+        .insert(reservableSpaces)
+        .values({
+          name,
+          description: description || null,
+          parkId: parseInt(parkId),
+          spaceType,
+          capacity: capacity ? parseInt(capacity) : null,
+          hourlyRate: hourlyRate || "0.00",
+          minimumHours: minimumHours ? parseInt(minimumHours) : 1,
+          maximumHours: maximumHours ? parseInt(maximumHours) : 8,
+          amenities: amenities || null,
+          rules: rules || null,
+          isActive: isActive !== false, // Default true
+          requiresApproval: requiresApproval === true, // Default false
+          advanceBookingDays: advanceBookingDays ? parseInt(advanceBookingDays) : 7,
+          coordinates: coordinates || null,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        })
+        .returning();
+
+      console.log(`✅ Nuevo espacio reservable creado: ${newSpace[0].name} en ${park[0].name}`);
+
+      res.status(201).json({
+        success: true,
+        space: newSpace[0],
+        message: "Espacio reservable creado exitosamente"
+      });
+
+    } catch (error) {
+      console.error("Error al crear espacio reservable:", error);
+      res.status(500).json({ error: "Error al crear el espacio reservable" });
+    }
+  });
+
   // Actualizar un espacio reservable
   app.put("/api/reservable-spaces/:id", async (req, res) => {
     try {
@@ -377,15 +465,25 @@ export function registerReservableSpacesRoutes(app: Express) {
     }
   });
 
-  // Ruta para obtener URL de subida de imagen/documento
-  app.post("/api/spaces/upload", async (req, res) => {
+  // Ruta para subir imagen directamente (temporal para solucionar problemas de Object Storage)
+  app.post("/api/spaces/upload", upload.single('file'), async (req, res) => {
     try {
-      const objectStorageService = new ObjectStorageService();
-      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
-      res.json({ uploadURL });
+      if (!req.file) {
+        return res.status(400).json({ error: "No se subió ningún archivo" });
+      }
+
+      const fileUrl = `/uploads/spaces/${req.file.filename}`;
+      console.log(`✅ Archivo subido localmente: ${fileUrl}`);
+      
+      // Simular la respuesta esperada por Uppy
+      res.json({ 
+        uploadURL: `${req.protocol}://${req.get('host')}${fileUrl}`,
+        filename: req.file.filename,
+        originalname: req.file.originalname
+      });
     } catch (error) {
-      console.error("Error al obtener URL de subida:", error);
-      res.status(500).json({ error: "Error al obtener URL de subida" });
+      console.error("Error al subir archivo:", error);
+      res.status(500).json({ error: "Error al subir el archivo" });
     }
   });
 
@@ -399,18 +497,9 @@ export function registerReservableSpacesRoutes(app: Express) {
         return res.status(400).json({ error: "imageUrl es requerido" });
       }
 
-      let finalImageUrl: string;
-      
-      // Procesar la URL real de la imagen subida
-      try {
-        const objectStorageService = new ObjectStorageService();
-        finalImageUrl = objectStorageService.normalizeObjectEntityPath(imageUrl);
-        console.log(`✅ Imagen procesada correctamente: ${finalImageUrl}`);
-      } catch (storageError) {
-        console.error('Error procesando imagen con ObjectStorageService:', storageError);
-        // Fallback: usar la URL tal como viene
-        finalImageUrl = imageUrl;
-      }
+      // Usar la URL tal como viene (ya es una URL local válida)
+      const finalImageUrl = imageUrl;
+      console.log(`✅ Imagen procesada correctamente: ${finalImageUrl}`);
 
       // Si es imagen principal, quitar la marca de las demás
       if (isPrimary) {
@@ -554,6 +643,80 @@ export function registerReservableSpacesRoutes(app: Express) {
     }
   });
 
+  // Ruta para eliminar un espacio reservable
+  app.delete("/api/reservable-spaces/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const force = req.query.force === 'true';
+      
+      // Verificar que el espacio existe
+      const existingSpace = await db
+        .select()
+        .from(reservableSpaces)
+        .where(eq(reservableSpaces.id, parseInt(id)))
+        .limit(1);
+
+      if (existingSpace.length === 0) {
+        return res.status(404).json({ error: "Espacio no encontrado" });
+      }
+
+      // Verificar si hay reservas activas para este espacio
+      const activeReservations = await db
+        .select()
+        .from(spaceReservations)
+        .where(
+          and(
+            eq(spaceReservations.spaceId, parseInt(id)),
+            sql`${spaceReservations.status} != 'cancelled'`
+          )
+        );
+
+      if (activeReservations.length > 0 && !force) {
+        return res.status(400).json({ 
+          error: "No se puede eliminar el espacio porque tiene reservas activas",
+          hasActiveReservations: true,
+          activeReservationsCount: activeReservations.length
+        });
+      }
+
+      // Eliminar disponibilidad asociada primero
+      await db
+        .delete(spaceAvailability)
+        .where(eq(spaceAvailability.spaceId, parseInt(id)));
+
+      // Eliminar imágenes asociadas
+      await db
+        .delete(spaceImages)
+        .where(eq(spaceImages.spaceId, parseInt(id)));
+
+      // Eliminar documentos asociados
+      await db
+        .delete(spaceDocuments)
+        .where(eq(spaceDocuments.spaceId, parseInt(id)));
+
+      // Eliminar todas las reservas (histórico)
+      await db
+        .delete(spaceReservations)
+        .where(eq(spaceReservations.spaceId, parseInt(id)));
+
+      // Finalmente eliminar el espacio
+      await db
+        .delete(reservableSpaces)
+        .where(eq(reservableSpaces.id, parseInt(id)));
+
+      console.log(`🗑️ Espacio reservable ${existingSpace[0].name} (ID: ${id}) eliminado exitosamente`);
+
+      res.json({
+        success: true,
+        message: "Espacio eliminado exitosamente"
+      });
+
+    } catch (error) {
+      console.error("Error al eliminar espacio:", error);
+      res.status(500).json({ error: "Error al eliminar el espacio" });
+    }
+  });
+
   // Rutas para object storage uploads
   app.post("/api/objects/upload", async (req, res) => {
     try {
@@ -601,6 +764,42 @@ export function registerReservableSpacesRoutes(app: Express) {
     } catch (error) {
       console.error("Error al agregar documento:", error);
       res.status(500).json({ error: "Error al agregar el documento" });
+    }
+  });
+
+  // Ruta para eliminar una reserva específica
+  app.delete("/api/space-reservations/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Verificar que la reserva existe
+      const existingReservation = await db
+        .select()
+        .from(spaceReservations)
+        .where(eq(spaceReservations.id, parseInt(id)))
+        .limit(1);
+
+      if (existingReservation.length === 0) {
+        return res.status(404).json({ error: "Reserva no encontrada" });
+      }
+
+      const reservation = existingReservation[0];
+
+      // Eliminar la reserva
+      await db
+        .delete(spaceReservations)
+        .where(eq(spaceReservations.id, parseInt(id)));
+
+      console.log(`🗑️ Reserva ${reservation.id} para ${reservation.customerName} eliminada exitosamente`);
+
+      res.json({
+        success: true,
+        message: "Reserva eliminada exitosamente"
+      });
+
+    } catch (error) {
+      console.error("Error al eliminar reserva:", error);
+      res.status(500).json({ error: "Error al eliminar la reserva" });
     }
   });
 }

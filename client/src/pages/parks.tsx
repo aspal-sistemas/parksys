@@ -9,7 +9,7 @@ import ExtendedParksList from '@/components/ExtendedParksList';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, MapPin, Trees, Users, Search } from 'lucide-react';
 import heroImage from '@assets/group-of-tourists-walking-through-natural-reserve-2024-05-27-02-02-13-utc_1752940583323.jpg';
-import logoImage from '@assets/logo_1751306368691.png';
+import logoImage from '@assets/logo ambu_1754602816490.png';
 import AdSpaceIntelligent from '@/components/AdSpaceIntelligent';
 const Parks: React.FC = () => {
   const [filters, setFilters] = useState<{
@@ -142,10 +142,7 @@ const Parks: React.FC = () => {
                 <div className="text-3xl font-bold">{totalParks}</div>
                 <div className="text-sm">Parques Disponibles</div>
               </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold">{uniqueTypes}</div>
-                <div className="text-sm">Tipos Diferentes</div>
-              </div>
+
               <div className="text-center">
                 <div className="text-3xl font-bold">{averageAmenities}</div>
                 <div className="text-sm">Amenidades Promedio</div>
@@ -155,28 +152,7 @@ const Parks: React.FC = () => {
         </div>
       </div>
 
-      {/* Banner publicitario de ancho completo - MOVIDO DESPUÉS DEL HERO */}
-      <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] bg-gradient-to-r from-green-500 to-blue-600 py-4">
-        <div className="flex items-center justify-center h-20">
-          <AdSpaceIntelligent 
-            pageType="parks"
-            position="banner"
-            layoutConfig={{
-              responsive: true,
-              maxWidth: "100%",
-              minHeight: "80px"
-            }}
-            enableAnalytics={true}
-            autoRefresh={false}
-            className="w-full"
-          />
-          {/* Fallback visible para cuando no hay anuncios */}
-          <div className="text-white text-center">
-            <h3 className="text-xl font-bold">Espacio Publicitario Banner</h3>
-            <p className="text-sm opacity-90">Ancho completo - 150px altura</p>
-          </div>
-        </div>
-      </div>
+
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Filtros modernos - TEMPORALMENTE DESACTIVADO */}
@@ -197,13 +173,7 @@ const Parks: React.FC = () => {
         {/* Contenido Principal - Ancho completo */}
         <div className="mb-8" id="resultados-busqueda">
           <div className="bg-white rounded-2xl shadow-sm border p-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900">
-                  Bosques Urbanos de Guadalajara
-                </h2>
-              </div>
-            </div>
+
             
             <ExtendedParksList 
               parks={parks}
@@ -217,6 +187,34 @@ const Parks: React.FC = () => {
         </div>
 
         {/* Sin paginación - todos los parques se muestran */}
+
+        {/* Banner publicitario que respeta el contenedor */}
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden mt-8 mb-8 border">
+          <div className="relative h-[150px]">
+            {/* Banner de Gatorade como ejemplo directo */}
+            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-r from-orange-500 to-orange-600">
+              <div className="flex items-center justify-between w-full px-8">
+                <div className="text-white">
+                  <h2 className="text-4xl font-black mb-2">GATORADE</h2>
+                  <p className="text-lg font-semibold opacity-90">FUEL YOUR FIRE</p>
+                  <p className="text-sm mt-2">¡Hidratación que potencia tu rendimiento!</p>
+                </div>
+                <div className="text-right text-white">
+                  <div className="w-16 h-24 bg-white/20 rounded-lg flex flex-col items-center justify-center mb-2">
+                    <div className="w-10 h-16 bg-orange-400 rounded-md relative">
+                      <div className="w-8 h-3 bg-white rounded-sm absolute top-1 left-1"></div>
+                      <div className="text-xs text-white font-bold absolute top-4 left-2">G</div>
+                    </div>
+                  </div>
+                  <p className="text-xs opacity-80">Bebida deportiva</p>
+                </div>
+                <div className="absolute top-4 right-4 opacity-30 text-2xl">
+                  ⚡ ⚡ ⚡
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* Espacio Publicitario - Footer */}
         <div className="mt-8 mb-6">

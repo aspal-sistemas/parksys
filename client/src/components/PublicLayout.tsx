@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
-import logoImage from '@assets/logo_1751306368691.png';
+import logoImage from '@assets/logo ambu_1754602816490.png';
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   // Se podría añadir la consulta para obtener el nombre del municipio o parque si se necesita

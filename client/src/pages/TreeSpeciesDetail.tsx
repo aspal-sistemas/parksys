@@ -7,7 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, MapPin, TreePine, Users, Calendar, Droplets, Sun, Mountain, Leaf, Home } from 'lucide-react';
 import { useLocation, Link } from 'wouter';
 import { useState } from 'react';
-import logoImage from '@assets/logo_1751306368691.png';
+import logoImage from '@assets/logo ambu_1754602816490.png';
 
 interface TreeSpecies {
   id: number;
