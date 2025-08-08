@@ -9,8 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import AdminSidebarComplete from "@/components/AdminSidebarComplete";
-import Header from "@/components/Header";
+import AdminLayout from "@/components/AdminLayout";
 import { 
   Bell, 
   Mail, 
@@ -189,13 +188,8 @@ export default function NotificacionesAdmin() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <div className="flex">
-        <AdminSidebarComplete />
-        <div className="flex-1 overflow-auto">
-          <div className="container mx-auto px-4 py-8">
-            <div className="space-y-6">
+    <AdminLayout>
+      <div className="space-y-6">
       {/* Header */}
       <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
         <CardHeader>
@@ -555,11 +549,8 @@ export default function NotificacionesAdmin() {
           <Save className="h-4 w-4 mr-2" />
           Guardar Configuración
         </Button>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
-    </div>
+      </div>
+    </AdminLayout>
   );
 }
