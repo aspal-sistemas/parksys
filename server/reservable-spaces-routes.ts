@@ -1,7 +1,7 @@
 import { Express } from "express";
 import { eq, and, desc, count, sql } from "drizzle-orm";
 import { db } from "./db";
-import { reservableSpaces, spaceReservations, parks, spaceImages, spaceDocuments } from "../shared/schema";
+import { reservableSpaces, spaceReservations, parks, spaceImages, spaceDocuments, spaceAvailability } from "../shared/schema";
 import { insertSpaceImageSchema, insertSpaceDocumentSchema } from "../shared/schema";
 import { ObjectStorageService } from "./objectStorage";
 
@@ -589,7 +589,12 @@ export function registerReservableSpacesRoutes(app: Express) {
         });
       }
 
-      // Eliminar imágenes asociadas primero
+      // Eliminar disponibilidad asociada primero
+      await db
+        .delete(spaceAvailability)
+        .where(eq(spaceAvailability.spaceId, parseInt(id)));
+
+      // Eliminar imágenes asociadas
       await db
         .delete(spaceImages)
         .where(eq(spaceImages.spaceId, parseInt(id)));
@@ -599,7 +604,7 @@ export function registerReservableSpacesRoutes(app: Express) {
         .delete(spaceDocuments)
         .where(eq(spaceDocuments.spaceId, parseInt(id)));
 
-      // Eliminar todas las reservas canceladas (histórico)
+      // Eliminar todas las reservas (histórico)
       await db
         .delete(spaceReservations)
         .where(eq(spaceReservations.spaceId, parseInt(id)));
