@@ -237,7 +237,7 @@ export function registerReservableSpacesRoutes(app: Express) {
       const startHour = parseInt(startTime.split(':')[0]);
       const endHour = parseInt(endTime.split(':')[0]);
       const totalHours = endHour - startHour;
-      const hourlyRate = parseFloat(space[0].hourlyRate);
+      const hourlyRate = parseFloat(space[0].hourlyRate || '0');
       const totalCost = totalHours * hourlyRate;
 
       // Validar disponibilidad del horario
@@ -380,7 +380,7 @@ export function registerReservableSpacesRoutes(app: Express) {
         const advertisingDir = path.join(process.cwd(), 'uploads', 'advertising');
         
         try {
-          const files = fs.readdirSync(advertisingDir).filter(file => 
+          const files = fs.readdirSync(advertisingDir).filter((file: string) => 
             /\.(jpg|jpeg|png|webp)$/i.test(file)
           );
           
@@ -567,17 +567,14 @@ export function registerReservableSpacesRoutes(app: Express) {
           .where(eq(spaceImages.spaceId, parseInt(id)));
       }
 
-      const imageData = {
-        spaceId: parseInt(id),
-        imageUrl,
-        caption: caption || null,
-        isPrimary: isPrimary || false,
-        createdAt: new Date().toISOString()
-      };
-
       const result = await db
         .insert(spaceImages)
-        .values(imageData)
+        .values({
+          spaceId: parseInt(id),
+          imageUrl,
+          caption: caption || null,
+          isPrimary: isPrimary || false
+        })
         .returning();
 
       res.json({ 
@@ -605,18 +602,15 @@ export function registerReservableSpacesRoutes(app: Express) {
         return res.status(400).json({ error: "Título es requerido" });
       }
 
-      const documentData = {
-        spaceId: parseInt(id),
-        documentUrl,
-        title,
-        description: description || null,
-        fileSize: fileSize || null,
-        createdAt: new Date().toISOString()
-      };
-
       const result = await db
         .insert(spaceDocuments)
-        .values(documentData)
+        .values({
+          spaceId: parseInt(id),
+          documentUrl,
+          title,
+          description: description || null,
+          fileSize: fileSize || null
+        })
         .returning();
 
       res.json({ 
