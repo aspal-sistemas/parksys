@@ -263,31 +263,37 @@ export default function EditReservationPage() {
 
   return (
     <AdminLayout>
-      <div className="p-6 max-w-6xl mx-auto">
-        <div className="mb-6">
-          <div className="flex items-center gap-3 mb-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setLocation('/admin/space-reservations')}
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Volver a Reservas
-            </Button>
+      <div className="p-6 space-y-6">
+        {/* Header */}
+        <Card className="p-4 bg-gray-50">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setLocation('/admin/space-reservations')}
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Volver a Reservas
+              </Button>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Editar Reserva</h1>
+                <p className="text-gray-600">
+                  Modifica los detalles de la reserva #{reservation.id}
+                </p>
+              </div>
+            </div>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">Editar Reserva</h1>
-          <p className="text-gray-600 mt-2">
-            Modifica los detalles de la reserva #{reservation.id}
-          </p>
-        </div>
+        </Card>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Left Column - Main Form */}
-              <div className="space-y-6">
-                {/* Space Selection */}
-                <Card>
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          {/* Main Content - Left Column */}
+          <div className="xl:col-span-2">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+                <div className="space-y-6">
+                  {/* Space Selection */}
+                  <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <MapPin className="h-5 w-5" />
@@ -569,60 +575,136 @@ export default function EditReservationPage() {
                       )}
                     />
                   </CardContent>
-                </Card>
-              </div>
-            </div>
+                  </Card>
+                </div>
 
-            {/* Actions */}
-            <div className="flex justify-end gap-3 pt-6">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setLocation('/admin/space-reservations')}
-              >
-                Cancelar
-              </Button>
-              <Button
-                type="submit"
-                disabled={updateReservationMutation.isPending}
-              >
-                {updateReservationMutation.isPending ? (
-                  <>
-                    <Clock className="h-4 w-4 mr-2 animate-spin" />
-                    Actualizando...
-                  </>
+                {/* Actions */}
+                <div className="flex justify-end gap-3 pt-6">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setLocation('/admin/space-reservations')}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={updateReservationMutation.isPending}
+                  >
+                    {updateReservationMutation.isPending ? (
+                      <>
+                        <Clock className="h-4 w-4 mr-2 animate-spin" />
+                        Actualizando...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-4 w-4 mr-2" />
+                        Actualizar Reserva
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+
+            {/* Multimedia Management */}
+            <Card className="w-full mt-6">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ArrowLeft className="h-5 w-5" />
+                  Gestión Multimedia
+                </CardTitle>
+                <CardDescription>
+                  Gestiona las imágenes y documentos de esta reserva
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {reservation ? (
+                  <SpaceMediaManager spaceId={reservation.space_id} isEditMode={true} />
                 ) : (
-                  <>
-                    <Save className="h-4 w-4 mr-2" />
-                    Actualizar Reserva
-                  </>
+                  <p className="text-gray-500 text-center py-4">
+                    Cargando multimedia...
+                  </p>
                 )}
-              </Button>
-            </div>
-          </form>
-        </Form>
+              </CardContent>
+            </Card>
+          </div>
 
-        {/* Multimedia Management */}
-        <Card className="w-full mt-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ArrowLeft className="h-5 w-5" />
-              Gestión Multimedia
-            </CardTitle>
-            <CardDescription>
-              Gestiona las imágenes y documentos de esta reserva
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {reservation ? (
-              <SpaceMediaManager spaceId={reservation.space_id} isEditMode={true} />
-            ) : (
-              <p className="text-gray-500 text-center py-4">
-                Cargando multimedia...
-              </p>
-            )}
-          </CardContent>
-        </Card>
+          {/* Right Column - Summary */}
+          <div className="xl:col-span-1">
+            <div className="sticky top-6 space-y-4">
+              {/* Cost Summary */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <DollarSign className="h-5 w-5" />
+                    Resumen de Costos
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {selectedSpace && totalHours > 0 ? (
+                    <div className="space-y-3">
+                      <div className="flex justify-between">
+                        <span>Tarifa por hora:</span>
+                        <span>${selectedSpace.hourly_rate}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Duración:</span>
+                        <span>{totalHours} {totalHours === 1 ? 'hora' : 'horas'}</span>
+                      </div>
+                      <Separator />
+                      <div className="flex justify-between font-semibold text-lg">
+                        <span>Total:</span>
+                        <span>${calculatedCost.toFixed(2)}</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-gray-500 text-center py-4">
+                      Selecciona un espacio y horarios para calcular el costo
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Reservation Status */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <CheckCircle className="h-5 w-5" />
+                    Estado de la Reserva
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span>ID:</span>
+                      <span>#{reservation.id}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Fecha de creación:</span>
+                      <span>{new Date(reservation.created_at).toLocaleDateString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Estado actual:</span>
+                      <Badge variant={
+                        reservation.status === 'confirmed' ? 'default' :
+                        reservation.status === 'pending' ? 'secondary' :
+                        reservation.status === 'cancelled' ? 'destructive' :
+                        'outline'
+                      }>
+                        {reservation.status === 'pending' ? 'Pendiente' :
+                         reservation.status === 'confirmed' ? 'Confirmada' :
+                         reservation.status === 'cancelled' ? 'Cancelada' :
+                         reservation.status === 'completed' ? 'Completada' :
+                         reservation.status}
+                      </Badge>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
       </div>
     </AdminLayout>
   );
