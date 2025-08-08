@@ -232,6 +232,9 @@ app.use('/uploads/advertising', express.static(path.join(process.cwd(), 'uploads
 // Servir archivos de uploads generales
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
+// Servir archivos de espacios desde uploads/spaces
+app.use('/uploads/spaces', express.static(path.join(process.cwd(), 'uploads/spaces')));
+
 // Endpoint para servir archivos de Object Storage
 app.get('/objects/uploads/:objectId', async (req: Request, res: Response) => {
   try {
@@ -241,22 +244,33 @@ app.get('/objects/uploads/:objectId', async (req: Request, res: Response) => {
     
     const objectStorageService = new ObjectStorageService();
     
-    // Intentar diferentes rutas y hacer logging detallado
-    const searchPaths = [
-      `uploads/${objectId}`,
-      objectId,
-      `spaces/${objectId}`,
-      `public/uploads/${objectId}`,
-      `public/${objectId}`
-    ];
-    
+    // Primero intentar obtener el archivo desde el directorio privado usando getObjectEntityFile
     let file = null;
-    for (const searchPath of searchPaths) {
-      console.log(`🔎 Buscando en: ${searchPath}`);
-      file = await objectStorageService.searchPublicObject(searchPath);
-      if (file) {
-        console.log(`✅ Archivo encontrado en: ${searchPath}`);
-        break;
+    const objectPath = `/objects/uploads/${objectId}`;
+    
+    try {
+      console.log(`🔎 Buscando archivo privado: ${objectPath}`);
+      file = await objectStorageService.getObjectEntityFile(objectPath);
+      console.log(`✅ Archivo encontrado en directorio privado: ${objectPath}`);
+    } catch (privateError) {
+      console.log(`⚠️ No encontrado en directorio privado, buscando en públicos...`);
+      
+      // Si no se encuentra en privado, buscar en directorios públicos
+      const searchPaths = [
+        `uploads/${objectId}`,
+        objectId,
+        `spaces/${objectId}`,
+        `public/uploads/${objectId}`,
+        `public/${objectId}`
+      ];
+      
+      for (const searchPath of searchPaths) {
+        console.log(`🔎 Buscando público en: ${searchPath}`);
+        file = await objectStorageService.searchPublicObject(searchPath);
+        if (file) {
+          console.log(`✅ Archivo encontrado en público: ${searchPath}`);
+          break;
+        }
       }
     }
     

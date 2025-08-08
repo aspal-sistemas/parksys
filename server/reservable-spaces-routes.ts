@@ -4,6 +4,21 @@ import { db } from "./db";
 import { reservableSpaces, spaceReservations, parks, spaceImages, spaceDocuments, spaceAvailability } from "../shared/schema";
 import { insertSpaceImageSchema, insertSpaceDocumentSchema } from "../shared/schema";
 import { ObjectStorageService } from "./objectStorage";
+import multer from "multer";
+import path from "path";
+
+// Configuración de multer para subida de archivos
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/spaces');
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ storage });
 
 export function registerReservableSpacesRoutes(app: Express) {
   
@@ -450,15 +465,25 @@ export function registerReservableSpacesRoutes(app: Express) {
     }
   });
 
-  // Ruta para obtener URL de subida de imagen/documento
-  app.post("/api/spaces/upload", async (req, res) => {
+  // Ruta para subir imagen directamente (temporal para solucionar problemas de Object Storage)
+  app.post("/api/spaces/upload", upload.single('file'), async (req, res) => {
     try {
-      const objectStorageService = new ObjectStorageService();
-      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
-      res.json({ uploadURL });
+      if (!req.file) {
+        return res.status(400).json({ error: "No se subió ningún archivo" });
+      }
+
+      const fileUrl = `/uploads/spaces/${req.file.filename}`;
+      console.log(`✅ Archivo subido localmente: ${fileUrl}`);
+      
+      // Simular la respuesta esperada por Uppy
+      res.json({ 
+        uploadURL: `${req.protocol}://${req.get('host')}${fileUrl}`,
+        filename: req.file.filename,
+        originalname: req.file.originalname
+      });
     } catch (error) {
-      console.error("Error al obtener URL de subida:", error);
-      res.status(500).json({ error: "Error al obtener URL de subida" });
+      console.error("Error al subir archivo:", error);
+      res.status(500).json({ error: "Error al subir el archivo" });
     }
   });
 
@@ -472,18 +497,9 @@ export function registerReservableSpacesRoutes(app: Express) {
         return res.status(400).json({ error: "imageUrl es requerido" });
       }
 
-      let finalImageUrl: string;
-      
-      // Procesar la URL real de la imagen subida
-      try {
-        const objectStorageService = new ObjectStorageService();
-        finalImageUrl = objectStorageService.normalizeObjectEntityPath(imageUrl);
-        console.log(`✅ Imagen procesada correctamente: ${finalImageUrl}`);
-      } catch (storageError) {
-        console.error('Error procesando imagen con ObjectStorageService:', storageError);
-        // Fallback: usar la URL tal como viene
-        finalImageUrl = imageUrl;
-      }
+      // Usar la URL tal como viene (ya es una URL local válida)
+      const finalImageUrl = imageUrl;
+      console.log(`✅ Imagen procesada correctamente: ${finalImageUrl}`);
 
       // Si es imagen principal, quitar la marca de las demás
       if (isPrimary) {

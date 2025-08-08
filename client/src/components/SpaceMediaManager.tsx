@@ -90,21 +90,11 @@ export function SpaceMediaManager({ spaceId, isEditMode = false }: SpaceMediaMan
 
   const getUploadParameters = async () => {
     try {
-      const response = await fetch("/api/spaces/upload", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
-      }
-      
-      const data = await response.json();
+      // Para subida local con multer, usamos POST directo
       return {
-        method: "PUT" as const,
-        url: data.uploadURL,
+        method: "POST" as const,
+        url: "/api/spaces/upload",
+        formData: true, // Indica que usaremos FormData
       };
     } catch (error) {
       console.error("Error getting upload parameters:", error);
@@ -113,7 +103,7 @@ export function SpaceMediaManager({ spaceId, isEditMode = false }: SpaceMediaMan
   };
 
   const handleImageUploadComplete = async (result: any) => {
-    if (!spaceId || !result.successful?.[0]?.uploadURL) {
+    if (!spaceId || !result.successful?.[0]?.response?.uploadURL) {
       toast({
         title: "Error",
         description: "Error en la subida del archivo",
@@ -124,7 +114,7 @@ export function SpaceMediaManager({ spaceId, isEditMode = false }: SpaceMediaMan
     
     setLoading(true);
     try {
-      const uploadedUrl = result.successful[0].uploadURL;
+      const uploadedUrl = result.successful[0].response.uploadURL;
       
       const response = await fetch(`/api/spaces/${spaceId}/images`, {
         method: "POST",
