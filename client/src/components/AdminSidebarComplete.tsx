@@ -286,6 +286,9 @@ const AdminSidebarComplete: React.FC = () => {
   // Estados para controlar los submenús colapsables dentro de "Gestión"
   const [expandedSubmenus, setExpandedSubmenus] = useState<string[]>([]);
   
+  // Estado controlado para los acordeones principales
+  const [openAccordions, setOpenAccordions] = useState<string[]>([]);
+  
   // Función para manejar el toggle de submenús dentro de "Gestión"
   const toggleSubmenu = (submenuId: string) => {
     setExpandedSubmenus(prev => 
@@ -330,6 +333,17 @@ const AdminSidebarComplete: React.FC = () => {
       setExpandedSubmenus([activeSubmenu]);
     }
   }, [location]);
+
+  // Mantener acordeones abiertos basado en la navegación
+  useEffect(() => {
+    const activeModules = getActiveModule();
+    if (activeModules.length > 0) {
+      setOpenAccordions(prev => {
+        const newAccordions = [...new Set([...prev, ...activeModules])];
+        return newAccordions;
+      });
+    }
+  }, [location]);
   
   // Determinar qué módulo debe estar abierto basado en la ruta actual
   const getActiveModule = () => {
@@ -367,16 +381,27 @@ const AdminSidebarComplete: React.FC = () => {
       return ['mkt-comm'];
     }
     
+    // Rutas que pertenecen al módulo "Configuración y Seguridad"
+    if (location.startsWith('/admin/configuracion-seguridad/')) {
+      return ['config-security'];
+    }
+    
     // Otros módulos
     if (location.startsWith('/admin/users') || location.startsWith('/admin/permissions') || location.startsWith('/admin/settings')) return ['system'];
     if (location.startsWith('/admin/hr')) return ['hr'];
-    if (location.startsWith('/admin/security') || location.startsWith('/admin/roles') || location.startsWith('/admin/role-assignments') || location.startsWith('/admin/configuracion-seguridad/audit/role-audits')) return ['security'];
-    if (location.startsWith('/admin/configuracion-seguridad') || location.startsWith('/admin/system/')) return ['config-security'];
+    if (location.startsWith('/admin/security') || location.startsWith('/admin/roles') || location.startsWith('/admin/role-assignments')) return ['security'];
+    if (location.startsWith('/admin/system/')) return ['security'];
     if (location.startsWith('/admin/documents') || location.startsWith('/admin/comments')) return ['system'];
     return []; // Sin módulos abiertos por defecto
   };
   
-  const defaultAccordion = getActiveModule();
+  // Inicializar acordeones al montar el componente
+  useEffect(() => {
+    const activeModules = getActiveModule();
+    if (activeModules.length > 0) {
+      setOpenAccordions(activeModules);
+    }
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -392,7 +417,8 @@ const AdminSidebarComplete: React.FC = () => {
       <ScrollArea className="flex-1 px-3 py-2 w-full">
         <Accordion
           type="multiple"
-          defaultValue={defaultAccordion}
+          value={openAccordions}
+          onValueChange={setOpenAccordions}
           className="space-y-1"
         >
           {/* Barra de búsqueda */}
