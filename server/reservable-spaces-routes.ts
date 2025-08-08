@@ -676,4 +676,40 @@ export function registerReservableSpacesRoutes(app: Express) {
       res.status(500).json({ error: "Error al agregar el documento" });
     }
   });
+
+  // Ruta para eliminar una reserva específica
+  app.delete("/api/space-reservations/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Verificar que la reserva existe
+      const existingReservation = await db
+        .select()
+        .from(spaceReservations)
+        .where(eq(spaceReservations.id, parseInt(id)))
+        .limit(1);
+
+      if (existingReservation.length === 0) {
+        return res.status(404).json({ error: "Reserva no encontrada" });
+      }
+
+      const reservation = existingReservation[0];
+
+      // Eliminar la reserva
+      await db
+        .delete(spaceReservations)
+        .where(eq(spaceReservations.id, parseInt(id)));
+
+      console.log(`🗑️ Reserva ${reservation.id} para ${reservation.customerName} eliminada exitosamente`);
+
+      res.json({
+        success: true,
+        message: "Reserva eliminada exitosamente"
+      });
+
+    } catch (error) {
+      console.error("Error al eliminar reserva:", error);
+      res.status(500).json({ error: "Error al eliminar la reserva" });
+    }
+  });
 }
