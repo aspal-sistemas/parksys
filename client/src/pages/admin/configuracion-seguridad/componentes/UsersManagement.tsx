@@ -437,11 +437,17 @@ export default function UsersManagement() {
                           {user.profileImage ? (
                             <UserProfileImage 
                               userId={user.id} 
-                              username={user.username} 
+                              name={user.fullName || user.username}
+                              role={user.role}
                               size="sm" 
                             />
                           ) : (
-                            <UserAvatar username={user.username} size="sm" />
+                            <UserAvatar 
+                              userId={user.id}
+                              name={user.fullName || user.username}
+                              role={user.role}
+                              size="sm" 
+                            />
                           )}
                           <div>
                             <p className="font-medium">{user.fullName || user.username}</p>

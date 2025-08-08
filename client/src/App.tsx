@@ -1292,7 +1292,7 @@ function Router() {
         </Route>
         <Route path="/admin/configuracion-seguridad/access/assignments">
           <Suspense fallback={<div className="p-8 text-center">Cargando asignación de usuarios...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/role-assignments')))}
+            {React.createElement(React.lazy(() => import('@/pages/admin/configuracion-seguridad/access/assignments')))}
           </Suspense>
         </Route>
         <Route path="/admin/configuracion-seguridad/access/users">
