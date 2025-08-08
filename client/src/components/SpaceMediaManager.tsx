@@ -54,13 +54,11 @@ export function SpaceMediaManager({ spaceId, isEditMode = false }: SpaceMediaMan
   const loadImages = async () => {
     if (!spaceId) return;
     try {
-      console.log(`🔍 Cargando imágenes para espacio ${spaceId}`);
       const response = await fetch(`/api/spaces/${spaceId}/images`);
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`);
       }
       const data = await response.json();
-      console.log(`📸 Imágenes cargadas para espacio ${spaceId}:`, data);
       setImages(data);
     } catch (error) {
       console.error("Error al cargar imágenes:", error);
@@ -106,23 +104,10 @@ export function SpaceMediaManager({ spaceId, isEditMode = false }: SpaceMediaMan
   };
 
   const handleImageUploadComplete = async (result: any) => {
-    console.log("🔄 handleImageUploadComplete llamado con:", result);
-    
-    if (!spaceId) {
-      console.error("❌ No hay spaceId disponible");
+    if (!spaceId || !result.successful?.[0]?.uploadURL) {
       toast({
         title: "Error",
-        description: "ID de espacio no disponible",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    if (!result.successful?.[0]?.uploadURL) {
-      console.error("❌ No se encontró uploadURL en result:", result);
-      toast({
-        title: "Error",
-        description: "No se pudo obtener la URL de subida",
+        description: "Error en la subida del archivo",
         variant: "destructive",
       });
       return;
@@ -131,7 +116,6 @@ export function SpaceMediaManager({ spaceId, isEditMode = false }: SpaceMediaMan
     setLoading(true);
     try {
       const uploadedUrl = result.successful[0].uploadURL;
-      console.log("📤 Enviando imagen al servidor:", uploadedUrl);
       
       const response = await fetch(`/api/spaces/${spaceId}/images`, {
         method: "POST",
@@ -145,17 +129,11 @@ export function SpaceMediaManager({ spaceId, isEditMode = false }: SpaceMediaMan
         }),
       });
 
-      console.log("📨 Respuesta del servidor:", response.status, response.statusText);
-
       if (!response.ok) {
         const errorData = await response.text();
-        console.error("❌ Error en respuesta del servidor:", errorData);
         throw new Error(`Error ${response.status}: ${response.statusText} - ${errorData}`);
       }
 
-      const data = await response.json();
-      console.log("✅ Imagen guardada exitosamente:", data);
-      
       await loadImages();
       setNewImageCaption("");
       setNewImageIsPrimary(false);
@@ -164,7 +142,7 @@ export function SpaceMediaManager({ spaceId, isEditMode = false }: SpaceMediaMan
         description: "La imagen se ha agregado exitosamente al espacio.",
       });
     } catch (error) {
-      console.error("💥 Error completo uploading image:", error);
+      console.error("Error uploading image:", error);
       toast({
         title: "Error",
         description: `Error al agregar la imagen: ${error instanceof Error ? error.message : 'Error desconocido'}`,
@@ -222,12 +200,9 @@ export function SpaceMediaManager({ spaceId, isEditMode = false }: SpaceMediaMan
 
   const deleteImage = async (imageId: number) => {
     try {
-      console.log(`🗑️ Eliminando imagen ID: ${imageId}`);
       const response = await fetch(`/api/spaces/images/${imageId}`, {
         method: "DELETE",
       });
-      
-      console.log("🗑️ Respuesta eliminación:", response.status, response.statusText);
       
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`);
@@ -239,7 +214,7 @@ export function SpaceMediaManager({ spaceId, isEditMode = false }: SpaceMediaMan
         description: "La imagen ha sido eliminada exitosamente.",
       });
     } catch (error) {
-      console.error("💥 Error deleting image:", error);
+      console.error("Error deleting image:", error);
       toast({
         title: "Error",
         description: "Error al eliminar la imagen.",
