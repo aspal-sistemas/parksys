@@ -190,24 +190,12 @@ const Parks: React.FC = () => {
 
         {/* Banner publicitario que respeta el contenedor */}
         <div className="bg-white rounded-xl shadow-lg overflow-hidden mt-8 mb-8 border">
-          <div className="relative">
-            <AdSpaceIntelligent 
-              pageType="parks"
-              position="banner"
-              layoutConfig={{
-                responsive: true,
-                maxWidth: "100%",
-                minHeight: "150px"
-              }}
-              enableAnalytics={true}
-              autoRefresh={false}
-              className="w-full h-[150px]"
-            />
-            {/* Fallback con banner de Gatorade como ejemplo */}
+          <div className="relative h-[150px]">
+            {/* Banner de Gatorade como ejemplo directo */}
             <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-r from-orange-500 to-orange-600">
               <div className="flex items-center justify-between w-full px-8">
                 <div className="text-white">
-                  <h2 className="text-4xl font-black mb-2 text-stroke-2">GATORADE</h2>
+                  <h2 className="text-4xl font-black mb-2">GATORADE</h2>
                   <p className="text-lg font-semibold opacity-90">FUEL YOUR FIRE</p>
                   <p className="text-sm mt-2">¡Hidratación que potencia tu rendimiento!</p>
                 </div>
@@ -220,7 +208,7 @@ const Parks: React.FC = () => {
                   </div>
                   <p className="text-xs opacity-80">Bebida deportiva</p>
                 </div>
-                <div className="absolute top-4 right-4 opacity-30">
+                <div className="absolute top-4 right-4 opacity-30 text-2xl">
                   ⚡ ⚡ ⚡
                 </div>
               </div>
