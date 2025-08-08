@@ -187,14 +187,14 @@ const MaintenanceCalendarPage = () => {
   // Verificar si hay mantenimientos programados para una fecha
   const getMaintenancesForDay = (date: Date) => {
     // Si la API existe, usar datos reales
-    if (scheduledMaintenances) {
+    if (scheduledMaintenances && Array.isArray(scheduledMaintenances)) {
       return scheduledMaintenances.filter((maintenance: any) => 
         isSameDay(parseISO(maintenance.date), date)
       );
     }
     
     // Fallback con datos de próximos mantenimientos (si no existe la API específica)
-    if (upcomingMaintenances) {
+    if (upcomingMaintenances && Array.isArray(upcomingMaintenances)) {
       return upcomingMaintenances.filter((maintenance: any) => 
         maintenance.nextMaintenanceDate && 
         isSameDay(parseISO(maintenance.nextMaintenanceDate), date)
@@ -304,7 +304,7 @@ const MaintenanceCalendarPage = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {upcomingMaintenances && upcomingMaintenances.length > 0 ? (
+                {upcomingMaintenances && Array.isArray(upcomingMaintenances) && upcomingMaintenances.length > 0 ? (
                   upcomingMaintenances.slice(0, 5).map((maintenance: any, index: number) => (
                     <div key={index} className="border rounded-md p-3 bg-card">
                       <div className="flex justify-between items-start">
@@ -336,7 +336,7 @@ const MaintenanceCalendarPage = () => {
                   </div>
                 )}
                 
-                {upcomingMaintenances && upcomingMaintenances.length > 5 && (
+                {upcomingMaintenances && Array.isArray(upcomingMaintenances) && upcomingMaintenances.length > 5 && (
                   <div className="text-center pt-2">
                     <Button variant="link" onClick={() => {}}>
                       Ver todos ({upcomingMaintenances.length})
@@ -458,11 +458,13 @@ const MaintenanceCalendarPage = () => {
                             <SelectValue placeholder="Seleccione un activo" />
                           </SelectTrigger>
                           <SelectContent>
-                            {assets?.map((asset: any) => (
+                            {assets && Array.isArray(assets) ? assets.map((asset: any) => (
                               <SelectItem key={asset.id} value={asset.id.toString()}>
                                 {asset.name}
                               </SelectItem>
-                            ))}
+                            )) : (
+                              <SelectItem value="no-assets" disabled>No hay activos disponibles</SelectItem>
+                            )}
                           </SelectContent>
                         </Select>
                       </FormControl>
@@ -583,7 +585,7 @@ const MaintenanceCalendarPage = () => {
                   />
                 </div>
                 
-                {users && (
+                {users && Array.isArray(users) && (
                   <FormField
                     control={form.control}
                     name="assignedToId"
