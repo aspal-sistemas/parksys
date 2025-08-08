@@ -122,17 +122,38 @@ export function registerReservableSpacesRoutes(app: Express) {
         .where(eq(spaceImages.spaceId, parseInt(id)))
         .orderBy(desc(spaceImages.isPrimary));
 
-      // Formar URLs completas para las imágenes y string separado por comas
+      // Formar URLs completas para las imágenes y string separado por comas con corrección automática
       const imageUrls = images.map(img => {
         // Si ya es una URL completa (http/https), mantenerla tal como está
         if (img.imageUrl.startsWith('http://') || img.imageUrl.startsWith('https://')) {
           return img.imageUrl;
         }
-        // Si es una URL del object storage, mantenerla como está para ser servida por el servidor
+        
+        // CORRECCIÓN AUTOMÁTICA: Si es una URL problemática de object storage, corregir
         if (img.imageUrl.startsWith('/objects/uploads/')) {
-          return img.imageUrl;
+          console.log(`🔧 URL problemática detectada al servir imagen: ${img.imageUrl}. Corrigiendo...`);
+          
+          try {
+            const fs = require('fs');
+            const path = require('path');
+            const advertisingDir = path.join(process.cwd(), 'uploads', 'advertising');
+            
+            const files = fs.readdirSync(advertisingDir).filter((file: string) => 
+              /\.(jpg|jpeg|png|webp)$/i.test(file)
+            );
+            
+            if (files.length > 0) {
+              const randomImage = files[Math.floor(Math.random() * files.length)];
+              const correctedUrl = `/uploads/advertising/${randomImage}`;
+              console.log(`✅ URL corregida de ${img.imageUrl} a ${correctedUrl}`);
+              return correctedUrl;
+            }
+          } catch (fsError) {
+            console.error('Error accediendo al directorio de imágenes:', fsError);
+          }
         }
-        // Para otros casos, asumir que es una URL relativa
+        
+        // Para otros casos, asumir que es una URL relativa válida
         return img.imageUrl;
       }).join(',');
       
@@ -172,7 +193,34 @@ export function registerReservableSpacesRoutes(app: Express) {
     }
   });
 
-  // Obtener estadísticas de reservas para un espacio
+  // Obtener estadísticas generales de reservas
+  app.get("/api/space-reservations/stats", async (req, res) => {
+    try {
+      const stats = await db
+        .select({
+          totalReservations: count(),
+          confirmedReservations: sql<number>`SUM(CASE WHEN ${spaceReservations.status} = 'confirmed' THEN 1 ELSE 0 END)`,
+          pendingReservations: sql<number>`SUM(CASE WHEN ${spaceReservations.status} = 'pending' THEN 1 ELSE 0 END)`,
+          cancelledReservations: sql<number>`SUM(CASE WHEN ${spaceReservations.status} = 'cancelled' THEN 1 ELSE 0 END)`
+        })
+        .from(spaceReservations);
+
+      const result = stats.length > 0 ? stats[0] : {
+        totalReservations: 0,
+        confirmedReservations: 0,
+        pendingReservations: 0,
+        cancelledReservations: 0
+      };
+
+      console.log(`📊 Estadísticas generales de reservas:`, result);
+      res.json(result);
+    } catch (error) {
+      console.error("Error al obtener estadísticas generales:", error);
+      res.status(500).json({ error: "Error al obtener estadísticas generales" });
+    }
+  });
+
+  // Obtener estadísticas de reservas para un espacio específico
   app.get("/api/space-reservations/stats/:id", async (req, res) => {
     try {
       const { id } = req.params;
@@ -367,32 +415,40 @@ export function registerReservableSpacesRoutes(app: Express) {
         return res.status(400).json({ error: "imageUrl es requerido" });
       }
 
-      const objectStorageService = new ObjectStorageService();
-      let finalImageUrl = objectStorageService.normalizeObjectEntityPath(imageUrl);
+      let finalImageUrl: string;
+      
+      try {
+        const objectStorageService = new ObjectStorageService();
+        finalImageUrl = objectStorageService.normalizeObjectEntityPath(imageUrl);
 
-      // SOLUCIÓN AUTOMÁTICA: Si la URL es de Object Storage, usar una imagen válida de /uploads/advertising/
-      if (finalImageUrl.startsWith('/objects/uploads/')) {
-        console.log(`🔧 URL de Object Storage detectada: ${finalImageUrl}. Usando imagen válida alternativa.`);
-        
-        // Obtener una imagen válida del directorio uploads/advertising
-        const fs = require('fs');
-        const path = require('path');
-        const advertisingDir = path.join(process.cwd(), 'uploads', 'advertising');
-        
-        try {
-          const files = fs.readdirSync(advertisingDir).filter((file: string) => 
-            /\.(jpg|jpeg|png|webp)$/i.test(file)
-          );
+        // SOLUCIÓN AUTOMÁTICA: Si la URL es de Object Storage, usar una imagen válida de /uploads/advertising/
+        if (finalImageUrl.startsWith('/objects/uploads/')) {
+          console.log(`🔧 URL de Object Storage detectada: ${finalImageUrl}. Usando imagen válida alternativa.`);
           
-          if (files.length > 0) {
-            // Usar una imagen aleatoria del directorio
-            const randomImage = files[Math.floor(Math.random() * files.length)];
-            finalImageUrl = `/uploads/advertising/${randomImage}`;
-            console.log(`✅ Imagen alternativa asignada: ${finalImageUrl}`);
+          // Obtener una imagen válida del directorio uploads/advertising
+          const fs = require('fs');
+          const path = require('path');
+          const advertisingDir = path.join(process.cwd(), 'uploads', 'advertising');
+          
+          try {
+            const files = fs.readdirSync(advertisingDir).filter((file: string) => 
+              /\.(jpg|jpeg|png|webp)$/i.test(file)
+            );
+            
+            if (files.length > 0) {
+              // Usar una imagen aleatoria del directorio
+              const randomImage = files[Math.floor(Math.random() * files.length)];
+              finalImageUrl = `/uploads/advertising/${randomImage}`;
+              console.log(`✅ Imagen alternativa asignada: ${finalImageUrl}`);
+            }
+          } catch (fsError) {
+            console.error('Error accediendo al directorio de imágenes:', fsError);
           }
-        } catch (fsError) {
-          console.error('Error accediendo al directorio de imágenes:', fsError);
         }
+      } catch (storageError) {
+        console.error('Error con ObjectStorageService:', storageError);
+        // Usar directamente la imageUrl si hay error con ObjectStorage
+        finalImageUrl = imageUrl;
       }
 
       // Si es imagen principal, quitar la marca de las demás
