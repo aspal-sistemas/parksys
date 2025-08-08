@@ -227,6 +227,12 @@ app.use('/attached_assets', express.static(path.join(process.cwd(), 'attached_as
 // Servir archivos de publicidad desde uploads/advertising
 app.use('/uploads/advertising', express.static(path.join(process.cwd(), 'uploads/advertising')));
 
+// Servir archivos de uploads generales
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+
+// Servir archivos de Object Storage desde uploads
+app.use('/objects/uploads', express.static(path.join(process.cwd(), 'uploads')));
+
 // ENDPOINT COMBINADO para la matriz de flujo de efectivo
 app.get("/cash-flow-matrix-data", async (req: Request, res: Response) => {
   try {
