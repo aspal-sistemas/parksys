@@ -1134,7 +1134,7 @@ const AdminSidebarComplete: React.FC = () => {
                 icon={<Users className="h-4 w-4" />}
                 active={location === '/admin/configuracion-seguridad/access/users'}
               >
-                Gestión de Usuarios y Roles
+                Gestión de Usuarios
               </NavItem>
             </CollapsibleSubmenu>
 

@@ -3960,4 +3960,36 @@ export type InsertServicePaymentConfig = z.infer<typeof insertServicePaymentConf
 export type StripeWebhookEvent = typeof stripeWebhookEvents.$inferSelect;
 export type InsertStripeWebhookEvent = z.infer<typeof insertStripeWebhookEventSchema>;
 
+// ===== SISTEMA DE AUDITORÍA DE ROLES =====
+
+export const roleAuditLogs = pgTable("role_audit_logs", {
+  id: serial("id").primaryKey(),
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+  action: varchar("action", { length: 100 }).notNull(), // role_change, permission_granted, permission_revoked, login_attempt, bulk_assignment, matrix_update
+  userId: integer("user_id"), // Usuario afectado
+  username: varchar("username", { length: 255 }),
+  fromRoleId: varchar("from_role_id", { length: 50 }),
+  toRoleId: varchar("to_role_id", { length: 50 }),
+  permission: varchar("permission", { length: 100 }),
+  module: varchar("module", { length: 100 }).notNull(),
+  performedBy: varchar("performed_by", { length: 255 }).notNull(),
+  performedById: integer("performed_by_id"),
+  description: text("description").notNull(),
+  severity: varchar("severity", { length: 20 }).notNull().default("medium"), // low, medium, high
+  ipAddress: varchar("ip_address", { length: 45 }),
+  result: varchar("result", { length: 50 }), // success, failed, etc.
+  affectedUsers: integer("affected_users"), // Para bulk operations
+  metadata: json("metadata").$type<Record<string, any>>().default({}),
+  createdAt: timestamp("created_at").defaultNow().notNull()
+});
+
+export type RoleAuditLog = typeof roleAuditLogs.$inferSelect;
+export type InsertRoleAuditLog = typeof roleAuditLogs.$inferInsert;
+
+export const insertRoleAuditLogSchema = createInsertSchema(roleAuditLogs).omit({
+  id: true,
+  timestamp: true,
+  createdAt: true
+});
+
 

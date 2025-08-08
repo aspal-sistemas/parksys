@@ -18,6 +18,7 @@ import { incomeCategories, expenseCategories } from "../shared/finance-schema";
 import { eq } from "drizzle-orm";
 import { registerInstructorInvitationRoutes } from "./instructorInvitationRoutes";
 import { registerInstructorApplicationRoutes } from "./instructorApplicationRoutes";
+import { registerAuditRoutes } from "./audit-routes";
 
 const app = express();
 
@@ -659,6 +660,11 @@ app.use('/api', activityRouter);
 // Registrar rutas de invitaciones de instructores
 registerInstructorInvitationRoutes(app);
 registerInstructorApplicationRoutes(app);
+
+// Registrar rutas de auditoría
+console.log("🔍 Registrando rutas de auditoría...");
+registerAuditRoutes(app);
+console.log("✅ Rutas de auditoría registradas");
 
 // Registrar las rutas de prueba
 app.use('/api/test', testRouter);
