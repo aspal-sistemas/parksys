@@ -61,12 +61,16 @@ interface User {
   username: string;
   email: string;
   fullName: string;
-  role: string;
+  roleId: number;
+  roleName: string;
   roleLevel: number;
+  department: string | null;
+  position: string | null;
+  phone: string | null;
   isActive: boolean;
   lastLogin: string | null;
   createdAt: string;
-  profileImage?: string;
+  profileImageUrl?: string;
 }
 
 export default function UsersManagement() {
@@ -101,7 +105,7 @@ export default function UsersManagement() {
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.fullName.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesRole = selectedRole === 'all' || user.role === selectedRole;
+    const matchesRole = selectedRole === 'all' || user.roleName === selectedRole;
     
     return matchesSearch && matchesRole;
   });
@@ -219,7 +223,7 @@ export default function UsersManagement() {
         username: editingUser.username,
         email: editingUser.email,
         fullName: editingUser.fullName,
-        role: editingUser.role,
+        role: editingUser.roleName,
         isActive: editingUser.isActive
       }
     });
@@ -434,29 +438,37 @@ export default function UsersManagement() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          {user.profileImage ? (
+                          {user.profileImageUrl ? (
                             <UserProfileImage 
                               userId={user.id} 
                               name={user.fullName || user.username}
-                              role={user.role}
+                              role={user.roleName}
                               size="sm" 
                             />
                           ) : (
                             <UserAvatar 
                               userId={user.id}
                               name={user.fullName || user.username}
-                              role={user.role}
+                              role={user.roleName}
                               size="sm" 
                             />
                           )}
                           <div>
                             <p className="font-medium">{user.fullName || user.username}</p>
                             <p className="text-sm text-muted-foreground">{user.email}</p>
+                          {user.department && (
+                            <p className="text-xs text-gray-500">{user.department}</p>
+                          )}
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <RoleBadge roleId={user.role} />
+                        <div>
+                          <RoleBadge roleId={user.roleName} />
+                          {user.position && (
+                            <p className="text-xs text-gray-500 mt-1">{user.position}</p>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>
                         <Badge className={getStatusColor(user.isActive, user.lastLogin)}>
@@ -631,8 +643,8 @@ export default function UsersManagement() {
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Rol</label>
                   <Select 
-                    value={editingUser.role} 
-                    onValueChange={(value) => setEditingUser(prev => prev ? ({ ...prev, role: value }) : null)}
+                    value={editingUser.roleName} 
+                    onValueChange={(value) => setEditingUser(prev => prev ? ({ ...prev, roleName: value }) : null)}
                   >
                     <SelectTrigger>
                       <SelectValue />
