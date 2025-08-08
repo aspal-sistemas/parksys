@@ -161,52 +161,52 @@ export default function Mantenimiento() {
         <div className="flex-1 overflow-auto">
           <div className="container mx-auto px-4 py-8">
             <div className="space-y-6">
-      {/* Header informativo */}
-      <Card className="bg-gradient-to-r from-green-50 to-teal-50 border-green-200">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-green-900">
-            <HardDrive className="h-6 w-6" />
-            Sistema de Mantenimiento
-          </CardTitle>
-          <CardDescription className="text-green-700">
-            Gestión de respaldos, optimización del sistema y tareas de mantenimiento automatizado.
-          </CardDescription>
-        </CardHeader>
-      </Card>
+              {/* Header informativo */}
+              <Card className="bg-gradient-to-r from-green-50 to-teal-50 border-green-200">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-green-900">
+                    <HardDrive className="h-6 w-6" />
+                    Sistema de Mantenimiento
+                  </CardTitle>
+                  <CardDescription className="text-green-700">
+                    Gestión de respaldos, optimización del sistema y tareas de mantenimiento automatizado.
+                  </CardDescription>
+                </CardHeader>
+              </Card>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="respaldos" className="flex items-center gap-2">
-            <Database className="h-4 w-4" />
-            Respaldos
-          </TabsTrigger>
-          <TabsTrigger value="optimizacion" className="flex items-center gap-2">
-            <Zap className="h-4 w-4" />
-            Optimización
-          </TabsTrigger>
-          <TabsTrigger value="limpieza" className="flex items-center gap-2">
-            <RefreshCw className="h-4 w-4" />
-            Limpieza
-          </TabsTrigger>
-          <TabsTrigger value="monitoreo" className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4" />
-            Monitoreo
-          </TabsTrigger>
-        </TabsList>
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+                <TabsList className="grid w-full grid-cols-4">
+                  <TabsTrigger value="respaldos" className="flex items-center gap-2">
+                    <Database className="h-4 w-4" />
+                    Respaldos
+                  </TabsTrigger>
+                  <TabsTrigger value="optimizacion" className="flex items-center gap-2">
+                    <Zap className="h-4 w-4" />
+                    Optimización
+                  </TabsTrigger>
+                  <TabsTrigger value="limpieza" className="flex items-center gap-2">
+                    <RefreshCw className="h-4 w-4" />
+                    Limpieza
+                  </TabsTrigger>
+                  <TabsTrigger value="monitoreo" className="flex items-center gap-2">
+                    <BarChart3 className="h-4 w-4" />
+                    Monitoreo
+                  </TabsTrigger>
+                </TabsList>
 
-        <TabsContent value="respaldos" className="space-y-6">
-          {/* Configuración de respaldos automáticos */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Settings className="h-5 w-5 text-blue-600" />
-                Configuración de Respaldos Automáticos
-              </CardTitle>
-              <CardDescription>
-                Configure la frecuencia y opciones de los respaldos automáticos
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
+                <TabsContent value="respaldos" className="space-y-6">
+                  {/* Configuración de respaldos automáticos */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Settings className="h-5 w-5 text-blue-600" />
+                        Configuración de Respaldos Automáticos
+                      </CardTitle>
+                      <CardDescription>
+                        Configure la frecuencia y opciones de los respaldos automáticos
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
@@ -730,11 +730,10 @@ export default function Mantenimiento() {
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
               </Tabs>
-              </div>
             </div>
           </div>
         </div>
