@@ -96,8 +96,24 @@ function SpaceCard({ space, viewMode }: { space: ReservableSpace; viewMode: 'gri
   const spaceTypeLabel = spaceTypeLabels[space.spaceType as keyof typeof spaceTypeLabels] || space.spaceType;
   const SpaceIcon = spaceTypeIcons[space.spaceType as keyof typeof spaceTypeIcons] || Building;
   
+  // Función para procesar URLs de imágenes
+  const processImageUrl = (url: string): string => {
+    if (!url) return '';
+    
+    // Si es una URL de Object Storage que empieza con /objects/uploads/
+    if (url.startsWith('/objects/uploads/')) {
+      // Convertir a ruta servible
+      const objectId = url.replace('/objects/uploads/', '');
+      return `/uploads/object-storage/${objectId}`;
+    }
+    
+    // Si ya es una ruta válida, devolverla tal como está
+    return url;
+  };
+
   const hourlyRate = parseFloat(space.hourlyRate);
-  const images = space.images ? space.images.split(',').filter(Boolean) : [];
+  const rawImages = space.images ? space.images.split(',').filter(Boolean) : [];
+  const images = rawImages.map(processImageUrl);
   const primaryImage = images[0];
   
   if (viewMode === 'list') {

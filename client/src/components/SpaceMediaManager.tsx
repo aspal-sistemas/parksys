@@ -44,6 +44,21 @@ export function SpaceMediaManager({ spaceId, isEditMode = false }: SpaceMediaMan
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
+  // Función para procesar URLs de imágenes
+  const processImageUrl = (url: string): string => {
+    if (!url) return '';
+    
+    // Si es una URL de Object Storage que empieza con /objects/uploads/
+    if (url.startsWith('/objects/uploads/')) {
+      // Convertir a ruta servible
+      const objectId = url.replace('/objects/uploads/', '');
+      return `/uploads/object-storage/${objectId}`;
+    }
+    
+    // Si ya es una ruta válida, devolverla tal como está
+    return url;
+  };
+
   useEffect(() => {
     if (spaceId && isEditMode) {
       loadImages();
@@ -273,7 +288,7 @@ export function SpaceMediaManager({ spaceId, isEditMode = false }: SpaceMediaMan
               {images.map((image) => (
                 <div key={image.id} className="relative group">
                   <img
-                    src={image.imageUrl}
+                    src={processImageUrl(image.imageUrl)}
                     alt={image.caption || "Imagen del espacio"}
                     className="w-full h-48 object-contain bg-gray-100 rounded-lg"
                   />
