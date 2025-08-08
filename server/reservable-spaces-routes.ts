@@ -122,6 +122,8 @@ export function registerReservableSpacesRoutes(app: Express) {
         .where(eq(spaceImages.spaceId, parseInt(id)))
         .orderBy(desc(spaceImages.isPrimary));
 
+      console.log(`🖼️ Imágenes encontradas para espacio ${id}:`, images);
+
       // Formar URLs completas para las imágenes y string separado por comas con corrección automática
       const imageUrls = images.map(img => {
         // Si ya es una URL completa (http/https), mantenerla tal como está
@@ -140,7 +142,8 @@ export function registerReservableSpacesRoutes(app: Express) {
       
       const spaceWithImages = {
         ...space[0],
-        images: imageUrls.length > 0 ? imageUrls : null
+        images: imageUrls.length > 0 ? imageUrls : null,
+        imageUrls: images.length > 0 ? images.map(img => img.imageUrl) : null // Array de URLs para compatibilidad
       };
 
       console.log(`🏛️ Espacio encontrado: ${spaceWithImages.name}`);
