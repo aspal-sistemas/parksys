@@ -8,8 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
-import { AdminSidebarComplete } from "@/components/AdminSidebarComplete";
-import { Header } from "@/components/Header";
+import AdminSidebarComplete from "@/components/AdminSidebarComplete";
+import Header from "@/components/Header";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import { 
