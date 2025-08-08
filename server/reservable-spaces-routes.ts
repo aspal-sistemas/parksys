@@ -334,6 +334,79 @@ export function registerReservableSpacesRoutes(app: Express) {
     }
   });
 
+  // Crear un nuevo espacio reservable
+  app.post("/api/reservable-spaces", async (req, res) => {
+    try {
+      const {
+        name,
+        description,
+        parkId,
+        spaceType,
+        capacity,
+        hourlyRate,
+        minimumHours,
+        maximumHours,
+        amenities,
+        rules,
+        isActive,
+        requiresApproval,
+        advanceBookingDays,
+        coordinates
+      } = req.body;
+
+      // Validar campos requeridos
+      if (!name || !parkId || !spaceType) {
+        return res.status(400).json({ error: "Nombre, parque y tipo de espacio son requeridos" });
+      }
+
+      // Validar que el parque existe
+      const park = await db
+        .select()
+        .from(parks)
+        .where(eq(parks.id, parseInt(parkId)))
+        .limit(1);
+
+      if (park.length === 0) {
+        return res.status(404).json({ error: "Parque no encontrado" });
+      }
+
+      // Crear el espacio
+      const newSpace = await db
+        .insert(reservableSpaces)
+        .values({
+          name,
+          description: description || null,
+          parkId: parseInt(parkId),
+          spaceType,
+          capacity: capacity ? parseInt(capacity) : null,
+          hourlyRate: hourlyRate || "0.00",
+          minimumHours: minimumHours ? parseInt(minimumHours) : 1,
+          maximumHours: maximumHours ? parseInt(maximumHours) : 8,
+          amenities: amenities || null,
+          rules: rules || null,
+          isActive: isActive !== false, // Default true
+          requiresApproval: requiresApproval === true, // Default false
+          advanceBookingDays: advanceBookingDays ? parseInt(advanceBookingDays) : 7,
+          coordinates: coordinates || null,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        })
+        .returning();
+
+      console.log(`✅ Nuevo espacio reservable creado: ${newSpace[0].name} en ${park[0].name}`);
+
+      res.status(201).json({
+        success: true,
+        space: newSpace[0],
+        message: "Espacio reservable creado exitosamente"
+      });
+
+    } catch (error) {
+      console.error("Error al crear espacio reservable:", error);
+      res.status(500).json({ error: "Error al crear el espacio reservable" });
+    }
+  });
+
   // Actualizar un espacio reservable
   app.put("/api/reservable-spaces/:id", async (req, res) => {
     try {

@@ -77,9 +77,12 @@ export default function NewSpacePage() {
 
   const createSpaceMutation = useMutation({
     mutationFn: async (data: NewSpaceFormData) => {
-      return await apiRequest("POST", "/api/reservable-spaces", {
-        ...data,
-        parkId: parseInt(data.parkId),
+      return await apiRequest("/api/reservable-spaces", {
+        method: "POST",
+        data: {
+          ...data,
+          parkId: parseInt(data.parkId),
+        }
       });
     },
     onSuccess: (data) => {
