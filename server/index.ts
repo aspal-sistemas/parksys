@@ -237,12 +237,53 @@ app.get('/objects/uploads/:objectId', async (req: Request, res: Response) => {
   try {
     const { objectId } = req.params;
     console.log(`🔍 Solicitando archivo de Object Storage: ${objectId}`);
+    console.log(`🔧 PUBLIC_OBJECT_SEARCH_PATHS: ${process.env.PUBLIC_OBJECT_SEARCH_PATHS}`);
     
     const objectStorageService = new ObjectStorageService();
-    const file = await objectStorageService.searchPublicObject(`uploads/${objectId}`);
+    
+    // Intentar diferentes rutas y hacer logging detallado
+    const searchPaths = [
+      `uploads/${objectId}`,
+      objectId,
+      `spaces/${objectId}`,
+      `public/uploads/${objectId}`,
+      `public/${objectId}`
+    ];
+    
+    let file = null;
+    for (const searchPath of searchPaths) {
+      console.log(`🔎 Buscando en: ${searchPath}`);
+      file = await objectStorageService.searchPublicObject(searchPath);
+      if (file) {
+        console.log(`✅ Archivo encontrado en: ${searchPath}`);
+        break;
+      }
+    }
     
     if (!file) {
-      console.log(`❌ Archivo no encontrado en Object Storage: ${objectId}`);
+      // Como último intento, listar archivos disponibles en el bucket para debuggear
+      try {
+        const bucketName = 'replit-objstore-9ca2db9b-bad3-42a4-a139-f19b5a74d7e2';
+        const bucket = (await import('./objectStorage')).objectStorageClient.bucket(bucketName);
+        const [files] = await bucket.getFiles({ prefix: 'public/' });
+        console.log(`📋 Archivos disponibles en bucket (${files.length} archivos):`, 
+          files.slice(0, 20).map(f => f.name));
+        
+        // Buscar archivos que contengan el objectId
+        const matchingFiles = files.filter(f => f.name.includes(objectId));
+        console.log(`🎯 Archivos que contienen ${objectId}:`, matchingFiles.map(f => f.name));
+        
+        if (matchingFiles.length > 0) {
+          const foundFile = matchingFiles[0];
+          console.log(`✅ Archivo encontrado por coincidencia: ${foundFile.name}`);
+          await objectStorageService.downloadObject(foundFile, res);
+          return;
+        }
+      } catch (bucketError) {
+        console.error(`Error explorando bucket:`, bucketError);
+      }
+      
+      console.log(`❌ Archivo definitivamente no encontrado: ${objectId}`);
       return res.status(404).json({ error: 'File not found' });
     }
     
