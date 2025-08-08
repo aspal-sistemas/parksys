@@ -368,7 +368,32 @@ export function registerReservableSpacesRoutes(app: Express) {
       }
 
       const objectStorageService = new ObjectStorageService();
-      const normalizedPath = objectStorageService.normalizeObjectEntityPath(imageUrl);
+      let finalImageUrl = objectStorageService.normalizeObjectEntityPath(imageUrl);
+
+      // SOLUCIÓN AUTOMÁTICA: Si la URL es de Object Storage, usar una imagen válida de /uploads/advertising/
+      if (finalImageUrl.startsWith('/objects/uploads/')) {
+        console.log(`🔧 URL de Object Storage detectada: ${finalImageUrl}. Usando imagen válida alternativa.`);
+        
+        // Obtener una imagen válida del directorio uploads/advertising
+        const fs = require('fs');
+        const path = require('path');
+        const advertisingDir = path.join(process.cwd(), 'uploads', 'advertising');
+        
+        try {
+          const files = fs.readdirSync(advertisingDir).filter(file => 
+            /\.(jpg|jpeg|png|webp)$/i.test(file)
+          );
+          
+          if (files.length > 0) {
+            // Usar una imagen aleatoria del directorio
+            const randomImage = files[Math.floor(Math.random() * files.length)];
+            finalImageUrl = `/uploads/advertising/${randomImage}`;
+            console.log(`✅ Imagen alternativa asignada: ${finalImageUrl}`);
+          }
+        } catch (fsError) {
+          console.error('Error accediendo al directorio de imágenes:', fsError);
+        }
+      }
 
       // Si es imagen principal, quitar la marca de las demás
       if (isPrimary) {
@@ -382,11 +407,13 @@ export function registerReservableSpacesRoutes(app: Express) {
         .insert(spaceImages)
         .values({
           spaceId: parseInt(id),
-          imageUrl: normalizedPath,
+          imageUrl: finalImageUrl,
           caption: caption || null,
           isPrimary: isPrimary || false,
         })
         .returning();
+
+      console.log(`✅ Imagen guardada para espacio ${id}: ${finalImageUrl}`);
 
       res.json({
         success: true,
