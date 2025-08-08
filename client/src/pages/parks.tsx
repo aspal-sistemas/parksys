@@ -188,25 +188,42 @@ const Parks: React.FC = () => {
 
         {/* Sin paginación - todos los parques se muestran */}
 
-        {/* Banner publicitario de ancho completo - MOVIDO DESPUÉS DE LAS FICHAS */}
-        <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] bg-gradient-to-r from-green-500 to-blue-600 py-4 mt-8 mb-8">
-          <div className="flex items-center justify-center h-20">
+        {/* Banner publicitario que respeta el contenedor */}
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden mt-8 mb-8 border">
+          <div className="relative">
             <AdSpaceIntelligent 
               pageType="parks"
               position="banner"
               layoutConfig={{
                 responsive: true,
                 maxWidth: "100%",
-                minHeight: "80px"
+                minHeight: "150px"
               }}
               enableAnalytics={true}
               autoRefresh={false}
-              className="w-full"
+              className="w-full h-[150px]"
             />
-            {/* Fallback visible para cuando no hay anuncios */}
-            <div className="text-white text-center">
-              <h3 className="text-xl font-bold">Espacio Publicitario Banner</h3>
-              <p className="text-sm opacity-90">Ancho completo - 150px altura</p>
+            {/* Fallback con banner de Gatorade como ejemplo */}
+            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-r from-orange-500 to-orange-600">
+              <div className="flex items-center justify-between w-full px-8">
+                <div className="text-white">
+                  <h2 className="text-4xl font-black mb-2 text-stroke-2">GATORADE</h2>
+                  <p className="text-lg font-semibold opacity-90">FUEL YOUR FIRE</p>
+                  <p className="text-sm mt-2">¡Hidratación que potencia tu rendimiento!</p>
+                </div>
+                <div className="text-right text-white">
+                  <div className="w-16 h-24 bg-white/20 rounded-lg flex flex-col items-center justify-center mb-2">
+                    <div className="w-10 h-16 bg-orange-400 rounded-md relative">
+                      <div className="w-8 h-3 bg-white rounded-sm absolute top-1 left-1"></div>
+                      <div className="text-xs text-white font-bold absolute top-4 left-2">G</div>
+                    </div>
+                  </div>
+                  <p className="text-xs opacity-80">Bebida deportiva</p>
+                </div>
+                <div className="absolute top-4 right-4 opacity-30">
+                  ⚡ ⚡ ⚡
+                </div>
+              </div>
             </div>
           </div>
         </div>
