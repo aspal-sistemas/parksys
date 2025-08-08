@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import AdminLayout from "@/components/AdminLayout";
 import { 
   Shield, 
   Key, 
@@ -164,7 +165,8 @@ export default function Politicas() {
   };
 
   return (
-    <div className="space-y-6">
+    <AdminLayout>
+      <div className="space-y-6">
       {/* Header informativo */}
       <Card className="bg-gradient-to-r from-red-50 to-pink-50 border-red-200">
         <CardHeader>
@@ -594,6 +596,7 @@ export default function Politicas() {
           Guardar Todas las Políticas
         </Button>
       </div>
-    </div>
+      </div>
+    </AdminLayout>
   );
 }

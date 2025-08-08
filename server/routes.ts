@@ -206,6 +206,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Error getting upload URL" });
     }
   });
+
+  // Simplified upload URL route for multimedia
+  app.post("/api/upload-url", async (req, res) => {
+    try {
+      console.log("📤 [UPLOAD-URL] Getting upload URL");
+      const objectStorageService = new ObjectStorageService();
+      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      console.log("📤 [UPLOAD-URL] Upload URL generated successfully");
+      res.json({ uploadURL });
+    } catch (error) {
+      console.error("❌ [UPLOAD-URL] Error getting upload URL:", error);
+      res.status(500).json({ error: "Error getting upload URL" });
+    }
+  });
   registerAssetImageRoutes(app, apiRouter, isAuthenticated);
   
   // Registramos las rutas del módulo de actividades

@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
+import { AdminSidebarComplete } from "@/components/AdminSidebarComplete";
+import { Header } from "@/components/Header";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import { 
@@ -152,7 +154,13 @@ export default function Mantenimiento() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-background">
+      <Header />
+      <div className="flex">
+        <AdminSidebarComplete />
+        <div className="flex-1 overflow-auto">
+          <div className="container mx-auto px-4 py-8">
+            <div className="space-y-6">
       {/* Header informativo */}
       <Card className="bg-gradient-to-r from-green-50 to-teal-50 border-green-200">
         <CardHeader>
@@ -725,7 +733,12 @@ export default function Mantenimiento() {
             </CardContent>
           </Card>
         </TabsContent>
-      </Tabs>
+              </Tabs>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

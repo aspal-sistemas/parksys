@@ -27,7 +27,15 @@ The application uses a client-server architecture with a modern full-stack.
 - **Sponsor Management**: Supports a 10-tier gemstone/precious metal sponsorship system with unique icons, color schemes, and graduated benefits.
 **System Design Choices**: Single Source of Truth architecture ensures data consistency across modules. Clear separation between organizational users (with login access) and external catalogs (employees, volunteers, instructors, concessionaires as independent databases). Email-based invitation system for instructor registration with token validation and expiration. Internationalization (i18n) support for multiple languages (Spanish, English, Portuguese) is implemented throughout the application. Error handling is robust with detailed logging and user-friendly notifications. Optimized for Replit deployment.
 
-## Recent Changes (January 2025)
+## Recent Changes (August 2025)
+- **CRITICAL FIX - User Image Upload System**: Completely resolved the major issue where user-uploaded images were being automatically replaced with random system images. The system now correctly processes and stores actual user uploads from Object Storage without substitution.
+- **Object Storage URL Processing**: Fixed Google Storage URL conversion system to properly transform `storage.googleapis.com` URLs into servable `/objects/uploads/` paths that work with the existing server infrastructure.
+- **Image Replacement Logic Removal**: Eliminated all automatic image replacement logic that was intercepting genuine user uploads and substituting them with predefined images from the advertising directory.
+- **Real User Upload Validation**: Confirmed that the image upload workflow now preserves the integrity of user-chosen images throughout the entire process - from upload to database storage to display.
+- **Space Reservations Image Management**: Fixed broken image display across both admin panel (`/admin/space-reservations/spaces/edit/[id]`) and public reservations page. All reservation spaces now display actual user-uploaded images.
+- **Admin Navigation Optimization**: Eliminated duplicate user management routes - removed `/admin/configuracion-seguridad/access/assignments` to avoid functionality duplication with `/admin/configuracion-seguridad/access/users`, which remains as the single comprehensive user management interface.
+
+## Previous Changes (January 2025)
 - **Architecture Refactor**: Implemented complete separation of organizational users from catalog entities, eliminating data duplication across employees, volunteers, instructors, and concessionaires tables.
 - **Instructor Invitation System**: Built email-based invitation system with dedicated registration flow, token validation, and automatic expiration management.
 - **Database Schema Updates**: Updated all catalog tables to be independent with optional user_id references only where needed for organizational roles.

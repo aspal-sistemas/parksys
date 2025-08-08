@@ -54,7 +54,10 @@ export function SpaceMediaManager({ spaceId, isEditMode = false }: SpaceMediaMan
   const loadImages = async () => {
     if (!spaceId) return;
     try {
-      const response = await apiRequest("GET", `/api/spaces/${spaceId}/images`);
+      const response = await fetch(`/api/spaces/${spaceId}/images`);
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
       const data = await response.json();
       setImages(data);
     } catch (error) {
@@ -65,7 +68,10 @@ export function SpaceMediaManager({ spaceId, isEditMode = false }: SpaceMediaMan
   const loadDocuments = async () => {
     if (!spaceId) return;
     try {
-      const response = await apiRequest("GET", `/api/spaces/${spaceId}/documents`);
+      const response = await fetch(`/api/spaces/${spaceId}/documents`);
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
       const data = await response.json();
       setDocuments(data);
     } catch (error) {
@@ -75,7 +81,17 @@ export function SpaceMediaManager({ spaceId, isEditMode = false }: SpaceMediaMan
 
   const getUploadParameters = async () => {
     try {
-      const response = await apiRequest("POST", "/api/objects/upload");
+      const response = await fetch("/api/spaces/upload", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+      
       const data = await response.json();
       return {
         method: "PUT" as const,
@@ -87,33 +103,49 @@ export function SpaceMediaManager({ spaceId, isEditMode = false }: SpaceMediaMan
     }
   };
 
-  const handleImageUploadComplete = async (result: UploadResult) => {
-    if (!spaceId || !result.successful?.[0]?.uploadURL) return;
+  const handleImageUploadComplete = async (result: any) => {
+    if (!spaceId || !result.successful?.[0]?.uploadURL) {
+      toast({
+        title: "Error",
+        description: "Error en la subida del archivo",
+        variant: "destructive",
+      });
+      return;
+    }
     
     setLoading(true);
     try {
       const uploadedUrl = result.successful[0].uploadURL;
       
-      const response = await apiRequest("POST", `/api/spaces/${spaceId}/images`, {
-        imageUrl: uploadedUrl,
-        caption: newImageCaption,
-        isPrimary: newImageIsPrimary,
+      const response = await fetch(`/api/spaces/${spaceId}/images`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          imageUrl: uploadedUrl,
+          caption: newImageCaption,
+          isPrimary: newImageIsPrimary,
+        }),
       });
 
-      if (response.ok) {
-        await loadImages();
-        setNewImageCaption("");
-        setNewImageIsPrimary(false);
-        toast({
-          title: "Imagen agregada",
-          description: "La imagen se ha agregado exitosamente al espacio.",
-        });
+      if (!response.ok) {
+        const errorData = await response.text();
+        throw new Error(`Error ${response.status}: ${response.statusText} - ${errorData}`);
       }
+
+      await loadImages();
+      setNewImageCaption("");
+      setNewImageIsPrimary(false);
+      toast({
+        title: "Imagen agregada",
+        description: "La imagen se ha agregado exitosamente al espacio.",
+      });
     } catch (error) {
       console.error("Error uploading image:", error);
       toast({
         title: "Error",
-        description: "Error al agregar la imagen.",
+        description: `Error al agregar la imagen: ${error instanceof Error ? error.message : 'Error desconocido'}`,
         variant: "destructive",
       });
     } finally {
@@ -121,29 +153,39 @@ export function SpaceMediaManager({ spaceId, isEditMode = false }: SpaceMediaMan
     }
   };
 
-  const handleDocumentUploadComplete = async (result: UploadResult) => {
+  const handleDocumentUploadComplete = async (result: any) => {
     if (!spaceId || !result.successful?.[0]?.uploadURL) return;
     
     setLoading(true);
     try {
       const uploadedUrl = result.successful[0].uploadURL;
       
-      const response = await apiRequest("POST", `/api/spaces/${spaceId}/documents`, {
-        documentUrl: uploadedUrl,
-        title: newDocumentTitle,
-        description: newDocumentDescription,
-        fileSize: result.successful[0].size,
+      const response = await fetch(`/api/spaces/${spaceId}/documents`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          documentUrl: uploadedUrl,
+          title: newDocumentTitle,
+          description: newDocumentDescription,
+          fileSize: result.successful[0].size,
+        }),
       });
 
-      if (response.ok) {
-        await loadDocuments();
-        setNewDocumentTitle("");
-        setNewDocumentDescription("");
-        toast({
-          title: "Documento agregado",
-          description: "El documento se ha agregado exitosamente al espacio.",
-        });
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
       }
+
+      const data = await response.json();
+      
+      await loadDocuments();
+      setNewDocumentTitle("");
+      setNewDocumentDescription("");
+      toast({
+        title: "Documento agregado",
+        description: "El documento se ha agregado exitosamente al espacio.",
+      });
     } catch (error) {
       console.error("Error uploading document:", error);
       toast({
@@ -158,14 +200,19 @@ export function SpaceMediaManager({ spaceId, isEditMode = false }: SpaceMediaMan
 
   const deleteImage = async (imageId: number) => {
     try {
-      const response = await apiRequest("DELETE", `/api/spaces/images/${imageId}`);
-      if (response.ok) {
-        await loadImages();
-        toast({
-          title: "Imagen eliminada",
-          description: "La imagen ha sido eliminada exitosamente.",
-        });
+      const response = await fetch(`/api/spaces/images/${imageId}`, {
+        method: "DELETE",
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
       }
+      
+      await loadImages();
+      toast({
+        title: "Imagen eliminada",
+        description: "La imagen ha sido eliminada exitosamente.",
+      });
     } catch (error) {
       console.error("Error deleting image:", error);
       toast({
@@ -178,14 +225,19 @@ export function SpaceMediaManager({ spaceId, isEditMode = false }: SpaceMediaMan
 
   const deleteDocument = async (documentId: number) => {
     try {
-      const response = await apiRequest("DELETE", `/api/spaces/documents/${documentId}`);
-      if (response.ok) {
-        await loadDocuments();
-        toast({
-          title: "Documento eliminado",
-          description: "El documento ha sido eliminado exitosamente.",
-        });
+      const response = await fetch(`/api/spaces/documents/${documentId}`, {
+        method: "DELETE",
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
       }
+      
+      await loadDocuments();
+      toast({
+        title: "Documento eliminado",
+        description: "El documento ha sido eliminado exitosamente.",
+      });
     } catch (error) {
       console.error("Error deleting document:", error);
       toast({

@@ -17,6 +17,7 @@ import { CalendarClock, MapPin, Users, DollarSign, Clock, AlertCircle, CheckCirc
 import { useLocation } from 'wouter';
 import { useToast } from '@/hooks/use-toast';
 import AdminLayout from '@/components/AdminLayout';
+import { SpaceMediaManager } from '@/components/SpaceMediaManager';
 
 // Validation schema
 const reservationSchema = z.object({
@@ -221,7 +222,8 @@ export default function NewReservationPage() {
     if (!selectedSpace) return new Date().toISOString().split('T')[0];
     
     const minDate = new Date();
-    minDate.setDate(minDate.getDate() + selectedSpace.advance_booking_days);
+    const advanceDays = selectedSpace.advance_booking_days || 0;
+    minDate.setDate(minDate.getDate() + advanceDays);
     return minDate.toISOString().split('T')[0];
   };
 
@@ -501,6 +503,28 @@ export default function NewReservationPage() {
                 </div>
               </form>
             </Form>
+
+            {/* Multimedia Management */}
+            <Card className="w-full">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Plus className="h-5 w-5" />
+                  Gestión Multimedia
+                </CardTitle>
+                <CardDescription>
+                  Agrega imágenes y documentos relacionados con esta reserva
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {selectedSpace ? (
+                  <SpaceMediaManager spaceId={selectedSpace.id} isEditMode={true} />
+                ) : (
+                  <p className="text-gray-500 text-center py-4">
+                    Selecciona un espacio primero para gestionar multimedia
+                  </p>
+                )}
+              </CardContent>
+            </Card>
           </div>
 
           {/* Summary Panel */}

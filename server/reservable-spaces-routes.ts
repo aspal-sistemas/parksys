@@ -25,7 +25,6 @@ export function registerReservableSpacesRoutes(app: Express) {
           isActive: reservableSpaces.isActive,
           requiresApproval: reservableSpaces.requiresApproval,
           advanceBookingDays: reservableSpaces.advanceBookingDays,
-          images: reservableSpaces.images,
           coordinates: reservableSpaces.coordinates,
           parkId: reservableSpaces.parkId,
           parkName: parks.name,
@@ -37,8 +36,41 @@ export function registerReservableSpacesRoutes(app: Express) {
         .where(eq(reservableSpaces.isActive, true))
         .orderBy(reservableSpaces.name);
 
-      console.log(`🎪 Encontrados ${spaces.length} espacios reservables`);
-      res.json(spaces);
+      // Obtener imágenes para cada espacio
+      const spacesWithImages = await Promise.all(spaces.map(async (space) => {
+        const images = await db
+          .select({
+            imageUrl: spaceImages.imageUrl,
+            isPrimary: spaceImages.isPrimary
+          })
+          .from(spaceImages)
+          .where(eq(spaceImages.spaceId, space.id))
+          .orderBy(desc(spaceImages.isPrimary));
+
+        console.log(`🖼️ Espacio ${space.name} (ID: ${space.id}) tiene ${images.length} imágenes:`, images.map(img => img.imageUrl));
+
+        // Formar URLs completas para las imágenes y string separado por comas
+        const imageUrls = images.map(img => {
+          // Si ya es una URL completa (http/https), mantenerla tal como está
+          if (img.imageUrl.startsWith('http://') || img.imageUrl.startsWith('https://')) {
+            return img.imageUrl;
+          }
+          // Si es una URL del object storage, mantenerla como está para ser servida por el servidor
+          if (img.imageUrl.startsWith('/objects/uploads/')) {
+            return img.imageUrl;
+          }
+          // Para otros casos, asumir que es una URL relativa
+          return img.imageUrl;
+        }).join(',');
+        
+        return {
+          ...space,
+          images: imageUrls.length > 0 ? imageUrls : null
+        };
+      }));
+
+      console.log(`🎪 Encontrados ${spacesWithImages.length} espacios reservables`);
+      res.json(spacesWithImages);
     } catch (error) {
       console.error("Error al obtener espacios reservables:", error);
       res.status(500).json({ error: "Error al obtener espacios reservables" });
@@ -65,7 +97,6 @@ export function registerReservableSpacesRoutes(app: Express) {
           isActive: reservableSpaces.isActive,
           requiresApproval: reservableSpaces.requiresApproval,
           advanceBookingDays: reservableSpaces.advanceBookingDays,
-          images: reservableSpaces.images,
           coordinates: reservableSpaces.coordinates,
           parkId: reservableSpaces.parkId,
           parkName: parks.name,
@@ -81,8 +112,42 @@ export function registerReservableSpacesRoutes(app: Express) {
         return res.status(404).json({ error: "Espacio no encontrado" });
       }
 
-      console.log(`🏛️ Espacio encontrado: ${space[0].name}`);
-      res.json(space[0]);
+      // Obtener imágenes del espacio
+      const images = await db
+        .select({
+          imageUrl: spaceImages.imageUrl,
+          isPrimary: spaceImages.isPrimary
+        })
+        .from(spaceImages)
+        .where(eq(spaceImages.spaceId, parseInt(id)))
+        .orderBy(desc(spaceImages.isPrimary));
+
+      console.log(`🖼️ Imágenes encontradas para espacio ${id}:`, images);
+
+      // Formar URLs completas para las imágenes y string separado por comas con corrección automática
+      const imageUrls = images.map(img => {
+        // Si ya es una URL completa (http/https), mantenerla tal como está
+        if (img.imageUrl.startsWith('http://') || img.imageUrl.startsWith('https://')) {
+          return img.imageUrl;
+        }
+        
+        // Para rutas /objects/, mantenerlas como están para que el servidor las pueda servir
+        if (img.imageUrl.startsWith('/objects/')) {
+          return img.imageUrl;
+        }
+        
+        // Para otros casos, asumir que es una URL relativa válida
+        return img.imageUrl;
+      }).join(',');
+      
+      const spaceWithImages = {
+        ...space[0],
+        images: imageUrls.length > 0 ? imageUrls : null,
+        imageUrls: images.length > 0 ? images.map(img => img.imageUrl) : null // Array de URLs para compatibilidad
+      };
+
+      console.log(`🏛️ Espacio encontrado: ${spaceWithImages.name}`);
+      res.json(spaceWithImages);
     } catch (error) {
       console.error("Error al obtener detalles del espacio:", error);
       res.status(500).json({ error: "Error al obtener detalles del espacio" });
@@ -112,7 +177,34 @@ export function registerReservableSpacesRoutes(app: Express) {
     }
   });
 
-  // Obtener estadísticas de reservas para un espacio
+  // Obtener estadísticas generales de reservas
+  app.get("/api/space-reservations/stats", async (req, res) => {
+    try {
+      const stats = await db
+        .select({
+          totalReservations: count(),
+          confirmedReservations: sql<number>`SUM(CASE WHEN ${spaceReservations.status} = 'confirmed' THEN 1 ELSE 0 END)`,
+          pendingReservations: sql<number>`SUM(CASE WHEN ${spaceReservations.status} = 'pending' THEN 1 ELSE 0 END)`,
+          cancelledReservations: sql<number>`SUM(CASE WHEN ${spaceReservations.status} = 'cancelled' THEN 1 ELSE 0 END)`
+        })
+        .from(spaceReservations);
+
+      const result = stats.length > 0 ? stats[0] : {
+        totalReservations: 0,
+        confirmedReservations: 0,
+        pendingReservations: 0,
+        cancelledReservations: 0
+      };
+
+      console.log(`📊 Estadísticas generales de reservas:`, result);
+      res.json(result);
+    } catch (error) {
+      console.error("Error al obtener estadísticas generales:", error);
+      res.status(500).json({ error: "Error al obtener estadísticas generales" });
+    }
+  });
+
+  // Obtener estadísticas de reservas para un espacio específico
   app.get("/api/space-reservations/stats/:id", async (req, res) => {
     try {
       const { id } = req.params;
@@ -177,7 +269,7 @@ export function registerReservableSpacesRoutes(app: Express) {
       const startHour = parseInt(startTime.split(':')[0]);
       const endHour = parseInt(endTime.split(':')[0]);
       const totalHours = endHour - startHour;
-      const hourlyRate = parseFloat(space[0].hourlyRate);
+      const hourlyRate = parseFloat(space[0].hourlyRate || '0');
       const totalCost = totalHours * hourlyRate;
 
       // Validar disponibilidad del horario
@@ -307,8 +399,18 @@ export function registerReservableSpacesRoutes(app: Express) {
         return res.status(400).json({ error: "imageUrl es requerido" });
       }
 
-      const objectStorageService = new ObjectStorageService();
-      const normalizedPath = objectStorageService.normalizeObjectEntityPath(imageUrl);
+      let finalImageUrl: string;
+      
+      // Procesar la URL real de la imagen subida
+      try {
+        const objectStorageService = new ObjectStorageService();
+        finalImageUrl = objectStorageService.normalizeObjectEntityPath(imageUrl);
+        console.log(`✅ Imagen procesada correctamente: ${finalImageUrl}`);
+      } catch (storageError) {
+        console.error('Error procesando imagen con ObjectStorageService:', storageError);
+        // Fallback: usar la URL tal como viene
+        finalImageUrl = imageUrl;
+      }
 
       // Si es imagen principal, quitar la marca de las demás
       if (isPrimary) {
@@ -322,11 +424,13 @@ export function registerReservableSpacesRoutes(app: Express) {
         .insert(spaceImages)
         .values({
           spaceId: parseInt(id),
-          imageUrl: normalizedPath,
+          imageUrl: finalImageUrl,
           caption: caption || null,
           isPrimary: isPrimary || false,
         })
         .returning();
+
+      console.log(`✅ Imagen guardada para espacio ${id}: ${finalImageUrl}`);
 
       res.json({
         success: true,
@@ -462,47 +566,7 @@ export function registerReservableSpacesRoutes(app: Express) {
     }
   });
 
-  // Ruta para agregar imagen a espacio después de upload
-  app.post("/api/spaces/:id/images", async (req, res) => {
-    try {
-      const { id } = req.params;
-      const { imageUrl, caption, isPrimary } = req.body;
-
-      if (!imageUrl) {
-        return res.status(400).json({ error: "URL de imagen es requerida" });
-      }
-
-      // Si es imagen principal, desmarcar otras como principales
-      if (isPrimary) {
-        await db
-          .update(spaceImages)
-          .set({ isPrimary: false })
-          .where(eq(spaceImages.spaceId, parseInt(id)));
-      }
-
-      const imageData = {
-        spaceId: parseInt(id),
-        imageUrl,
-        caption: caption || null,
-        isPrimary: isPrimary || false,
-        createdAt: new Date().toISOString()
-      };
-
-      const result = await db
-        .insert(spaceImages)
-        .values(imageData)
-        .returning();
-
-      res.json({ 
-        success: true, 
-        message: "Imagen agregada exitosamente",
-        image: result[0]
-      });
-    } catch (error) {
-      console.error("Error al agregar imagen:", error);
-      res.status(500).json({ error: "Error al agregar la imagen" });
-    }
-  });
+  // Ruta duplicada eliminada - ya existe arriba con corrección automática
 
   // Ruta para agregar documento a espacio después de upload
   app.post("/api/spaces/:id/documents", async (req, res) => {
@@ -518,18 +582,15 @@ export function registerReservableSpacesRoutes(app: Express) {
         return res.status(400).json({ error: "Título es requerido" });
       }
 
-      const documentData = {
-        spaceId: parseInt(id),
-        documentUrl,
-        title,
-        description: description || null,
-        fileSize: fileSize || null,
-        createdAt: new Date().toISOString()
-      };
-
       const result = await db
         .insert(spaceDocuments)
-        .values(documentData)
+        .values({
+          spaceId: parseInt(id),
+          documentUrl,
+          title,
+          description: description || null,
+          fileSize: fileSize || null
+        })
         .returning();
 
       res.json({ 

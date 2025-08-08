@@ -551,6 +551,21 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/system/email-settings')))}
           </Suspense>
         </Route>
+        <Route path="/admin/system/backup">
+          <Suspense fallback={<div className="p-8 text-center">Cargando sistema de respaldos...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/system/backup')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/system/performance">
+          <Suspense fallback={<div className="p-8 text-center">Cargando monitor de rendimiento...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/system/performance')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/system/updates">
+          <Suspense fallback={<div className="p-8 text-center">Cargando centro de actualizaciones...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/system/updates')))}
+          </Suspense>
+        </Route>
         <Route path="/admin/communications">
           <Suspense fallback={<div className="p-8 text-center">Cargando dashboard de comunicaciones...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/admin/communications')))}
@@ -1263,7 +1278,54 @@ function Router() {
           </Suspense>
         </Route>
 
-        {/* NUEVAS RUTAS: Sistema de Roles Avanzado Integrado */}
+        {/* NUEVAS RUTAS REESTRUCTURADAS: Configuración y Seguridad */}
+        {/* Control de Acceso */}
+        <Route path="/admin/configuracion-seguridad/access/roles">
+          <Suspense fallback={<div className="p-8 text-center">Cargando gestión de roles...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/roles')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/configuracion-seguridad/access/permissions">
+          <Suspense fallback={<div className="p-8 text-center">Cargando matriz de permisos...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/permissions/matrix')))}
+          </Suspense>
+        </Route>
+        {/* RUTA ELIMINADA: /assignments duplicaba funcionalidad de /users */}
+        <Route path="/admin/configuracion-seguridad/access/users">
+          <Suspense fallback={<div className="p-8 text-center">Cargando gestión de usuarios...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/users')))}
+          </Suspense>
+        </Route>
+
+        {/* Políticas */}
+        <Route path="/admin/configuracion-seguridad/policies">
+          <Suspense fallback={<div className="p-8 text-center">Cargando políticas...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/configuracion-seguridad/Politicas')))}
+          </Suspense>
+        </Route>
+
+        {/* Notificaciones */}
+        <Route path="/admin/configuracion-seguridad/notifications">
+          <Suspense fallback={<div className="p-8 text-center">Cargando notificaciones administrativas...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/configuracion-seguridad/NotificacionesAdmin')))}
+          </Suspense>
+        </Route>
+
+        {/* Auditoría */}
+        <Route path="/admin/configuracion-seguridad/audit">
+          <Suspense fallback={<div className="p-8 text-center">Cargando auditoría...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/configuracion-seguridad/Auditoria')))}
+          </Suspense>
+        </Route>
+
+        {/* Mantenimiento */}
+        <Route path="/admin/configuracion-seguridad/maintenance">
+          <Suspense fallback={<div className="p-8 text-center">Cargando mantenimiento...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/configuracion-seguridad/Mantenimiento')))}
+          </Suspense>
+        </Route>
+
+        {/* COMPATIBILIDAD: Rutas antigas con redirección */}
         <Route path="/admin/roles">
           <Suspense fallback={<div className="p-8 text-center">Cargando gestión de roles...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/admin/roles')))}
@@ -1279,9 +1341,9 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/role-assignments')))}
           </Suspense>
         </Route>
-        <Route path="/admin/role-audits">
+        <Route path="/admin/configuracion-seguridad/audit/role-audits">
           <Suspense fallback={<div className="p-8 text-center">Cargando auditoría de roles...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/role-audits')))}
+            {React.createElement(React.lazy(() => import('@/pages/admin/configuracion-seguridad/audit/role-audits')))}
           </Suspense>
         </Route>
 

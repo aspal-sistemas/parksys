@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import AdminLayout from "@/components/AdminLayout";
 import { 
   Bell, 
   Mail, 
@@ -187,7 +188,8 @@ export default function NotificacionesAdmin() {
   };
 
   return (
-    <div className="space-y-6">
+    <AdminLayout>
+      <div className="space-y-6">
       {/* Header */}
       <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
         <CardHeader>
@@ -548,6 +550,7 @@ export default function NotificacionesAdmin() {
           Guardar Configuración
         </Button>
       </div>
-    </div>
+      </div>
+    </AdminLayout>
   );
 }

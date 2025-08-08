@@ -373,7 +373,7 @@ function ReservationsPage() {
       {/* Publicidad superior */}
       <section className="py-4 bg-white border-b">
         <div className="max-w-7xl mx-auto px-4">
-          <AdSpace placementId={1} />
+          <AdSpace spaceId={1} position="banner" pageType="parks" />
         </div>
       </section>
 
@@ -534,7 +534,7 @@ function ReservationsPage() {
       {/* Publicidad inferior */}
       <section className="py-4 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4">
-          <AdSpace placementId={2} />
+          <AdSpace spaceId={2} position="banner" pageType="parks" />
         </div>
       </section>
       </div>

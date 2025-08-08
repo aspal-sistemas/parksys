@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -27,11 +27,52 @@ import {
 import { SYSTEM_ROLES } from '@/components/RoleBadge';
 import { SYSTEM_MODULES, DEFAULT_ROLE_PERMISSIONS, type SystemModule, type PermissionType } from '@/components/RoleGuard';
 import { useToast } from '@/hooks/use-toast';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
 
 export default function PermissionsMatrix() {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [permissions, setPermissions] = useState(DEFAULT_ROLE_PERMISSIONS);
   const [hasChanges, setHasChanges] = useState(false);
+
+  // Fetch permissions from API
+  const { data: apiPermissions, isLoading, error } = useQuery({
+    queryKey: ['/api/permissions/matrix'],
+    refetchOnWindowFocus: false,
+  });
+
+  // Mutation for saving permissions
+  const saveMutation = useMutation({
+    mutationFn: (newPermissions: typeof permissions) => {
+      return apiRequest('/api/permissions/matrix', {
+        method: 'PUT',
+        body: JSON.stringify(newPermissions),
+      });
+    },
+    onSuccess: () => {
+      setHasChanges(false);
+      toast({
+        title: "Permisos guardados",
+        description: "Los cambios en la matriz de permisos se han guardado exitosamente",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/permissions/matrix'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error al guardar",
+        description: error.message || "No se pudieron guardar los permisos",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Update local state when API data is loaded
+  useEffect(() => {
+    if (apiPermissions && !hasChanges) {
+      setPermissions(apiPermissions);
+    }
+  }, [apiPermissions, hasChanges]);
 
   const getPermissionIcon = (permission: PermissionType) => {
     switch (permission) {
@@ -111,21 +152,25 @@ export default function PermissionsMatrix() {
   };
 
   const resetPermissions = () => {
-    setPermissions(DEFAULT_ROLE_PERMISSIONS);
-    setHasChanges(false);
-    toast({
-      title: "Permisos restablecidos",
-      description: "Se han restaurado los permisos por defecto",
-    });
+    if (apiPermissions) {
+      setPermissions(apiPermissions);
+      setHasChanges(false);
+      toast({
+        title: "Cambios descartados",
+        description: "Se han restaurado los permisos desde el servidor",
+      });
+    } else {
+      setPermissions(DEFAULT_ROLE_PERMISSIONS);
+      setHasChanges(false);
+      toast({
+        title: "Permisos restablecidos",
+        description: "Se han restaurado los permisos por defecto",
+      });
+    }
   };
 
   const savePermissions = () => {
-    // Aquí iría la lógica para guardar en el backend
-    setHasChanges(false);
-    toast({
-      title: "Permisos guardados",
-      description: "Los cambios en la matriz de permisos se han guardado exitosamente",
-    });
+    saveMutation.mutate(permissions);
   };
 
   const getModuleStats = (module: SystemModule) => {
@@ -155,6 +200,81 @@ export default function PermissionsMatrix() {
     };
   };
 
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Grid className="h-6 w-6 text-purple-600" />
+                  Matriz de Permisos del Sistema
+                </CardTitle>
+                <CardDescription>
+                  Cargando matriz de permisos...
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardContent className="p-8 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-4" />
+            <p className="text-muted-foreground">Cargando permisos del sistema...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Grid className="h-6 w-6 text-purple-600" />
+                  Matriz de Permisos del Sistema
+                </CardTitle>
+                <CardDescription>
+                  Error al cargar la matriz de permisos
+                </CardDescription>
+              </div>
+              <Button 
+                variant="outline" 
+                onClick={() => queryClient.invalidateQueries({ queryKey: ['/api/permissions/matrix'] })}
+              >
+                <RotateCcw className="h-4 w-4 mr-2" />
+                Reintentar
+              </Button>
+            </div>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardContent className="p-8 text-center">
+            <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <h3 className="text-lg font-medium mb-2">Error al cargar permisos</h3>
+            <p className="text-muted-foreground mb-4">
+              No se pudo conectar con el servidor para obtener los permisos.
+            </p>
+            <Button 
+              onClick={() => queryClient.invalidateQueries({ queryKey: ['/api/permissions/matrix'] })}
+              className="bg-purple-600 hover:bg-purple-700"
+            >
+              <RotateCcw className="h-4 w-4 mr-2" />
+              Reintentar Carga
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header con controles */}
@@ -183,11 +303,11 @@ export default function PermissionsMatrix() {
               </Button>
               <Button 
                 onClick={savePermissions}
-                disabled={!hasChanges}
+                disabled={!hasChanges || saveMutation.isPending}
                 className="bg-purple-600 hover:bg-purple-700"
               >
                 <Save className="h-4 w-4 mr-2" />
-                Guardar Cambios
+                {saveMutation.isPending ? 'Guardando...' : 'Guardar Cambios'}
               </Button>
             </div>
           </div>

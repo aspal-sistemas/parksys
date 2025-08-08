@@ -18,6 +18,7 @@ import { incomeCategories, expenseCategories } from "../shared/finance-schema";
 import { eq } from "drizzle-orm";
 import { registerInstructorInvitationRoutes } from "./instructorInvitationRoutes";
 import { registerInstructorApplicationRoutes } from "./instructorApplicationRoutes";
+import { registerAuditRoutes } from "./audit-routes";
 
 const app = express();
 
@@ -226,6 +227,12 @@ app.use('/attached_assets', express.static(path.join(process.cwd(), 'attached_as
 
 // Servir archivos de publicidad desde uploads/advertising
 app.use('/uploads/advertising', express.static(path.join(process.cwd(), 'uploads/advertising')));
+
+// Servir archivos de uploads generales
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+
+// Servir archivos de Object Storage desde uploads
+app.use('/objects/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // ENDPOINT COMBINADO para la matriz de flujo de efectivo
 app.get("/cash-flow-matrix-data", async (req: Request, res: Response) => {
@@ -653,6 +660,11 @@ app.use('/api', activityRouter);
 // Registrar rutas de invitaciones de instructores
 registerInstructorInvitationRoutes(app);
 registerInstructorApplicationRoutes(app);
+
+// Registrar rutas de auditoría
+console.log("🔍 Registrando rutas de auditoría...");
+registerAuditRoutes(app);
+console.log("✅ Rutas de auditoría registradas");
 
 // Registrar las rutas de prueba
 app.use('/api/test', testRouter);
