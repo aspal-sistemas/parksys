@@ -9,8 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { AdminSidebarComplete } from "@/components/AdminSidebarComplete";
-import { Header } from "@/components/Header";
+import AdminSidebarComplete from "@/components/AdminSidebarComplete";
+import Header from "@/components/Header";
 import { 
   Shield, 
   Key, 

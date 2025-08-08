@@ -314,6 +314,12 @@ const AdminSidebarComplete: React.FC = () => {
     if (location.startsWith('/admin/marketing')) return 'marketing';
     if (location.startsWith('/admin/advertising')) return 'advertising';
     if (location.startsWith('/admin/communications')) return 'comunicacion';
+    // Rutas del módulo "Configuración y Seguridad"
+    if (location.startsWith('/admin/configuracion-seguridad/access/')) return 'control-acceso';
+    if (location.startsWith('/admin/configuracion-seguridad/policies')) return 'politicas';
+    if (location.startsWith('/admin/configuracion-seguridad/notifications')) return 'notificaciones';
+    if (location.startsWith('/admin/configuracion-seguridad/audit')) return 'auditoria';
+    if (location.startsWith('/admin/configuracion-seguridad/maintenance') || location.startsWith('/admin/system/')) return 'mantenimiento-sistema';
     return null;
   };
   
@@ -365,6 +371,7 @@ const AdminSidebarComplete: React.FC = () => {
     if (location.startsWith('/admin/users') || location.startsWith('/admin/permissions') || location.startsWith('/admin/settings')) return ['system'];
     if (location.startsWith('/admin/hr')) return ['hr'];
     if (location.startsWith('/admin/security') || location.startsWith('/admin/roles') || location.startsWith('/admin/role-assignments') || location.startsWith('/admin/role-audits')) return ['security'];
+    if (location.startsWith('/admin/configuracion-seguridad') || location.startsWith('/admin/system/')) return ['config-security'];
     if (location.startsWith('/admin/documents') || location.startsWith('/admin/comments')) return ['system'];
     return []; // Sin módulos abiertos por defecto
   };
