@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import PublicLayout from '@/components/PublicLayout';
 import { Link, useLocation } from 'wouter';
-import parkImage from '@assets/park-with-lake-and-stone-bridge-old-european-town-2024-12-04-10-14-36-utc_1752941385588.jpg';
+const parkImage = "/images/park-lake-bridge.jpg";
 import AdSpace from '@/components/AdSpace';
 
 interface TreeSpecies {

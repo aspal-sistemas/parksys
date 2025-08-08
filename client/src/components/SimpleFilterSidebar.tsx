@@ -21,7 +21,7 @@ interface ExtendedAmenity {
   createdAt: Date;
 }
 import AmenityIcon from './AmenityIcon';
-import parkIllustration from '@assets/park-11-people-leisure_1752942068617.jpg';
+const parkIllustration = "/images/park-people-leisure.jpg";
 
 interface SimpleFilterSidebarProps {
   onApplyFilters: (filters: {

@@ -25,7 +25,7 @@ import {
   Coffee,
   CheckCircle
 } from 'lucide-react';
-import heroImage from '@assets/group-of-tourists-walking-through-natural-reserve-2024-05-27-02-02-13-utc_1751508792698.jpg';
+const heroImage = "/images/reservations-hero.jpg";
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

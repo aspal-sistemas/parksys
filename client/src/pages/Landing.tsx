@@ -28,7 +28,7 @@ import {
   TrendingUp,
   Settings
 } from 'lucide-react';
-import logoPath from '@assets/PHOTO-2025-06-16-16-11-35_1750112001756.jpg';
+const logoPath = "/images/landing-logo.jpg";
 
 const Landing = () => {
   const { t } = useTranslation('common');

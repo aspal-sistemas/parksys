@@ -22,7 +22,7 @@ import {
   DollarSign,
   Trophy
 } from 'lucide-react';
-import heroImage from '@assets/a-teenage-girl-choosing-books-near-a-street-bookst-2025-01-07-12-36-32-utc_1752940964207.jpg';
+const heroImage = "/images/activities-hero.jpg";
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

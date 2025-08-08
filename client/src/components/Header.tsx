@@ -21,8 +21,8 @@ import { HelpCenter } from "@/components/HelpCenter";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import UserProfileImage from "@/components/UserProfileImage";
 import { useAuth } from "@/hooks/useAuth";
-import logoImage from "@assets/logo ambu_1754602816490.png";
-import agencyLogo from "@assets/logo ambu_1754602816490.png";
+const logoImage = "/images/logo-ambu.png";
+const agencyLogo = "/images/logo-ambu.png";
 
 const Header: React.FC = () => {
   const [location] = useLocation();

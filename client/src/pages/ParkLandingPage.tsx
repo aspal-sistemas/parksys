@@ -42,7 +42,7 @@ import PublicInstructorEvaluationForm from '@/components/PublicInstructorEvaluat
 import ParkEvaluationsSectionSimple from '@/components/ParkEvaluationsSectionSimple';
 import PublicLayout from '@/components/PublicLayout';
 import AdSpace from '@/components/AdSpace';
-import greenFlagLogo from '@assets/PHOTO-2025-07-01-12-36-16_1751396336894.jpg';
+const greenFlagLogo = "/images/green-flag-logo.jpg";
 
 function ParkLandingPage() {
   const { slug } = useParams<{ slug: string }>();

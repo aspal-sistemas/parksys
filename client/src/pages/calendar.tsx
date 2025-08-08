@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, MapPin, Clock, Users, Tag, BookOpen, User, X, Filter, Activity } from 'lucide-react';
 import PublicLayout from '@/components/PublicLayout';
-import heroImage from '@assets/People_23-02_1752941117659.jpg';
+const heroImage = "/images/people-calendar.jpg";
 
 // Tipo para las actividades
 interface Activity {

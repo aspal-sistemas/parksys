@@ -1,5 +1,4 @@
-import { useState, useEffect } from "react";
-import { ObjectUploader } from "./ObjectUploader";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,8 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Trash2, Image, FileText, Star } from "lucide-react";
-import type { UploadResult } from "@uppy/core";
+import { Trash2, Image, FileText, Star, Upload } from "lucide-react";
 
 interface SpaceImage {
   id: number;
@@ -88,21 +86,7 @@ export function SpaceMediaManager({ spaceId, isEditMode = false }: SpaceMediaMan
     }
   };
 
-  const getUploadParameters = async () => {
-    try {
-      // Para subida local con multer, usamos POST directo
-      return {
-        method: "POST" as const,
-        url: "/api/spaces/upload",
-        formData: true, // Indica que usaremos FormData
-        fields: {},
-        headers: {}
-      };
-    } catch (error) {
-      console.error("Error getting upload parameters:", error);
-      throw error;
-    }
-  };
+
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -228,50 +212,7 @@ export function SpaceMediaManager({ spaceId, isEditMode = false }: SpaceMediaMan
     }
   };
 
-  const handleDocumentUploadComplete = async (result: any) => {
-    if (!spaceId || !result.successful?.[0]?.response?.uploadURL) return;
-    
-    setLoading(true);
-    try {
-      const uploadedUrl = result.successful[0].response.uploadURL;
-      
-      const response = await fetch(`/api/spaces/${spaceId}/documents`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          documentUrl: uploadedUrl,
-          title: newDocumentTitle,
-          description: newDocumentDescription,
-          fileSize: result.successful[0].size,
-        }),
-      });
 
-      if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      
-      await loadDocuments();
-      setNewDocumentTitle("");
-      setNewDocumentDescription("");
-      toast({
-        title: "Documento agregado",
-        description: "El documento se ha agregado exitosamente al espacio.",
-      });
-    } catch (error) {
-      console.error("Error uploading document:", error);
-      toast({
-        title: "Error",
-        description: "Error al agregar el documento.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const deleteImage = async (imageId: number) => {
     try {

@@ -1312,7 +1312,7 @@ const AdminSidebarComplete: React.FC = () => {
       <div className="p-4 border-t border-teal-600" style={{ backgroundColor: '#003D49' }}>
         <div className="flex flex-col items-center justify-center gap-0">
           <img 
-            src="/attached_assets/iScreen Shoter - Acrobat - 250806102921_1754500660875.png" 
+            src="/images/sidebar-logo.png" 
             alt="ParkSys - Sistema de parques" 
             className="h-18 w-auto opacity-80 hover:opacity-100 transition-opacity"
           />

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { FileImage } from 'lucide-react';
 import AmenityIcon from '@/components/ui/amenity-icon';
-import greenFlagLogo from '@assets/PHOTO-2025-07-01-12-36-16_1751396336894.jpg';
+const greenFlagLogo = "/images/green-flag-logo.jpg";
 
 interface ParkCardProps {
   park: ExtendedPark;

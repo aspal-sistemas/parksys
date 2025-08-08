@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import PublicLayout from '@/components/PublicLayout';
 import AdSpace from '@/components/AdSpace';
-import heroImage from '@assets/barista-making-tasty-coffee-on-a-professional-mach-2025-01-07-23-28-05-utc_1752941279273.jpg';
+const heroImage = "/images/concessions-hero.jpg";
 
 interface Concession {
   id: number;
