@@ -54,7 +54,10 @@ export function SpaceMediaManager({ spaceId, isEditMode = false }: SpaceMediaMan
   const loadImages = async () => {
     if (!spaceId) return;
     try {
-      const response = await apiRequest("GET", `/api/spaces/${spaceId}/images`);
+      const response = await fetch(`/api/spaces/${spaceId}/images`);
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
       const data = await response.json();
       setImages(data);
     } catch (error) {
@@ -65,7 +68,10 @@ export function SpaceMediaManager({ spaceId, isEditMode = false }: SpaceMediaMan
   const loadDocuments = async () => {
     if (!spaceId) return;
     try {
-      const response = await apiRequest("GET", `/api/spaces/${spaceId}/documents`);
+      const response = await fetch(`/api/spaces/${spaceId}/documents`);
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
       const data = await response.json();
       setDocuments(data);
     } catch (error) {
@@ -75,7 +81,17 @@ export function SpaceMediaManager({ spaceId, isEditMode = false }: SpaceMediaMan
 
   const getUploadParameters = async () => {
     try {
-      const response = await apiRequest("POST", "/api/objects/upload");
+      const response = await fetch("/api/spaces/upload", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+      
       const data = await response.json();
       return {
         method: "PUT" as const,
