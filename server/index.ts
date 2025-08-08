@@ -19,6 +19,7 @@ import { eq } from "drizzle-orm";
 import { registerInstructorInvitationRoutes } from "./instructorInvitationRoutes";
 import { registerInstructorApplicationRoutes } from "./instructorApplicationRoutes";
 import { registerAuditRoutes } from "./audit-routes";
+import { ObjectStorageService } from "./objectStorage";
 
 const app = express();
 
@@ -231,8 +232,27 @@ app.use('/uploads/advertising', express.static(path.join(process.cwd(), 'uploads
 // Servir archivos de uploads generales
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
-// Servir archivos de Object Storage desde uploads
-app.use('/objects/uploads', express.static(path.join(process.cwd(), 'uploads')));
+// Endpoint para servir archivos de Object Storage
+app.get('/objects/uploads/:objectId', async (req: Request, res: Response) => {
+  try {
+    const { objectId } = req.params;
+    console.log(`🔍 Solicitando archivo de Object Storage: ${objectId}`);
+    
+    const objectStorageService = new ObjectStorageService();
+    const file = await objectStorageService.searchPublicObject(`uploads/${objectId}`);
+    
+    if (!file) {
+      console.log(`❌ Archivo no encontrado en Object Storage: ${objectId}`);
+      return res.status(404).json({ error: 'File not found' });
+    }
+    
+    console.log(`✅ Archivo encontrado, descargando: ${objectId}`);
+    await objectStorageService.downloadObject(file, res);
+  } catch (error) {
+    console.error(`Error al servir archivo de Object Storage ${req.params.objectId}:`, error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 // ENDPOINT COMBINADO para la matriz de flujo de efectivo
 app.get("/cash-flow-matrix-data", async (req: Request, res: Response) => {
