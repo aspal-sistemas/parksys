@@ -1,8 +1,3 @@
-El error se debe a que la propiedad de enrutamiento **`routes`** no puede ser utilizada simultáneamente con la propiedad **`headers`** a nivel de raíz. Para corregirlo, debes integrar los `headers` dentro de la regla de `routes` correspondiente.
-
-A continuación, se muestra el archivo `vercel.json` corregido, donde los encabezados de CORS se han movido a la regla de enrutamiento de la API:
-
-```json
 {
   "version": 2,
   "routes": [
