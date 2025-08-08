@@ -339,7 +339,7 @@ const AdminSidebarComplete: React.FC = () => {
     const activeModules = getActiveModule();
     if (activeModules.length > 0) {
       setOpenAccordions(prev => {
-        const newAccordions = [...new Set([...prev, ...activeModules])];
+        const newAccordions = Array.from(new Set([...prev, ...activeModules]));
         return newAccordions;
       });
     }
