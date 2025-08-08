@@ -1128,19 +1128,13 @@ const AdminSidebarComplete: React.FC = () => {
               >
                 Matriz de Permisos
               </NavItem>
-              <NavItem 
-                href="/admin/configuracion-seguridad/access/assignments" 
-                icon={<UserCheck className="h-4 w-4" />}
-                active={location === '/admin/configuracion-seguridad/access/assignments'}
-              >
-                Asignación de Usuarios
-              </NavItem>
+
               <NavItem 
                 href="/admin/configuracion-seguridad/access/users" 
                 icon={<Users className="h-4 w-4" />}
                 active={location === '/admin/configuracion-seguridad/access/users'}
               >
-                Gestión de Usuarios
+                Gestión de Usuarios y Roles
               </NavItem>
             </CollapsibleSubmenu>
 

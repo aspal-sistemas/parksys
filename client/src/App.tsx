@@ -1290,11 +1290,7 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/permissions/matrix')))}
           </Suspense>
         </Route>
-        <Route path="/admin/configuracion-seguridad/access/assignments">
-          <Suspense fallback={<div className="p-8 text-center">Cargando asignación de usuarios...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/configuracion-seguridad/access/assignments')))}
-          </Suspense>
-        </Route>
+        {/* RUTA ELIMINADA: /assignments duplicaba funcionalidad de /users */}
         <Route path="/admin/configuracion-seguridad/access/users">
           <Suspense fallback={<div className="p-8 text-center">Cargando gestión de usuarios...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/admin/users')))}

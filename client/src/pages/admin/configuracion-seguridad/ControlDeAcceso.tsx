@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Users, UserCheck, Grid, Shield } from 'lucide-react';
 
 // Importar componentes existentes
-import UsersManagement from './componentes/UsersManagement';
+// Import eliminado - utilizamos la gestión de usuarios unificada
 import RolesManagement from './componentes/RolesManagement';
 import PermissionsMatrix from './componentes/PermissionsMatrix';
 
@@ -45,7 +45,30 @@ export default function ControlDeAcceso() {
         </TabsList>
 
         <TabsContent value="usuarios">
-          <UsersManagement />
+          <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Gestión de Usuarios</CardTitle>
+                <CardDescription>
+                  La gestión de usuarios se ha trasladado a una interfaz especializada.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-center text-muted-foreground mb-4">
+                  Accede al módulo completo de gestión de usuarios y roles desde el menú lateral.
+                </p>
+                <div className="text-center">
+                  <a
+                    href="/admin/configuracion-seguridad/access/users"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+                  >
+                    <Users className="h-4 w-4" />
+                    Ir a Gestión de Usuarios y Roles
+                  </a>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="roles">

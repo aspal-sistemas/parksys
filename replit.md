@@ -32,6 +32,7 @@ The application uses a client-server architecture with a modern full-stack.
 - **Space Reservations Image Management**: Fixed broken image display across both admin panel (`/admin/space-reservations/spaces/edit/[id]`) and public reservations page. All reservation spaces now have functional image display.
 - **Automatic Image Correction**: Built preventive system that automatically assigns valid image URLs when Object Storage generates non-accessible paths, eliminating need for manual database corrections.
 - **TypeScript Error Resolution**: Fixed compilation errors in reservable spaces routes to ensure proper functionality.
+- **Admin Navigation Optimization**: Eliminated duplicate user management routes - removed `/admin/configuracion-seguridad/access/assignments` to avoid functionality duplication with `/admin/configuracion-seguridad/access/users`, which remains as the single comprehensive user management interface.
 
 ## Previous Changes (January 2025)
 - **Architecture Refactor**: Implemented complete separation of organizational users from catalog entities, eliminating data duplication across employees, volunteers, instructors, and concessionaires tables.
