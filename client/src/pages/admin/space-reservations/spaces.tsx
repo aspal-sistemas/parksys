@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { MapPin, Users, DollarSign, Clock, CheckCircle, XCircle, Eye, Edit, Calendar, Search, Plus } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { MapPin, Users, DollarSign, Clock, CheckCircle, XCircle, Eye, Edit, Calendar, Search, Plus, Trash2 } from 'lucide-react';
 import { useLocation } from 'wouter';
 import AdminLayout from '@/components/AdminLayout';
+import { useToast } from '@/hooks/use-toast';
 
 interface ReservableSpace {
   id: number;
@@ -58,6 +60,8 @@ export default function ReservableSpacesPage() {
   const [selectedSpace, setSelectedSpace] = useState<ReservableSpace | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(9);
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const { data: spaces = [], isLoading, error } = useQuery<ReservableSpace[]>({
     queryKey: ['/api/reservable-spaces'],
@@ -117,6 +121,37 @@ export default function ReservableSpacesPage() {
 
   const handleReserveSpace = (space: ReservableSpace) => {
     setLocation(`/admin/space-reservations/new?space_id=${space.id}`);
+  };
+
+  // Mutación para eliminar espacios
+  const deleteSpaceMutation = useMutation({
+    mutationFn: async (spaceId: number) => {
+      const response = await fetch(`/api/reservable-spaces/${spaceId}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        throw new Error('Error al eliminar el espacio');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/reservable-spaces'] });
+      toast({
+        title: 'Espacio eliminado',
+        description: 'El espacio reservable ha sido eliminado correctamente.',
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: 'Error',
+        description: 'No se pudo eliminar el espacio. Inténtalo de nuevo.',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const handleDeleteSpace = (spaceId: number) => {
+    deleteSpaceMutation.mutate(spaceId);
   };
 
   if (isLoading) {
@@ -348,6 +383,40 @@ export default function ReservableSpacesPage() {
                   <Calendar className="h-3 w-3 mr-1" />
                   Reservar
                 </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-red-600 hover:text-red-800 hover:bg-red-50 border-red-200"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>¿Eliminar espacio?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Esta acción no se puede deshacer. El espacio "{space.name}" será eliminado permanentemente del sistema.
+                        {space.is_active && (
+                          <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded text-amber-800 text-sm">
+                            ⚠️ Este espacio está activo. Asegúrate de que no tenga reservas pendientes.
+                          </div>
+                        )}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => handleDeleteSpace(space.id)}
+                        className="bg-red-600 hover:bg-red-700"
+                        disabled={deleteSpaceMutation.isPending}
+                      >
+                        {deleteSpaceMutation.isPending ? 'Eliminando...' : 'Eliminar'}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </CardContent>
           </Card>

@@ -554,6 +554,74 @@ export function registerReservableSpacesRoutes(app: Express) {
     }
   });
 
+  // Ruta para eliminar un espacio reservable
+  app.delete("/api/reservable-spaces/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Verificar que el espacio existe
+      const existingSpace = await db
+        .select()
+        .from(reservableSpaces)
+        .where(eq(reservableSpaces.id, parseInt(id)))
+        .limit(1);
+
+      if (existingSpace.length === 0) {
+        return res.status(404).json({ error: "Espacio no encontrado" });
+      }
+
+      // Verificar si hay reservas activas para este espacio
+      const activeReservations = await db
+        .select()
+        .from(spaceReservations)
+        .where(
+          and(
+            eq(spaceReservations.spaceId, parseInt(id)),
+            sql`${spaceReservations.status} != 'cancelled'`
+          )
+        )
+        .limit(1);
+
+      if (activeReservations.length > 0) {
+        return res.status(400).json({ 
+          error: "No se puede eliminar el espacio porque tiene reservas activas",
+          hasActiveReservations: true
+        });
+      }
+
+      // Eliminar imágenes asociadas primero
+      await db
+        .delete(spaceImages)
+        .where(eq(spaceImages.spaceId, parseInt(id)));
+
+      // Eliminar documentos asociados
+      await db
+        .delete(spaceDocuments)
+        .where(eq(spaceDocuments.spaceId, parseInt(id)));
+
+      // Eliminar todas las reservas canceladas (histórico)
+      await db
+        .delete(spaceReservations)
+        .where(eq(spaceReservations.spaceId, parseInt(id)));
+
+      // Finalmente eliminar el espacio
+      await db
+        .delete(reservableSpaces)
+        .where(eq(reservableSpaces.id, parseInt(id)));
+
+      console.log(`🗑️ Espacio reservable ${existingSpace[0].name} (ID: ${id}) eliminado exitosamente`);
+
+      res.json({
+        success: true,
+        message: "Espacio eliminado exitosamente"
+      });
+
+    } catch (error) {
+      console.error("Error al eliminar espacio:", error);
+      res.status(500).json({ error: "Error al eliminar el espacio" });
+    }
+  });
+
   // Rutas para object storage uploads
   app.post("/api/objects/upload", async (req, res) => {
     try {
