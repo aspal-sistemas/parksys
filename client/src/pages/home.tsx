@@ -132,70 +132,82 @@ const Home: React.FC = () => {
             </p>
           </div>
           
-          <div className="flex flex-col lg:flex-row gap-4 mb-12 lg:h-[400px]">
-            {isLoading ? (
-              // Loading skeletons con nuevo layout
-              <>
-                <div className="w-full lg:w-[300px]">
-                  <Card className="animate-pulse rounded-3xl overflow-hidden shadow-lg h-full">
-                    <div className="h-full bg-gradient-to-br from-gray-200 to-gray-300"></div>
-                  </Card>
-                </div>
-                <div className="flex-1">
-                  <Card className="animate-pulse rounded-3xl overflow-hidden shadow-lg h-full">
-                    <div className="h-full bg-gradient-to-br from-gray-200 to-gray-300"></div>
-                  </Card>
-                </div>
-                <div className="w-full lg:w-[300px]">
-                  <Card className="animate-pulse rounded-3xl overflow-hidden shadow-lg h-full">
-                    <div className="h-full bg-gradient-to-br from-gray-200 to-gray-300"></div>
-                  </Card>
-                </div>
-              </>
-            ) : featuredParks.length > 0 ? (
-              <>
-                {/* Card izquierda */}
-                <div className="w-full lg:w-[300px]">
-                  <div className="group h-full">
-                    <Card className="border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-[1.02] rounded-3xl overflow-hidden bg-white h-full">
-                      <ParkCard park={featuredParks[0]} />
+          {/* Carousel de pantalla completa */}
+          <div className="relative w-screen -mx-4 sm:-mx-6 lg:-mx-8 mb-12">
+            <div className="flex overflow-x-auto lg:overflow-hidden lg:justify-center items-center h-[400px] gap-4 px-4 sm:px-6 lg:px-8">
+              {isLoading ? (
+                // Loading skeletons con nuevo layout
+                <>
+                  <div className="flex-shrink-0 w-[300px] lg:w-[280px]">
+                    <Card className="animate-pulse rounded-3xl overflow-hidden shadow-lg h-full">
+                      <div className="h-full bg-gradient-to-br from-gray-200 to-gray-300"></div>
                     </Card>
                   </div>
-                </div>
-                
-                {/* Card central (más grande) */}
-                {featuredParks.length > 1 && (
-                  <div className="flex-1">
-                    <div className="group h-full">
-                      <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-[1.02] rounded-3xl overflow-hidden bg-white h-full">
-                        <ParkCard park={featuredParks[1]} />
-                      </Card>
-                    </div>
+                  <div className="flex-shrink-0 w-[calc(100vw-2rem)] lg:w-[600px] max-w-4xl">
+                    <Card className="animate-pulse rounded-3xl overflow-hidden shadow-lg h-full">
+                      <div className="h-full bg-gradient-to-br from-gray-200 to-gray-300"></div>
+                    </Card>
                   </div>
-                )}
-                
-                {/* Card derecha */}
-                {featuredParks.length > 2 && (
-                  <div className="w-full lg:w-[300px]">
+                  <div className="flex-shrink-0 w-[300px] lg:w-[280px]">
+                    <Card className="animate-pulse rounded-3xl overflow-hidden shadow-lg h-full">
+                      <div className="h-full bg-gradient-to-br from-gray-200 to-gray-300"></div>
+                    </Card>
+                  </div>
+                </>
+              ) : featuredParks.length > 0 ? (
+                <>
+                  {/* Card izquierda */}
+                  <div className="flex-shrink-0 w-[300px] lg:w-[280px]">
                     <div className="group h-full">
                       <Card className="border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-[1.02] rounded-3xl overflow-hidden bg-white h-full">
-                        <ParkCard park={featuredParks[2]} />
+                        <ParkCard park={featuredParks[0]} />
                       </Card>
                     </div>
                   </div>
-                )}
-              </>
-            ) : (
-              <div className="flex-1 flex items-center justify-center py-16">
-                <div className="text-center">
-                  <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <Trees className="h-12 w-12 text-gray-400" />
+                  
+                  {/* Card central (ocupa el ancho principal) */}
+                  {featuredParks.length > 1 && (
+                    <div className="flex-shrink-0 w-[calc(100vw-2rem)] lg:w-[600px] max-w-4xl">
+                      <div className="group h-full">
+                        <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-[1.02] rounded-3xl overflow-hidden bg-white h-full">
+                          <ParkCard park={featuredParks[1]} />
+                        </Card>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Card derecha */}
+                  {featuredParks.length > 2 && (
+                    <div className="flex-shrink-0 w-[300px] lg:w-[280px]">
+                      <div className="group h-full">
+                        <Card className="border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-[1.02] rounded-3xl overflow-hidden bg-white h-full">
+                          <ParkCard park={featuredParks[2]} />
+                        </Card>
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="flex-1 flex items-center justify-center py-16">
+                  <div className="text-center">
+                    <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <Trees className="h-12 w-12 text-gray-400" />
+                    </div>
+                    <p className="text-xl text-gray-500 mb-4">No hay parques disponibles en este momento</p>
+                    <p className="text-gray-400">Pronto estarán disponibles más espacios verdes</p>
                   </div>
-                  <p className="text-xl text-gray-500 mb-4">No hay parques disponibles en este momento</p>
-                  <p className="text-gray-400">Pronto estarán disponibles más espacios verdes</p>
                 </div>
+              )}
+            </div>
+            
+            {/* Indicadores de scroll en mobile */}
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 lg:hidden">
+              <div className="flex space-x-2">
+                {featuredParks.slice(0, 3).map((_, index) => (
+                  <div key={index} className="w-2 h-2 bg-white/50 rounded-full"></div>
+                ))}
               </div>
-            )}
+            </div>
           </div>
           
           <div className="text-center mb-12">
