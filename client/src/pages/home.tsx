@@ -247,7 +247,7 @@ const Home: React.FC = () => {
                             </h2>
                             
                             {/* Resumen del parque */}
-                            <div className="bg-black/40 backdrop-blur-sm rounded-xl p-3 mb-8 inline-block">
+                            <div className="bg-black/40 backdrop-blur-sm rounded-xl p-3 mb-4 inline-block">
                               {(() => {
                                 const summary = generateParkSummary(featuredParks[currentIndex]);
                                 return (
@@ -274,9 +274,9 @@ const Home: React.FC = () => {
                             </div>
                             
                             <Link href={`/parque/${featuredParks[currentIndex]?.name.toLowerCase().replace(/\s+/g, '-')}-${featuredParks[currentIndex]?.id}`}>
-                              <Button className="bg-primary-600 hover:bg-primary-700 text-white px-10 py-4 rounded-full text-xl font-semibold transition-all duration-300 hover:scale-105 shadow-2xl">
+                              <Button className="bg-primary-600 hover:bg-primary-700 text-white px-10 py-4 rounded-full text-lg font-semibold transition-all duration-300 hover:scale-105 shadow-2xl">
                                 Conoce más
-                                <ArrowRight className="ml-3 h-6 w-6" />
+                                <ArrowRight className="ml-3 h-5 w-5" />
                               </Button>
                             </Link>
                           </div>
