@@ -590,9 +590,9 @@ const Home: React.FC = () => {
       <section className="py-24 bg-gradient-to-b from-gray-50 to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Call to action para patrocinadores - MOVIDO ARRIBA */}
-          <div className="text-center mb-16">
+          <div className="text-right mb-16">
             <div 
-              className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-3xl p-16 shadow-xl mb-16 relative overflow-hidden min-h-[300px] flex flex-col justify-center"
+              className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-3xl p-16 shadow-xl mb-16 relative overflow-hidden min-h-[300px] flex flex-col justify-center items-end"
               style={{
                 backgroundImage: `linear-gradient(rgba(147, 51, 234, 0.8), rgba(236, 72, 153, 0.8)), url('/attached_assets/excited-family-volunteers-celebrating-their-garbag-2025-08-03-03-10-39-utc_1754779889027.jpg')`,
                 backgroundSize: 'cover',
@@ -600,8 +600,8 @@ const Home: React.FC = () => {
                 backgroundRepeat: 'no-repeat'
               }}
             >
-              <h3 className="text-2xl font-bold text-white mb-4">¿Quieres ser parte del cambio?</h3>
-              <p className="text-white mb-6 text-lg font-medium">
+              <h3 className="text-2xl font-bold text-white mb-4 text-right">¿Quieres ser parte del cambio?</h3>
+              <p className="text-white mb-6 text-lg font-medium text-right">
                 Únete a nuestras alianzas estratégicas y contribuye al desarrollo sostenible de la zona metropolitana
               </p>
               <Button size="lg" className="bg-white text-purple-600 hover:bg-gray-50 font-bold px-8 py-3 rounded-xl transition-all duration-300 hover:scale-105 shadow-lg">
