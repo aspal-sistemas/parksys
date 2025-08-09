@@ -169,35 +169,37 @@ const FaunaSpeciesAdmin: React.FC = () => {
   // Funciones de manejo
   const handleCreate = (data: any) => {
     console.log('Datos del formulario:', data);
-    // Asegurar que los campos requeridos estén presentes
+    // Filtrar campos vacíos y enviar solo los que tienen valor
     const cleanData = {
-      commonName: data.commonName || '',
-      scientificName: data.scientificName || '',
-      family: data.family || '',
-      category: data.category || 'aves',
-      habitat: data.habitat || '',
-      description: data.description || '',
-      behavior: data.behavior || '',
-      diet: data.diet || '',
-      reproductionPeriod: data.reproductionPeriod || '',
+      commonName: data.commonName,
+      scientificName: data.scientificName,
+      family: data.family,
+      category: data.category,
       conservationStatus: data.conservationStatus || 'estable',
-      sizeCm: data.sizeCm || null,
-      weightGrams: data.weightGrams || null,
-      lifespan: data.lifespan || null,
       isNocturnal: data.isNocturnal || false,
       isMigratory: data.isMigratory || false,
       isEndangered: data.isEndangered || false,
-      imageUrl: data.imageUrl || null,
-      photoUrl: data.photoUrl || null,
-      photoCaption: data.photoCaption || null,
-      ecologicalImportance: data.ecologicalImportance || null,
-      threats: data.threats || null,
-      protectionMeasures: data.protectionMeasures || null,
-      observationTips: data.observationTips || null,
-      bestObservationTime: data.bestObservationTime || null,
       commonLocations: data.commonLocations || [],
       iconColor: data.iconColor || '#16a085'
     };
+
+    // Añadir campos opcionales solo si tienen valor
+    if (data.habitat) cleanData.habitat = data.habitat;
+    if (data.description) cleanData.description = data.description;
+    if (data.behavior) cleanData.behavior = data.behavior;
+    if (data.diet) cleanData.diet = data.diet;
+    if (data.reproductionPeriod) cleanData.reproductionPeriod = data.reproductionPeriod;
+    if (data.sizeCm) cleanData.sizeCm = data.sizeCm;
+    if (data.weightGrams) cleanData.weightGrams = data.weightGrams;
+    if (data.lifespan) cleanData.lifespan = data.lifespan;
+    if (data.imageUrl) cleanData.imageUrl = data.imageUrl;
+    if (data.photoUrl) cleanData.photoUrl = data.photoUrl;
+    if (data.photoCaption) cleanData.photoCaption = data.photoCaption;
+    if (data.ecologicalImportance) cleanData.ecologicalImportance = data.ecologicalImportance;
+    if (data.threats) cleanData.threats = data.threats;
+    if (data.protectionMeasures) cleanData.protectionMeasures = data.protectionMeasures;
+    if (data.observationTips) cleanData.observationTips = data.observationTips;
+    if (data.bestObservationTime) cleanData.bestObservationTime = data.bestObservationTime;
     console.log('Datos limpiados:', cleanData);
     createMutation.mutate(cleanData);
   };
