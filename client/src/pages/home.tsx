@@ -600,14 +600,20 @@ const Home: React.FC = () => {
                 backgroundRepeat: 'no-repeat'
               }}
             >
-              <h3 className="text-4xl font-bold text-white mb-4 text-right">¿Quieres colaborar con nosotros?</h3>
-              <p className="text-white mb-6 text-xl font-medium text-right">
-                Únete a nuestras alianzas estratégicas y contribuye al desarrollo sostenible de la zona metropolitana
-              </p>
-              <Button size="lg" className="bg-white text-purple-600 hover:bg-gray-50 font-bold px-8 py-3 rounded-xl transition-all duration-300 hover:scale-105 shadow-lg">
-                Convertirse en Patrocinador
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
+              {/* Overlay negro con 50% opacidad */}
+              <div className="absolute inset-0 bg-black opacity-50 rounded-3xl"></div>
+              
+              {/* Contenido con z-index para estar sobre el overlay */}
+              <div className="relative z-10">
+                <h3 className="text-4xl font-bold text-white mb-4 text-right">¿Quieres colaborar con nosotros?</h3>
+                <p className="text-white mb-6 text-xl font-medium text-right">
+                  Únete a nuestras alianzas estratégicas y contribuye al desarrollo sostenible de la zona metropolitana
+                </p>
+                <Button size="lg" className="bg-white text-purple-600 hover:bg-gray-50 font-bold px-8 py-3 rounded-xl transition-all duration-300 hover:scale-105 shadow-lg">
+                  Convertirse en Patrocinador
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </div>
             </div>
           </div>
 
