@@ -527,25 +527,14 @@ export default function TreeSpecies() {
             </Card>
           </div>
 
-          {/* Layout principal con sidebar */}
-          <div className="flex gap-8">
-            {/* Contenido principal */}
-            <div className="flex-1">
-              {/* Resultados */}
-              {filteredSpecies.length > 0 ? (
-                <>
-                  <div 
-                    className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-6'}
-                    style={{ 
-                      maxWidth: viewMode === 'grid' ? 'calc(80rem + 72px)' : undefined,
-                      marginLeft: viewMode === 'grid' ? 'auto' : undefined,
-                      marginRight: viewMode === 'grid' ? 'auto' : undefined
-                    }}
-                  >
-                    {paginatedSpecies.map((species) => (
-                      <TreeSpeciesCard key={species.id} species={species} viewMode={viewMode} />
-                    ))}
-                  </div>
+          {/* Resultados - Grid expandido sin sidebar */}
+          {filteredSpecies.length > 0 ? (
+            <>
+              <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6' : 'space-y-6'}>
+                {paginatedSpecies.map((species) => (
+                  <TreeSpeciesCard key={species.id} species={species} viewMode={viewMode} />
+                ))}
+              </div>
               
               {/* Información de paginación */}
               <div className="flex items-center justify-between mt-8 mb-12">
@@ -615,18 +604,6 @@ export default function TreeSpecies() {
               </p>
             </div>
           )}
-            </div>
-            
-            {/* Sidebar publicitario */}
-            <div className="w-80 space-y-6 sticky top-4 self-start">
-              <AdSpace 
-                spaceId="5" 
-                position="sidebar" 
-                pageType="tree-species" 
-                className="w-full"
-              />
-            </div>
-          </div>
         </div>
       </div>
     </PublicLayout>
