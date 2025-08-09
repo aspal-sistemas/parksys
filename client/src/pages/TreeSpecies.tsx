@@ -530,7 +530,7 @@ export default function TreeSpecies() {
           {/* Resultados - Grid expandido sin sidebar */}
           {filteredSpecies.length > 0 ? (
             <>
-              <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6' : 'space-y-6'}>
+              <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-6'}>
                 {paginatedSpecies.map((species) => (
                   <TreeSpeciesCard key={species.id} species={species} viewMode={viewMode} />
                 ))}
