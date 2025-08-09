@@ -242,7 +242,7 @@ const Home: React.FC = () => {
                         {/* Contenido principal */}
                         <div className="absolute inset-0 flex flex-col justify-end p-8 lg:p-12 text-white">
                           <div className="max-w-4xl">
-                            <h2 className="text-4xl lg:text-5xl font-bold text-white mb-4 leading-tight">
+                            <h2 className="text-2xl lg:text-3xl font-bold text-white mb-4 leading-tight">
                               {featuredParks[currentIndex]?.name}
                             </h2>
                             
