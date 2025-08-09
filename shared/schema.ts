@@ -792,7 +792,8 @@ export const insertDocumentSchema = createInsertSchema(documents).omit({
   createdAt: true,
   updatedAt: true
 }).extend({
-  fileType: z.string().optional() // Hacer fileType opcional para URLs externas
+  fileType: z.string().min(1, "File type is required"), // Requerir fileType
+  uploadedById: z.number().optional() // Hacer uploadedById opcional
 });
 
 export type ActivityCategory = typeof activityCategories.$inferSelect;

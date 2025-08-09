@@ -2952,8 +2952,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.post("/parks/:id/documents", isAuthenticated, hasParkAccess, async (req: Request, res: Response) => {
     try {
       const parkId = Number(req.params.id);
+      console.log(`🔍 POST /parks/${parkId}/documents - Request body:`, req.body);
+      
       const documentData = { ...req.body, parkId };
       
+      // Asegurar que fileType esté presente para URLs externas
+      if (!documentData.fileType && documentData.fileUrl) {
+        // Inferir tipo de archivo de la URL
+        const url = documentData.fileUrl.toLowerCase();
+        if (url.includes('.pdf')) documentData.fileType = 'application/pdf';
+        else if (url.includes('.doc')) documentData.fileType = 'application/msword';
+        else if (url.includes('.xls')) documentData.fileType = 'application/vnd.ms-excel';
+        else documentData.fileType = 'application/octet-stream';
+      }
+      
+      console.log(`🔍 Parsed document data:`, documentData);
       const data = insertDocumentSchema.parse(documentData);
       const result = await storage.createDocument(data);
       
@@ -2961,9 +2974,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       if (error instanceof ZodError) {
         const validationError = fromZodError(error);
-        return res.status(400).json({ message: validationError.message });
+        console.error(`❌ Validation error for POST /parks/${req.params.id}/documents:`, validationError.message);
+        return res.status(400).json({ 
+          message: validationError.message,
+          details: error.errors 
+        });
       }
-      console.error(error);
+      console.error(`❌ Server error for POST /parks/${req.params.id}/documents:`, error);
       res.status(500).json({ message: "Error adding document to park" });
     }
   });
