@@ -548,8 +548,8 @@ const Home: React.FC = () => {
       {/* CENTRO METROPOLITANO DE CONSERVACIÓN DE VIDA SILVESTRE URBANO */}
       <section className="py-24" style={{ backgroundColor: '#19633c' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-5 gap-8">
-            {/* Columna 3/5 - Imagen (lado izquierdo) */}
+          <div className="grid grid-cols-7 gap-8">
+            {/* Columna 3/7 - Imagen (lado izquierdo) */}
             <div className="col-span-3 flex items-center">
               <div className="relative w-full">
                 <div className="aspect-[4/3] bg-gradient-to-br from-emerald-200 to-teal-200 rounded-3xl overflow-hidden shadow-2xl">
@@ -562,8 +562,8 @@ const Home: React.FC = () => {
               </div>
             </div>
 
-            {/* Columna 2/5 - Texto (lado derecho) */}
-            <div className="col-span-2 flex items-center">
+            {/* Columna 4/7 - Texto (lado derecho) */}
+            <div className="col-span-4 flex items-center">
               <div className="text-right">
                 <h2 className="leading-tight mb-6">
                   <span style={{ fontFamily: 'Guttery Regular, Georgia, Times, serif', color: '#aaaf4f', fontSize: '3rem', fontWeight: '300' }}>Comprometidos</span><br />
