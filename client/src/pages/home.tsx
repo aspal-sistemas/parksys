@@ -117,7 +117,7 @@ const Home: React.FC = () => {
             {/* Título principal */}
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
               Agencia Metropolitana
-              <span className="block text-[#19633c]">de Bosques Urbanos</span>
+              <span className="block">de Bosques Urbanos</span>
             </h1>
             
             {/* Subtítulo */}
@@ -135,7 +135,7 @@ const Home: React.FC = () => {
             {/* Botones CTA */}
             <div className="flex flex-col gap-4 mb-12 items-start">
               <Link href="/parks">
-                <Button size="lg" className="bg-[#19633c] hover:bg-[#145530] text-white font-semibold px-8 py-4 text-lg rounded-lg transition-all duration-300 hover:scale-105 shadow-xl">
+                <Button size="lg" className="bg-[#aaaf4f] hover:bg-[#9ca047] text-white font-semibold px-8 py-4 text-lg rounded-lg transition-all duration-300 hover:scale-105 shadow-xl">
                   <Map className="mr-3 h-5 w-5" />
                   Nuestros parques
                 </Button>
@@ -168,7 +168,7 @@ const Home: React.FC = () => {
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-6xl font-bold text-gray-900 mb-8">
               <span style={{ fontFamily: 'Guttery Regular, Georgia, Times, serif', color: '#51a19f', fontWeight: '300' }}>Nuestros</span><br />
-              <span className="text-emerald-600">Bosques Urbanos</span>
+              <span style={{ color: '#19633c' }}>Bosques Urbanos</span>
             </h2>
             <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
               espacios para respirar, convivir y disfrutar
@@ -342,7 +342,7 @@ const Home: React.FC = () => {
           
           <div className="text-center mb-12">
             <Link href="/parks">
-              <Button size="lg" className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold px-10 py-4 text-lg rounded-2xl transition-all duration-300 hover:scale-105 hover:shadow-xl">
+              <Button size="lg" className="bg-[#19633c] hover:bg-[#145530] text-white font-bold px-10 py-4 text-lg rounded-2xl transition-all duration-300 hover:scale-105 hover:shadow-xl">
                 Encuentra tu parque favorito
                 <ArrowRight className="h-5 w-5 ml-2" />
               </Button>
