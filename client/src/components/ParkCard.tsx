@@ -72,11 +72,11 @@ const ParkCard: React.FC<ParkCardProps> = ({ park, onClick }) => {
   return (
     <Link 
       href={`/parque/${generateParkSlug(park.name, park.id)}`}
-      className="group cursor-pointer block"
+      className="group cursor-pointer block h-full"
     >
-      <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+      <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 h-full">
         {/* Imagen del parque con overlay y Green Flag */}
-        <div className="relative aspect-[4/3] overflow-hidden">
+        <div className="relative h-full overflow-hidden">
           {park.primaryImage || park.mainImageUrl ? (
             <img 
               src={park.primaryImage || park.mainImageUrl || ''} 
