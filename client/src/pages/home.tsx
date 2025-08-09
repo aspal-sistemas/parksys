@@ -377,8 +377,8 @@ const Home: React.FC = () => {
           {/* Grid de eventos destacados */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
             {/* Evento 1 */}
-            <div className="bg-white rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-              <div className="aspect-[16/9] relative overflow-hidden">
+            <div className="bg-white rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 h-[500px] flex flex-col">
+              <div className="h-2/3 relative overflow-hidden">
                 <img 
                   src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
                   alt="Taller familiar en parque urbano"
@@ -388,9 +388,11 @@ const Home: React.FC = () => {
                   <Calendar className="h-6 w-6 text-orange-600" />
                 </div>
               </div>
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-3">Talleres de Fin de Semana</h3>
-                <p className="text-gray-600 mb-4">Actividades familiares todos los sábados y domingos en nuestros parques urbanos</p>
+              <div className="h-1/3 p-6 flex flex-col justify-between">
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">Talleres de Fin de Semana</h3>
+                  <p className="text-gray-600 text-sm mb-3">Actividades familiares todos los sábados y domingos en nuestros parques urbanos</p>
+                </div>
                 <div className="flex items-center text-sm text-orange-600 font-semibold">
                   <Calendar className="h-4 w-4 mr-2" />
                   Sábados y Domingos
@@ -399,8 +401,8 @@ const Home: React.FC = () => {
             </div>
 
             {/* Evento 2 */}
-            <div className="bg-white rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-              <div className="aspect-[16/9] relative overflow-hidden">
+            <div className="bg-white rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 h-[500px] flex flex-col">
+              <div className="h-2/3 relative overflow-hidden">
                 <img 
                   src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
                   alt="Jornada de reforestación con voluntarios"
@@ -410,9 +412,11 @@ const Home: React.FC = () => {
                   <Trees className="h-6 w-6 text-green-600" />
                 </div>
               </div>
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-3">Jornadas de Reforestación</h3>
-                <p className="text-gray-600 mb-4">Únete a nuestras jornadas mensuales de plantación de árboles nativos</p>
+              <div className="h-1/3 p-6 flex flex-col justify-between">
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">Jornadas de Reforestación</h3>
+                  <p className="text-gray-600 text-sm mb-3">Únete a nuestras jornadas mensuales de plantación de árboles nativos</p>
+                </div>
                 <div className="flex items-center text-sm text-green-600 font-semibold">
                   <Calendar className="h-4 w-4 mr-2" />
                   Primer sábado del mes
@@ -421,8 +425,8 @@ const Home: React.FC = () => {
             </div>
 
             {/* Evento 3 */}
-            <div className="bg-white rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-              <div className="aspect-[16/9] relative overflow-hidden">
+            <div className="bg-white rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 h-[500px] flex flex-col">
+              <div className="h-2/3 relative overflow-hidden">
                 <img 
                   src="https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
                   alt="Festival cultural comunitario en parque"
@@ -432,9 +436,11 @@ const Home: React.FC = () => {
                   <Users className="h-6 w-6 text-purple-600" />
                 </div>
               </div>
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-3">Festivales Culturales</h3>
-                <p className="text-gray-600 mb-4">Celebraciones comunitarias con música, arte y gastronomía local</p>
+              <div className="h-1/3 p-6 flex flex-col justify-between">
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">Festivales Culturales</h3>
+                  <p className="text-gray-600 text-sm mb-3">Celebraciones comunitarias con música, arte y gastronomía local</p>
+                </div>
                 <div className="flex items-center text-sm text-purple-600 font-semibold">
                   <Calendar className="h-4 w-4 mr-2" />
                   Eventos especiales
