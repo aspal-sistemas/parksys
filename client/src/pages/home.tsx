@@ -71,17 +71,10 @@ const Home: React.FC = () => {
         
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-screen flex items-center">
           <div className="max-w-3xl">
-            {/* Badge superior */}
-            <div className="inline-flex items-center gap-2 bg-emerald-600/90 backdrop-blur-sm rounded-full px-4 py-2 mb-6">
-              <Trees className="h-4 w-4 text-white" />
-              <span className="text-sm font-medium text-white">Agencia Metropolitana de Bosques Urbanos</span>
-            </div>
-            
             {/* Título principal */}
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
-              Transformando
-              <span className="block text-emerald-400">espacios verdes</span>
-              <span className="block text-white">para la comunidad</span>
+              Agencia Metropolitana
+              <span className="block text-emerald-400">de Bosques Urbanos</span>
             </h1>
             
             {/* Subtítulo */}
@@ -106,15 +99,7 @@ const Home: React.FC = () => {
               </Link>
             </div>
             
-            {/* 🎯 PUBLICIDAD PILOTO - Hero Banner */}
-            <div className="mb-8 relative z-20">
-              <AdSpace 
-                spaceId={10} 
-                position="hero" 
-                pageType="homepage" 
-                className="rounded-lg shadow-xl border-2 border-white/20 backdrop-blur-sm max-w-2xl"
-              />
-            </div>
+
 
           </div>
           
