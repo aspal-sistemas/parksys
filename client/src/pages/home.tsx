@@ -549,8 +549,22 @@ const Home: React.FC = () => {
       <section className="py-24" style={{ backgroundColor: '#19633c' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-16">
-            {/* Contenido */}
-            <div className="space-y-8">
+            {/* Imagen - Lado izquierdo */}
+            <div className="relative order-2 lg:order-1">
+              <div className="aspect-[4/3] bg-gradient-to-br from-emerald-200 to-teal-200 rounded-3xl overflow-hidden shadow-2xl">
+                <img 
+                  src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                  alt="Centro de Conservación de Vida Silvestre"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-gradient-to-br from-amber-400 to-orange-500 rounded-3xl flex items-center justify-center shadow-xl">
+                <Sparkles className="h-12 w-12 text-white" />
+              </div>
+            </div>
+            
+            {/* Contenido - Lado derecho */}
+            <div className="space-y-8 order-1 lg:order-2">
               <div>
                 <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
                   Comprometidos<br />
@@ -565,20 +579,6 @@ const Home: React.FC = () => {
                 Conoce Más Sobre Conservación
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
-            </div>
-            
-            {/* Imagen */}
-            <div className="relative">
-              <div className="aspect-[4/3] bg-gradient-to-br from-emerald-200 to-teal-200 rounded-3xl overflow-hidden shadow-2xl">
-                <img 
-                  src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                  alt="Centro de Conservación de Vida Silvestre"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="absolute -bottom-6 -left-6 w-24 h-24 bg-gradient-to-br from-amber-400 to-orange-500 rounded-3xl flex items-center justify-center shadow-xl">
-                <Sparkles className="h-12 w-12 text-white" />
-              </div>
             </div>
           </div>
         </div>
