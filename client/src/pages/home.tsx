@@ -84,7 +84,7 @@ const Home: React.FC = () => {
             </p>
             
             {/* Badge */}
-            <div className="inline-flex items-center bg-black/55 text-white px-8 py-4 rounded-lg text-lg font-semibold mb-6">
+            <div className="inline-flex items-center bg-black/55 text-white px-8 py-4 rounded-lg text-lg font-semibold mb-6 border border-white/30">
               Zona Metropolitana de Guadalajara
             </div>
 
