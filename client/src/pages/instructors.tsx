@@ -200,7 +200,8 @@ const InstructorsPage: React.FC = () => {
   return (
     <PublicLayout>
       <div className="bg-gray-50">
-      {/* Header Ad Space */}
+      {/* Header Ad Space - Oculto */}
+      {/*
       <div className="w-full bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 py-2">
           <AdSpace 
@@ -211,6 +212,7 @@ const InstructorsPage: React.FC = () => {
           />
         </div>
       </div>
+      */}
 
       {/* Hero Section */}
       <div 
