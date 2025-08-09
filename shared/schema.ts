@@ -1525,21 +1525,24 @@ export const faunaSpecies = pgTable("fauna_species", {
 export type FaunaSpecies = typeof faunaSpecies.$inferSelect;
 export type InsertFaunaSpecies = typeof faunaSpecies.$inferInsert;
 
-export const insertFaunaSpeciesSchema = createInsertSchema(faunaSpecies).omit({ 
-  id: true,
-  createdAt: true,
-  updatedAt: true
-}).extend({
-  // Hacer campos opcionales más permisivos
-  family: z.string().optional(),
+// Schema más simple y permisivo para fauna
+export const insertFaunaSpeciesSchema = z.object({
+  commonName: z.string().min(1, 'El nombre común es requerido'),
+  scientificName: z.string().min(1, 'El nombre científico es requerido'),
+  family: z.string().min(1, 'La familia es requerida'),
+  category: z.enum(['aves', 'mamiferos', 'insectos', 'vida_acuatica']),
   habitat: z.string().optional(),
   description: z.string().optional(),
   behavior: z.string().optional(),
   diet: z.string().optional(),
   reproductionPeriod: z.string().optional(),
+  conservationStatus: z.enum(['estable', 'vulnerable', 'en_peligro', 'en_peligro_critico', 'extinto_local']).default('estable'),
   sizeCm: z.string().optional(),
   weightGrams: z.string().optional(),
   lifespan: z.number().optional(),
+  isNocturnal: z.boolean().default(false),
+  isMigratory: z.boolean().default(false),
+  isEndangered: z.boolean().default(false),
   imageUrl: z.string().optional(),
   photoUrl: z.string().optional(),
   photoCaption: z.string().optional(),
@@ -1548,9 +1551,9 @@ export const insertFaunaSpeciesSchema = createInsertSchema(faunaSpecies).omit({
   protectionMeasures: z.string().optional(),
   observationTips: z.string().optional(),
   bestObservationTime: z.string().optional(),
-  commonLocations: z.array(z.string()).optional(),
-  iconColor: z.string().optional(),
-  iconType: z.string().optional(),
+  commonLocations: z.array(z.string()).default([]),
+  iconColor: z.string().default('#16a085'),
+  iconType: z.string().default('system'),
   customIconUrl: z.string().optional()
 });
 
