@@ -569,8 +569,9 @@ const Home: React.FC = () => {
                   <span style={{ fontFamily: 'Guttery Regular, Georgia, Times, serif', color: '#aaaf4f', fontSize: '3rem', fontWeight: '300' }}>Comprometidos</span><br />
                   <span style={{ color: '#aaaf4f', fontSize: '2.5rem', fontWeight: '400' }}>con la naturaleza</span>
                 </h2>
-                <p className="text-xl text-green-100 leading-relaxed mb-6">
-                  Tenemos programas de educación y protección de la flora y fauna
+                <p className="text-xl text-green-100 leading-relaxed mb-6 font-bold">
+                  Tenemos programas de educación<br />
+                  y protección de la flora y fauna
                 </p>
                 
                 <Button size="lg" className="bg-white hover:bg-gray-50 text-gray-900 font-bold px-6 py-3 rounded-xl transition-all duration-300 hover:scale-105 border border-gray-200 shadow-md">
