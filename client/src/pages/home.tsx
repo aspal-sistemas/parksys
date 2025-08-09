@@ -553,12 +553,11 @@ const Home: React.FC = () => {
             <div className="space-y-8">
               <div>
                 <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-                  Centro Metropolitano de 
-                  <span className="block text-green-300">Conservación de Vida Silvestre Urbano</span>
+                  Comprometidos<br />
+                  <span className="text-green-300">con la naturaleza</span>
                 </h2>
                 <p className="text-xl text-green-100 leading-relaxed mb-8">
-                  Dedicado a la protección, rehabilitación y conservación de especies nativas en el área metropolitana. 
-                  Trabajamos en la preservación de la biodiversidad urbana y la educación ambiental para las futuras generaciones.
+                  Tenemos programas de educación y protección de la flora y fauna
                 </p>
               </div>
               
