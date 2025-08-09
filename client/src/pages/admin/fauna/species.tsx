@@ -168,7 +168,38 @@ const FaunaSpeciesAdmin: React.FC = () => {
 
   // Funciones de manejo
   const handleCreate = (data: any) => {
-    createMutation.mutate(data);
+    console.log('Datos del formulario:', data);
+    // Asegurar que los campos requeridos estén presentes
+    const cleanData = {
+      commonName: data.commonName || '',
+      scientificName: data.scientificName || '',
+      family: data.family || '',
+      category: data.category || 'aves',
+      habitat: data.habitat || '',
+      description: data.description || '',
+      behavior: data.behavior || '',
+      diet: data.diet || '',
+      reproductionPeriod: data.reproductionPeriod || '',
+      conservationStatus: data.conservationStatus || 'estable',
+      sizeCm: data.sizeCm || null,
+      weightGrams: data.weightGrams || null,
+      lifespan: data.lifespan || null,
+      isNocturnal: data.isNocturnal || false,
+      isMigratory: data.isMigratory || false,
+      isEndangered: data.isEndangered || false,
+      imageUrl: data.imageUrl || null,
+      photoUrl: data.photoUrl || null,
+      photoCaption: data.photoCaption || null,
+      ecologicalImportance: data.ecologicalImportance || null,
+      threats: data.threats || null,
+      protectionMeasures: data.protectionMeasures || null,
+      observationTips: data.observationTips || null,
+      bestObservationTime: data.bestObservationTime || null,
+      commonLocations: data.commonLocations || [],
+      iconColor: data.iconColor || '#16a085'
+    };
+    console.log('Datos limpiados:', cleanData);
+    createMutation.mutate(cleanData);
   };
 
   const handleEdit = (speciesData: FaunaSpecies) => {
@@ -331,12 +362,40 @@ const FaunaSpeciesAdmin: React.FC = () => {
 
                     <FormField
                       control={form.control}
+                      name="habitat"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Hábitat</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Hábitat natural" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
                       name="description"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Descripción</FormLabel>
                           <FormControl>
                             <Textarea placeholder="Descripción de la especie" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="behavior"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Comportamiento</FormLabel>
+                          <FormControl>
+                            <Textarea placeholder="Comportamiento de la especie" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
