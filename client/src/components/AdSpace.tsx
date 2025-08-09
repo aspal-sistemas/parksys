@@ -261,7 +261,7 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
     sidebar: 'w-full h-64 bg-white border border-gray-200 rounded-lg shadow-sm mb-6',
     profile: 'bg-white rounded-lg border shadow-sm p-4',
     footer: 'w-full tree-species-wide-container h-20 bg-white border border-gray-200 rounded-lg shadow-sm mt-6',
-    banner: 'w-full h-[150px] bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden',
+    banner: 'w-full h-[200px] bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300',
     card: 'bg-white rounded-lg border shadow-sm p-4',
     'sidebar-sports': 'bg-white rounded-lg border shadow-sm p-4',
     'sidebar-events': 'bg-white rounded-lg border shadow-sm p-4',

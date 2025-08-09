@@ -1,0 +1,44 @@
+<svg width="800" height="200" viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="oceanGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e3a8a;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#0ea5e9;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#06b6d4;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="fishGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#f97316;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#eab308;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Fondo oceánico -->
+  <rect width="800" height="200" fill="url(#oceanGradient)"/>
+  
+  <!-- Burbujas -->
+  <circle cx="100" cy="40" r="6" fill="white" opacity="0.6"/>
+  <circle cx="120" cy="60" r="4" fill="white" opacity="0.4"/>
+  <circle cx="140" cy="30" r="8" fill="white" opacity="0.5"/>
+  <circle cx="700" cy="50" r="5" fill="white" opacity="0.6"/>
+  <circle cx="720" cy="70" r="3" fill="white" opacity="0.4"/>
+  <circle cx="680" cy="80" r="7" fill="white" opacity="0.5"/>
+  
+  <!-- Pez tropical -->
+  <ellipse cx="200" cy="100" rx="40" ry="20" fill="url(#fishGradient)"/>
+  <ellipse cx="180" cy="95" rx="15" ry="25" fill="url(#fishGradient)"/>
+  <circle cx="170" cy="92" r="4" fill="white"/>
+  <circle cx="168" cy="90" r="2" fill="black"/>
+  
+  <!-- Texto principal -->
+  <text x="300" y="70" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="white">ACUARIO</text>
+  <text x="300" y="120" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="#f97316">MICHÍN</text>
+  <text x="300" y="150" font-family="Arial, sans-serif" font-size="24" fill="white">Guadalajara</text>
+  
+  <!-- Plantas marinas -->
+  <path d="M50 200 Q60 180 70 160 Q80 140 90 120" stroke="#10b981" stroke-width="8" fill="none" opacity="0.8"/>
+  <path d="M60 200 Q70 175 80 150 Q90 125 100 100" stroke="#10b981" stroke-width="6" fill="none" opacity="0.6"/>
+  
+  <!-- Coral -->
+  <circle cx="750" cy="160" r="20" fill="#ec4899" opacity="0.8"/>
+  <circle cx="740" cy="140" r="15" fill="#f97316" opacity="0.7"/>
+  <circle cx="760" cy="145" r="12" fill="#eab308" opacity="0.6"/>
+</svg>

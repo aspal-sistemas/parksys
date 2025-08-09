@@ -350,7 +350,7 @@ const Home: React.FC = () => {
           </div>
           
           {/* Banner publicitario */}
-          <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] my-8">
+          <div className="w-full my-12">
             <AdSpace 
               spaceId={14} 
               position="banner" 
