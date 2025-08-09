@@ -627,7 +627,7 @@ const Home: React.FC = () => {
                         }
                       }}
                     >
-                      <div className="text-center">
+                      <div className="text-center flex items-center justify-center h-full">
                         <div className="group-hover:scale-105 transition-transform duration-300">
                           <img 
                             src={sponsor.logo} 
