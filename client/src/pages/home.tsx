@@ -548,37 +548,39 @@ const Home: React.FC = () => {
       {/* CENTRO METROPOLITANO DE CONSERVACIÓN DE VIDA SILVESTRE URBANO */}
       <section className="py-24" style={{ backgroundColor: '#19633c' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-16">
-            {/* Imagen - Lado izquierdo */}
-            <div className="relative order-2 lg:order-1">
-              <div className="aspect-[4/3] bg-gradient-to-br from-emerald-200 to-teal-200 rounded-3xl overflow-hidden shadow-2xl">
-                <img 
-                  src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                  alt="Centro de Conservación de Vida Silvestre"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-gradient-to-br from-amber-400 to-orange-500 rounded-3xl flex items-center justify-center shadow-xl">
-                <Sparkles className="h-12 w-12 text-white" />
+          <div className="grid grid-cols-5 gap-8">
+            {/* Columna 3/5 - Imagen (lado izquierdo) */}
+            <div className="col-span-3 flex items-center">
+              <div className="relative w-full">
+                <div className="aspect-[4/3] bg-gradient-to-br from-emerald-200 to-teal-200 rounded-3xl overflow-hidden shadow-2xl">
+                  <img 
+                    src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                    alt="Centro de Conservación de Vida Silvestre"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-gradient-to-br from-amber-400 to-orange-500 rounded-3xl flex items-center justify-center shadow-xl">
+                  <Sparkles className="h-12 w-12 text-white" />
+                </div>
               </div>
             </div>
-            
-            {/* Contenido - Lado derecho */}
-            <div className="space-y-8 order-1 lg:order-2">
-              <div>
-                <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-                  Comprometidos<br />
-                  <span className="text-green-300">con la naturaleza</span>
+
+            {/* Columna 2/5 - Texto (lado derecho) */}
+            <div className="col-span-2 flex items-center">
+              <div className="text-right">
+                <h2 className="leading-tight mb-6">
+                  <span style={{ fontFamily: 'Guttery Regular, Georgia, Times, serif', color: '#a7f3d0', fontSize: '2.25rem', fontWeight: '300' }}>Comprometidos</span><br />
+                  <span style={{ color: '#a7f3d0', fontSize: '1.875rem', fontWeight: '400' }}>con la naturaleza</span>
                 </h2>
-                <p className="text-xl text-green-100 leading-relaxed mb-8">
+                <p className="text-lg text-green-100 leading-relaxed mb-6">
                   Tenemos programas de educación y protección de la flora y fauna
                 </p>
+                
+                <Button size="lg" className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold px-6 py-3 rounded-xl transition-all duration-300 hover:scale-105">
+                  Conoce Más Sobre Conservación
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
               </div>
-              
-              <Button size="lg" className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold px-8 py-3 rounded-xl transition-all duration-300 hover:scale-105">
-                Conoce Más Sobre Conservación
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
             </div>
           </div>
         </div>
