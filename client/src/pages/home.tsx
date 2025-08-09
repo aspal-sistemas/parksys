@@ -170,7 +170,7 @@ const Home: React.FC = () => {
               <span style={{ fontFamily: 'Guttery Regular, Georgia, Times, serif', color: '#51a19f', fontWeight: '300' }}>Nuestros</span><br />
               <span style={{ color: '#19633c' }}>Bosques Urbanos</span>
             </h2>
-            <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
+            <p className="text-3xl font-bold text-gray-600 max-w-4xl mx-auto leading-relaxed">
               espacios para respirar, convivir y disfrutar
             </p>
           </div>
