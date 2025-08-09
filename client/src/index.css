@@ -251,3 +251,10 @@
   width: 24px;
   height: 24px;
 }
+
+/* Clase personalizada para ampliar contenedores en TreeSpecies */
+.tree-species-wide-container {
+  max-width: calc(80rem + 72px) !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
