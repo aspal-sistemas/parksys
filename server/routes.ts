@@ -1174,7 +1174,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         LEFT JOIN concession_types ct ON ac.concession_type_id = ct.id
         LEFT JOIN concessionaires con ON ac.concessionaire_id = con.id
         LEFT JOIN active_concession_images aci ON ac.id = aci.concession_id AND aci.is_primary = true
-        WHERE ac.park_id = $1 AND (ac.status = 'active' OR ac.status IS NULL OR ac.status = '')
+        WHERE ac.park_id = $1 AND (ac.status = 'activa' OR ac.status = 'active' OR ac.status IS NULL OR ac.status = '')
         ORDER BY ac.start_date DESC
         LIMIT 3
       `, [parkId]);
