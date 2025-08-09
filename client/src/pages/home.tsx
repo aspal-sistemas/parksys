@@ -171,7 +171,7 @@ const Home: React.FC = () => {
           <div className="text-center mb-12">
             <Link href="/parks">
               <Button size="lg" className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold px-10 py-4 text-lg rounded-2xl transition-all duration-300 hover:scale-105 hover:shadow-xl">
-                Ver Todos los Parques 
+                Encuentra tu parque favorito
                 <ArrowRight className="h-5 w-5 ml-2" />
               </Button>
             </Link>
