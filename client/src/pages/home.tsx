@@ -102,28 +102,6 @@ const Home: React.FC = () => {
 
 
           </div>
-          
-          {/* Contenido derecho - Stats cards flotantes */}
-          <div className="hidden lg:block absolute right-8 top-1/2 transform -translate-y-1/2 space-y-4">
-            {[
-              { number: featuredParks.length.toString(), label: "Parques", icon: Trees },
-              { number: "9", label: "Municipios", icon: MapPin },
-              { number: "25+", label: "Actividades", icon: Calendar },
-              { number: "5K+", label: "Visitantes", icon: Users }
-            ].map((stat, index) => (
-              <div key={index} className="bg-white/90 backdrop-blur-sm rounded-xl p-4 min-w-[140px] shadow-xl border border-white/20">
-                <div className="flex items-center gap-3">
-                  <div className="bg-emerald-100 rounded-lg p-2">
-                    <stat.icon className="h-5 w-5 text-emerald-600" />
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-gray-900">{stat.number}</div>
-                    <div className="text-sm text-gray-600">{stat.label}</div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
         
         {/* Scroll indicator */}
