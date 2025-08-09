@@ -78,7 +78,8 @@ const Home: React.FC = () => {
             
             {/* Subtítulo */}
             <p className="text-2xl md:text-3xl text-gray-200 mb-8 leading-relaxed max-w-2xl">
-              Trabajamos por un futuro más verde, árbol por árbol.
+              Trabajamos por un futuro más verde,<br />
+              árbol por árbol.
             </p>
             
             {/* Badge */}
