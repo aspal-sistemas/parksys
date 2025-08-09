@@ -396,7 +396,8 @@ export default function TreeSpecies() {
           </div>
         </div>
         
-
+        {/* Espacio entre hero y banner */}
+        <div className="py-6"></div>
 
         {/* Banner Publicitario de Ancho Completo */}
         <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] mb-8">
