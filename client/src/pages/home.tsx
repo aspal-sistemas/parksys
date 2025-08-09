@@ -118,6 +118,78 @@ const Home: React.FC = () => {
         </div>
       </section>
       
+
+      {/* 🎯 FEATURED PARKS SECTION RENOVADO */}
+      <section className="py-24 bg-gradient-to-b from-gray-50 to-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-6xl font-bold text-gray-900 mb-8">
+              <span className="text-emerald-600">Bosques Urbanos</span>
+            </h2>
+            <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
+              La Agencia Metropolitana de Bosques Urbanos es un organismo público 
+              descentralizado, dedicado a la administración pública de parques y bosques 
+              urbanos del área metropolitana de Guadalajara.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+            {isLoading ? (
+              // Loading skeletons mejorados
+              Array(3).fill(0).map((_, idx) => (
+                <Card key={idx} className="animate-pulse rounded-3xl overflow-hidden shadow-lg">
+                  <div className="h-64 bg-gradient-to-br from-gray-200 to-gray-300"></div>
+                  <CardContent className="p-6">
+                    <div className="h-6 bg-gray-200 rounded-lg w-3/4 mb-3"></div>
+                    <div className="h-4 bg-gray-200 rounded-lg w-1/2 mb-4"></div>
+                    <div className="flex gap-2 mb-4">
+                      <div className="h-8 bg-gray-200 rounded-full w-20"></div>
+                      <div className="h-8 bg-gray-200 rounded-full w-20"></div>
+                    </div>
+                    <div className="h-12 bg-gray-200 rounded-xl"></div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : featuredParks.length > 0 ? (
+              featuredParks.slice(0, 3).map(park => (
+                <div key={park.id} className="group">
+                  <Card className="border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105 rounded-3xl overflow-hidden bg-white">
+                    <ParkCard park={park} />
+                  </Card>
+                </div>
+              ))
+            ) : (
+              <div className="col-span-3 text-center py-16">
+                <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Trees className="h-12 w-12 text-gray-400" />
+                </div>
+                <p className="text-xl text-gray-500 mb-4">No hay parques disponibles en este momento</p>
+                <p className="text-gray-400">Pronto estarán disponibles más espacios verdes</p>
+              </div>
+            )}
+          </div>
+          
+          <div className="text-center mb-12">
+            <Link href="/parks">
+              <Button size="lg" className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold px-10 py-4 text-lg rounded-2xl transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                Ver Todos los Parques 
+                <ArrowRight className="h-5 w-5 ml-2" />
+              </Button>
+            </Link>
+          </div>
+          
+          {/* Banner publicitario */}
+          <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] my-8">
+            <AdSpace 
+              spaceId={14} 
+              position="banner" 
+              pageType="homepage" 
+              className="w-full"
+            />
+          </div>
+        </div>
+      </section>
+      
       {/* 🏛️ AGENCIA DE BOSQUES URBANOS SECTION */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -199,77 +271,6 @@ const Home: React.FC = () => {
                 </div>
               </CardContent>
             </Card>
-          </div>
-        </div>
-      </section>
-      
-      {/* 🎯 FEATURED PARKS SECTION RENOVADO */}
-      <section className="py-24 bg-gradient-to-b from-gray-50 to-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-6xl font-bold text-gray-900 mb-8">
-              <span className="text-emerald-600">Bosques Urbanos</span>
-            </h2>
-            <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
-              La Agencia Metropolitana de Bosques Urbanos es un organismo público 
-              descentralizado, dedicado a la administración pública de parques y bosques 
-              urbanos del área metropolitana de Guadalajara.
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-            {isLoading ? (
-              // Loading skeletons mejorados
-              Array(3).fill(0).map((_, idx) => (
-                <Card key={idx} className="animate-pulse rounded-3xl overflow-hidden shadow-lg">
-                  <div className="h-64 bg-gradient-to-br from-gray-200 to-gray-300"></div>
-                  <CardContent className="p-6">
-                    <div className="h-6 bg-gray-200 rounded-lg w-3/4 mb-3"></div>
-                    <div className="h-4 bg-gray-200 rounded-lg w-1/2 mb-4"></div>
-                    <div className="flex gap-2 mb-4">
-                      <div className="h-8 bg-gray-200 rounded-full w-20"></div>
-                      <div className="h-8 bg-gray-200 rounded-full w-20"></div>
-                    </div>
-                    <div className="h-12 bg-gray-200 rounded-xl"></div>
-                  </CardContent>
-                </Card>
-              ))
-            ) : featuredParks.length > 0 ? (
-              featuredParks.slice(0, 3).map(park => (
-                <div key={park.id} className="group">
-                  <Card className="border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105 rounded-3xl overflow-hidden bg-white">
-                    <ParkCard park={park} />
-                  </Card>
-                </div>
-              ))
-            ) : (
-              <div className="col-span-3 text-center py-16">
-                <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Trees className="h-12 w-12 text-gray-400" />
-                </div>
-                <p className="text-xl text-gray-500 mb-4">No hay parques disponibles en este momento</p>
-                <p className="text-gray-400">Pronto estarán disponibles más espacios verdes</p>
-              </div>
-            )}
-          </div>
-          
-          <div className="text-center mb-12">
-            <Link href="/parks">
-              <Button size="lg" className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold px-10 py-4 text-lg rounded-2xl transition-all duration-300 hover:scale-105 hover:shadow-xl">
-                Ver Todos los Parques 
-                <ArrowRight className="h-5 w-5 ml-2" />
-              </Button>
-            </Link>
-          </div>
-          
-          {/* Banner publicitario */}
-          <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] my-8">
-            <AdSpace 
-              spaceId={14} 
-              position="banner" 
-              pageType="homepage" 
-              className="w-full"
-            />
           </div>
         </div>
       </section>
