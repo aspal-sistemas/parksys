@@ -529,8 +529,8 @@ export default function TreeSpecies() {
 
           {/* Layout principal con sidebar */}
           <div className="flex gap-8">
-            {/* Contenido principal */}
-            <div className="flex-1">
+            {/* Contenido principal - ampliado 72px */}
+            <div className="flex-1" style={{ width: 'calc(100% - 320px + 72px)' }}>
               {/* Resultados */}
               {filteredSpecies.length > 0 ? (
                 <>
