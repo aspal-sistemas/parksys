@@ -56,7 +56,7 @@ const Home: React.FC = () => {
   return (
     <main className="flex-1">
       {/* 🌟 HERO SECTION - Inspirado en bosquesamg.mx */}
-      <section className="relative min-h-screen bg-white overflow-hidden">
+      <section className="relative min-h-screen bg-black overflow-hidden">
         {/* Imagen de fondo */}
         <div className="absolute inset-0">
           <div 
@@ -65,7 +65,8 @@ const Home: React.FC = () => {
               backgroundImage: "url('/images/hero-background.jpg')"
             }}
           ></div>
-
+          {/* Overlay */}
+          <div className="absolute inset-0 bg-black/40"></div>
         </div>
         
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-screen flex items-center">
