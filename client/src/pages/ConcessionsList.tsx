@@ -238,7 +238,7 @@ export default function ConcessionsList() {
                   <img
                     src={concession.primaryImage}
                     alt={concession.name}
-                    className="w-full h-full object-contain bg-gradient-to-br from-[#00a587] via-[#067f5f] to-[#8498a5]"
+                    className="w-full h-full object-cover"
                   />
                 ) : (
                   <div className="flex items-center justify-center h-full text-white">

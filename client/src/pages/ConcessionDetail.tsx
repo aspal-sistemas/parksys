@@ -190,7 +190,7 @@ export default function ConcessionDetail() {
               <img 
                 src={concession.image_url || '/api/placeholder/400/400'} 
                 alt={`${concession.name} - Imagen principal`}
-                className="w-full h-full object-contain rounded-lg shadow-lg"
+                className="w-full h-full object-cover rounded-lg shadow-lg"
               />
               <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
             </div>
@@ -204,7 +204,7 @@ export default function ConcessionDetail() {
                   <img 
                     src={image.image_url} 
                     alt={`${concession.name} - Imagen ${index + 2}`}
-                    className="w-full h-full object-contain rounded-lg shadow-md"
+                    className="w-full h-full object-cover rounded-lg shadow-md"
                   />
                   <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
                 </div>
