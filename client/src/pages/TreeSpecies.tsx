@@ -340,7 +340,7 @@ export default function TreeSpecies() {
               <div className="h-4 bg-gray-200 rounded w-64 mx-auto animate-pulse"></div>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
               {[...Array(6)].map((_, i) => (
                 <Card key={i}>
                   <CardContent className="p-0">
@@ -479,7 +479,7 @@ export default function TreeSpecies() {
           <AdSpace spaceId="36" position="banner" pageType="tree-species" />
         </div>
 
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="max-w-[1600px] mx-auto px-4">
           {/* Estadísticas */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <Card>
@@ -534,7 +534,7 @@ export default function TreeSpecies() {
               {/* Resultados */}
               {filteredSpecies.length > 0 ? (
                 <>
-                  <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6' : 'space-y-6'}>
+                  <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6' : 'space-y-6'}>
                     {paginatedSpecies.map((species) => (
                       <TreeSpeciesCard key={species.id} species={species} viewMode={viewMode} />
                     ))}
@@ -611,7 +611,7 @@ export default function TreeSpecies() {
             </div>
             
             {/* Sidebar publicitario */}
-            <div className="w-80 space-y-6 sticky top-4 self-start">
+            <div className="w-64 space-y-6 sticky top-4 self-start">
               <AdSpace 
                 spaceId="5" 
                 position="sidebar" 
