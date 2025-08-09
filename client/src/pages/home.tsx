@@ -446,6 +446,73 @@ const Home: React.FC = () => {
         </div>
       </section>
 
+      {/* EVENTOS SECTION */}
+      <section className="py-24" style={{ backgroundColor: '#19633c' }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-6xl font-bold mb-8">
+              <span style={{ fontFamily: 'Guttery Regular, Georgia, Times, serif', color: '#bcd256', fontWeight: '300' }}>Disfruta los</span><br />
+              <span style={{ color: '#ffffff' }}>Magníficos Eventos</span>
+            </h2>
+            <p className="text-2xl font-bold text-white max-w-4xl mx-auto leading-relaxed">
+              Entérate de todas las actividades recreativas y culturales.
+            </p>
+          </div>
+
+          {/* Grid de eventos destacados */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+            {/* Evento 1 */}
+            <div className="bg-white rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+              <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center mb-4">
+                <Calendar className="h-6 w-6 text-orange-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">Talleres de Fin de Semana</h3>
+              <p className="text-gray-600 mb-4">Actividades familiares todos los sábados y domingos en nuestros parques urbanos</p>
+              <div className="flex items-center text-sm text-orange-600 font-semibold">
+                <Calendar className="h-4 w-4 mr-2" />
+                Sábados y Domingos
+              </div>
+            </div>
+
+            {/* Evento 2 */}
+            <div className="bg-white rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-4">
+                <Trees className="h-6 w-6 text-green-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">Jornadas de Reforestación</h3>
+              <p className="text-gray-600 mb-4">Únete a nuestras jornadas mensuales de plantación de árboles nativos</p>
+              <div className="flex items-center text-sm text-green-600 font-semibold">
+                <Calendar className="h-4 w-4 mr-2" />
+                Primer sábado del mes
+              </div>
+            </div>
+
+            {/* Evento 3 */}
+            <div className="bg-white rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+              <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
+                <Users className="h-6 w-6 text-purple-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">Festivales Culturales</h3>
+              <p className="text-gray-600 mb-4">Celebraciones comunitarias con música, arte y gastronomía local</p>
+              <div className="flex items-center text-sm text-purple-600 font-semibold">
+                <Calendar className="h-4 w-4 mr-2" />
+                Eventos especiales
+              </div>
+            </div>
+          </div>
+
+          {/* Call to action */}
+          <div className="text-center">
+            <Link href="/activities">
+              <Button size="lg" className="bg-[#bcd256] hover:bg-[#a8c142] text-[#19633c] font-bold px-10 py-4 text-lg rounded-2xl transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                Ver Todos los Eventos
+                <ArrowRight className="h-5 w-5 ml-2" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* CENTRO METROPOLITANO DE CONSERVACIÓN DE VIDA SILVESTRE URBANO */}
       <section className="py-24 bg-gradient-to-b from-emerald-50 to-teal-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -671,73 +738,6 @@ const Home: React.FC = () => {
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* EVENTOS SECTION */}
-      <section className="py-24" style={{ backgroundColor: '#19633c' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-6xl font-bold mb-8">
-              <span style={{ fontFamily: 'Guttery Regular, Georgia, Times, serif', color: '#bcd256', fontWeight: '300' }}>Disfruta los</span><br />
-              <span style={{ color: '#ffffff' }}>Magníficos Eventos</span>
-            </h2>
-            <p className="text-2xl font-bold text-white max-w-4xl mx-auto leading-relaxed">
-              Entérate de todas las actividades recreativas y culturales.
-            </p>
-          </div>
-
-          {/* Grid de eventos destacados */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-            {/* Evento 1 */}
-            <div className="bg-white rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-              <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center mb-4">
-                <Calendar className="h-6 w-6 text-orange-600" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Talleres de Fin de Semana</h3>
-              <p className="text-gray-600 mb-4">Actividades familiares todos los sábados y domingos en nuestros parques urbanos</p>
-              <div className="flex items-center text-sm text-orange-600 font-semibold">
-                <Calendar className="h-4 w-4 mr-2" />
-                Sábados y Domingos
-              </div>
-            </div>
-
-            {/* Evento 2 */}
-            <div className="bg-white rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-4">
-                <Trees className="h-6 w-6 text-green-600" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Jornadas de Reforestación</h3>
-              <p className="text-gray-600 mb-4">Únete a nuestras jornadas mensuales de plantación de árboles nativos</p>
-              <div className="flex items-center text-sm text-green-600 font-semibold">
-                <Calendar className="h-4 w-4 mr-2" />
-                Primer sábado del mes
-              </div>
-            </div>
-
-            {/* Evento 3 */}
-            <div className="bg-white rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-              <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
-                <Users className="h-6 w-6 text-purple-600" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Festivales Culturales</h3>
-              <p className="text-gray-600 mb-4">Celebraciones comunitarias con música, arte y gastronomía local</p>
-              <div className="flex items-center text-sm text-purple-600 font-semibold">
-                <Calendar className="h-4 w-4 mr-2" />
-                Eventos especiales
-              </div>
-            </div>
-          </div>
-
-          {/* Call to action */}
-          <div className="text-center">
-            <Link href="/activities">
-              <Button size="lg" className="bg-[#bcd256] hover:bg-[#a8c142] text-[#19633c] font-bold px-10 py-4 text-lg rounded-2xl transition-all duration-300 hover:scale-105 hover:shadow-xl">
-                Ver Todos los Eventos
-                <ArrowRight className="h-5 w-5 ml-2" />
-              </Button>
-            </Link>
           </div>
         </div>
       </section>
