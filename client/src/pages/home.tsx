@@ -629,7 +629,7 @@ const Home: React.FC = () => {
               <br />
               <span style={{ color: '#19633c' }} className="font-bold">Patrocinadores</span>
             </h2>
-            <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
+            <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed font-bold">
               Bosques para Siempre es un programa que funciona como eje rector para la construcción y seguimiento en las alianzas, donativos y/o patrocinios.
             </p>
           </div>
