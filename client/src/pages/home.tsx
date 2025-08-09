@@ -85,6 +85,7 @@ const Home: React.FC = () => {
             
             {/* Badge */}
             <div className="inline-flex items-center bg-black/55 text-white px-8 py-4 rounded-lg text-lg font-semibold mb-6 border border-white/30">
+              <MapPin className="mr-3 h-5 w-5" />
               Zona Metropolitana de Guadalajara
             </div>
 
