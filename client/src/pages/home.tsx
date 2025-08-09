@@ -479,11 +479,10 @@ const Home: React.FC = () => {
             {/* Columna 1/4 - Texto descriptivo */}
             <div className="col-span-1 flex items-center">
               <div className="text-left">
-                <h3 className="text-3xl font-bold text-gray-900 leading-tight">
-                  Nuestro<br />
-                  modelo de gestión<br />
-                  se compone de<br />
-                  <span className="text-emerald-600">4 ejes principales</span>
+                <h3 className="leading-tight">
+                  <span style={{ fontFamily: 'Guttery Regular, Georgia, Times, serif', color: '#51a19f', fontSize: '3rem', fontWeight: '300' }}>Nuestro</span><br />
+                  <span style={{ color: '#51a19f', fontSize: '3rem', fontWeight: '400' }}>modelo de gestión</span><br />
+                  <span style={{ color: '#19633c', fontSize: '2rem', fontWeight: '700' }}>se compone de 4 ejes principales</span>
                 </h3>
               </div>
             </div>
