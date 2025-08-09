@@ -475,74 +475,73 @@ const Home: React.FC = () => {
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {/* Eje 1: Gestión y Mantenimiento */}
-            <Card className="group hover:shadow-2xl transition-all duration-300 hover:scale-105 border-2 hover:border-emerald-200">
-              <CardContent className="p-8 text-center h-full flex flex-col">
-                <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-                  <Trees className="h-10 w-10 text-white" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-4">Gestión y Mantenimiento</h3>
-                <p className="text-gray-600 leading-relaxed flex-grow">
-                  Administración integral de parques urbanos, mantenimiento preventivo y correctivo de áreas verdes, 
-                  infraestructura y equipamiento urbano.
-                </p>
-                <div className="mt-6 pt-4 border-t border-gray-100">
-                  <span className="text-sm font-medium text-emerald-600">Eje Principal 1</span>
-                </div>
-              </CardContent>
-            </Card>
+          <div className="grid grid-cols-4 gap-8">
+            {/* Columna 1/4 - Texto descriptivo */}
+            <div className="col-span-1 flex items-center justify-center">
+              <div className="text-center">
+                <h3 className="text-3xl font-bold text-gray-900 leading-tight">
+                  Nuestro<br />
+                  modelo de gestión<br />
+                  se compone de<br />
+                  <span className="text-emerald-600">4 ejes principales</span>
+                </h3>
+              </div>
+            </div>
 
-            {/* Eje 2: Educación Ambiental */}
-            <Card className="group hover:shadow-2xl transition-all duration-300 hover:scale-105 border-2 hover:border-blue-200">
-              <CardContent className="p-8 text-center h-full flex flex-col">
-                <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-                  <Users className="h-10 w-10 text-white" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-4">Educación Ambiental</h3>
-                <p className="text-gray-600 leading-relaxed flex-grow">
-                  Programas educativos, talleres de concienciación ambiental, formación ciudadana 
-                  y promoción de la cultura verde en la comunidad.
-                </p>
-                <div className="mt-6 pt-4 border-t border-gray-100">
-                  <span className="text-sm font-medium text-blue-600">Eje Principal 2</span>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Columna 3/4 - Tarjetas horizontales */}
+            <div className="col-span-3">
+              <div className="grid grid-cols-2 gap-6">
+                
+                {/* Eje 1: Gestión y Mantenimiento */}
+                <Card className="group hover:shadow-xl transition-all duration-300 hover:scale-102">
+                  <CardContent className="p-6 flex items-center gap-4">
+                    <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full w-16 h-16 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                      <Trees className="h-8 w-8 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-gray-900">Gestión y Mantenimiento</h3>
+                    </div>
+                  </CardContent>
+                </Card>
 
-            {/* Eje 3: Participación Ciudadana */}
-            <Card className="group hover:shadow-2xl transition-all duration-300 hover:scale-105 border-2 hover:border-purple-200">
-              <CardContent className="p-8 text-center h-full flex flex-col">
-                <div className="bg-gradient-to-br from-purple-500 to-pink-600 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-                  <Calendar className="h-10 w-10 text-white" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-4">Participación Ciudadana</h3>
-                <p className="text-gray-600 leading-relaxed flex-grow">
-                  Fomento de la participación activa de la comunidad, programas de voluntariado, 
-                  eventos comunitarios y actividades recreativas.
-                </p>
-                <div className="mt-6 pt-4 border-t border-gray-100">
-                  <span className="text-sm font-medium text-purple-600">Eje Principal 3</span>
-                </div>
-              </CardContent>
-            </Card>
+                {/* Eje 2: Educación Ambiental */}
+                <Card className="group hover:shadow-xl transition-all duration-300 hover:scale-102">
+                  <CardContent className="p-6 flex items-center gap-4">
+                    <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full w-16 h-16 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                      <Users className="h-8 w-8 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-gray-900">Educación Ambiental</h3>
+                    </div>
+                  </CardContent>
+                </Card>
 
-            {/* Eje 4: Desarrollo Sustentable */}
-            <Card className="group hover:shadow-2xl transition-all duration-300 hover:scale-105 border-2 hover:border-amber-200">
-              <CardContent className="p-8 text-center h-full flex flex-col">
-                <div className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-                  <TrendingUp className="h-10 w-10 text-white" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-4">Desarrollo Sustentable</h3>
-                <p className="text-gray-600 leading-relaxed flex-grow">
-                  Innovación en tecnologías verdes, proyectos de sustentabilidad, 
-                  gestión eficiente de recursos y desarrollo urbano sostenible.
-                </p>
-                <div className="mt-6 pt-4 border-t border-gray-100">
-                  <span className="text-sm font-medium text-amber-600">Eje Principal 4</span>
-                </div>
-              </CardContent>
-            </Card>
+                {/* Eje 3: Participación Ciudadana */}
+                <Card className="group hover:shadow-xl transition-all duration-300 hover:scale-102">
+                  <CardContent className="p-6 flex items-center gap-4">
+                    <div className="bg-gradient-to-br from-purple-500 to-pink-600 rounded-full w-16 h-16 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                      <Calendar className="h-8 w-8 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-gray-900">Participación Ciudadana</h3>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Eje 4: Desarrollo Sustentable */}
+                <Card className="group hover:shadow-xl transition-all duration-300 hover:scale-102">
+                  <CardContent className="p-6 flex items-center gap-4">
+                    <div className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-full w-16 h-16 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                      <TrendingUp className="h-8 w-8 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-gray-900">Desarrollo Sustentable</h3>
+                    </div>
+                  </CardContent>
+                </Card>
+
+              </div>
+            </div>
           </div>
         </div>
       </section>
