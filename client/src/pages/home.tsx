@@ -475,9 +475,9 @@ const Home: React.FC = () => {
             </p>
           </div>
           
-          <div className="grid grid-cols-4 gap-8">
-            {/* Columna 1/4 - Texto descriptivo */}
-            <div className="col-span-1 flex items-center">
+          <div className="grid grid-cols-5 gap-8">
+            {/* Columna 2/5 - Texto descriptivo */}
+            <div className="col-span-2 flex items-center">
               <div className="text-left">
                 <h3 className="leading-tight">
                   <span style={{ fontFamily: 'Guttery Regular, Georgia, Times, serif', color: '#51a19f', fontSize: '3rem', fontWeight: '300' }}>Nuestro</span><br />
@@ -487,9 +487,9 @@ const Home: React.FC = () => {
               </div>
             </div>
 
-            {/* Columna 3/4 - Tarjetas horizontales */}
+            {/* Columna 3/5 - Tarjetas horizontales */}
             <div className="col-span-3">
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-2 gap-4">
                 
                 {/* Eje 1: Gestión y Mantenimiento */}
                 <Card className="group hover:shadow-xl transition-all duration-300 hover:scale-102">
