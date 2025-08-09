@@ -566,10 +566,10 @@ const Home: React.FC = () => {
             <div className="col-span-2 flex items-center">
               <div className="text-right">
                 <h2 className="leading-tight mb-6">
-                  <span style={{ fontFamily: 'Guttery Regular, Georgia, Times, serif', color: '#a7f3d0', fontSize: '2.25rem', fontWeight: '300' }}>Comprometidos</span><br />
-                  <span style={{ color: '#a7f3d0', fontSize: '1.875rem', fontWeight: '400' }}>con la naturaleza</span>
+                  <span style={{ fontFamily: 'Guttery Regular, Georgia, Times, serif', color: '#a7f3d0', fontSize: '3rem', fontWeight: '300' }}>Comprometidos</span><br />
+                  <span style={{ color: '#a7f3d0', fontSize: '2.5rem', fontWeight: '400' }}>con la naturaleza</span>
                 </h2>
-                <p className="text-lg text-green-100 leading-relaxed mb-6">
+                <p className="text-xl text-green-100 leading-relaxed mb-6">
                   Tenemos programas de educación y protección de la flora y fauna
                 </p>
                 
