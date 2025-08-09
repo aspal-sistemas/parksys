@@ -32,7 +32,7 @@ import {
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { insertFaunaSpeciesSchema, type FaunaSpecies } from '../../../shared/schema';
+import { insertFaunaSpeciesSchema, type FaunaSpecies } from '@shared/schema';
 import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
