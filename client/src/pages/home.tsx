@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
-import { Map, ArrowRight, MapPin, Trees, Users, Calendar, Sparkles, TrendingUp, Zap, Leaf, Shield, Heart, BookOpen, GraduationCap, Target, Award } from 'lucide-react';
+import { Map, ArrowRight, MapPin, Trees, Users, Calendar, Sparkles, TrendingUp, Zap, Leaf, Shield, Heart, BookOpen, GraduationCap, Target, Award, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import ParkCard from '@/components/ParkCard';
@@ -12,6 +12,9 @@ const logoImage = "/images/logo-ambu.png";
 const Home: React.FC = () => {
   // Estado para forzar actualización de anuncios estáticos
   const [forceUpdateKey, setForceUpdateKey] = useState(Date.now());
+  
+  // Estado para el índice del carousel
+  const [currentIndex, setCurrentIndex] = useState(0);
   
   // Escuchar cambios en localStorage para actualizar anuncios
   useEffect(() => {
@@ -52,6 +55,31 @@ const Home: React.FC = () => {
   const featuredParks = allParks.filter(park => 
     park.name.trim() !== '' && !park.isDeleted
   );
+  
+  // Funciones de navegación del carousel
+  const nextSlide = () => {
+    setCurrentIndex((prev) => 
+      prev === featuredParks.length - 1 ? 0 : prev + 1
+    );
+  };
+
+  const prevSlide = () => {
+    setCurrentIndex((prev) => 
+      prev === 0 ? featuredParks.length - 1 : prev - 1
+    );
+  };
+
+  const goToSlide = (index: number) => {
+    setCurrentIndex(index);
+  };
+
+  // Auto-avanzar carousel cada 5 segundos
+  useEffect(() => {
+    if (featuredParks.length > 1) {
+      const interval = setInterval(nextSlide, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [featuredParks.length]);
   
   return (
     <main className="flex-1">
@@ -132,63 +160,22 @@ const Home: React.FC = () => {
             </p>
           </div>
           
-          {/* Carousel centrado */}
-          <div className="relative mb-12">
-            <div className="flex items-center justify-center h-[400px] gap-6 overflow-x-auto lg:overflow-hidden px-4">
+          {/* Carousel de una tarjeta */}
+          <div className="relative mb-12 h-[500px]">
+            <div className="w-full h-full px-4 sm:px-6 lg:px-8">
               {isLoading ? (
-                // Loading skeletons con nuevo layout
-                <>
-                  <div className="flex-shrink-0 w-[280px]">
-                    <Card className="animate-pulse rounded-3xl overflow-hidden shadow-lg h-full">
-                      <div className="h-full bg-gradient-to-br from-gray-200 to-gray-300"></div>
-                    </Card>
-                  </div>
-                  <div className="flex-shrink-0 w-[500px] lg:w-[700px]">
-                    <Card className="animate-pulse rounded-3xl overflow-hidden shadow-lg h-full">
-                      <div className="h-full bg-gradient-to-br from-gray-200 to-gray-300"></div>
-                    </Card>
-                  </div>
-                  <div className="flex-shrink-0 w-[280px]">
-                    <Card className="animate-pulse rounded-3xl overflow-hidden shadow-lg h-full">
-                      <div className="h-full bg-gradient-to-br from-gray-200 to-gray-300"></div>
-                    </Card>
-                  </div>
-                </>
+                // Loading skeleton
+                <Card className="animate-pulse rounded-3xl overflow-hidden shadow-xl h-full w-full">
+                  <div className="h-full bg-gradient-to-br from-gray-200 to-gray-300"></div>
+                </Card>
               ) : featuredParks.length > 0 ? (
-                <>
-                  {/* Card izquierda */}
-                  <div className="flex-shrink-0 w-[280px] hidden lg:block">
-                    <div className="group h-full">
-                      <Card className="border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-[1.02] rounded-3xl overflow-hidden bg-white h-full">
-                        <ParkCard park={featuredParks[0]} />
-                      </Card>
-                    </div>
-                  </div>
-                  
-                  {/* Card central (domina el espacio) */}
-                  {featuredParks.length > 1 && (
-                    <div className="flex-shrink-0 w-full max-w-[500px] lg:max-w-[700px]">
-                      <div className="group h-full">
-                        <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-[1.02] rounded-3xl overflow-hidden bg-white h-full">
-                          <ParkCard park={featuredParks[1]} />
-                        </Card>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Card derecha */}
-                  {featuredParks.length > 2 && (
-                    <div className="flex-shrink-0 w-[280px] hidden lg:block">
-                      <div className="group h-full">
-                        <Card className="border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-[1.02] rounded-3xl overflow-hidden bg-white h-full">
-                          <ParkCard park={featuredParks[2]} />
-                        </Card>
-                      </div>
-                    </div>
-                  )}
-                </>
+                <div className="group h-full w-full">
+                  <Card className="border-0 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-[1.01] rounded-3xl overflow-hidden bg-white h-full w-full">
+                    <ParkCard park={featuredParks[currentIndex]} />
+                  </Card>
+                </div>
               ) : (
-                <div className="flex-1 flex items-center justify-center py-16">
+                <div className="w-full h-full flex items-center justify-center">
                   <div className="text-center">
                     <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
                       <Trees className="h-12 w-12 text-gray-400" />
@@ -199,6 +186,42 @@ const Home: React.FC = () => {
                 </div>
               )}
             </div>
+            
+            {/* Controles de navegación */}
+            {featuredParks.length > 1 && (
+              <>
+                {/* Flechas de navegación */}
+                <button
+                  onClick={prevSlide}
+                  className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110"
+                >
+                  <ChevronLeft className="h-6 w-6" />
+                </button>
+                <button
+                  onClick={nextSlide}
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110"
+                >
+                  <ChevronRight className="h-6 w-6" />
+                </button>
+                
+                {/* Indicadores de puntos */}
+                <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2">
+                  <div className="flex space-x-2 bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg">
+                    {featuredParks.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => goToSlide(index)}
+                        className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                          index === currentIndex 
+                            ? 'bg-primary-600 scale-125' 
+                            : 'bg-gray-300 hover:bg-gray-400'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
           
           <div className="text-center mb-12">
