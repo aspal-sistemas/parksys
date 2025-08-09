@@ -609,10 +609,16 @@ const Home: React.FC = () => {
                 <p className="text-white mb-6 text-xl font-medium text-right">
                   Únete a nuestras alianzas estratégicas y contribuye al desarrollo sostenible de la zona metropolitana
                 </p>
-                <Button size="lg" className="bg-white text-purple-600 hover:bg-gray-50 font-bold px-8 py-3 rounded-xl transition-all duration-300 hover:scale-105 shadow-lg">
-                  Convertirse en Patrocinador
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
+                <div className="flex gap-4 justify-end">
+                  <Button size="lg" className="bg-white text-green-700 hover:bg-gray-50 font-bold px-8 py-3 rounded-xl transition-all duration-300 hover:scale-105 shadow-lg">
+                    Ser Voluntario
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                  <Button size="lg" className="bg-white text-blue-700 hover:bg-gray-50 font-bold px-8 py-3 rounded-xl transition-all duration-300 hover:scale-105 shadow-lg">
+                    Servicio Social
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
