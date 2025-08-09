@@ -70,6 +70,11 @@ const Home: React.FC = () => {
         
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-screen flex items-center">
           <div className="max-w-3xl">
+            {/* Badge */}
+            <div className="inline-flex items-center bg-black/55 text-white px-8 py-4 rounded-lg text-lg font-semibold mb-6">
+              Zona Metropolitana de Guadalajara
+            </div>
+
             {/* Título principal */}
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
               Agencia Metropolitana
@@ -78,8 +83,7 @@ const Home: React.FC = () => {
             
             {/* Subtítulo */}
             <p className="text-xl md:text-2xl text-gray-200 mb-8 leading-relaxed max-w-2xl">
-              Descubre, participa y disfruta de los parques y bosques urbanos de la 
-              Zona Metropolitana de Guadalajara. Espacios verdes que mejoran la calidad de vida.
+              Trabajamos por un futuro más verde, árbol por árbol.
             </p>
             
             {/* Botones CTA */}
