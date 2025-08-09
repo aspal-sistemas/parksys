@@ -691,6 +691,13 @@ const Home: React.FC = () => {
             )}
           </div>
           
+          {/* Botón CTA para ser patrocinador */}
+          <div className="text-center mt-16">
+            <Button size="lg" className="bg-white hover:bg-gray-50 font-bold px-8 py-3 rounded-xl transition-all duration-300 hover:scale-105 shadow-lg" style={{ color: '#51a19f' }}>
+              ¿Quieres ser patrocinador?
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+          </div>
 
         </div>
       </section>
