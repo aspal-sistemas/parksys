@@ -494,7 +494,7 @@ const Home: React.FC = () => {
                 {/* Eje 1: Gestión y Mantenimiento */}
                 <Card className="group hover:shadow-xl transition-all duration-300 hover:scale-102">
                   <CardContent className="p-6 flex items-center gap-4">
-                    <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full w-16 h-16 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                    <div className="rounded-full w-16 h-16 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform" style={{ backgroundColor: '#51a19f' }}>
                       <Trees className="h-8 w-8 text-white" />
                     </div>
                     <div className="flex-1">
@@ -506,7 +506,7 @@ const Home: React.FC = () => {
                 {/* Eje 2: Educación Ambiental */}
                 <Card className="group hover:shadow-xl transition-all duration-300 hover:scale-102">
                   <CardContent className="p-6 flex items-center gap-4">
-                    <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full w-16 h-16 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                    <div className="rounded-full w-16 h-16 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform" style={{ backgroundColor: '#51a19f' }}>
                       <Users className="h-8 w-8 text-white" />
                     </div>
                     <div className="flex-1">
@@ -518,7 +518,7 @@ const Home: React.FC = () => {
                 {/* Eje 3: Participación Ciudadana */}
                 <Card className="group hover:shadow-xl transition-all duration-300 hover:scale-102">
                   <CardContent className="p-6 flex items-center gap-4">
-                    <div className="bg-gradient-to-br from-purple-500 to-pink-600 rounded-full w-16 h-16 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                    <div className="rounded-full w-16 h-16 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform" style={{ backgroundColor: '#51a19f' }}>
                       <Calendar className="h-8 w-8 text-white" />
                     </div>
                     <div className="flex-1">
@@ -530,7 +530,7 @@ const Home: React.FC = () => {
                 {/* Eje 4: Desarrollo Sustentable */}
                 <Card className="group hover:shadow-xl transition-all duration-300 hover:scale-102">
                   <CardContent className="p-6 flex items-center gap-4">
-                    <div className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-full w-16 h-16 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                    <div className="rounded-full w-16 h-16 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform" style={{ backgroundColor: '#51a19f' }}>
                       <TrendingUp className="h-8 w-8 text-white" />
                     </div>
                     <div className="flex-1">
