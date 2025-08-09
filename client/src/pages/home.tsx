@@ -231,7 +231,7 @@ const Home: React.FC = () => {
                               {featuredParks[currentIndex]?.name}
                             </h2>
                             
-                            <p className="text-xl lg:text-2xl text-gray-200 mb-8 leading-relaxed max-w-3xl">
+                            <p className="text-lg lg:text-xl text-gray-200 mb-8 leading-relaxed max-w-3xl">
                               {featuredParks[currentIndex]?.description || 'Descubre este maravilloso espacio verde en el corazón de Guadalajara, diseñado para el disfrute de toda la familia y el contacto con la naturaleza.'}
                             </p>
                             
