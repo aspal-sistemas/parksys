@@ -152,8 +152,23 @@ export class SimpleStorage {
   async createParkImage(imageData: any): Promise<any> { return null; }
   async updateParkImage(id: number, data: any): Promise<any> { return null; }
   async deleteParkImage(id: number): Promise<boolean> { return false; }
-  async getParkDocuments(parkId: number): Promise<any[]> { return []; }
-  async createDocument(documentData: any): Promise<any> { return null; }
+  async getParkDocuments(parkId: number): Promise<any[]> {
+    try {
+      return await db.select().from(documents).where(eq(documents.parkId, parkId));
+    } catch (error) {
+      console.error("Error fetching park documents:", error);
+      return [];
+    }
+  }
+  async createDocument(documentData: any): Promise<any> {
+    try {
+      const result = await db.insert(documents).values(documentData).returning();
+      return result[0] || null;
+    } catch (error) {
+      console.error("Error creating document:", error);
+      throw error;
+    }
+  }
   async getDocument(id: number): Promise<any> { return null; }
   async deleteDocument(id: number): Promise<boolean> { return false; }
   async getAllDocuments(): Promise<any[]> { return []; }

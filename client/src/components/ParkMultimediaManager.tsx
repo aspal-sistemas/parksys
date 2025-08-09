@@ -327,11 +327,28 @@ export default function ParkMultimediaManager({ parkId }: ParkMultimediaManagerP
       formData.append('category', newDocumentCategory);
       uploadDocumentMutation.mutate(formData);
     } else if (newDocumentUrl) {
+      // Detectar tipo de archivo de la URL
+      const url = newDocumentUrl.toLowerCase();
+      let fileType = 'application/octet-stream';
+      if (url.includes('.pdf')) fileType = 'application/pdf';
+      else if (url.includes('.doc') || url.includes('.docx')) fileType = 'application/msword';
+      else if (url.includes('.xls') || url.includes('.xlsx')) fileType = 'application/vnd.ms-excel';
+      else if (url.includes('.ppt') || url.includes('.pptx')) fileType = 'application/vnd.ms-powerpoint';
+      
+      console.log('🔍 DOCUMENT UPLOAD - URL data:', {
+        title: newDocumentTitle,
+        description: newDocumentDescription,
+        category: newDocumentCategory,
+        fileUrl: newDocumentUrl,
+        fileType
+      });
+      
       uploadDocumentMutation.mutate({
         title: newDocumentTitle,
         description: newDocumentDescription,
         category: newDocumentCategory,
-        fileUrl: newDocumentUrl
+        fileUrl: newDocumentUrl,
+        fileType
       });
     }
   };
