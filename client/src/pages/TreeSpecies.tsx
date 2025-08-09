@@ -340,7 +340,7 @@ export default function TreeSpecies() {
               <div className="h-4 bg-gray-200 rounded w-64 mx-auto animate-pulse"></div>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {[...Array(6)].map((_, i) => (
                 <Card key={i}>
                   <CardContent className="p-0">
@@ -534,7 +534,7 @@ export default function TreeSpecies() {
               {/* Resultados */}
               {filteredSpecies.length > 0 ? (
                 <>
-                  <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-6'}>
+                  <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6' : 'space-y-6'}>
                     {paginatedSpecies.map((species) => (
                       <TreeSpeciesCard key={species.id} species={species} viewMode={viewMode} />
                     ))}
