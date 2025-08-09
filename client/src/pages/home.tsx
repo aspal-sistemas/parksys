@@ -559,9 +559,6 @@ const Home: React.FC = () => {
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-gradient-to-br from-amber-400 to-orange-500 rounded-3xl flex items-center justify-center shadow-xl">
-                  <Sparkles className="h-12 w-12 text-white" />
-                </div>
               </div>
             </div>
 
