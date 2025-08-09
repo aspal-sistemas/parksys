@@ -594,7 +594,7 @@ const Home: React.FC = () => {
             <div 
               className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-3xl p-16 shadow-xl mb-16 relative overflow-hidden min-h-[300px] flex flex-col justify-center items-end"
               style={{
-                backgroundImage: `linear-gradient(rgba(147, 51, 234, 0.8), rgba(236, 72, 153, 0.8)), url('/attached_assets/excited-family-volunteers-celebrating-their-garbag-2025-08-03-03-10-39-utc_1754779889027.jpg')`,
+                backgroundImage: `url('/attached_assets/excited-family-volunteers-celebrating-their-garbag-2025-08-03-03-10-39-utc_1754779889027.jpg')`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat'
