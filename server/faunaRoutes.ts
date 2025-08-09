@@ -116,6 +116,7 @@ router.get('/species/:id', async (req, res) => {
 // Crear nueva especie
 router.post('/species', async (req, res) => {
   try {
+    console.log('Datos recibidos en backend:', JSON.stringify(req.body, null, 2));
     const validatedData = insertFaunaSpeciesSchema.parse(req.body);
     
     const newSpecies = await db

@@ -1529,6 +1529,29 @@ export const insertFaunaSpeciesSchema = createInsertSchema(faunaSpecies).omit({
   id: true,
   createdAt: true,
   updatedAt: true
+}).extend({
+  // Hacer campos opcionales más permisivos
+  family: z.string().optional(),
+  habitat: z.string().optional(),
+  description: z.string().optional(),
+  behavior: z.string().optional(),
+  diet: z.string().optional(),
+  reproductionPeriod: z.string().optional(),
+  sizeCm: z.string().optional(),
+  weightGrams: z.string().optional(),
+  lifespan: z.number().optional(),
+  imageUrl: z.string().optional(),
+  photoUrl: z.string().optional(),
+  photoCaption: z.string().optional(),
+  ecologicalImportance: z.string().optional(),
+  threats: z.string().optional(),
+  protectionMeasures: z.string().optional(),
+  observationTips: z.string().optional(),
+  bestObservationTime: z.string().optional(),
+  commonLocations: z.array(z.string()).optional(),
+  iconColor: z.string().optional(),
+  iconType: z.string().optional(),
+  customIconUrl: z.string().optional()
 });
 
 // Tipos
