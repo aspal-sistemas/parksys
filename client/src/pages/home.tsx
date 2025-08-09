@@ -83,15 +83,15 @@ const Home: React.FC = () => {
             </p>
             
             {/* Botones CTA */}
-            <div className="flex flex-col gap-4 mb-12">
+            <div className="flex flex-col gap-4 mb-12 items-start">
               <Link href="/parks">
-                <Button size="lg" className="w-full bg-[#aaaf4f] hover:bg-[#9ca047] text-white font-semibold px-8 py-4 text-lg rounded-lg transition-all duration-300 hover:scale-105 shadow-xl">
+                <Button size="lg" className="bg-[#aaaf4f] hover:bg-[#9ca047] text-white font-semibold px-8 py-4 text-lg rounded-lg transition-all duration-300 hover:scale-105 shadow-xl">
                   <Map className="mr-3 h-5 w-5" />
                   Nuestros parques
                 </Button>
               </Link>
               <Link href="/activities">
-                <Button size="lg" className="w-full bg-white border-2 border-white text-[#aaaf4f] hover:bg-gray-50 hover:text-[#9ca047] font-semibold px-8 py-4 text-lg rounded-lg transition-all duration-300 hover:scale-105 shadow-lg">
+                <Button size="lg" className="bg-white border-2 border-white text-[#aaaf4f] hover:bg-gray-50 hover:text-[#9ca047] font-semibold px-8 py-4 text-lg rounded-lg transition-all duration-300 hover:scale-105 shadow-lg">
                   <Calendar className="mr-3 h-5 w-5" />
                   Actividades
                 </Button>
