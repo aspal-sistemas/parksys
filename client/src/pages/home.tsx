@@ -592,7 +592,7 @@ const Home: React.FC = () => {
           {/* Call to action para patrocinadores - MOVIDO ARRIBA */}
           <div className="text-right mb-16">
             <div 
-              className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-3xl p-16 shadow-xl mb-16 relative overflow-hidden min-h-[300px] flex flex-col justify-center items-end"
+              className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-3xl p-16 shadow-xl mb-16 relative overflow-hidden min-h-[400px] flex flex-col justify-center items-end"
               style={{
                 backgroundImage: `url('/attached_assets/excited-family-volunteers-celebrating-their-garbag-2025-08-03-03-10-39-utc_1754779889027.jpg')`,
                 backgroundSize: 'cover',
