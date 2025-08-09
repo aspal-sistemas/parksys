@@ -298,23 +298,6 @@ const Home: React.FC = () => {
                 >
                   <ChevronRight className="h-7 w-7" />
                 </button>
-                
-                {/* Indicadores de puntos */}
-                <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-40">
-                  <div className="flex space-x-3 bg-black/50 backdrop-blur-sm rounded-full px-6 py-3 shadow-2xl">
-                    {featuredParks.map((_, index) => (
-                      <button
-                        key={index}
-                        onClick={() => goToSlide(index)}
-                        className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                          index === currentIndex 
-                            ? 'bg-white scale-125' 
-                            : 'bg-white/50 hover:bg-white/70'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                </div>
               </>
             )}
           </div>
