@@ -481,8 +481,8 @@ const Home: React.FC = () => {
               <div className="text-left">
                 <h3 className="leading-tight">
                   <span style={{ fontFamily: 'Guttery Regular, Georgia, Times, serif', color: '#51a19f', fontSize: '3rem', fontWeight: '300' }}>Nuestro</span><br />
-                  <span style={{ color: '#51a19f', fontSize: '3rem', fontWeight: '400' }}>modelo de gestión</span><br />
-                  <span style={{ color: '#19633c', fontSize: '2rem', fontWeight: '700' }}>se compone de 4 ejes principales</span>
+                  <span style={{ color: '#51a19f', fontSize: '2.25rem', fontWeight: '400' }}>modelo de gestión</span><br />
+                  <span style={{ color: '#19633c', fontSize: '1.5rem', fontWeight: '700' }}>se compone de 4 ejes principales</span>
                 </h3>
               </div>
             </div>
