@@ -479,9 +479,9 @@ export default function TreeSpecies() {
           <AdSpace spaceId="36" position="banner" pageType="tree-species" />
         </div>
 
-        <div className="max-w-[1600px] mx-auto px-4">
-          {/* Estadísticas */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        {/* Estadísticas - Ancho completo */}
+        <div className="w-full px-4 lg:px-8 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-2xl font-bold text-green-600">
@@ -526,7 +526,10 @@ export default function TreeSpecies() {
               </CardContent>
             </Card>
           </div>
+        </div>
 
+        {/* Contenido principal */}
+        <div className="max-w-[1600px] mx-auto px-4">
           {/* Layout principal con sidebar */}
           <div className="flex gap-8">
             {/* Contenido principal */}
