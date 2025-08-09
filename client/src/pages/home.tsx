@@ -80,6 +80,21 @@ const Home: React.FC = () => {
       return () => clearInterval(interval);
     }
   }, [featuredParks.length]);
+
+  // Función para generar resumen del parque
+  const generateParkSummary = (park: ExtendedPark) => {
+    const activitiesCount = park.activities?.length || 0;
+    const amenitiesCount = park.amenities?.length || 0;
+    const area = park.area ? `${park.area} m²` : 'No especificada';
+    const parkType = park.parkType || 'Parque urbano';
+    
+    return {
+      activitiesCount,
+      amenitiesCount,
+      area,
+      parkType
+    };
+  };
   
   return (
     <main className="flex-1">
@@ -231,9 +246,32 @@ const Home: React.FC = () => {
                               {featuredParks[currentIndex]?.name}
                             </h2>
                             
-                            <p className="text-lg lg:text-xl text-gray-200 mb-8 leading-relaxed max-w-3xl">
-                              {featuredParks[currentIndex]?.description || 'Descubre este maravilloso espacio verde en el corazón de Guadalajara, diseñado para el disfrute de toda la familia y el contacto con la naturaleza.'}
-                            </p>
+                            {/* Resumen del parque */}
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 max-w-3xl">
+                              {(() => {
+                                const summary = generateParkSummary(featuredParks[currentIndex]);
+                                return (
+                                  <>
+                                    <div className="bg-black/30 backdrop-blur-sm rounded-lg p-4 text-center">
+                                      <div className="text-2xl font-bold text-white">{summary.activitiesCount}</div>
+                                      <div className="text-sm text-gray-200">Actividades</div>
+                                    </div>
+                                    <div className="bg-black/30 backdrop-blur-sm rounded-lg p-4 text-center">
+                                      <div className="text-2xl font-bold text-white">{summary.amenitiesCount}</div>
+                                      <div className="text-sm text-gray-200">Amenidades</div>
+                                    </div>
+                                    <div className="bg-black/30 backdrop-blur-sm rounded-lg p-4 text-center">
+                                      <div className="text-lg font-bold text-white">{summary.area}</div>
+                                      <div className="text-sm text-gray-200">Superficie</div>
+                                    </div>
+                                    <div className="bg-black/30 backdrop-blur-sm rounded-lg p-4 text-center">
+                                      <div className="text-sm font-bold text-white">{summary.parkType}</div>
+                                      <div className="text-sm text-gray-200">Tipo</div>
+                                    </div>
+                                  </>
+                                );
+                              })()}
+                            </div>
                             
                             <Link href={`/parque/${featuredParks[currentIndex]?.name.toLowerCase().replace(/\s+/g, '-')}-${featuredParks[currentIndex]?.id}`}>
                               <Button className="bg-primary-600 hover:bg-primary-700 text-white px-10 py-4 rounded-full text-xl font-semibold transition-all duration-300 hover:scale-105 shadow-2xl">
