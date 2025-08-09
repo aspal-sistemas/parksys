@@ -546,17 +546,17 @@ const Home: React.FC = () => {
       </section>
 
       {/* CENTRO METROPOLITANO DE CONSERVACIÓN DE VIDA SILVESTRE URBANO */}
-      <section className="py-24 bg-gradient-to-b from-emerald-50 to-teal-50">
+      <section className="py-24" style={{ backgroundColor: '#19633c' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-16">
             {/* Contenido */}
             <div className="space-y-8">
               <div>
-                <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+                <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
                   Centro Metropolitano de 
-                  <span className="block text-emerald-600">Conservación de Vida Silvestre Urbano</span>
+                  <span className="block text-green-300">Conservación de Vida Silvestre Urbano</span>
                 </h2>
-                <p className="text-xl text-gray-600 leading-relaxed mb-8">
+                <p className="text-xl text-green-100 leading-relaxed mb-8">
                   Dedicado a la protección, rehabilitación y conservación de especies nativas en el área metropolitana. 
                   Trabajamos en la preservación de la biodiversidad urbana y la educación ambiental para las futuras generaciones.
                 </p>
