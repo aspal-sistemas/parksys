@@ -366,8 +366,8 @@ const Home: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-6xl font-bold mb-8">
-              <span style={{ fontFamily: 'Guttery Regular, Georgia, Times, serif', color: '#bcd256', fontWeight: '300' }}>Disfruta los</span><br />
-              <span style={{ color: '#ffffff' }}>Magníficos Eventos</span>
+              <span style={{ fontFamily: 'Guttery Regular, Georgia, Times, serif', color: '#ffffff', fontWeight: '300' }}>Disfruta los</span><br />
+              <span style={{ color: '#bcd256' }}>Magníficos Eventos</span>
             </h2>
             <p className="text-2xl font-bold text-white max-w-4xl mx-auto leading-relaxed">
               Entérate de todas las actividades recreativas y culturales.
