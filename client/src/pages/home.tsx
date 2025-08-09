@@ -247,28 +247,28 @@ const Home: React.FC = () => {
                             </h2>
                             
                             {/* Resumen del parque */}
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 max-w-3xl">
+                            <div className="bg-black/40 backdrop-blur-sm rounded-xl p-6 mb-8 max-w-3xl">
                               {(() => {
                                 const summary = generateParkSummary(featuredParks[currentIndex]);
                                 return (
-                                  <>
-                                    <div className="bg-black/30 backdrop-blur-sm rounded-lg p-4 text-center">
-                                      <div className="text-2xl font-bold text-white">{summary.activitiesCount}</div>
-                                      <div className="text-sm text-gray-200">Actividades</div>
+                                  <div className="flex flex-col space-y-2 text-white">
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-lg font-semibold">Actividades:</span>
+                                      <span className="text-2xl font-bold">{summary.activitiesCount}</span>
                                     </div>
-                                    <div className="bg-black/30 backdrop-blur-sm rounded-lg p-4 text-center">
-                                      <div className="text-2xl font-bold text-white">{summary.amenitiesCount}</div>
-                                      <div className="text-sm text-gray-200">Amenidades</div>
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-lg font-semibold">Amenidades:</span>
+                                      <span className="text-2xl font-bold">{summary.amenitiesCount}</span>
                                     </div>
-                                    <div className="bg-black/30 backdrop-blur-sm rounded-lg p-4 text-center">
-                                      <div className="text-lg font-bold text-white">{summary.area}</div>
-                                      <div className="text-sm text-gray-200">Superficie</div>
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-lg font-semibold">Superficie:</span>
+                                      <span className="text-lg font-bold">{summary.area}</span>
                                     </div>
-                                    <div className="bg-black/30 backdrop-blur-sm rounded-lg p-4 text-center">
-                                      <div className="text-sm font-bold text-white">{summary.parkType}</div>
-                                      <div className="text-sm text-gray-200">Tipo</div>
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-lg font-semibold">Tipo:</span>
+                                      <span className="text-sm font-bold">{summary.parkType}</span>
                                     </div>
-                                  </>
+                                  </div>
                                 );
                               })()}
                             </div>
