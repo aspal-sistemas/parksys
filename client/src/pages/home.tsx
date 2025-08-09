@@ -552,10 +552,6 @@ const Home: React.FC = () => {
             {/* Contenido */}
             <div className="space-y-8">
               <div>
-                <div className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-100 to-teal-100 rounded-full px-6 py-3 mb-6 border border-emerald-200">
-                  <Leaf className="h-5 w-5 text-emerald-600" />
-                  <span className="text-sm font-semibold text-emerald-800">🦎 Vida Silvestre</span>
-                </div>
                 <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
                   Centro Metropolitano de 
                   <span className="block text-emerald-600">Conservación de Vida Silvestre Urbano</span>
@@ -564,24 +560,6 @@ const Home: React.FC = () => {
                   Dedicado a la protección, rehabilitación y conservación de especies nativas en el área metropolitana. 
                   Trabajamos en la preservación de la biodiversidad urbana y la educación ambiental para las futuras generaciones.
                 </p>
-              </div>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow">
-                  <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mb-4">
-                    <Shield className="h-6 w-6 text-emerald-600" />
-                  </div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">Rescate de Fauna</h3>
-                  <p className="text-gray-600">Atención especializada para animales silvestres heridos o en situación de riesgo</p>
-                </div>
-                
-                <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow">
-                  <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mb-4">
-                    <Heart className="h-6 w-6 text-emerald-600" />
-                  </div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">Rehabilitación</h3>
-                  <p className="text-gray-600">Programas integrales de recuperación y reintegración al hábitat natural</p>
-                </div>
               </div>
               
               <Button size="lg" className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold px-8 py-3 rounded-xl transition-all duration-300 hover:scale-105">
@@ -628,10 +606,6 @@ const Home: React.FC = () => {
             {/* Contenido - Lado derecho */}
             <div className="space-y-8 order-1 lg:order-2">
               <div>
-                <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-full px-6 py-3 mb-6 border border-blue-200">
-                  <GraduationCap className="h-5 w-5 text-blue-600" />
-                  <span className="text-sm font-semibold text-blue-800">📚 Aprendizaje</span>
-                </div>
                 <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
                   <span className="text-blue-600">Educación</span>
                   <span className="block">Ambiental</span>
