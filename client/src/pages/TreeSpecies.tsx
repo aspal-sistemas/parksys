@@ -334,7 +334,7 @@ export default function TreeSpecies() {
     return (
       <PublicLayout>
         <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-12">
-          <div className="max-w-7xl mx-auto px-4">
+          <div className="mx-auto px-4" style={{ maxWidth: 'calc(80rem + 72px)' }}>
             <div className="text-center mb-12">
               <div className="h-8 bg-gray-200 rounded w-96 mx-auto mb-4 animate-pulse"></div>
               <div className="h-4 bg-gray-200 rounded w-64 mx-auto animate-pulse"></div>
@@ -366,7 +366,7 @@ export default function TreeSpecies() {
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
         {/* Header Ad Space */}
         <div className="w-full bg-white border-b">
-          <div className="max-w-7xl mx-auto px-4 py-2">
+          <div className="mx-auto px-4 py-2" style={{ maxWidth: 'calc(80rem + 72px)' }}>
             <AdSpace 
               spaceId="4" 
               position="header" 
@@ -397,7 +397,7 @@ export default function TreeSpecies() {
         </div>
         
         {/* Filtros - Movidos pegados al hero */}
-        <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="mx-auto px-4 py-8" style={{ maxWidth: 'calc(80rem + 72px)' }}>
           <div className="bg-white rounded-lg shadow-sm p-6">
             <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
               <div className="flex-1 max-w-md">
