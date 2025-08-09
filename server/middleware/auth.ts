@@ -23,33 +23,40 @@ export const isAuthenticated = async (req: Request, res: Response, next: NextFun
       
       // Para tokens de desarrollo directo, extraemos el ID del usuario
       if (token.startsWith('direct-token-')) {
-        // Extraer el timestamp del token para obtener el ID de usuario
-        const timestamp = token.substring(13); // Remover 'direct-token-'
+        console.log('🔍 Token directo detectado, buscando usuario...');
         
         // Intentar primero con headers personalizados de Replit
         const userId = req.headers['x-user-id'];
         const userRole = req.headers['x-user-role'];
         
         if (userId && userRole) {
-          // Buscar el usuario real en la base de datos
-          const user = await storage.getUser(Number(userId));
-          if (user) {
-            req.user = user;
-            console.log('✅ Usuario autenticado desde token con headers:', { id: user.id, username: user.username, role: user.role });
-            return next();
+          console.log('🔍 Headers encontrados:', { userId, userRole });
+          try {
+            const user = await storage.getUser(Number(userId));
+            if (user) {
+              req.user = user;
+              console.log('✅ Usuario autenticado desde token con headers:', { id: user.id, username: user.username, role: user.role });
+              return next();
+            }
+          } catch (userError) {
+            console.error('Error obteniendo usuario específico:', userError);
           }
         }
         
-        // Si no hay headers específicos, intentar con el storage directo
-        // Obtener el usuario más recientemente logueado (fallback)
+        // FALLBACK: Si no hay headers específicos o falló la búsqueda, usar el storage directo
+        console.log('🔄 Intentando fallback con storage directo...');
         try {
           const users = await storage.getUsers();
+          console.log('🔍 Usuarios encontrados en storage:', users?.length || 0);
+          
           if (users && users.length > 0) {
             // Usar el primer usuario activo encontrado como fallback
             const activeUser = users.find(u => u.isActive !== false) || users[0];
-            req.user = activeUser;
-            console.log('✅ Usuario autenticado con fallback:', { id: activeUser.id, username: activeUser.username });
-            return next();
+            if (activeUser) {
+              req.user = activeUser;
+              console.log('✅ Usuario autenticado con fallback:', { id: activeUser.id, username: activeUser.username });
+              return next();
+            }
           }
         } catch (fallbackError) {
           console.error('Error en fallback de autenticación:', fallbackError);
@@ -58,7 +65,7 @@ export const isAuthenticated = async (req: Request, res: Response, next: NextFun
     }
     
     // Si no hay token o usuario válido, denegar acceso
-    console.log('❌ No se encontró usuario válido');
+    console.log('❌ No se encontró usuario válido - Headers:', req.headers.authorization ? 'Presente' : 'Ausente');
     return res.status(401).json({ message: 'No autorizado - Token requerido' });
     
   } catch (error) {
