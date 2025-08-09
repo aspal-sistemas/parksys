@@ -65,8 +65,7 @@ const Home: React.FC = () => {
               backgroundImage: "url('/images/hero-background.jpg')"
             }}
           ></div>
-          {/* Overlay con gradiente optimizado para la nueva imagen */}
-          <div className="absolute inset-0 bg-gradient-to-r from-emerald-900/70 via-emerald-800/50 to-emerald-600/30"></div>
+
         </div>
         
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-screen flex items-center">
@@ -74,7 +73,7 @@ const Home: React.FC = () => {
             {/* Título principal */}
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
               Agencia Metropolitana
-              <span className="block text-emerald-400">de Bosques Urbanos</span>
+              <span className="block text-white">de Bosques Urbanos</span>
             </h1>
             
             {/* Subtítulo */}
