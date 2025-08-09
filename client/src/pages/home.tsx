@@ -600,8 +600,8 @@ const Home: React.FC = () => {
                 backgroundRepeat: 'no-repeat'
               }}
             >
-              <h3 className="text-2xl font-bold text-white mb-4 text-right">¿Quieres colaborar con nosotros?</h3>
-              <p className="text-white mb-6 text-lg font-medium text-right">
+              <h3 className="text-4xl font-bold text-white mb-4 text-right">¿Quieres colaborar con nosotros?</h3>
+              <p className="text-white mb-6 text-xl font-medium text-right">
                 Únete a nuestras alianzas estratégicas y contribuye al desarrollo sostenible de la zona metropolitana
               </p>
               <Button size="lg" className="bg-white text-purple-600 hover:bg-gray-50 font-bold px-8 py-3 rounded-xl transition-all duration-300 hover:scale-105 shadow-lg">
