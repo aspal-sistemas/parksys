@@ -469,8 +469,8 @@ const Home: React.FC = () => {
               <span style={{ fontFamily: 'Guttery Regular, Georgia, Times, serif', color: '#51a19f', fontWeight: '300' }}>Conoce la</span><br />
               <span style={{ color: '#19633c' }}>Agencia Metropolitana<br />de Bosques Urbanos</span>
             </h2>
-            <p className="text-2xl font-bold text-gray-700 max-w-4xl mx-auto leading-relaxed">
-              Somos un organismo público descentralizado que gestiona y conserva los parques del Área 
+            <p className="text-xl font-bold text-gray-700 max-w-4xl mx-auto leading-relaxed">
+              Somos un organismo público descentralizado que gestiona y conserva los parques del Área<br />
               Metropolitana de Guadalajara con el objetivo de garantizar el derecho humano a un ambiente sano.
             </p>
           </div>
