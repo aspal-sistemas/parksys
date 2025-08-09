@@ -479,7 +479,7 @@ export default function TreeSpecies() {
           <AdSpace spaceId="36" position="banner" pageType="tree-species" />
         </div>
 
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="mx-auto px-4" style={{ maxWidth: 'calc(80rem + 72px)' }}>
           {/* Estadísticas */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <Card>
@@ -529,8 +529,8 @@ export default function TreeSpecies() {
 
           {/* Layout principal con sidebar */}
           <div className="flex gap-8">
-            {/* Contenido principal - ampliado 72px */}
-            <div className="flex-1" style={{ width: 'calc(100% - 320px + 72px)' }}>
+            {/* Contenido principal */}
+            <div className="flex-1">
               {/* Resultados */}
               {filteredSpecies.length > 0 ? (
                 <>
