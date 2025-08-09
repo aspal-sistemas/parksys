@@ -591,12 +591,20 @@ const Home: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Call to action para patrocinadores - MOVIDO ARRIBA */}
           <div className="text-center mb-16">
-            <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-3xl p-8 shadow-xl mb-16">
+            <div 
+              className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-3xl p-8 shadow-xl mb-16 relative overflow-hidden"
+              style={{
+                backgroundImage: `linear-gradient(rgba(147, 51, 234, 0.8), rgba(236, 72, 153, 0.8)), url('/attached_assets/excited-family-volunteers-celebrating-their-garbag-2025-08-03-03-10-39-utc_1754779889027.jpg')`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat'
+              }}
+            >
               <h3 className="text-2xl font-bold text-white mb-4">¿Quieres ser parte del cambio?</h3>
-              <p className="text-purple-100 mb-6 text-lg">
+              <p className="text-white mb-6 text-lg font-medium">
                 Únete a nuestras alianzas estratégicas y contribuye al desarrollo sostenible de la zona metropolitana
               </p>
-              <Button size="lg" className="bg-white text-purple-600 hover:bg-gray-50 font-bold px-8 py-3 rounded-xl transition-all duration-300 hover:scale-105">
+              <Button size="lg" className="bg-white text-purple-600 hover:bg-gray-50 font-bold px-8 py-3 rounded-xl transition-all duration-300 hover:scale-105 shadow-lg">
                 Convertirse en Patrocinador
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
