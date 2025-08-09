@@ -625,7 +625,7 @@ const Home: React.FC = () => {
 
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-6xl font-bold mb-8">
-              <span style={{ color: '#51a19f' }}>Gracias a nuestros</span>
+              <span style={{ color: '#51a19f', fontFamily: 'Guttery Regular, serif' }}>Gracias a nuestros</span>
               <br />
               <span style={{ color: '#19633c' }}>Patrocinadores</span>
             </h2>
