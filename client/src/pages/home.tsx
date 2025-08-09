@@ -132,21 +132,21 @@ const Home: React.FC = () => {
             </p>
           </div>
           
-          <div className="flex flex-col lg:flex-row gap-6 mb-12 min-h-[600px]">
+          <div className="flex flex-col lg:flex-row gap-4 mb-12 lg:h-[400px]">
             {isLoading ? (
               // Loading skeletons con nuevo layout
               <>
-                <div className="flex-1 lg:max-w-sm">
+                <div className="w-full lg:w-[300px]">
                   <Card className="animate-pulse rounded-3xl overflow-hidden shadow-lg h-full">
                     <div className="h-full bg-gradient-to-br from-gray-200 to-gray-300"></div>
                   </Card>
                 </div>
-                <div className="flex-2 lg:flex-grow">
+                <div className="flex-1">
                   <Card className="animate-pulse rounded-3xl overflow-hidden shadow-lg h-full">
                     <div className="h-full bg-gradient-to-br from-gray-200 to-gray-300"></div>
                   </Card>
                 </div>
-                <div className="flex-1 lg:max-w-sm">
+                <div className="w-full lg:w-[300px]">
                   <Card className="animate-pulse rounded-3xl overflow-hidden shadow-lg h-full">
                     <div className="h-full bg-gradient-to-br from-gray-200 to-gray-300"></div>
                   </Card>
@@ -155,9 +155,9 @@ const Home: React.FC = () => {
             ) : featuredParks.length > 0 ? (
               <>
                 {/* Card izquierda */}
-                <div className="flex-1 lg:max-w-sm">
+                <div className="w-full lg:w-[300px]">
                   <div className="group h-full">
-                    <Card className="border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105 rounded-3xl overflow-hidden bg-white h-full">
+                    <Card className="border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-[1.02] rounded-3xl overflow-hidden bg-white h-full">
                       <ParkCard park={featuredParks[0]} />
                     </Card>
                   </div>
@@ -165,9 +165,9 @@ const Home: React.FC = () => {
                 
                 {/* Card central (más grande) */}
                 {featuredParks.length > 1 && (
-                  <div className="flex-2 lg:flex-grow">
+                  <div className="flex-1">
                     <div className="group h-full">
-                      <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-105 rounded-3xl overflow-hidden bg-white h-full">
+                      <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-[1.02] rounded-3xl overflow-hidden bg-white h-full">
                         <ParkCard park={featuredParks[1]} />
                       </Card>
                     </div>
@@ -176,9 +176,9 @@ const Home: React.FC = () => {
                 
                 {/* Card derecha */}
                 {featuredParks.length > 2 && (
-                  <div className="flex-1 lg:max-w-sm">
+                  <div className="w-full lg:w-[300px]">
                     <div className="group h-full">
-                      <Card className="border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105 rounded-3xl overflow-hidden bg-white h-full">
+                      <Card className="border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-[1.02] rounded-3xl overflow-hidden bg-white h-full">
                         <ParkCard park={featuredParks[2]} />
                       </Card>
                     </div>
