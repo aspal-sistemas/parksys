@@ -46,8 +46,12 @@ const ConcessionImageManager: React.FC<ConcessionImageManagerProps> = ({ concess
       formData.append('image', file);
       formData.append('caption', caption);
 
+      const token = localStorage.getItem('token') || 'direct-token-1750522117022';
       const response = await fetch(`/api/active-concessions/${concessionId}/images`, {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
         body: formData,
       });
 
