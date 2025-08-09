@@ -274,7 +274,7 @@ const Home: React.FC = () => {
                             </div>
                             
                             <Link href={`/parque/${featuredParks[currentIndex]?.name.toLowerCase().replace(/\s+/g, '-')}-${featuredParks[currentIndex]?.id}`}>
-                              <Button className="bg-[#19633c] hover:bg-[#145530] text-white px-8 py-3 rounded-full text-lg font-semibold transition-all duration-300 hover:scale-105 shadow-2xl">
+                              <Button className="bg-primary-600 hover:bg-primary-700 text-white px-8 py-3 rounded-full text-lg font-semibold transition-all duration-300 hover:scale-105 shadow-2xl">
                                 Conoce más
                                 <ArrowRight className="ml-3 h-5 w-5" />
                               </Button>
