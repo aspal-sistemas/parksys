@@ -396,9 +396,63 @@ export default function TreeSpecies() {
           </div>
         </div>
         
-        {/* Filtros - Movidos pegados al hero */}
-        <div className="max-w-6xl mx-auto px-4 py-8">
-          <div className="bg-white rounded-lg shadow-sm p-6">
+
+
+        {/* Banner Publicitario de Ancho Completo */}
+        <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] mb-8">
+          <AdSpace spaceId="36" position="banner" pageType="tree-species" />
+        </div>
+
+        <div className="max-w-6xl mx-auto px-4">
+          {/* Estadísticas */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-2xl font-bold text-green-600">
+                  {Array.isArray(treeSpecies) ? treeSpecies.length : 0}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-600">Especies registradas</p>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-2xl font-bold text-blue-600">
+                  {Array.isArray(treeSpecies) ? treeSpecies.filter(s => s.origin === 'Nativo').length : 0}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-600">Especies nativas</p>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-2xl font-bold text-red-600">
+                  {Array.isArray(treeSpecies) ? treeSpecies.filter(s => s.isEndangered).length : 0}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-600">En peligro</p>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-2xl font-bold text-purple-600">
+                  {filteredSpecies.length}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-600">Resultados filtrados</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Filtros - Después de estadísticas */}
+          <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
             <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
               <div className="flex-1 max-w-md">
                 <div className="relative">
@@ -471,60 +525,6 @@ export default function TreeSpecies() {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* Banner Publicitario de Ancho Completo */}
-        <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] mb-8">
-          <AdSpace spaceId="36" position="banner" pageType="tree-species" />
-        </div>
-
-        <div className="max-w-6xl mx-auto px-4">
-          {/* Estadísticas */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-2xl font-bold text-green-600">
-                  {Array.isArray(treeSpecies) ? treeSpecies.length : 0}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-600">Especies registradas</p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-2xl font-bold text-blue-600">
-                  {Array.isArray(treeSpecies) ? treeSpecies.filter(s => s.origin === 'Nativo').length : 0}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-600">Especies nativas</p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-2xl font-bold text-red-600">
-                  {Array.isArray(treeSpecies) ? treeSpecies.filter(s => s.isEndangered).length : 0}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-600">En peligro</p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-2xl font-bold text-purple-600">
-                  {filteredSpecies.length}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-600">Resultados filtrados</p>
-              </CardContent>
-            </Card>
           </div>
 
           {/* Resultados - Grid expandido sin sidebar */}
