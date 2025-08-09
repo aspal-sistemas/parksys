@@ -161,99 +161,110 @@ const Home: React.FC = () => {
           </div>
           
           {/* Carousel de pantalla completa */}
-          <div className="relative mb-12 h-[500px] w-screen -ml-4 sm:-ml-6 lg:-ml-8 overflow-hidden">
-            <div className="flex items-center justify-center h-full w-full relative">
+          <div className="relative mb-12 h-[500px] w-screen left-1/2 transform -translate-x-1/2">
+            <div className="flex items-center h-full w-full overflow-hidden">
               {isLoading ? (
                 // Loading skeleton
-                <div className="flex w-full h-full items-center justify-center px-8">
-                  <div className="w-[70%] h-full mx-auto">
+                <div className="flex w-full h-full items-center justify-center">
+                  <div className="w-[70vw] h-full">
                     <Card className="animate-pulse rounded-3xl overflow-hidden shadow-xl h-full w-full">
                       <div className="h-full bg-gradient-to-br from-gray-200 to-gray-300"></div>
                     </Card>
                   </div>
                 </div>
               ) : featuredParks.length > 0 ? (
-                <div className="flex w-full h-full items-center">
-                  {/* Carousel container con efecto de desplazamiento */}
-                  <div 
-                    className="flex items-center justify-center w-full h-full transition-transform duration-500 ease-out"
-                    style={{ transform: `translateX(calc(-${currentIndex * 100}vw + 50vw - 35vw))` }}
-                  >
-                    {featuredParks.map((park, index) => {
-                      const isCurrent = index === currentIndex;
-                      const isPrev = index === currentIndex - 1 || (currentIndex === 0 && index === featuredParks.length - 1);
-                      const isNext = index === currentIndex + 1 || (currentIndex === featuredParks.length - 1 && index === 0);
-                      
-                      return (
-                        <div
-                          key={park.id}
-                          className={`flex-shrink-0 h-full transition-all duration-500 ${
-                            isCurrent 
-                              ? 'w-[70vw] scale-105 z-20' 
-                              : (isPrev || isNext) 
-                                ? 'w-[15vw] scale-95 z-10 opacity-70' 
-                                : 'w-[15vw] scale-90 z-0 opacity-50'
-                          }`}
-                          style={{ marginRight: index < featuredParks.length - 1 ? '0' : '0' }}
-                        >
-                          <div className="h-full w-full px-2">
-                            <div className="relative h-full w-full rounded-3xl overflow-hidden shadow-2xl group">
-                              {/* Imagen de fondo */}
-                              <div 
-                                className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
-                                style={{
-                                  backgroundImage: `url(${park.primaryImage || park.mainImageUrl || 'https://images.unsplash.com/photo-1519331379826-f10be5486c6f?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80'})`
-                                }}
-                              />
-                              
-                              {/* Overlay degradado */}
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                              
-                              {/* Green Flag Award para parques destacados */}
-                              {(park.id === 5 || park.id === 18 || park.id === 4) && isCurrent && (
-                                <div className="absolute top-6 right-6 z-30">
-                                  <img 
-                                    src="/images/green-flag-award.png" 
-                                    alt="Green Flag Award" 
-                                    className="h-20 w-28 object-contain bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-lg border border-green-500/30"
-                                  />
-                                </div>
-                              )}
-                              
-                              {/* Contenido de la tarjeta */}
-                              <div className="absolute inset-0 flex flex-col justify-end p-8 text-white">
-                                <div className="transform transition-transform duration-300 group-hover:translate-y-[-8px]">
-                                  {/* Título */}
-                                  <h3 className={`font-bold text-white mb-4 leading-tight ${
-                                    isCurrent ? 'text-3xl lg:text-4xl' : 'text-xl lg:text-2xl'
-                                  }`}>
-                                    {park.name}
-                                  </h3>
-                                  
-                                  {/* Solo mostrar descripción y botón en la tarjeta central */}
-                                  {isCurrent && (
-                                    <>
-                                      {/* Descripción */}
-                                      <p className="text-gray-200 mb-6 text-lg leading-relaxed max-w-2xl">
-                                        {park.description || 'Descubre este maravilloso espacio verde en el corazón de Guadalajara, diseñado para el disfrute de toda la familia.'}
-                                      </p>
-                                      
-                                      {/* Botón */}
-                                      <Link href={`/parque/${park.name.toLowerCase().replace(/\s+/g, '-')}-${park.id}`}>
-                                        <Button className="bg-primary-600 hover:bg-primary-700 text-white px-8 py-3 rounded-full text-lg font-semibold transition-all duration-300 hover:scale-105 shadow-lg">
-                                          Conoce más
-                                          <ArrowRight className="ml-2 h-5 w-5" />
-                                        </Button>
-                                      </Link>
-                                    </>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
+                <div className="flex items-center h-full w-full">
+                  {/* Carousel container con vista de 3 tarjetas */}
+                  <div className="flex items-center justify-center h-full w-full px-8">
+                    {/* Tarjeta anterior (parcial izquierda) */}
+                    {featuredParks.length > 1 && (
+                      <div className="w-[15vw] h-[90%] opacity-70 scale-95 mr-4">
+                        <div className="relative h-full w-full rounded-2xl overflow-hidden shadow-lg">
+                          <div 
+                            className="absolute inset-0 bg-cover bg-center"
+                            style={{
+                              backgroundImage: `url(${featuredParks[(currentIndex - 1 + featuredParks.length) % featuredParks.length]?.primaryImage || featuredParks[(currentIndex - 1 + featuredParks.length) % featuredParks.length]?.mainImageUrl || 'https://images.unsplash.com/photo-1519331379826-f10be5486c6f?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80'})`
+                            }}
+                          />
+                          <div className="absolute inset-0 bg-black/40" />
+                          <div className="absolute inset-0 flex items-end p-4">
+                            <h3 className="text-white font-semibold text-lg truncate">
+                              {featuredParks[(currentIndex - 1 + featuredParks.length) % featuredParks.length]?.name}
+                            </h3>
                           </div>
                         </div>
-                      );
-                    })}
+                      </div>
+                    )}
+
+                    {/* Tarjeta central (principal) */}
+                    <div className="w-[70vw] h-full scale-105 z-20 mx-2">
+                      <div className="relative h-full w-full rounded-3xl overflow-hidden shadow-2xl group">
+                        {/* Imagen de fondo */}
+                        <div 
+                          className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+                          style={{
+                            backgroundImage: `url(${featuredParks[currentIndex]?.primaryImage || featuredParks[currentIndex]?.mainImageUrl || 'https://images.unsplash.com/photo-1519331379826-f10be5486c6f?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80'})`
+                          }}
+                        />
+                        
+                        {/* Overlay degradado */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                        
+                        {/* Green Flag Award */}
+                        {(featuredParks[currentIndex]?.id === 5 || featuredParks[currentIndex]?.id === 18 || featuredParks[currentIndex]?.id === 4) && (
+                          <div className="absolute top-6 right-6 z-30">
+                            <img 
+                              src="/images/green-flag-award.png" 
+                              alt="Green Flag Award" 
+                              className="h-20 w-28 object-contain bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-lg"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                              }}
+                            />
+                          </div>
+                        )}
+                        
+                        {/* Contenido principal */}
+                        <div className="absolute inset-0 flex flex-col justify-end p-8 lg:p-12 text-white">
+                          <div className="max-w-4xl">
+                            <h2 className="text-4xl lg:text-5xl font-bold text-white mb-4 leading-tight">
+                              {featuredParks[currentIndex]?.name}
+                            </h2>
+                            
+                            <p className="text-xl lg:text-2xl text-gray-200 mb-8 leading-relaxed max-w-3xl">
+                              {featuredParks[currentIndex]?.description || 'Descubre este maravilloso espacio verde en el corazón de Guadalajara, diseñado para el disfrute de toda la familia y el contacto con la naturaleza.'}
+                            </p>
+                            
+                            <Link href={`/parque/${featuredParks[currentIndex]?.name.toLowerCase().replace(/\s+/g, '-')}-${featuredParks[currentIndex]?.id}`}>
+                              <Button className="bg-primary-600 hover:bg-primary-700 text-white px-10 py-4 rounded-full text-xl font-semibold transition-all duration-300 hover:scale-105 shadow-2xl">
+                                Conoce más
+                                <ArrowRight className="ml-3 h-6 w-6" />
+                              </Button>
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Tarjeta siguiente (parcial derecha) */}
+                    {featuredParks.length > 1 && (
+                      <div className="w-[15vw] h-[90%] opacity-70 scale-95 ml-4">
+                        <div className="relative h-full w-full rounded-2xl overflow-hidden shadow-lg">
+                          <div 
+                            className="absolute inset-0 bg-cover bg-center"
+                            style={{
+                              backgroundImage: `url(${featuredParks[(currentIndex + 1) % featuredParks.length]?.primaryImage || featuredParks[(currentIndex + 1) % featuredParks.length]?.mainImageUrl || 'https://images.unsplash.com/photo-1519331379826-f10be5486c6f?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80'})`
+                            }}
+                          />
+                          <div className="absolute inset-0 bg-black/40" />
+                          <div className="absolute inset-0 flex items-end p-4">
+                            <h3 className="text-white font-semibold text-lg truncate">
+                              {featuredParks[(currentIndex + 1) % featuredParks.length]?.name}
+                            </h3>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               ) : (
@@ -275,7 +286,7 @@ const Home: React.FC = () => {
                 {/* Flecha izquierda */}
                 <button
                   onClick={prevSlide}
-                  className="absolute left-8 top-1/2 transform -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 p-4 rounded-full shadow-xl transition-all duration-300 hover:scale-110 z-30"
+                  className="absolute left-8 top-1/2 transform -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 p-4 rounded-full shadow-xl transition-all duration-300 hover:scale-110 z-40"
                 >
                   <ChevronLeft className="h-7 w-7" />
                 </button>
@@ -283,13 +294,13 @@ const Home: React.FC = () => {
                 {/* Flecha derecha */}
                 <button
                   onClick={nextSlide}
-                  className="absolute right-8 top-1/2 transform -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 p-4 rounded-full shadow-xl transition-all duration-300 hover:scale-110 z-30"
+                  className="absolute right-8 top-1/2 transform -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 p-4 rounded-full shadow-xl transition-all duration-300 hover:scale-110 z-40"
                 >
                   <ChevronRight className="h-7 w-7" />
                 </button>
                 
                 {/* Indicadores de puntos */}
-                <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-30">
+                <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-40">
                   <div className="flex space-x-3 bg-black/50 backdrop-blur-sm rounded-full px-6 py-3 shadow-2xl">
                     {featuredParks.map((_, index) => (
                       <button
