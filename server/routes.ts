@@ -2989,36 +2989,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.delete("/park-documents/:documentId", isAuthenticated, async (req: Request, res: Response) => {
     try {
       const documentId = Number(req.params.documentId);
+      console.log(`🗑️ DELETE /park-documents/${documentId} - Iniciando eliminación`);
+      console.log(`🔍 Usuario autenticado:`, { id: req.user.id, role: req.user.role });
       
       // Verificamos que el documento existe y obtenemos su parkId
       const document = await storage.getDocument(documentId);
       if (!document) {
+        console.log(`❌ Documento ${documentId} no encontrado`);
         return res.status(404).json({ message: "Document not found" });
       }
+      
+      console.log(`📋 Documento encontrado:`, { id: document.id, parkId: document.parkId, title: document.title });
       
       // Verificamos que el usuario tenga acceso al parque del documento
       if (req.user.role !== 'super_admin') {
         const park = await storage.getPark(document.parkId);
         if (!park) {
+          console.log(`❌ Parque ${document.parkId} no encontrado`);
           return res.status(404).json({ message: "Park not found" });
         }
         
+        console.log(`🏛️ Verificando permisos: usuario municipio ${req.user.municipalityId}, parque municipio ${park.municipalityId}`);
+        
         if (park.municipalityId !== req.user.municipalityId) {
+          console.log(`❌ Sin permisos para eliminar documento del parque ${document.parkId}`);
           return res.status(403).json({ 
             message: "No tiene permisos para administrar documentos de este parque" 
           });
         }
       }
       
+      console.log(`✅ Permisos verificados, procediendo a eliminar documento ${documentId}`);
       const result = await storage.deleteDocument(documentId);
       
       if (!result) {
+        console.log(`❌ No se pudo eliminar el documento ${documentId}`);
         return res.status(404).json({ message: "Document not found" });
       }
       
+      console.log(`✅ Documento ${documentId} eliminado exitosamente`);
       res.status(204).send();
     } catch (error) {
-      console.error("Error deleting document:", error);
+      console.error(`❌ Error eliminando documento ${req.params.documentId}:`, error);
       res.status(500).json({ message: "Error removing document from park" });
     }
   });

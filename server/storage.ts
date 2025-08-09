@@ -1471,11 +1471,46 @@ DatabaseStorage.prototype.createDocument = async function(documentData: any): Pr
 };
 
 DatabaseStorage.prototype.getDocument = async function(id: number): Promise<any> {
-  return null;
+  try {
+    console.log(`📋 STORAGE: Consultando documento con ID ${id}`);
+    const result = await pool.query(`
+      SELECT 
+        id,
+        park_id as "parkId",
+        title,
+        file_path as "filePath",
+        file_url as "fileUrl",
+        file_size as "fileSize",
+        file_type as "fileType",
+        description,
+        category,
+        uploaded_by_id as "uploadedById",
+        created_at as "createdAt",
+        updated_at as "updatedAt"
+      FROM documents 
+      WHERE id = $1
+    `, [id]);
+    
+    const document = result.rows[0] || null;
+    console.log(`📋 STORAGE: Documento ${id} ${document ? 'encontrado' : 'no encontrado'}`);
+    return document;
+  } catch (error) {
+    console.error(`❌ STORAGE: Error consultando documento ${id}:`, error);
+    return null;
+  }
 };
 
 DatabaseStorage.prototype.deleteDocument = async function(id: number): Promise<boolean> {
-  return true;
+  try {
+    console.log(`🗑️ STORAGE: Eliminando documento con ID ${id}`);
+    const result = await pool.query('DELETE FROM documents WHERE id = $1', [id]);
+    const deleted = (result.rowCount || 0) > 0;
+    console.log(`🗑️ STORAGE: Documento ${id} ${deleted ? 'eliminado' : 'no encontrado'}, filas afectadas: ${result.rowCount}`);
+    return deleted;
+  } catch (error) {
+    console.error(`❌ STORAGE: Error eliminando documento ${id}:`, error);
+    return false;
+  }
 };
 
 DatabaseStorage.prototype.getAllDocuments = async function(): Promise<any[]> {
