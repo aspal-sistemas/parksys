@@ -237,7 +237,7 @@ export default function ParkMultimediaManager({ parkId }: ParkMultimediaManagerP
 
   // Mutaciones para documentos
   const uploadDocumentMutation = useMutation({
-    mutationFn: async (data: FormData | { title: string; description: string; category: string; fileUrl: string }) => {
+    mutationFn: async (data: FormData | { title: string; description: string; category: string; fileUrl: string; fileType: string }) => {
       if (data instanceof FormData) {
         const response = await fetch(`/api/parks/${parkId}/documents`, {
           method: 'POST',

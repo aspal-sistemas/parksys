@@ -2985,6 +2985,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Eliminar documento de parque (producción)
+  apiRouter.delete("/park-documents/:documentId", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const documentId = Number(req.params.documentId);
+      
+      // Verificamos que el documento existe y obtenemos su parkId
+      const document = await storage.getDocument(documentId);
+      if (!document) {
+        return res.status(404).json({ message: "Document not found" });
+      }
+      
+      // Verificamos que el usuario tenga acceso al parque del documento
+      if (req.user.role !== 'super_admin') {
+        const park = await storage.getPark(document.parkId);
+        if (!park) {
+          return res.status(404).json({ message: "Park not found" });
+        }
+        
+        if (park.municipalityId !== req.user.municipalityId) {
+          return res.status(403).json({ 
+            message: "No tiene permisos para administrar documentos de este parque" 
+          });
+        }
+      }
+      
+      const result = await storage.deleteDocument(documentId);
+      
+      if (!result) {
+        return res.status(404).json({ message: "Document not found" });
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting document:", error);
+      res.status(500).json({ message: "Error removing document from park" });
+    }
+  });
+
   // Ruta especial para eliminar documentos durante el desarrollo (sin autenticación)
   apiRouter.delete("/dev/parks/:parkId/documents/:documentId", async (req: Request, res: Response) => {
     try {
