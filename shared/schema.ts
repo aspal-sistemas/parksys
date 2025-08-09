@@ -1468,6 +1468,69 @@ export const insertTreeMaintenanceSchema = createInsertSchema(treeMaintenances).
   created_at: true
 });
 
+// ========== MÓDULO DE FAUNA ==========
+
+// Enum para categorías de fauna
+export const faunaCategoryEnum = pgEnum("fauna_category", [
+  "aves",
+  "mamiferos", 
+  "insectos",
+  "vida_acuatica"
+]);
+
+// Enum para estado de conservación
+export const conservationStatusEnum = pgEnum("conservation_status", [
+  "estable",
+  "vulnerable",
+  "en_peligro",
+  "en_peligro_critico",
+  "extinto_local"
+]);
+
+// Tabla de especies de fauna
+export const faunaSpecies = pgTable("fauna_species", {
+  id: serial("id").primaryKey(),
+  commonName: text("common_name").notNull(),
+  scientificName: text("scientific_name").notNull(),
+  family: text("family"),
+  category: faunaCategoryEnum("category").notNull(),
+  habitat: text("habitat"),
+  description: text("description"),
+  behavior: text("behavior"),
+  diet: text("diet"),
+  reproductionPeriod: text("reproduction_period"),
+  conservationStatus: conservationStatusEnum("conservation_status").default("estable"),
+  sizeCm: decimal("size_cm", { precision: 8, scale: 2 }), // tamaño en centímetros
+  weightGrams: decimal("weight_grams", { precision: 10, scale: 2 }), // peso en gramos
+  lifespan: integer("lifespan"), // años aproximados
+  isNocturnal: boolean("is_nocturnal").default(false),
+  isMigratory: boolean("is_migratory").default(false),
+  isEndangered: boolean("is_endangered").default(false),
+  imageUrl: text("image_url"),
+  photoUrl: text("photo_url"),
+  photoCaption: text("photo_caption"),
+  ecologicalImportance: text("ecological_importance"),
+  threats: text("threats"),
+  protectionMeasures: text("protection_measures"),
+  observationTips: text("observation_tips"),
+  bestObservationTime: text("best_observation_time"),
+  commonLocations: text("common_locations").array().default([]), // ubicaciones comunes en los parques
+  iconColor: text("icon_color").default("#16a085"),
+  iconType: text("icon_type").default("system"),
+  customIconUrl: text("custom_icon_url"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export type FaunaSpecies = typeof faunaSpecies.$inferSelect;
+export type InsertFaunaSpecies = typeof faunaSpecies.$inferInsert;
+
+export const insertFaunaSpeciesSchema = createInsertSchema(faunaSpecies).omit({ 
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
 // Tipos
 export type Municipality = typeof municipalities.$inferSelect;
 export type InsertMunicipality = z.infer<typeof insertMunicipalitySchema>;

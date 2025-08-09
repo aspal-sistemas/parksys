@@ -20,6 +20,7 @@ import { registerInstructorInvitationRoutes } from "./instructorInvitationRoutes
 import { registerInstructorApplicationRoutes } from "./instructorApplicationRoutes";
 import { registerAuditRoutes } from "./audit-routes";
 import { ObjectStorageService } from "./objectStorage";
+import faunaRoutes from "./faunaRoutes";
 
 const app = express();
 
@@ -749,6 +750,9 @@ app.use('/api/volunteer-fields', volunteerFieldRouter);
 
 // Registrar la ruta especializada para habilidades de voluntarios
 app.use('/api', skillsRouter);
+
+// Registrar las rutas de fauna
+app.use('/api/fauna', faunaRoutes);
 
 // Registrar las rutas de conteo de visitantes
 app.use('/api', visitorCountRoutes);

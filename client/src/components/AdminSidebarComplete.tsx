@@ -96,7 +96,8 @@ import {
   Grid,
   History,
   Download,
-  Upload
+  Upload,
+  Bird
 } from 'lucide-react';
 
 interface NavItemProps {
@@ -303,6 +304,7 @@ const AdminSidebarComplete: React.FC = () => {
     if (location.startsWith('/admin/visitors')) return 'visitantes';
     if (location.startsWith('/admin/parks')) return 'parques';
     if (location.startsWith('/admin/trees')) return 'arbolado';
+    if (location.startsWith('/admin/fauna')) return 'fauna';
     if (location.startsWith('/admin/organizador') || location.startsWith('/admin/activities') || location.startsWith('/admin/instructors')) return 'actividades';
     if (location.startsWith('/admin/events') || location.startsWith('/admin/eventos-ambu')) return 'eventos';
     if (location.startsWith('/admin/space-reservations')) return 'reservas';
@@ -356,6 +358,7 @@ const AdminSidebarComplete: React.FC = () => {
     if (location.startsWith('/admin/visitors') || 
         location.startsWith('/admin/parks') || 
         location.startsWith('/admin/trees') || 
+        location.startsWith('/admin/fauna') || 
         location.startsWith('/admin/organizador') || 
         location.startsWith('/admin/activities') || 
         location.startsWith('/admin/instructors') || 
@@ -540,6 +543,23 @@ const AdminSidebarComplete: React.FC = () => {
                 active={location.startsWith('/admin/trees/maintenance')}
               >
                 {t('navigation.maintenance')}
+              </NavItem>
+            </CollapsibleSubmenu>
+
+            {/* FAUNA */}
+            <CollapsibleSubmenu
+              id="fauna"
+              title="Fauna"
+              icon={<Heart className="h-4 w-4" />}
+              isExpanded={expandedSubmenus.includes('fauna')}
+              onToggle={toggleSubmenu}
+            >
+              <NavItem 
+                href="/admin/fauna/species" 
+                icon={<Heart className="h-4 w-4" />}
+                active={location.startsWith('/admin/fauna/species')}
+              >
+                Especies
               </NavItem>
             </CollapsibleSubmenu>
 

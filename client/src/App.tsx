@@ -905,6 +905,13 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/trees/catalog/[id]/edit/index')))}
           </Suspense>
         </Route>
+        
+        {/* Rutas de Fauna */}
+        <Route path="/admin/fauna/species">
+          <Suspense fallback={<div className="p-8 text-center">Cargando gestión de fauna...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/fauna/species')))}
+          </Suspense>
+        </Route>
         <Route path="/admin/trees/dashboard">
           <Suspense fallback={<div className="p-8 text-center">Cargando dashboard de arbolado...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/admin/trees/dashboard')))}
