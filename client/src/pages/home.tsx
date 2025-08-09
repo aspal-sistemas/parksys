@@ -625,7 +625,7 @@ const Home: React.FC = () => {
 
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-6xl font-bold text-gray-900 mb-8">
-              Nuestros 
+              Gracias a nuestros 
               <span className="text-purple-600">Patrocinadores</span>
             </h2>
             <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
