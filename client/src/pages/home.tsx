@@ -477,8 +477,8 @@ const Home: React.FC = () => {
           
           <div className="grid grid-cols-4 gap-8">
             {/* Columna 1/4 - Texto descriptivo */}
-            <div className="col-span-1 flex items-center justify-center">
-              <div className="text-center">
+            <div className="col-span-1 flex items-center">
+              <div className="text-left">
                 <h3 className="text-3xl font-bold text-gray-900 leading-tight">
                   Nuestro<br />
                   modelo de gestión<br />
