@@ -251,22 +251,22 @@ const Home: React.FC = () => {
                               {(() => {
                                 const summary = generateParkSummary(featuredParks[currentIndex]);
                                 return (
-                                  <div className="flex flex-col space-y-2 text-white">
+                                  <div className="flex flex-col space-y-1 text-white">
                                     <div className="flex items-center justify-between">
-                                      <span className="text-lg font-semibold">Actividades:</span>
-                                      <span className="text-2xl font-bold">{summary.activitiesCount}</span>
+                                      <span className="text-xs font-semibold">Actividades:</span>
+                                      <span className="text-sm font-bold">{summary.activitiesCount}</span>
                                     </div>
                                     <div className="flex items-center justify-between">
-                                      <span className="text-lg font-semibold">Amenidades:</span>
-                                      <span className="text-2xl font-bold">{summary.amenitiesCount}</span>
+                                      <span className="text-xs font-semibold">Amenidades:</span>
+                                      <span className="text-sm font-bold">{summary.amenitiesCount}</span>
                                     </div>
                                     <div className="flex items-center justify-between">
-                                      <span className="text-lg font-semibold">Superficie:</span>
-                                      <span className="text-lg font-bold">{summary.area}</span>
+                                      <span className="text-xs font-semibold">Superficie:</span>
+                                      <span className="text-xs font-bold">{summary.area}</span>
                                     </div>
                                     <div className="flex items-center justify-between">
-                                      <span className="text-lg font-semibold">Tipo:</span>
-                                      <span className="text-sm font-bold">{summary.parkType}</span>
+                                      <span className="text-xs font-semibold">Tipo:</span>
+                                      <span className="text-xs font-bold">{summary.parkType}</span>
                                     </div>
                                   </div>
                                 );
