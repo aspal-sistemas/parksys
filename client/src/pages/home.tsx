@@ -600,7 +600,7 @@ const Home: React.FC = () => {
                 backgroundRepeat: 'no-repeat'
               }}
             >
-              <h3 className="text-2xl font-bold text-white mb-4 text-right">¿Quieres ser parte del cambio?</h3>
+              <h3 className="text-2xl font-bold text-white mb-4 text-right">¿Quieres colaborar con nosotros?</h3>
               <p className="text-white mb-6 text-lg font-medium text-right">
                 Únete a nuestras alianzas estratégicas y contribuye al desarrollo sostenible de la zona metropolitana
               </p>
