@@ -25,6 +25,10 @@
     @apply text-green-500;
   }
   
+  .flex-2 {
+    flex: 2;
+  }
+  
   /* Line clamp utilities */
   .line-clamp-1 {
     overflow: hidden;
