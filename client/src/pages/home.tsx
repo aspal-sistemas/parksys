@@ -584,77 +584,7 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* EDUCACIÓN AMBIENTAL */}
-      <section className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-16">
-            {/* Imagen - Lado izquierdo */}
-            <div className="relative order-2 lg:order-1">
-              <div className="aspect-[4/3] bg-gradient-to-br from-blue-200 to-indigo-200 rounded-3xl overflow-hidden shadow-2xl">
-                <img 
-                  src="https://images.unsplash.com/photo-1509062522246-3755977927d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                  alt="Educación Ambiental"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="absolute -top-6 -right-6 w-24 h-24 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-3xl flex items-center justify-center shadow-xl">
-                <BookOpen className="h-12 w-12 text-white" />
-              </div>
-            </div>
-            
-            {/* Contenido - Lado derecho */}
-            <div className="space-y-8 order-1 lg:order-2">
-              <div>
-                <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-                  <span className="text-blue-600">Educación</span>
-                  <span className="block">Ambiental</span>
-                </h2>
-                <p className="text-xl text-gray-600 leading-relaxed mb-8">
-                  Formamos ciudadanos conscientes del medio ambiente a través de programas educativos innovadores. 
-                  Nuestros talleres, cursos y actividades promueven la cultura ambiental en todas las edades.
-                </p>
-              </div>
-              
-              <div className="space-y-4">
-                <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
-                    <Users className="h-4 w-4 text-blue-600" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-900 mb-1">Talleres Comunitarios</h3>
-                    <p className="text-gray-600">Actividades participativas para todas las edades enfocadas en sustentabilidad</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
-                    <Zap className="h-4 w-4 text-blue-600" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-900 mb-1">Programas Escolares</h3>
-                    <p className="text-gray-600">Currículum ambiental integrado para instituciones educativas</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
-                    <Target className="h-4 w-4 text-blue-600" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-900 mb-1">Capacitación Empresarial</h3>
-                    <p className="text-gray-600">Programas especializados para organizaciones comprometidas con el medio ambiente</p>
-                  </div>
-                </div>
-              </div>
-              
-              <Button size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold px-8 py-3 rounded-xl transition-all duration-300 hover:scale-105">
-                Explora Programas Educativos
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
+
 
       {/* PATROCINADORES */}
       <section className="py-24 bg-gradient-to-b from-gray-50 to-white">
