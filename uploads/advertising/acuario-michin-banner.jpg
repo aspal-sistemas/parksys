@@ -1,60 +1,63 @@
-<svg width="800" height="200" viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg">
+<svg width="800" height="150" viewBox="0 0 800 150" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fondo degradado oceánico -->
   <defs>
-    <linearGradient id="oceanGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#001f3f;stop-opacity:1" />
-      <stop offset="50%" style="stop-color:#0074D9;stop-opacity:1" />
+    <linearGradient id="oceanGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#0074D9;stop-opacity:1" />
       <stop offset="100%" style="stop-color:#39CCCC;stop-opacity:1" />
     </linearGradient>
-    <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#39CCCC;stop-opacity:1" />
-    </linearGradient>
-    <linearGradient id="promoGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#FF851B;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#FFDC00;stop-opacity:1" />
-    </linearGradient>
+    <radialGradient id="waterGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#7FDBFF;stop-opacity:0.3" />
+      <stop offset="100%" style="stop-color:#0074D9;stop-opacity:0" />
+    </radialGradient>
   </defs>
   
-  <!-- Fondo oceánico -->
-  <rect width="800" height="200" fill="url(#oceanGradient)"/>
+  <!-- Fondo principal -->
+  <rect width="800" height="150" fill="url(#oceanGradient)"/>
+  <rect width="800" height="150" fill="url(#waterGlow)"/>
   
-  <!-- Efectos de burbujas -->
-  <circle cx="100" cy="40" r="8" fill="white" opacity="0.3"/>
-  <circle cx="120" cy="70" r="5" fill="white" opacity="0.4"/>
-  <circle cx="140" cy="30" r="12" fill="white" opacity="0.2"/>
-  <circle cx="720" cy="50" r="6" fill="white" opacity="0.3"/>
-  <circle cx="750" cy="80" r="9" fill="white" opacity="0.25"/>
+  <!-- Elementos decorativos marinos -->
+  <circle cx="100" cy="30" r="15" fill="#FFFFFF" opacity="0.6"/>
+  <circle cx="700" cy="120" r="20" fill="#7FDBFF" opacity="0.4"/>
+  <circle cx="650" cy="40" r="12" fill="#FFFFFF" opacity="0.3"/>
   
-  <!-- Siluetas de peces -->
-  <path d="M50 120 Q70 100 90 120 Q70 140 50 120 M45 120 L30 115 L30 125 Z" fill="#39CCCC" opacity="0.6"/>
-  <path d="M680 160 Q700 140 720 160 Q700 180 680 160 M675 160 L660 155 L660 165 Z" fill="#0074D9" opacity="0.5"/>
+  <!-- Ondas de agua -->
+  <path d="M50 50 Q80 30 110 50 Q140 70 170 50" stroke="#7FDBFF" stroke-width="4" fill="none" opacity="0.7"/>
   
-  <!-- Logo/Título MICHÍN -->
-  <text x="50" y="80" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="url(#textGradient)">ACUARIO</text>
-  <text x="280" y="80" font-family="Arial, sans-serif" font-size="56" font-weight="bold" fill="#FF851B">MICHÍN</text>
-  <text x="50" y="110" font-family="Arial, sans-serif" font-size="20" fill="white">GUADALAJARA</text>
+  <!-- Logotipo ACUARIO MICHÍN -->
+  <text x="150" y="50" font-family="Arial Black, sans-serif" font-size="32" font-weight="900" fill="#FFFFFF" stroke="#001f3f" stroke-width="1">
+    ACUARIO
+  </text>
+  <text x="350" y="50" font-family="Arial Black, sans-serif" font-size="36" font-weight="900" fill="#FF851B" stroke="#001f3f" stroke-width="1">
+    MICHÍN
+  </text>
   
-  <!-- Promoción destacada -->
-  <rect x="420" y="20" width="350" height="80" fill="url(#promoGradient)" rx="15" opacity="0.95"/>
-  <text x="440" y="45" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="white">🎯 PROMOCIÓN VERANO</text>
-  <text x="440" y="70" font-family="Arial, sans-serif" font-size="32" font-weight="bold" fill="white">DESDE $99 PESOS</text>
-  <text x="440" y="90" font-family="Arial, sans-serif" font-size="14" fill="white">Entrada temprana 8:00-8:59 AM</text>
+  <!-- Slogan promocional -->
+  <text x="150" y="75" font-family="Arial, sans-serif" font-size="16" font-weight="600" fill="#FFDC00" opacity="0.9">
+    DESDE $99 PESOS - PROMOCIÓN VERANO
+  </text>
+  
+  <!-- Pez estilizado -->
+  <g transform="translate(600, 25)">
+    <!-- Cuerpo del pez -->
+    <ellipse cx="20" cy="50" rx="25" ry="15" fill="#FF851B" opacity="0.9"/>
+    <ellipse cx="15" cy="50" rx="18" ry="10" fill="#FFDC00"/>
+    <!-- Cola -->
+    <path d="M45 50 L65 35 L65 65 Z" fill="#FF851B"/>
+    <!-- Ojo -->
+    <circle cx="10" cy="45" r="4" fill="#FFFFFF"/>
+    <circle cx="10" cy="45" r="2" fill="#001f3f"/>
+    <!-- Aletas -->
+    <path d="M20 35 Q15 25 25 30" stroke="#FF851B" stroke-width="3" fill="none"/>
+    <path d="M20 65 Q15 75 25 70" stroke="#FF851B" stroke-width="3" fill="none"/>
+  </g>
   
   <!-- Información adicional -->
-  <text x="50" y="140" font-family="Arial, sans-serif" font-size="16" fill="white">✨ + de 10,000 especies marinas</text>
-  <text x="50" y="160" font-family="Arial, sans-serif" font-size="16" fill="white">🐠 6 pabellones temáticos</text>
-  <text x="50" y="180" font-family="Arial, sans-serif" font-size="16" fill="white">🎢 Zona MICHÍN Extremo incluida</text>
+  <text x="150" y="100" font-family="Arial, sans-serif" font-size="12" font-weight="500" fill="#FFFFFF">
+    🐠 +10,000 especies marinas • 📍 Centro Guadalajara
+  </text>
   
-  <text x="420" y="140" font-family="Arial, sans-serif" font-size="16" fill="white">📍 C. Mariano Bárcena 990, Centro</text>
-  <text x="420" y="160" font-family="Arial, sans-serif" font-size="16" fill="white">⏰ Abierto 365 días • 8:00 AM - 9:00 PM</text>
-  <text x="420" y="180" font-family="Arial, sans-serif" font-size="16" fill="white">🎂 ¡Cumpleañeros entran GRATIS!</text>
-  
-  <!-- Plantas marinas decorativas -->
-  <path d="M20 200 Q30 180 40 160 Q50 140 60 120" stroke="#2ECC40" stroke-width="6" fill="none" opacity="0.7"/>
-  <path d="M30 200 Q40 175 50 150 Q60 125 70 100" stroke="#2ECC40" stroke-width="4" fill="none" opacity="0.5"/>
-  
-  <!-- Coral decorativo -->
-  <circle cx="780" cy="170" r="15" fill="#FF4136" opacity="0.7"/>
-  <circle cx="770" cy="160" r="12" fill="#FF851B" opacity="0.6"/>
-  <circle cx="790" cy="165" r="10" fill="#FFDC00" opacity="0.5"/>
+  <!-- CTA -->
+  <text x="150" y="125" font-family="Arial, sans-serif" font-size="14" font-weight="600" fill="#FFFFFF">
+    ¡Descubre un mundo submarino único! 🎂 Cumpleañeros GRATIS
+  </text>
 </svg>
