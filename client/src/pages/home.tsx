@@ -132,23 +132,23 @@ const Home: React.FC = () => {
             </p>
           </div>
           
-          {/* Carousel de pantalla completa */}
-          <div className="relative w-screen -mx-4 sm:-mx-6 lg:-mx-8 mb-12">
-            <div className="flex overflow-x-auto lg:overflow-hidden lg:justify-center items-center h-[400px] gap-4 px-4 sm:px-6 lg:px-8">
+          {/* Carousel centrado */}
+          <div className="relative mb-12">
+            <div className="flex items-center justify-center h-[400px] gap-6 overflow-x-auto lg:overflow-hidden px-4">
               {isLoading ? (
                 // Loading skeletons con nuevo layout
                 <>
-                  <div className="flex-shrink-0 w-[300px] lg:w-[280px]">
+                  <div className="flex-shrink-0 w-[280px]">
                     <Card className="animate-pulse rounded-3xl overflow-hidden shadow-lg h-full">
                       <div className="h-full bg-gradient-to-br from-gray-200 to-gray-300"></div>
                     </Card>
                   </div>
-                  <div className="flex-shrink-0 w-[calc(100vw-2rem)] lg:w-[600px] max-w-4xl">
+                  <div className="flex-shrink-0 w-[500px] lg:w-[700px]">
                     <Card className="animate-pulse rounded-3xl overflow-hidden shadow-lg h-full">
                       <div className="h-full bg-gradient-to-br from-gray-200 to-gray-300"></div>
                     </Card>
                   </div>
-                  <div className="flex-shrink-0 w-[300px] lg:w-[280px]">
+                  <div className="flex-shrink-0 w-[280px]">
                     <Card className="animate-pulse rounded-3xl overflow-hidden shadow-lg h-full">
                       <div className="h-full bg-gradient-to-br from-gray-200 to-gray-300"></div>
                     </Card>
@@ -157,7 +157,7 @@ const Home: React.FC = () => {
               ) : featuredParks.length > 0 ? (
                 <>
                   {/* Card izquierda */}
-                  <div className="flex-shrink-0 w-[300px] lg:w-[280px]">
+                  <div className="flex-shrink-0 w-[280px] hidden lg:block">
                     <div className="group h-full">
                       <Card className="border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-[1.02] rounded-3xl overflow-hidden bg-white h-full">
                         <ParkCard park={featuredParks[0]} />
@@ -165,9 +165,9 @@ const Home: React.FC = () => {
                     </div>
                   </div>
                   
-                  {/* Card central (ocupa el ancho principal) */}
+                  {/* Card central (domina el espacio) */}
                   {featuredParks.length > 1 && (
-                    <div className="flex-shrink-0 w-[calc(100vw-2rem)] lg:w-[600px] max-w-4xl">
+                    <div className="flex-shrink-0 w-full max-w-[500px] lg:max-w-[700px]">
                       <div className="group h-full">
                         <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-[1.02] rounded-3xl overflow-hidden bg-white h-full">
                           <ParkCard park={featuredParks[1]} />
@@ -178,7 +178,7 @@ const Home: React.FC = () => {
                   
                   {/* Card derecha */}
                   {featuredParks.length > 2 && (
-                    <div className="flex-shrink-0 w-[300px] lg:w-[280px]">
+                    <div className="flex-shrink-0 w-[280px] hidden lg:block">
                       <div className="group h-full">
                         <Card className="border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-[1.02] rounded-3xl overflow-hidden bg-white h-full">
                           <ParkCard park={featuredParks[2]} />
@@ -198,15 +198,6 @@ const Home: React.FC = () => {
                   </div>
                 </div>
               )}
-            </div>
-            
-            {/* Indicadores de scroll en mobile */}
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 lg:hidden">
-              <div className="flex space-x-2">
-                {featuredParks.slice(0, 3).map((_, index) => (
-                  <div key={index} className="w-2 h-2 bg-white/50 rounded-full"></div>
-                ))}
-              </div>
             </div>
           </div>
           
