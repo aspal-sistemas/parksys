@@ -624,9 +624,10 @@ const Home: React.FC = () => {
           </div>
 
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-6xl font-bold text-gray-900 mb-8">
-              Gracias a nuestros 
-              <span className="text-purple-600">Patrocinadores</span>
+            <h2 className="text-4xl md:text-6xl font-bold mb-8">
+              <span style={{ color: '#51a19f' }}>Gracias a nuestros</span>
+              <br />
+              <span style={{ color: '#19633c' }}>Patrocinadores</span>
             </h2>
             <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
               Gracias al apoyo de organizaciones comprometidas con el medio ambiente, 
