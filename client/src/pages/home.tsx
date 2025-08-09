@@ -554,8 +554,8 @@ const Home: React.FC = () => {
               <div className="relative w-full">
                 <div className="aspect-[4/3] bg-gradient-to-br from-emerald-200 to-teal-200 rounded-3xl overflow-hidden shadow-2xl">
                   <img 
-                    src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                    alt="Centro de Conservación de Vida Silvestre"
+                    src="/attached_assets/CMC2_1754778732652.png"
+                    alt="Centro de Conservación de Vida Silvestre - Guacamayas"
                     className="w-full h-full object-cover"
                   />
                 </div>
