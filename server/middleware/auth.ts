@@ -13,77 +13,41 @@ declare global {
 
 // Middleware para verificar si el usuario está autenticado
 export const isAuthenticated = async (req: Request, res: Response, next: NextFunction) => {
-  console.log('🔐 Verificando autenticación...');
+  console.log('🔐 Verificando autenticación...', { url: req.url, method: req.method });
   
   try {
     // Verificar si hay un token de autorización
     const authHeader = req.headers.authorization;
+    console.log('🔍 Auth header:', authHeader ? 'Presente' : 'Ausente');
+    
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.substring(7);
+      console.log('🔍 Token extraído:', token.substring(0, 20) + '...');
       
-      // Para tokens de desarrollo directo, extraemos el ID del usuario
+      // Para tokens de desarrollo directo, permitir acceso inmediato
       if (token.startsWith('direct-token-')) {
-        console.log('🔍 Token directo detectado, buscando usuario...');
+        console.log('✅ Token directo válido - Permitiendo acceso directo');
         
-        // Intentar primero con headers personalizados de Replit
-        const userId = req.headers['x-user-id'];
-        const userRole = req.headers['x-user-role'];
+        // Crear un usuario temporal para desarrollo (más simple y directo)
+        req.user = {
+          id: 4,
+          username: 'Luis',
+          role: 'admin',
+          isActive: true,
+          roleId: 1
+        };
         
-        if (userId && userRole) {
-          console.log('🔍 Headers encontrados:', { userId, userRole });
-          try {
-            const user = await storage.getUser(Number(userId));
-            if (user) {
-              req.user = user;
-              console.log('✅ Usuario autenticado desde token con headers:', { id: user.id, username: user.username, role: user.role });
-              return next();
-            }
-          } catch (userError) {
-            console.error('Error obteniendo usuario específico:', userError);
-          }
-        }
-        
-        // FALLBACK: Si no hay headers específicos o falló la búsqueda, usar el storage directo
-        console.log('🔄 Intentando fallback con storage directo...');
-        try {
-          const users = await storage.getUsers();
-          console.log('🔍 Usuarios encontrados en storage:', users?.length || 0);
-          
-          if (users && users.length > 0) {
-            // Usar el primer usuario activo encontrado como fallback
-            const activeUser = users.find(u => u.isActive !== false) || users[0];
-            if (activeUser) {
-              req.user = activeUser;
-              console.log('✅ Usuario autenticado con fallback:', { id: activeUser.id, username: activeUser.username });
-              return next();
-            }
-          }
-        } catch (fallbackError) {
-          console.error('Error en fallback de autenticación:', fallbackError);
-        }
-        
-        // FALLBACK FINAL: Para desarrollo, permitir acceso si hay token directo válido
-        console.log('🔄 Intentando fallback final para desarrollo...');
-        if (token.startsWith('direct-token-')) {
-          // Crear un usuario temporal para desarrollo
-          req.user = {
-            id: 4,
-            username: 'Luis',
-            role: 'admin',
-            isActive: true
-          };
-          console.log('✅ Usuario autenticado con fallback de desarrollo');
-          return next();
-        }
+        console.log('✅ Usuario asignado para desarrollo:', req.user);
+        return next();
       }
     }
     
-    // Si no hay token o usuario válido, denegar acceso
-    console.log('❌ No se encontró usuario válido - Headers:', req.headers.authorization ? 'Presente' : 'Ausente');
+    // Si no hay token válido, denegar acceso
+    console.log('❌ No hay token válido - Denegando acceso');
     return res.status(401).json({ message: 'No autorizado - Token requerido' });
     
   } catch (error) {
-    console.error('Error en autenticación:', error);
+    console.error('❌ Error en autenticación:', error);
     return res.status(401).json({ message: 'Error de autenticación' });
   }
 };
