@@ -77,8 +77,13 @@ const ConcessionImageManager: React.FC<ConcessionImageManagerProps> = ({ concess
   // Eliminar imagen
   const deleteMutation = useMutation({
     mutationFn: async (imageId: number) => {
+      const token = localStorage.getItem('authToken');
       const response = await fetch(`/api/concession-images/${imageId}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       });
       if (!response.ok) throw new Error('Error al eliminar imagen');
     },
@@ -101,8 +106,13 @@ const ConcessionImageManager: React.FC<ConcessionImageManagerProps> = ({ concess
   // Establecer imagen principal
   const setPrimaryMutation = useMutation({
     mutationFn: async (imageId: number) => {
+      const token = localStorage.getItem('authToken');
       const response = await fetch(`/api/concession-images/${imageId}/set-primary`, {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       });
       if (!response.ok) throw new Error('Error al establecer imagen principal');
     },
