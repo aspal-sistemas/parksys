@@ -291,7 +291,10 @@ const FaunaSpeciesAdmin: React.FC = () => {
                   </DialogDescription>
                 </DialogHeader>
                 <Form {...form}>
-                  <form onSubmit={form.handleSubmit(handleCreate)} className="space-y-4">
+                  <form onSubmit={form.handleSubmit((data) => {
+                    console.log('SUBMIT EJECUTADO', data);
+                    handleCreate(data);
+                  })} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
@@ -406,7 +409,11 @@ const FaunaSpeciesAdmin: React.FC = () => {
                       <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
                         Cancelar
                       </Button>
-                      <Button type="submit" disabled={createMutation.isPending}>
+                      <Button 
+                        type="submit" 
+                        disabled={createMutation.isPending}
+                        onClick={() => console.log('BOTÓN CLICKEADO', form.formState.errors)}
+                      >
                         {createMutation.isPending ? 'Creando...' : 'Crear Especie'}
                       </Button>
                     </div>
