@@ -256,11 +256,11 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
 
   // Estilos base según la posición
   const baseStyles = {
-    header: 'w-full max-w-6xl mx-auto h-24 bg-white border border-gray-200 rounded-lg shadow-sm mb-6',
+    header: 'w-full tree-species-wide-container h-24 bg-white border border-gray-200 rounded-lg shadow-sm mb-6',
     hero: 'w-full max-w-4xl mx-auto h-20 bg-white/95 backdrop-blur-sm border border-white/20 rounded-lg shadow-lg',
     sidebar: 'w-full h-64 bg-white border border-gray-200 rounded-lg shadow-sm mb-6',
     profile: 'bg-white rounded-lg border shadow-sm p-4',
-    footer: 'w-full max-w-6xl mx-auto h-20 bg-white border border-gray-200 rounded-lg shadow-sm mt-6',
+    footer: 'w-full tree-species-wide-container h-20 bg-white border border-gray-200 rounded-lg shadow-sm mt-6',
     banner: 'w-full h-[150px] bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden',
     card: 'bg-white rounded-lg border shadow-sm p-4',
     'sidebar-sports': 'bg-white rounded-lg border shadow-sm p-4',
