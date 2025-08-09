@@ -573,8 +573,8 @@ const Home: React.FC = () => {
                   Tenemos programas de educación y protección de la flora y fauna
                 </p>
                 
-                <Button size="lg" className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold px-6 py-3 rounded-xl transition-all duration-300 hover:scale-105">
-                  Conoce Más Sobre Conservación
+                <Button size="lg" className="bg-white hover:bg-gray-50 text-gray-900 font-bold px-6 py-3 rounded-xl transition-all duration-300 hover:scale-105 border border-gray-200 shadow-md">
+                  Ver más
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
