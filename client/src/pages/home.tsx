@@ -117,7 +117,7 @@ const Home: React.FC = () => {
             {/* Título principal */}
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
               Agencia Metropolitana
-              <span className="block">de Bosques Urbanos</span>
+              <span className="block text-[#19633c]">de Bosques Urbanos</span>
             </h1>
             
             {/* Subtítulo */}
@@ -135,7 +135,7 @@ const Home: React.FC = () => {
             {/* Botones CTA */}
             <div className="flex flex-col gap-4 mb-12 items-start">
               <Link href="/parks">
-                <Button size="lg" className="bg-[#aaaf4f] hover:bg-[#9ca047] text-white font-semibold px-8 py-4 text-lg rounded-lg transition-all duration-300 hover:scale-105 shadow-xl">
+                <Button size="lg" className="bg-[#19633c] hover:bg-[#145530] text-white font-semibold px-8 py-4 text-lg rounded-lg transition-all duration-300 hover:scale-105 shadow-xl">
                   <Map className="mr-3 h-5 w-5" />
                   Nuestros parques
                 </Button>
