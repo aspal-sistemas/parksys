@@ -2,6 +2,15 @@
   font-family: 'Guttery Regular';
   src: url('/fonts/Guttery-Regular.otf') format('opentype'),
        url('/fonts/Guttery-Regular.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Guttery Regular';
+  src: url('/fonts/Guttery-Regular.otf') format('opentype'),
+       url('/fonts/Guttery-Regular.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
