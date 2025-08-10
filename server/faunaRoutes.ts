@@ -1,10 +1,43 @@
 import { Router } from 'express';
 import { z } from 'zod';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
 import { db } from './db';
 import { faunaSpecies, insertFaunaSpeciesSchema } from '../shared/schema';
 import { eq, like, desc, asc, count } from 'drizzle-orm';
 
 const router = Router();
+
+// Configuración de multer para subida de imágenes
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadPath = path.join(process.cwd(), 'uploads', 'fauna');
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+    cb(null, uploadPath);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, `fauna-${uniqueSuffix}${path.extname(file.originalname)}`);
+  }
+});
+
+const upload = multer({ 
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = /jpeg|jpg|png|gif|webp/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+    if (mimetype && extname) {
+      return cb(null, true);
+    } else {
+      cb(new Error('Solo se permiten archivos de imagen (jpeg, jpg, png, gif, webp)'));
+    }
+  }
+});
 
 // Obtener todas las especies de fauna con paginación y filtros
 router.get('/species', async (req, res) => {
@@ -279,6 +312,35 @@ router.get('/stats', async (req, res) => {
     res.status(500).json({ 
       success: false, 
       error: 'Error al obtener estadísticas de fauna' 
+    });
+  }
+});
+
+// Ruta para subir imágenes de fauna
+router.post('/upload-image', upload.single('image'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        error: 'No se proporcionó ninguna imagen'
+      });
+    }
+
+    const imageUrl = `/uploads/fauna/${req.file.filename}`;
+    
+    res.json({
+      success: true,
+      data: {
+        imageUrl,
+        originalName: req.file.originalname,
+        size: req.file.size
+      }
+    });
+  } catch (error) {
+    console.error('Error uploading image:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error al subir la imagen'
     });
   }
 });

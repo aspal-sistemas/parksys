@@ -38,6 +38,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import AdminLayout from '@/components/AdminLayout';
 import { apiRequest } from '@/lib/queryClient';
+import { ImageUploader } from '@/components/ImageUploader';
 
 interface FaunaSpeciesWithPagination {
   data: FaunaSpecies[];
@@ -298,6 +299,15 @@ const FaunaSpeciesAdmin: React.FC = () => {
                     console.log('SUBMIT EJECUTADO', data);
                     handleCreate(data);
                   })} className="space-y-4">
+                    {/* Subida de Imagen */}
+                    <div className="space-y-2">
+                      <Label>Fotografía de la Especie</Label>
+                      <ImageUploader
+                        currentImageUrl={form.watch('photoUrl')}
+                        onImageUploaded={(url) => form.setValue('photoUrl', url)}
+                      />
+                    </div>
+
                     <div className="grid grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
@@ -616,9 +626,277 @@ const FaunaSpeciesAdmin: React.FC = () => {
           </div>
         )}
 
-        {/* Diálogos de edición y visualización */}
-        {/* Diálogo de edición similar al de creación pero con los datos pre-cargados */}
-        {/* Diálogo de visualización mostrando todos los detalles de la especie */}
+        {/* Diálogo de Edición */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Editar Especie</DialogTitle>
+              <DialogDescription>
+                Modifica los datos de la especie seleccionada
+              </DialogDescription>
+            </DialogHeader>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(handleUpdate)} className="space-y-4">
+                {/* Subida de Imagen */}
+                <div className="space-y-2">
+                  <Label>Fotografía de la Especie</Label>
+                  <ImageUploader
+                    currentImageUrl={form.watch('photoUrl')}
+                    onImageUploaded={(url) => form.setValue('photoUrl', url)}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="commonName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nombre Común</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Nombre común de la especie" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="scientificName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nombre Científico</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Nombre científico" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="family"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Familia</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Familia taxonómica" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="category"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Categoría</FormLabel>
+                        <Select value={field.value} onValueChange={field.onChange}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Seleccionar categoría" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="aves">Aves</SelectItem>
+                            <SelectItem value="mamiferos">Mamíferos</SelectItem>
+                            <SelectItem value="insectos">Insectos</SelectItem>
+                            <SelectItem value="vida_acuatica">Vida Acuática</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="habitat"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Hábitat</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Hábitat natural" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Descripción</FormLabel>
+                      <FormControl>
+                        <Textarea placeholder="Descripción de la especie" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="conservationStatus"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Estado de Conservación</FormLabel>
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Seleccionar estado" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="estable">Estable</SelectItem>
+                          <SelectItem value="vulnerable">Vulnerable</SelectItem>
+                          <SelectItem value="en_peligro">En Peligro</SelectItem>
+                          <SelectItem value="en_peligro_critico">Peligro Crítico</SelectItem>
+                          <SelectItem value="extinto_local">Extinto Local</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="flex justify-end gap-2">
+                  <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                    Cancelar
+                  </Button>
+                  <Button type="submit" disabled={updateMutation.isPending}>
+                    {updateMutation.isPending ? 'Actualizando...' : 'Actualizar Especie'}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Diálogo de Visualización */}
+        <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                {selectedSpecies && getCategoryIcon(selectedSpecies.category)}
+                {selectedSpecies?.commonName}
+              </DialogTitle>
+              <DialogDescription className="italic">
+                {selectedSpecies?.scientificName}
+              </DialogDescription>
+            </DialogHeader>
+            
+            {selectedSpecies && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Imagen */}
+                <div className="space-y-4">
+                  {selectedSpecies.photoUrl && (
+                    <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                      <img 
+                        src={selectedSpecies.photoUrl}
+                        alt={selectedSpecies.commonName}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+                  
+                  <div className="flex gap-2">
+                    <Badge variant="secondary" className="capitalize">
+                      {selectedSpecies.category.replace('_', ' ')}
+                    </Badge>
+                    <Badge className={getConservationStatusColor(selectedSpecies.conservationStatus)}>
+                      {selectedSpecies.conservationStatus.replace('_', ' ')}
+                    </Badge>
+                    {selectedSpecies.isEndangered && (
+                      <Badge variant="destructive">
+                        <AlertTriangle className="h-3 w-3 mr-1" />
+                        En Peligro
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+
+                {/* Información */}
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Información Básica</h3>
+                    <div className="mt-2 space-y-2 text-sm">
+                      <div><strong>Familia:</strong> {selectedSpecies.family}</div>
+                      <div><strong>Hábitat:</strong> {selectedSpecies.habitat || 'No especificado'}</div>
+                      {selectedSpecies.sizeCm && (
+                        <div><strong>Tamaño:</strong> {selectedSpecies.sizeCm} cm</div>
+                      )}
+                      {selectedSpecies.weightGrams && (
+                        <div><strong>Peso:</strong> {selectedSpecies.weightGrams} gramos</div>
+                      )}
+                      {selectedSpecies.lifespan && selectedSpecies.lifespan > 0 && (
+                        <div><strong>Esperanza de vida:</strong> {selectedSpecies.lifespan} años</div>
+                      )}
+                    </div>
+                  </div>
+
+                  {selectedSpecies.description && (
+                    <div>
+                      <h3 className="font-semibold text-gray-900">Descripción</h3>
+                      <p className="mt-2 text-sm text-gray-600">{selectedSpecies.description}</p>
+                    </div>
+                  )}
+
+                  {selectedSpecies.behavior && (
+                    <div>
+                      <h3 className="font-semibold text-gray-900">Comportamiento</h3>
+                      <p className="mt-2 text-sm text-gray-600">{selectedSpecies.behavior}</p>
+                    </div>
+                  )}
+
+                  {selectedSpecies.diet && (
+                    <div>
+                      <h3 className="font-semibold text-gray-900">Dieta</h3>
+                      <p className="mt-2 text-sm text-gray-600">{selectedSpecies.diet}</p>
+                    </div>
+                  )}
+
+                  {selectedSpecies.ecologicalImportance && (
+                    <div>
+                      <h3 className="font-semibold text-gray-900">Importancia Ecológica</h3>
+                      <p className="mt-2 text-sm text-gray-600">{selectedSpecies.ecologicalImportance}</p>
+                    </div>
+                  )}
+
+                  {selectedSpecies.threats && (
+                    <div>
+                      <h3 className="font-semibold text-gray-900">Amenazas</h3>
+                      <p className="mt-2 text-sm text-red-600">{selectedSpecies.threats}</p>
+                    </div>
+                  )}
+
+                  {selectedSpecies.observationTips && (
+                    <div>
+                      <h3 className="font-semibold text-gray-900">Consejos de Observación</h3>
+                      <p className="mt-2 text-sm text-gray-600">{selectedSpecies.observationTips}</p>
+                    </div>
+                  )}
+
+                  <div className="flex flex-wrap gap-2 pt-4">
+                    {selectedSpecies.isNocturnal && (
+                      <Badge variant="outline">Nocturno</Badge>
+                    )}
+                    {selectedSpecies.isMigratory && (
+                      <Badge variant="outline">Migratorio</Badge>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
 
       </div>
     </AdminLayout>
