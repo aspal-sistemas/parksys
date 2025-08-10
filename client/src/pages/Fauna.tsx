@@ -29,6 +29,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PublicLayout from '@/components/PublicLayout';
+import AdSpace from '@/components/AdSpace';
 
 interface FaunaSpecies {
   id: number;
@@ -282,36 +283,26 @@ export default function Fauna() {
   
   const itemsPerPage = viewMode === 'grid' ? 12 : 8;
 
-  // Query para obtener especies públicas con invalidación de caché forzada
+  // Query para obtener especies públicas
   const { data: speciesResponse, isLoading } = useQuery<FaunaResponse>({
-    queryKey: ['/api/fauna/public/species', currentPage, itemsPerPage, searchTerm, categoryFilter, conservationFilter, Date.now()],
+    queryKey: ['/api/fauna/public/species', currentPage, itemsPerPage, searchTerm, categoryFilter, conservationFilter],
     queryFn: async () => {
       const params = new URLSearchParams({
         page: currentPage.toString(),
         limit: itemsPerPage.toString(),
         search: searchTerm,
         category: categoryFilter,
-        conservation_status: conservationFilter,
-        _t: Date.now().toString() // Cache-busting parameter
+        conservation_status: conservationFilter
       });
       
-      const response = await fetch(`/api/fauna/public/species?${params}`, {
-        cache: 'no-cache',
-        headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-          'Expires': '0'
-        }
-      });
+      const response = await fetch(`/api/fauna/public/species?${params}`);
       
       if (!response.ok) {
         throw new Error('Error al cargar especies');
       }
       
       return response.json();
-    },
-    staleTime: 0, // Los datos siempre están obsoletos
-    gcTime: 0 // No guardar en caché
+    }
   });
 
   const species = speciesResponse?.species || [];
@@ -319,23 +310,81 @@ export default function Fauna() {
 
   return (
     <PublicLayout>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 py-12">
-        <div className="max-w-7xl mx-auto px-4">
-          
-          {/* Hero Section */}
-          <div className="text-center mb-12">
-            <div className="flex items-center justify-center gap-3 mb-6">
-              <div className="p-3 bg-blue-600 rounded-full">
-                <Bird className="h-8 w-8 text-white" />
-              </div>
-              <h1 className="text-4xl font-bold text-gray-900">
-                Fauna Urbana de Guadalajara
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
+        {/* Hero Section con imagen */}
+        <div className="relative h-96 overflow-hidden">
+          <img 
+            src="/images/park-lake-bridge.jpg" 
+            alt="Fauna urbana en parques de Guadalajara" 
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center text-white">
+              <h1 className="text-4xl md:text-6xl font-bold mb-4">
+                Fauna Urbana
               </h1>
+              <p className="text-lg md:text-xl max-w-2xl mx-auto px-4">
+                Descubre la diversidad de vida silvestre que habita en nuestros parques urbanos de Guadalajara
+              </p>
             </div>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Descubre la diversidad de vida silvestre que habita en los parques urbanos de Guadalajara. 
-              Cada especie forma parte del delicado equilibrio ecológico de nuestra ciudad.
-            </p>
+          </div>
+        </div>
+        
+        {/* Espacio entre hero y banner */}
+        <div className="py-6"></div>
+
+        {/* Banner Publicitario de Ancho Completo */}
+        <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] mb-8">
+          <AdSpace spaceId="37" position="banner" pageType="fauna" />
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4">
+          {/* Estadísticas */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-2xl font-bold text-blue-600">
+                  {pagination.total}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-600">Especies registradas</p>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-2xl font-bold text-green-600">
+                  {species.filter(s => s.conservation_status === 'estable').length}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-600">Especies estables</p>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-2xl font-bold text-orange-600">
+                  {species.filter(s => s.conservation_status === 'vulnerable' || s.conservation_status === 'en_peligro').length}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-600">Especies vulnerables</p>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-2xl font-bold text-purple-600">
+                  {species.filter(s => s.isNocturnal).length}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-600">Especies nocturnas</p>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Filtros y búsqueda */}
