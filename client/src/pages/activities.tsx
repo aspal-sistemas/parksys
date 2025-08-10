@@ -523,19 +523,6 @@ function ActivitiesPage() {
   // Si no hay filtros, mostrar TODAS las actividades en el carrusel
   const currentActivities = filteredActivities;
 
-  // Actividades del mes independientes de filtros
-  const monthlyActivities = useMemo(() => {
-    if (!Array.isArray(activitiesData)) return [];
-    
-    const currentDate = new Date();
-    return activitiesData.filter(activity => {
-      const startDate = new Date(activity.startDate);
-      return startDate.getMonth() === currentDate.getMonth() && 
-             startDate.getFullYear() === currentDate.getFullYear() &&
-             startDate >= currentDate; // Solo eventos futuros
-    });
-  }, [activitiesData]);
-
   const uniqueCategories = Array.from(new Set(activitiesData.map(activity => activity.category).filter(Boolean)));
 
   if (isLoading) {
@@ -722,112 +709,6 @@ function ActivitiesPage() {
           pageType="activities" 
           className=""
         />
-      </section>
-
-      {/* Calendario de Eventos */}
-      <section className="py-8" style={{backgroundColor: '#51a19f'}}>
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="max-w-6xl mx-auto">
-          
-          {/* Calendario de Eventos */}
-          <Card className="p-0 overflow-hidden">
-            <div className="bg-gradient-to-r from-green-800 to-green-900 text-white p-6">
-              <div className="flex items-center gap-3">
-                <Calendar className="h-6 w-6" />
-                <h3 className="text-xl font-semibold">Próximos Eventos del Mes</h3>
-              </div>
-              <p className="mt-2 text-green-100">Actividades y eventos programados para este mes</p>
-            </div>
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                {monthlyActivities
-                  .slice(0, 4) // Limitar a 4 eventos
-                  .map((activity) => {
-                    const startDate = new Date(activity.startDate);
-                    const parkData = parksData.find(p => p.id === activity.parkId);
-                    
-                    return (
-                      <div key={activity.id} className="flex items-center gap-4 p-4 hover:bg-gray-50 rounded-lg transition-colors border border-gray-100">
-                        {/* Imagen de la actividad */}
-                        <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
-                          {activity.images && activity.images.length > 0 ? (
-                            <img 
-                              src={activity.images[0].imageUrl} 
-                              alt={activity.images[0].altText || activity.title}
-                              className="w-full h-full object-cover"
-                              loading="lazy"
-                            />
-                          ) : activity.imageUrl ? (
-                            <img 
-                              src={activity.imageUrl} 
-                              alt={activity.imageCaption || activity.title}
-                              className="w-full h-full object-cover"
-                              loading="lazy"
-                            />
-                          ) : (
-                            <div className="bg-gradient-to-br from-green-100 to-blue-100 w-full h-full flex items-center justify-center">
-                              <Activity className="h-8 w-8 text-green-600/50" />
-                            </div>
-                          )}
-                        </div>
-                        
-                        {/* Fecha y hora */}
-                        <div className="bg-green-100 text-green-800 px-3 py-2 rounded-lg text-center min-w-fit">
-                          <div className="text-sm font-bold">
-                            {format(startDate, 'dd MMM', { locale: es })}
-                          </div>
-                          <div className="text-xs">
-                            {format(startDate, 'HH:mm', { locale: es })}
-                          </div>
-                        </div>
-                        
-                        {/* Información del evento */}
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-semibold text-gray-900 mb-1 line-clamp-1">{activity.title}</h4>
-                          <div className="flex items-center gap-2 mb-2">
-                            <MapPin className="h-3 w-3 text-green-600" />
-                            <p className="text-sm text-gray-600 truncate">{parkData?.name || 'Parque'}</p>
-                          </div>
-                          {activity.category && (
-                            <Badge className={`${categoryColors[activity.category as keyof typeof categoryColors] || 'bg-gray-100 text-gray-800 border-gray-200'} text-xs`}>
-                              {activity.category}
-                            </Badge>
-                          )}
-                        </div>
-                        
-                        {/* Botón de acción */}
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          className="ml-auto"
-                          onClick={() => window.open(`/activity/${activity.id}`, '_blank')}
-                        >
-                          Ver detalle
-                          <ExternalLink className="h-3 w-3 ml-1" />
-                        </Button>
-                      </div>
-                    );
-                  })}
-                
-                {/* Mensaje si no hay eventos del mes */}
-                {monthlyActivities.length === 0 && (
-                  <div className="text-center py-8">
-                    <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-                    <h4 className="text-lg font-semibold text-gray-700 mb-2">No hay eventos próximos este mes</h4>
-                    <p className="text-gray-500">Mantente atento a nuestras próximas actividades</p>
-                  </div>
-                )}
-              </div>
-              
-              {monthlyActivities.length > 0 && (
-                <Button className="w-full mt-6 bg-green-700 hover:bg-green-800">
-                  Ver todos los eventos del mes
-                </Button>
-              )}
-            </CardContent>
-          </Card>
-          </div>
-        </div>
       </section>
 
       {/* AdSpace específico para Yoga */}
