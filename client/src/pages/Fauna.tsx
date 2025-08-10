@@ -282,26 +282,36 @@ export default function Fauna() {
   
   const itemsPerPage = viewMode === 'grid' ? 12 : 8;
 
-  // Query para obtener especies públicas
+  // Query para obtener especies públicas con invalidación de caché forzada
   const { data: speciesResponse, isLoading } = useQuery<FaunaResponse>({
-    queryKey: ['/api/fauna/public/species', currentPage, itemsPerPage, searchTerm, categoryFilter, conservationFilter],
+    queryKey: ['/api/fauna/public/species', currentPage, itemsPerPage, searchTerm, categoryFilter, conservationFilter, Date.now()],
     queryFn: async () => {
       const params = new URLSearchParams({
         page: currentPage.toString(),
         limit: itemsPerPage.toString(),
         search: searchTerm,
         category: categoryFilter,
-        conservation_status: conservationFilter
+        conservation_status: conservationFilter,
+        _t: Date.now().toString() // Cache-busting parameter
       });
       
-      const response = await fetch(`/api/fauna/public/species?${params}`);
+      const response = await fetch(`/api/fauna/public/species?${params}`, {
+        cache: 'no-cache',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      });
       
       if (!response.ok) {
         throw new Error('Error al cargar especies');
       }
       
       return response.json();
-    }
+    },
+    staleTime: 0, // Los datos siempre están obsoletos
+    gcTime: 0 // No guardar en caché
   });
 
   const species = speciesResponse?.species || [];
