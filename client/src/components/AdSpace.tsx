@@ -351,34 +351,68 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
             </div>
           </div>
         ) : isCardType(position) ? (
-          // Layout tipo tarjeta para TODOS los espacios promocionales
-          <div className="text-center">
-            {advertisement.imageUrl && (
-              <div className="w-full h-40 rounded-lg mb-3 overflow-hidden">
-                {renderMedia("w-full h-full object-cover rounded-lg")}
+          // Layout especial para AdSpace 11 (activity-detail) con imagen de fondo
+          spaceId === 11 || spaceId === "11" ? (
+            <div className="w-full h-40 rounded-lg relative overflow-hidden">
+              {/* Imagen de fondo */}
+              {advertisement.imageUrl && (
+                <div className="absolute inset-0">
+                  {renderMedia("w-full h-full object-cover")}
+                </div>
+              )}
+              {/* Overlay oscuro */}
+              <div className="absolute inset-0 bg-black/50"></div>
+              {/* Contenido superpuesto */}
+              <div className="absolute inset-0 flex flex-col justify-between p-4 text-white">
+                <h3 className="font-bold text-lg drop-shadow-lg">{advertisement.title}</h3>
+                <div className="space-y-2">
+                  {advertisement.description && (
+                    <p className="text-sm text-white/90 line-clamp-2 drop-shadow-lg">
+                      {advertisement.description}
+                    </p>
+                  )}
+                  <button 
+                    className="bg-white/20 backdrop-blur-sm text-white py-2 px-4 rounded-lg transition-all hover:bg-white/30 text-sm font-medium border border-white/30"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleAdClick(e);
+                    }}
+                  >
+                    Ver Más
+                  </button>
+                </div>
               </div>
-            )}
-            <h3 className="font-semibold text-gray-900 mb-2">{advertisement.title}</h3>
-            {advertisement.description && (
-              <p className="text-sm text-gray-600 mb-3">
-                {advertisement.description}
-              </p>
-            )}
-            <button 
-              className={`w-full text-white py-2 px-4 rounded-lg transition-colors text-sm ${getButtonColor(position, spaceId)}`}
-              onClick={(e) => {
-                e.stopPropagation(); // Evitar doble click
-                handleAdClick(e);
-              }}
-            >
-              {advertisement.buttonText || 
-               (position === 'sidebar-sports' ? 'Inscríbete Ahora' :
-                position === 'sidebar-events' ? 'Ver Calendario' :
-                position === 'sidebar-nature' ? 'Más Información' :
-                position === 'sidebar-family' ? 'Explorar' :
-                'Ver Más')}
-            </button>
-          </div>
+            </div>
+          ) : (
+            // Layout tipo tarjeta para otros espacios promocionales
+            <div className="text-center">
+              {advertisement.imageUrl && (
+                <div className="w-full h-40 rounded-lg mb-3 overflow-hidden">
+                  {renderMedia("w-full h-full object-cover rounded-lg")}
+                </div>
+              )}
+              <h3 className="font-semibold text-gray-900 mb-2">{advertisement.title}</h3>
+              {advertisement.description && (
+                <p className="text-sm text-gray-600 mb-3">
+                  {advertisement.description}
+                </p>
+              )}
+              <button 
+                className={`w-full text-white py-2 px-4 rounded-lg transition-colors text-sm ${getButtonColor(position, spaceId)}`}
+                onClick={(e) => {
+                  e.stopPropagation(); // Evitar doble click
+                  handleAdClick(e);
+                }}
+              >
+                {advertisement.buttonText || 
+                 (position === 'sidebar-sports' ? 'Inscríbete Ahora' :
+                  position === 'sidebar-events' ? 'Ver Calendario' :
+                  position === 'sidebar-nature' ? 'Más Información' :
+                  position === 'sidebar-family' ? 'Explorar' :
+                  'Ver Más')}
+              </button>
+            </div>
+          )
         ) : position === 'sidebar' ? (
           // Layout vertical para sidebar
           <>
