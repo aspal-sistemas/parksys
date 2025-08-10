@@ -1,16 +1,7 @@
 @font-face {
-  font-family: 'Guttery Regular';
-  src: url('/fonts/Guttery-Regular.otf') format('opentype'),
-       url('/fonts/Guttery-Regular.ttf') format('truetype');
-  font-weight: 300;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Guttery Regular';
-  src: url('/fonts/Guttery-Regular.otf') format('opentype'),
-       url('/fonts/Guttery-Regular.ttf') format('truetype');
+  font-family: 'Guttery';
+  src: url('/fonts/Guttery_1754768240086.otf') format('opentype'),
+       url('/fonts/Guttery_1754768240085.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -23,6 +14,10 @@
 @layer components {
   .menu-icon {
     @apply text-green-500;
+  }
+  
+  .font-guttery {
+    font-family: 'Guttery', sans-serif;
   }
   
   .flex-2 {

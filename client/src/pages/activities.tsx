@@ -383,9 +383,14 @@ function ActivitiesPage() {
         <div className="relative max-w-4xl mx-auto">
           <div className="flex items-center justify-center gap-4 mb-6">
             <Activity className="h-12 w-12" />
-            <h1 className="text-4xl md:text-5xl font-bold">
-              Actividades en Parques
-            </h1>
+            <div className="text-center">
+              <h1 className="font-guttery text-5xl md:text-6xl font-bold mb-2">
+                Descubre
+              </h1>
+              <h2 className="text-3xl md:text-4xl font-bold">
+                Actividades en el Parque
+              </h2>
+            </div>
           </div>
           <p className="text-xl text-green-100 mb-8 max-w-2xl mx-auto">
             Descubre todas las actividades disponibles en los parques de Guadalajara. 
