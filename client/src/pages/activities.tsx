@@ -74,6 +74,81 @@ const categoryColors = {
   'Actividades Familiares': 'bg-pink-100 text-pink-800 border-pink-200'
 };
 
+// Tarjeta simplificada para carrusel
+function CarouselActivityCard({ activity }: { activity: ActivityData }) {
+  const categoryColor = categoryColors[activity.category as keyof typeof categoryColors] || 'bg-gray-100 text-gray-800 border-gray-200';
+  const parksResponse = useQuery({ queryKey: ['/api/parks'] });
+  const parksData = parksResponse.data || [];
+  
+  return (
+    <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 overflow-hidden border-0 shadow-sm h-full">
+      {/* Imagen más grande - aspecto 4:3 */}
+      <div className="aspect-[4/3] relative overflow-hidden">
+        {activity.images && activity.images.length > 0 ? (
+          <>
+            <img 
+              src={activity.images[0].imageUrl} 
+              alt={activity.images[0].altText || activity.title}
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+              loading="lazy"
+            />
+            <div className="absolute inset-0 bg-black/10"></div>
+          </>
+        ) : activity.imageUrl ? (
+          <>
+            <img 
+              src={activity.imageUrl} 
+              alt={activity.imageCaption || activity.title}
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+              loading="lazy"
+            />
+            <div className="absolute inset-0 bg-black/10"></div>
+          </>
+        ) : (
+          <>
+            <div className="bg-gradient-to-br from-green-100 to-blue-100 w-full h-full flex items-center justify-center">
+              <Activity className="h-16 w-16 text-green-600/50" />
+            </div>
+          </>
+        )}
+        
+        {/* Badge de categoría */}
+        <div className="absolute top-3 left-3">
+          <Badge className={`${categoryColor} border shadow-sm text-xs`}>
+            {activity.category}
+          </Badge>
+        </div>
+      </div>
+      
+      {/* Contenido simplificado */}
+      <div className="p-4 space-y-3">
+        {/* Título de la actividad */}
+        <h3 className="font-semibold text-lg text-gray-900 group-hover:text-green-600 transition-colors line-clamp-2 min-h-[3.5rem]">
+          {activity.title}
+        </h3>
+        
+        {/* Parque */}
+        <div className="flex items-center gap-2 text-gray-600">
+          <MapPin className="h-4 w-4 text-green-600 flex-shrink-0" />
+          <span className="text-sm truncate">
+            {parksData.find(p => p.id === activity.parkId)?.name || 'Parque'}
+          </span>
+        </div>
+        
+        {/* Botón Ver detalle */}
+        <Button 
+          className="w-full bg-green-600 hover:bg-green-700 text-white" 
+          size="sm"
+          onClick={() => window.open(`/activity/${activity.id}`, '_blank')}
+        >
+          Ver detalle
+          <ExternalLink className="h-3 w-3 ml-2" />
+        </Button>
+      </div>
+    </Card>
+  );
+}
+
 function ActivityCard({ activity, viewMode }: { activity: ActivityData; viewMode: 'grid' | 'list' }) {
   const categoryColor = categoryColors[activity.category as keyof typeof categoryColors] || 'bg-gray-100 text-gray-800 border-gray-200';
   
@@ -351,8 +426,8 @@ function ActivitiesPage() {
   const hasActiveFilters = searchQuery || filterPark !== 'all' || filterCategory !== 'all';
   
   // Si hay filtros activos, mostrar TODAS las actividades que coincidan
-  // Si no hay filtros, mostrar solo las 6 más populares para el carrusel
-  const currentActivities = hasActiveFilters ? filteredActivities : filteredActivities.slice(0, 6);
+  // Si no hay filtros, mostrar TODAS las actividades en el carrusel
+  const currentActivities = filteredActivities;
 
   const uniqueCategories = Array.from(new Set(activitiesData.map(activity => activity.category).filter(Boolean)));
 
@@ -472,19 +547,19 @@ function ActivitiesPage() {
             {hasActiveFilters ? (
               <Search className="h-6 w-6 text-blue-500" />
             ) : (
-              <Star className="h-6 w-6 text-yellow-500" />
+              <Activity className="h-6 w-6 text-green-500" />
             )}
             <h2 className="text-2xl font-semibold text-gray-800">
               {hasActiveFilters 
                 ? `Resultados de búsqueda (${currentActivities.length})` 
-                : 'Actividades más populares'
+                : 'Todas las Actividades'
               }
             </h2>
           </div>
           <p className="text-gray-600 mb-8">
             {hasActiveFilters 
               ? 'Actividades que coinciden con tu búsqueda'
-              : 'Las 6 actividades más destacadas de nuestros parques'
+              : 'Explora todas las actividades disponibles en los parques de Guadalajara'
             }
           </p>
           
@@ -536,7 +611,7 @@ function ActivitiesPage() {
                   >
                     {currentActivities.map((activity) => (
                       <div key={activity.id} className="w-1/3 flex-shrink-0">
-                        <ActivityCard activity={activity} viewMode="grid" />
+                        <CarouselActivityCard activity={activity} />
                       </div>
                     ))}
                   </div>
