@@ -70,13 +70,28 @@ const FaunaSpeciesAdmin: React.FC = () => {
 
   // Query para obtener especies de fauna
   const { data: speciesResponse, isLoading } = useQuery<FaunaSpeciesWithPagination>({
-    queryKey: ['/api/fauna/species', { 
-      page: currentPage, 
-      limit: itemsPerPage, 
-      search: searchTerm,
-      category: categoryFilter,
-      conservation_status: conservationFilter
-    }]
+    queryKey: ['/api/fauna/species', currentPage, itemsPerPage, searchTerm, categoryFilter, conservationFilter],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: itemsPerPage.toString(),
+        search: searchTerm,
+        category: categoryFilter,
+        conservation_status: conservationFilter
+      });
+      
+      const response = await fetch(`/api/fauna/species?${params}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Error al cargar especies');
+      }
+      
+      return response.json();
+    }
   });
 
   // Query para estadísticas
@@ -121,8 +136,7 @@ const FaunaSpeciesAdmin: React.FC = () => {
   const createMutation = useMutation({
     mutationFn: (data: any) => apiRequest('/api/fauna/species', {
       method: 'POST',
-      body: JSON.stringify(data),
-      headers: { 'Content-Type': 'application/json' }
+      data: data
     }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/fauna/species'] });
@@ -131,7 +145,8 @@ const FaunaSpeciesAdmin: React.FC = () => {
       form.reset();
       toast({ title: 'Especie creada exitosamente' });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Error creating species:', error);
       toast({ title: 'Error al crear la especie', variant: 'destructive' });
     }
   });
@@ -140,8 +155,7 @@ const FaunaSpeciesAdmin: React.FC = () => {
     mutationFn: ({ id, data }: { id: number; data: any }) => 
       apiRequest(`/api/fauna/species/${id}`, {
         method: 'PUT',
-        body: JSON.stringify(data),
-        headers: { 'Content-Type': 'application/json' }
+        data: data
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/fauna/species'] });
@@ -150,7 +164,8 @@ const FaunaSpeciesAdmin: React.FC = () => {
       form.reset();
       toast({ title: 'Especie actualizada exitosamente' });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Error updating species:', error);
       toast({ title: 'Error al actualizar la especie', variant: 'destructive' });
     }
   });
@@ -217,7 +232,42 @@ const FaunaSpeciesAdmin: React.FC = () => {
 
   const handleUpdate = (data: any) => {
     if (selectedSpecies) {
-      updateMutation.mutate({ id: selectedSpecies.id, data });
+      console.log('Datos de actualización:', data);
+      // Filtrar y limpiar datos similares a handleCreate
+      const cleanData = {
+        commonName: data.commonName,
+        scientificName: data.scientificName,
+        family: data.family,
+        category: data.category,
+        conservationStatus: data.conservationStatus || 'estable',
+        isNocturnal: data.isNocturnal || false,
+        isMigratory: data.isMigratory || false,
+        isEndangered: data.isEndangered || false,
+        commonLocations: data.commonLocations || [],
+        iconColor: data.iconColor || '#16a085',
+        iconType: data.iconType || 'system'
+      };
+
+      // Añadir campos opcionales solo si tienen valor
+      if (data.habitat) cleanData.habitat = data.habitat;
+      if (data.description) cleanData.description = data.description;
+      if (data.behavior) cleanData.behavior = data.behavior;
+      if (data.diet) cleanData.diet = data.diet;
+      if (data.reproductionPeriod) cleanData.reproductionPeriod = data.reproductionPeriod;
+      if (data.sizeCm) cleanData.sizeCm = data.sizeCm;
+      if (data.weightGrams) cleanData.weightGrams = data.weightGrams;
+      if (data.lifespan) cleanData.lifespan = data.lifespan;
+      if (data.imageUrl) cleanData.imageUrl = data.imageUrl;
+      if (data.photoUrl) cleanData.photoUrl = data.photoUrl;
+      if (data.photoCaption) cleanData.photoCaption = data.photoCaption;
+      if (data.ecologicalImportance) cleanData.ecologicalImportance = data.ecologicalImportance;
+      if (data.threats) cleanData.threats = data.threats;
+      if (data.protectionMeasures) cleanData.protectionMeasures = data.protectionMeasures;
+      if (data.observationTips) cleanData.observationTips = data.observationTips;
+      if (data.bestObservationTime) cleanData.bestObservationTime = data.bestObservationTime;
+      
+      console.log('Datos de actualización limpiados:', cleanData);
+      updateMutation.mutate({ id: selectedSpecies.id, data: cleanData });
     }
   };
 
@@ -538,7 +588,7 @@ const FaunaSpeciesAdmin: React.FC = () => {
 
         {/* Estadísticas */}
         {stats && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Especies</CardTitle>
@@ -550,7 +600,7 @@ const FaunaSpeciesAdmin: React.FC = () => {
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Especies Aves</CardTitle>
+                <CardTitle className="text-sm font-medium">Aves</CardTitle>
                 <Heart className="h-4 w-4 text-blue-600" />
               </CardHeader>
               <CardContent>
@@ -567,6 +617,28 @@ const FaunaSpeciesAdmin: React.FC = () => {
               <CardContent>
                 <div className="text-2xl font-bold">
                   {stats.data.byCategory.find(c => c.category === 'mamiferos')?.count || 0}
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Vida Acuática</CardTitle>
+                <Fish className="h-4 w-4 text-teal-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {stats.data.byCategory.find(c => c.category === 'vida_acuatica')?.count || 0}
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Insectos</CardTitle>
+                <Bug className="h-4 w-4 text-yellow-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {stats.data.byCategory.find(c => c.category === 'insectos')?.count || 0}
                 </div>
               </CardContent>
             </Card>
