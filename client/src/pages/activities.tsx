@@ -725,7 +725,7 @@ function ActivitiesPage() {
       </section>
 
       {/* Calendario de Eventos */}
-      <section className="py-8" style={{backgroundColor: '#51a19f'}}>
+      <section className="bg-gray-50 py-8">
         <div className="max-w-7xl mx-auto px-4">
           <div className="max-w-6xl mx-auto">
           
@@ -841,7 +841,7 @@ function ActivitiesPage() {
       </section>
 
       {/* Sección de Contacto */}
-      <section className="bg-gray-50 py-12">
+      <section className="py-12" style={{backgroundColor: '#51a19f'}}>
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">¿Necesitas más información?</h2>
