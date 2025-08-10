@@ -56,39 +56,19 @@ function ActiveConcessionForm() {
   // Obtener datos para formulario
   const { data: concessionTypesData } = useQuery({
     queryKey: ['/api/concession-types-active'],
-    queryFn: async () => {
-      const response = await fetch('/api/concession-types-active');
-      if (!response.ok) throw new Error('Error fetching concession types');
-      return response.json();
-    }
   });
 
   const { data: concessionairesData } = useQuery({
     queryKey: ['/api/concessionaires'],
-    queryFn: async () => {
-      const response = await fetch('/api/concessionaires');
-      if (!response.ok) throw new Error('Error fetching concessionaires');
-      return response.json();
-    }
   });
 
   const { data: parksData } = useQuery({
     queryKey: ['/api/parks?simple=true'],
-    queryFn: async () => {
-      const response = await fetch('/api/parks?simple=true');
-      if (!response.ok) throw new Error('Error fetching parks');
-      return response.json();
-    }
   });
 
   // Obtener datos existentes si es edición
   const { data: existingConcession, isLoading: loadingExisting } = useQuery({
-    queryKey: [`active-concession-edit`, id],
-    queryFn: async () => {
-      const response = await fetch(`/api/active-concessions/${id}`);
-      if (!response.ok) throw new Error('Error fetching concession data');
-      return response.json();
-    },
+    queryKey: [`/api/active-concessions/${id}`],
     enabled: isEdit,
     staleTime: 0 // Forzar nueva consulta
   });
