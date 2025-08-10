@@ -67,7 +67,32 @@ export default function InstructorCard({ instructor, showActions = true, compact
   const renderSpecialties = (specialties?: string) => {
     if (!specialties) return null;
     
-    const specialtiesList = specialties.split(',').map(s => s.trim());
+    let specialtiesList: string[] = [];
+    
+    try {
+      // Intentar parsear como JSON/array PostgreSQL si tiene formato de array
+      if (specialties.startsWith('{') && specialties.endsWith('}')) {
+        // Es un array PostgreSQL, limpiar y parsear
+        const arrayContent = specialties.slice(1, -1);
+        specialtiesList = arrayContent
+          .split(',')
+          .map(s => s.trim().replace(/^"(.*)"$/, '$1').replace(/""/g, '"'))
+          .filter(s => s.length > 0);
+      } else if (specialties.startsWith('[') && specialties.endsWith(']')) {
+        // Es un array JSON
+        specialtiesList = JSON.parse(specialties);
+      } else {
+        // Es una cadena separada por comas simple
+        specialtiesList = specialties.split(',').map(s => s.trim());
+      }
+    } catch (error) {
+      // Si falla el parsing, usar split por comas como fallback
+      specialtiesList = specialties.split(',').map(s => s.trim());
+    }
+    
+    // Limpiar especialidades vacías o malformadas
+    specialtiesList = specialtiesList.filter(s => s && s.length > 0);
+    
     if (specialtiesList.length <= 2 || compact) {
       return specialtiesList.map((specialty, index) => (
         <Badge key={index} variant="outline" className="mr-1 mb-1">{specialty}</Badge>
