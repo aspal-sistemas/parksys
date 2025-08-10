@@ -10,8 +10,7 @@ import {
   Users,
   Search,
   Filter,
-  Grid,
-  List,
+
   ArrowLeft,
   Star,
   Heart,
@@ -20,7 +19,9 @@ import {
   Trees,
   User,
   DollarSign,
-  Trophy
+  Trophy,
+  Phone,
+  Mail
 } from 'lucide-react';
 const heroImage = "/images/recorrido-nocturno-colomos-1024x683_1754846133930.jpg";
 import { Badge } from '@/components/ui/badge';
@@ -314,7 +315,7 @@ function ActivitiesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterPark, setFilterPark] = useState('all');
   const [filterCategory, setFilterCategory] = useState('all');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+
   const [currentPage, setCurrentPage] = useState(1);
   const activitiesPerPage = 9;
 
@@ -457,24 +458,7 @@ function ActivitiesPage() {
                   </SelectContent>
                 </Select>
 
-                <div className="flex items-center border border-green-600 rounded-md bg-white/90">
-                  <Button
-                    variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('grid')}
-                    className={viewMode === 'grid' ? 'bg-green-600 hover:bg-green-700 text-white' : 'text-green-700 hover:bg-green-100'}
-                  >
-                    <Grid className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant={viewMode === 'list' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('list')}
-                    className={viewMode === 'list' ? 'bg-green-600 hover:bg-green-700 text-white' : 'text-green-700 hover:bg-green-100'}
-                  >
-                    <List className="h-4 w-4" />
-                  </Button>
-                </div>
+
               </div>
             </div>
           </div>
@@ -496,6 +480,95 @@ function ActivitiesPage() {
       {/* Contenido Principal */}
       <section className="max-w-7xl mx-auto px-4 py-2">
         <div className="flex gap-8 items-start">
+          {/* Sidebar izquierda - 1/4 del ancho */}
+          <div className="w-80 space-y-6">
+            {/* Mapa de Actividades */}
+            <Card className="p-6">
+              <h3 className="font-semibold text-lg text-gray-800 mb-4 flex items-center">
+                <MapPin className="h-5 w-5 mr-2 text-green-600" />
+                Mapa de Actividades
+              </h3>
+              <div className="bg-gray-100 rounded-lg h-48 flex items-center justify-center">
+                <div className="text-center text-gray-500">
+                  <MapPin className="h-12 w-12 mx-auto mb-2" />
+                  <p className="text-sm">Próximamente: Mapa interactivo</p>
+                </div>
+              </div>
+            </Card>
+
+            {/* Contacto para Dudas */}
+            <Card className="p-6">
+              <h3 className="font-semibold text-lg text-gray-800 mb-4 flex items-center">
+                <Phone className="h-5 w-5 mr-2 text-blue-600" />
+                Contacto para Dudas
+              </h3>
+              <div className="space-y-3">
+                <div className="flex items-center text-sm">
+                  <Phone className="h-4 w-4 mr-2 text-blue-500" />
+                  <span>33 3333 3333</span>
+                </div>
+                <div className="flex items-center text-sm">
+                  <Mail className="h-4 w-4 mr-2 text-green-500" />
+                  <span>actividades@parques.gob.mx</span>
+                </div>
+                <div className="flex items-center text-sm">
+                  <Clock className="h-4 w-4 mr-2 text-orange-500" />
+                  <span>Lun-Vie 8:00-16:00</span>
+                </div>
+              </div>
+            </Card>
+
+            {/* Instructores */}
+            <Card className="p-6">
+              <h3 className="font-semibold text-lg text-gray-800 mb-4 flex items-center">
+                <Users className="h-5 w-5 mr-2 text-purple-600" />
+                Nuestros Instructores
+              </h3>
+              <div className="space-y-3">
+                <div className="flex items-center">
+                  <div className="w-10 h-10 bg-gradient-to-r from-purple-400 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+                    A
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm font-medium">Ana García</p>
+                    <p className="text-xs text-gray-500">Yoga & Meditación</p>
+                  </div>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-10 h-10 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
+                    C
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm font-medium">Carlos López</p>
+                    <p className="text-xs text-gray-500">Deportes & Fitness</p>
+                  </div>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-10 h-10 bg-gradient-to-r from-green-400 to-green-600 rounded-full flex items-center justify-center text-white font-semibold">
+                    M
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm font-medium">María Rodríguez</p>
+                    <p className="text-xs text-gray-500">Arte & Cultura</p>
+                  </div>
+                </div>
+              </div>
+              <Link href="/instructors">
+                <Button variant="outline" size="sm" className="w-full mt-4 text-purple-600 border-purple-200 hover:bg-purple-50">
+                  Ver todos los instructores
+                </Button>
+              </Link>
+            </Card>
+
+            {/* Ad Space del sidebar */}
+            <AdSpace 
+              spaceId="4" 
+              position="sidebar" 
+              pageType="activities" 
+              className=""
+            />
+          </div>
+
           {/* Contenido principal - 3/4 del ancho */}
           <div className="flex-1">
             {currentActivities.length === 0 ? (
@@ -529,17 +602,97 @@ function ActivitiesPage() {
                   </Link>
                 </div>
 
-                {/* Grid/List de actividades */}
-                <div className={viewMode === 'grid' 
-                  ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" 
-                  : "space-y-4"
-                }>
-                  {currentActivities.map((activity) => (
-                    <ActivityCard 
-                      key={activity.id} 
-                      activity={activity} 
-                      viewMode={viewMode}
-                    />
+                {/* Lista horizontal de actividades */}
+                <div className="space-y-6">
+                  {currentActivities.map((activity: any, index) => (
+                    <div key={activity.id}>
+                      <Card className="border border-gray-200 hover:border-green-300 hover:shadow-md transition-all duration-200">
+                        <div className="flex">
+                          <div className="w-64 h-40 relative overflow-hidden flex-shrink-0">
+                            {activity.imageUrl ? (
+                              <img 
+                                src={activity.imageUrl.startsWith('http') ? activity.imageUrl : `${activity.imageUrl}?v=${Date.now()}`}
+                                alt={activity.title}
+                                className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                                onError={(e) => {
+                                  console.log(`Error loading image: ${activity.imageUrl}`);
+                                  e.currentTarget.src = "/api/placeholder/400/240";
+                                }}
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center">
+                                <Activity className="h-16 w-16 text-green-400" />
+                              </div>
+                            )}
+                            {activity.category && (
+                              <div className="absolute top-3 left-3">
+                                <span className="px-2 py-1 bg-green-600 text-white text-xs font-medium rounded-full">
+                                  {activity.category}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                          <CardContent className="flex-1 p-6">
+                            <div className="flex justify-between items-start mb-4">
+                              <div className="flex-1">
+                                <h3 className="font-semibold text-xl text-gray-800 mb-2 hover:text-green-700 transition-colors">
+                                  {activity.title}
+                                </h3>
+                                <p className="text-gray-600 line-clamp-2 mb-4">
+                                  {activity.description}
+                                </p>
+                              </div>
+                              <Link href={`/activities/${activity.id}`}>
+                                <Button className="bg-green-600 hover:bg-green-700 ml-6">
+                                  Ver detalles
+                                </Button>
+                              </Link>
+                            </div>
+                            <div className="flex flex-wrap gap-6 text-sm text-gray-500">
+                              {activity.park_name && (
+                                <div className="flex items-center">
+                                  <MapPin className="h-4 w-4 mr-2 text-green-500" />
+                                  <span>{activity.park_name}</span>
+                                </div>
+                              )}
+                              {activity.schedule && (
+                                <div className="flex items-center">
+                                  <Clock className="h-4 w-4 mr-2 text-blue-500" />
+                                  <span>{activity.schedule}</span>
+                                </div>
+                              )}
+                              {activity.instructor_name && (
+                                <div className="flex items-center">
+                                  <Users className="h-4 w-4 mr-2 text-purple-500" />
+                                  <span>{activity.instructor_name}</span>
+                                </div>
+                              )}
+                              {activity.difficulty && (
+                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                  activity.difficulty === 'Principiante' ? 'bg-green-100 text-green-800' :
+                                  activity.difficulty === 'Intermedio' ? 'bg-yellow-100 text-yellow-800' :
+                                  'bg-red-100 text-red-800'
+                                }`}>
+                                  {activity.difficulty}
+                                </span>
+                              )}
+                            </div>
+                          </CardContent>
+                        </div>
+                      </Card>
+                      
+                      {/* Ad Space cada 3 actividades */}
+                      {index > 0 && (index + 1) % 3 === 0 && (
+                        <div className="mt-6">
+                          <AdSpace 
+                            spaceId={`${15 + Math.floor(index / 3) - 1}`} 
+                            position="card" 
+                            pageType="activities" 
+                            className=""
+                          />
+                        </div>
+                      )}
+                    </div>
                   ))}
                 </div>
 
@@ -584,43 +737,6 @@ function ActivitiesPage() {
                 )}
               </>
             )}
-          </div>
-
-          {/* Sidebar publicitario - 1/4 del ancho */}
-          <div className="w-80 space-y-6 sticky top-4 self-start">
-            <div className="space-y-6 mt-14">
-              {/* Espacios publicitarios con diseño tipo tarjeta */}
-              <AdSpace 
-                spaceId="7" 
-                position="card" 
-                pageType="activities" 
-              />
-
-              <AdSpace 
-                spaceId="15" 
-                position="card" 
-                pageType="activities" 
-              />
-
-              <AdSpace 
-                spaceId="16" 
-                position="card" 
-                pageType="activities" 
-              />
-
-              <AdSpace 
-                spaceId="17" 
-                position="card" 
-                pageType="activities" 
-              />
-              
-              {/* Espacio 4 (Activities Sidebar) */}
-              <AdSpace 
-                spaceId="4" 
-                position="sidebar" 
-                pageType="activities" 
-              />
-            </div>
           </div>
         </div>
       </section>
