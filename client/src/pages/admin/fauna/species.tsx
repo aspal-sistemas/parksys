@@ -35,12 +35,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { insertFaunaSpeciesSchema, type FaunaSpecies } from '@shared/schema';
 import { z } from 'zod';
 
-// Esquema específico para actualizaciones (permite campos adicionales como id, createdAt, etc.)
-const updateFaunaSpeciesSchema = insertFaunaSpeciesSchema.extend({
-  id: z.number().optional(),
-  createdAt: z.any().optional(),
-  updatedAt: z.any().optional()
-}).partial();
+// Para el formulario, usamos un esquema que NO valida - solo manejamos la limpieza en handleUpdate
+const updateFaunaSpeciesSchema = z.any();
 import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
@@ -247,51 +243,67 @@ const FaunaSpeciesAdmin: React.FC = () => {
     console.log('🔄 HANDLE UPDATE EJECUTÁNDOSE - Datos recibidos:', data);
     console.log('🔍 Selected species:', selectedSpecies);
     
-    if (selectedSpecies) {
-      console.log('✅ Especie seleccionada encontrada, procesando actualización...');
-      
-      // Remover campos que no deben ser enviados (como id, createdAt, updatedAt)
-      const { id, createdAt, updatedAt, ...formData } = data;
-      
-      // Filtrar y limpiar datos similares a handleCreate
-      const cleanData = {
-        commonName: formData.commonName,
-        scientificName: formData.scientificName,
-        family: formData.family,
-        category: formData.category,
-        conservationStatus: formData.conservationStatus || 'estable',
-        isNocturnal: formData.isNocturnal || false,
-        isMigratory: formData.isMigratory || false,
-        isEndangered: formData.isEndangered || false,
-        commonLocations: formData.commonLocations || [],
-        iconColor: formData.iconColor || '#16a085',
-        iconType: formData.iconType || 'system'
-      };
-
-      // Añadir campos opcionales solo si tienen valor
-      if (formData.habitat) cleanData.habitat = formData.habitat;
-      if (formData.description) cleanData.description = formData.description;
-      if (formData.behavior) cleanData.behavior = formData.behavior;
-      if (formData.diet) cleanData.diet = formData.diet;
-      if (formData.reproductionPeriod) cleanData.reproductionPeriod = formData.reproductionPeriod;
-      if (formData.sizeCm) cleanData.sizeCm = formData.sizeCm;
-      if (formData.weightGrams) cleanData.weightGrams = formData.weightGrams;
-      if (formData.lifespan) cleanData.lifespan = formData.lifespan;
-      if (formData.imageUrl) cleanData.imageUrl = formData.imageUrl;
-      if (formData.photoUrl) cleanData.photoUrl = formData.photoUrl;
-      if (formData.photoCaption) cleanData.photoCaption = formData.photoCaption;
-      if (formData.ecologicalImportance) cleanData.ecologicalImportance = formData.ecologicalImportance;
-      if (formData.threats) cleanData.threats = formData.threats;
-      if (formData.protectionMeasures) cleanData.protectionMeasures = formData.protectionMeasures;
-      if (formData.observationTips) cleanData.observationTips = formData.observationTips;
-      if (formData.bestObservationTime) cleanData.bestObservationTime = formData.bestObservationTime;
-      
-      console.log('📋 Datos de actualización limpiados:', cleanData);
-      console.log('🚀 Ejecutando mutación con ID:', selectedSpecies.id);
-      updateMutation.mutate({ id: selectedSpecies.id, data: cleanData });
-    } else {
+    if (!selectedSpecies) {
       console.error('❌ No hay especie seleccionada para actualizar');
+      toast({
+        title: 'Error',
+        description: 'No hay especie seleccionada para actualizar',
+        variant: 'destructive'
+      });
+      return;
     }
+
+    console.log('✅ Especie seleccionada encontrada, procesando actualización...');
+    
+    // Validar campos requeridos manualmente
+    if (!data.commonName || !data.scientificName || !data.family || !data.category) {
+      toast({
+        title: 'Error',
+        description: 'Los campos Nombre Común, Nombre Científico, Familia y Categoría son requeridos',
+        variant: 'destructive'
+      });
+      return;
+    }
+    
+    // Remover campos que no deben ser enviados (como id, createdAt, updatedAt)
+    const { id, createdAt, updatedAt, ...formData } = data;
+    
+    // Filtrar y limpiar datos similares a handleCreate
+    const cleanData = {
+      commonName: formData.commonName,
+      scientificName: formData.scientificName,
+      family: formData.family,
+      category: formData.category,
+      conservationStatus: formData.conservationStatus || 'estable',
+      isNocturnal: Boolean(formData.isNocturnal),
+      isMigratory: Boolean(formData.isMigratory),
+      isEndangered: Boolean(formData.isEndangered),
+      commonLocations: Array.isArray(formData.commonLocations) ? formData.commonLocations : [],
+      iconColor: formData.iconColor || '#16a085',
+      iconType: formData.iconType || 'system'
+    };
+
+    // Añadir campos opcionales solo si tienen valor
+    if (formData.habitat) cleanData.habitat = formData.habitat;
+    if (formData.description) cleanData.description = formData.description;
+    if (formData.behavior) cleanData.behavior = formData.behavior;
+    if (formData.diet) cleanData.diet = formData.diet;
+    if (formData.reproductionPeriod) cleanData.reproductionPeriod = formData.reproductionPeriod;
+    if (formData.sizeCm) cleanData.sizeCm = formData.sizeCm;
+    if (formData.weightGrams) cleanData.weightGrams = formData.weightGrams;
+    if (formData.lifespan) cleanData.lifespan = Number(formData.lifespan) || 0;
+    if (formData.imageUrl) cleanData.imageUrl = formData.imageUrl;
+    if (formData.photoUrl) cleanData.photoUrl = formData.photoUrl;
+    if (formData.photoCaption) cleanData.photoCaption = formData.photoCaption;
+    if (formData.ecologicalImportance) cleanData.ecologicalImportance = formData.ecologicalImportance;
+    if (formData.threats) cleanData.threats = formData.threats;
+    if (formData.protectionMeasures) cleanData.protectionMeasures = formData.protectionMeasures;
+    if (formData.observationTips) cleanData.observationTips = formData.observationTips;
+    if (formData.bestObservationTime) cleanData.bestObservationTime = formData.bestObservationTime;
+    
+    console.log('📋 Datos de actualización limpiados:', cleanData);
+    console.log('🚀 Ejecutando mutación con ID:', selectedSpecies.id);
+    updateMutation.mutate({ id: selectedSpecies.id, data: cleanData });
   };
 
   const handleDelete = (id: number) => {
