@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Link, useLocation } from 'wouter';
+import { Link, useLocation, useNavigate } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -73,6 +73,74 @@ const categoryColors = {
   'Fitness y Ejercicio': 'bg-indigo-100 text-indigo-800 border-indigo-200',
   'Actividades Familiares': 'bg-pink-100 text-pink-800 border-pink-200'
 };
+
+// Componente para tarjeta horizontal de actividad
+function HorizontalActivityCard({ activity }: { activity: ActivityData }) {
+  const handleActivityClick = () => {
+    window.location.href = `/activity/${activity.id}`;
+  };
+
+  const categoryColor = categoryColors[activity.category as keyof typeof categoryColors] || 'bg-gray-100 text-gray-800 border-gray-200';
+
+  return (
+    <Card 
+      className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer border border-gray-200"
+      onClick={handleActivityClick}
+    >
+      <div className="flex h-32">
+        {/* Imagen */}
+        <div className="flex-shrink-0 w-48 relative">
+          {activity.imageUrl ? (
+            <img 
+              src={activity.imageUrl} 
+              alt={activity.title}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center">
+              <Activity className="h-8 w-8 text-green-500" />
+            </div>
+          )}
+        </div>
+
+        {/* Contenido */}
+        <div className="flex-1 p-4 flex flex-col justify-between">
+          <div>
+            <h3 className="font-semibold text-lg text-gray-900 mb-1 line-clamp-1">
+              {activity.title}
+            </h3>
+            <p className="text-gray-600 text-sm mb-2 line-clamp-2">
+              {activity.description}
+            </p>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4 text-sm text-gray-500">
+              {activity.parkName && (
+                <div className="flex items-center gap-1">
+                  <MapPin className="h-4 w-4" />
+                  <span>{activity.parkName}</span>
+                </div>
+              )}
+              {activity.price !== undefined && (
+                <div className="flex items-center gap-1">
+                  <DollarSign className="h-4 w-4" />
+                  <span>{activity.price > 0 ? `$${Number(activity.price).toLocaleString('es-MX')}` : 'Gratis'}</span>
+                </div>
+              )}
+            </div>
+            
+            {activity.category && (
+              <Badge className={`${categoryColor} border text-xs`}>
+                {activity.category}
+              </Badge>
+            )}
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+}
 
 // Tarjeta simplificada para carrusel
 function CarouselActivityCard({ activity, isCenter = false }: { activity: ActivityData; isCenter?: boolean }) {
@@ -391,6 +459,7 @@ function ActivitiesPage() {
   const [filterPark, setFilterPark] = useState('all');
   const [filterCategory, setFilterCategory] = useState('all');
   const [carouselIndex, setCarouselIndex] = useState(0);
+  const [showAllActivities, setShowAllActivities] = useState(false);
 
   // Obtener todas las actividades con imágenes
   const { data: activitiesData = [], isLoading } = useQuery<ActivityData[]>({
@@ -555,26 +624,6 @@ function ActivitiesPage() {
       {/* Actividades */}
       <section className="max-w-7xl mx-auto px-4 py-8">
         <div>
-          <div className="flex items-center gap-3 mb-6">
-            {hasActiveFilters ? (
-              <Search className="h-6 w-6 text-blue-500" />
-            ) : (
-              <Activity className="h-6 w-6 text-green-500" />
-            )}
-            <h2 className="text-2xl font-semibold text-gray-800">
-              {hasActiveFilters 
-                ? `Resultados de búsqueda (${currentActivities.length})` 
-                : 'Todas las Actividades'
-              }
-            </h2>
-          </div>
-          <p className="text-gray-600 mb-8">
-            {hasActiveFilters 
-              ? 'Actividades que coinciden con tu búsqueda'
-              : 'Explora todas las actividades disponibles en los parques de Guadalajara'
-            }
-          </p>
-          
           {currentActivities.length === 0 ? (
             <div className="text-center py-16">
               <Activity className="h-16 w-16 text-gray-400 mx-auto mb-4" />
@@ -599,52 +648,36 @@ function ActivitiesPage() {
               ))}
             </div>
           ) : (
-            /* Carrusel cuando no hay filtros - diseño 1/4 - 2/4 - 1/4 */
-            <div className="relative">
-              {/* Contenedor del carrusel */}
-              <div className="overflow-hidden">
-                <div className="flex gap-6">
-                  {/* Siempre mostrar 3 elementos visibles */}
-                  {[0, 1, 2].map((offset) => {
-                    const activityIndex = carouselIndex + offset;
-                    const activity = currentActivities[activityIndex];
-                    const isCenter = offset === 1; // El elemento del medio es central
-                    
-                    if (!activity) return null;
-                    
-                    return (
-                      <div 
-                        key={activity.id}
-                        className={`flex-none ${isCenter ? 'w-2/4' : 'w-1/4'}`}
-                      >
-                        <CarouselActivityCard activity={activity} isCenter={isCenter} />
-                      </div>
-                    );
-                  })}
+            /* Tarjetas horizontales - mostrar 3 inicialmente */
+            <div className="space-y-4">
+              {(showAllActivities ? currentActivities : currentActivities.slice(0, 3)).map((activity) => (
+                <HorizontalActivityCard key={activity.id} activity={activity} />
+              ))}
+              
+              {/* Botón Ver más */}
+              {!showAllActivities && currentActivities.length > 3 && (
+                <div className="text-center pt-6">
+                  <Button 
+                    onClick={() => setShowAllActivities(true)}
+                    className="bg-green-600 hover:bg-green-700 text-white px-8 py-3"
+                  >
+                    Ver más ({currentActivities.length - 3} actividades restantes)
+                  </Button>
                 </div>
-              </div>
-
-              {/* Botón anterior - sobre tarjeta izquierda */}
-              <Button 
-                variant="outline" 
-                size="icon"
-                onClick={() => setCarouselIndex(Math.max(0, carouselIndex - 1))}
-                disabled={carouselIndex === 0}
-                className="absolute left-8 top-1/2 -translate-y-1/2 z-10 h-10 w-10 border-green-200 hover:bg-green-50 bg-white/90 shadow-lg"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </Button>
-
-              {/* Botón siguiente - sobre tarjeta derecha */}
-              <Button 
-                variant="outline" 
-                size="icon"
-                onClick={() => setCarouselIndex(Math.min(currentActivities.length - 3, carouselIndex + 1))}
-                disabled={carouselIndex >= currentActivities.length - 3}
-                className="absolute right-8 top-1/2 -translate-y-1/2 z-10 h-10 w-10 border-green-200 hover:bg-green-50 bg-white/90 shadow-lg"
-              >
-                <ChevronRight className="h-5 w-5" />
-              </Button>
+              )}
+              
+              {/* Botón Ver menos */}
+              {showAllActivities && (
+                <div className="text-center pt-6">
+                  <Button 
+                    onClick={() => setShowAllActivities(false)}
+                    variant="outline"
+                    className="border-green-600 text-green-600 hover:bg-green-50 px-8 py-3"
+                  >
+                    Ver menos
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </div>
