@@ -74,29 +74,28 @@ export default function InstructorCard({ instructor, showActions = true, compact
       if (specialties.startsWith('{') && specialties.endsWith('}')) {
         // Es un array PostgreSQL, limpiar y parsear
         const arrayContent = specialties.slice(1, -1);
+        
+        // Manejo especial para arrays PostgreSQL con comillas dobles escapadas
+        // Patrón común: {"Danza","Ballet","Danza folclórica"} o {""Danza"",""Ballet""}
         specialtiesList = arrayContent
           .split(',')
           .map(s => {
-            // Limpiar completamente: casos específicos de PostgreSQL
             let cleaned = s.trim();
             
-            // Casos específicos para PostgreSQL con comillas dobles escapadas
-            // Caso: ""Danza"" -> Danza
-            cleaned = cleaned.replace(/^""(.*)""$/, '$1');
+            // Limpieza completa paso a paso para PostgreSQL
+            // 1. Remover comillas dobles del inicio y final (cualquier cantidad)
+            cleaned = cleaned.replace(/^"+/, '').replace(/"+$/, '');
             
-            // Casos generales de limpieza múltiple para cubrir todas las combinaciones
-            // Remover comillas dobles del inicio y final
-            cleaned = cleaned.replace(/^"+|"+$/g, '');
-            // Remover comillas simples del inicio y final  
-            cleaned = cleaned.replace(/^'+|'+$/g, '');
-            // Remover corchetes del inicio y final
-            cleaned = cleaned.replace(/^\[+|\]+$/g, '');
+            // 2. Remover comillas simples del inicio y final  
+            cleaned = cleaned.replace(/^'+/, '').replace(/'+$/, '');
             
-            // Limpiar comillas dobles escapadas internas
-            cleaned = cleaned.replace(/""/g, '"');
-            cleaned = cleaned.replace(/\\"/g, '"');
+            // 3. Remover corchetes del inicio y final
+            cleaned = cleaned.replace(/^\[+/, '').replace(/\]+$/, '');
             
-            return cleaned.trim();
+            // 4. Limpieza de espacios
+            cleaned = cleaned.trim();
+            
+            return cleaned;
           })
           .filter(s => s.length > 0);
       } else if (specialties.startsWith('[') && specialties.endsWith(']')) {
@@ -111,23 +110,19 @@ export default function InstructorCard({ instructor, showActions = true, compact
       specialtiesList = specialties.split(',')
         .map(s => {
           let cleaned = s.trim();
-          // Aplicar todas las limpiezas posibles
-          cleaned = cleaned.replace(/^["'\[\]]+|["'\[\]]+$/g, '');
-          cleaned = cleaned.replace(/^"+|"+$/g, '');
-          cleaned = cleaned.replace(/^\[+|\]+$/g, '');
+          // Aplicar todas las limpiezas posibles para casos de error
+          cleaned = cleaned.replace(/^["'\[\]]+/, '').replace(/["'\[\]]+$/, '');
           return cleaned.trim();
         })
         .filter(s => s.length > 0);
     }
     
-    // Aplicar una limpieza final a todas las especialidades para asegurar que no queden comillas o corchetes
+    // Aplicar una limpieza final para asegurar que no queden caracteres no deseados
     specialtiesList = specialtiesList
       .map(s => {
         let cleaned = s.trim();
-        // Limpieza final agresiva para cualquier caso que se haya escapado
-        cleaned = cleaned.replace(/^["'\[\]]+|["'\[\]]+$/g, '');
-        cleaned = cleaned.replace(/^"+|"+$/g, '');
-        cleaned = cleaned.replace(/^\[+|\]+$/g, '');
+        // Limpieza final: remover cualquier carácter de puntuación al inicio/final
+        cleaned = cleaned.replace(/^["'\[\]{}]+/, '').replace(/["'\[\]{}]+$/, '');
         return cleaned.trim();
       })
       .filter(s => s && s.length > 0);

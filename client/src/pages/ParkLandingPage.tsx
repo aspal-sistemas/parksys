@@ -1433,11 +1433,36 @@ function ParkLandingPage() {
                               {instructor.specialties && (
                                 <div className="mt-2">
                                   <div className="flex flex-wrap gap-1">
-                                    {instructor.specialties.split(',').slice(0, 2).map((specialty: string, index: number) => (
-                                      <Badge key={index} variant="outline" className="text-xs border-purple-300 text-purple-700">
-                                        {specialty.trim()}
-                                      </Badge>
-                                    ))}
+                                    {(() => {
+                                      // Clean PostgreSQL array format
+                                      let specialtiesList: string[] = [];
+                                      const specialties = instructor.specialties;
+                                      
+                                      if (specialties.startsWith('{') && specialties.endsWith('}')) {
+                                        // PostgreSQL array format
+                                        const arrayContent = specialties.slice(1, -1);
+                                        specialtiesList = arrayContent
+                                          .split(',')
+                                          .map(s => {
+                                            let cleaned = s.trim();
+                                            // Remove quotes and brackets
+                                            cleaned = cleaned.replace(/^"+/, '').replace(/"+$/, '');
+                                            cleaned = cleaned.replace(/^'+/, '').replace(/'+$/, '');
+                                            cleaned = cleaned.replace(/^\[+/, '').replace(/\]+$/, '');
+                                            return cleaned.trim();
+                                          })
+                                          .filter(s => s.length > 0);
+                                      } else {
+                                        // Simple comma-separated format
+                                        specialtiesList = specialties.split(',').map(s => s.trim());
+                                      }
+                                      
+                                      return specialtiesList.slice(0, 2).map((specialty: string, index: number) => (
+                                        <Badge key={index} variant="outline" className="text-xs border-purple-300 text-purple-700">
+                                          {specialty}
+                                        </Badge>
+                                      ));
+                                    })()}
                                   </div>
                                 </div>
                               )}
