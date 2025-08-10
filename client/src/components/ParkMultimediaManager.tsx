@@ -275,20 +275,31 @@ export default function ParkMultimediaManager({ parkId }: ParkMultimediaManagerP
 
   const deleteDocumentMutation = useMutation({
     mutationFn: async (documentId: number) => {
+      console.log(`🌐 [API REQUEST] DELETE /api/park-documents/${documentId}`);
       const response = await apiRequest(`/api/park-documents/${documentId}`, {
         method: 'DELETE'
       });
       return response;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast({
         title: "Documento eliminado",
-        description: "El documento se ha eliminado correctamente.",
+        description: data?.message || "El documento se ha eliminado correctamente.",
       });
+      // Invalidate all related queries to ensure fresh data
       queryClient.invalidateQueries({ queryKey: [`/api/parks/${parkId}/documents`] });
       queryClient.invalidateQueries({ queryKey: [`/api/parks/${parkId}`] });
+      queryClient.invalidateQueries({ queryKey: ['/api/parks'] });
+      
+      // Force refetch documents immediately
+      queryClient.refetchQueries({ queryKey: [`/api/parks/${parkId}/documents`] });
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error('❌ Error en eliminación:', error);
+      // Even if there's an error, try to refresh the data in case it was actually deleted
+      queryClient.invalidateQueries({ queryKey: [`/api/parks/${parkId}/documents`] });
+      queryClient.refetchQueries({ queryKey: [`/api/parks/${parkId}/documents`] });
+      
       toast({
         title: "Error",
         description: "No se pudo eliminar el documento.",
