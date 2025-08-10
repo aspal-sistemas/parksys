@@ -236,8 +236,11 @@ const FaunaSpeciesAdmin: React.FC = () => {
   };
 
   const handleUpdate = (data: any) => {
+    console.log('🔄 HANDLE UPDATE EJECUTÁNDOSE - Datos recibidos:', data);
+    console.log('🔍 Selected species:', selectedSpecies);
+    
     if (selectedSpecies) {
-      console.log('Datos de actualización:', data);
+      console.log('✅ Especie seleccionada encontrada, procesando actualización...');
       // Filtrar y limpiar datos similares a handleCreate
       const cleanData = {
         commonName: data.commonName,
@@ -271,8 +274,11 @@ const FaunaSpeciesAdmin: React.FC = () => {
       if (data.observationTips) cleanData.observationTips = data.observationTips;
       if (data.bestObservationTime) cleanData.bestObservationTime = data.bestObservationTime;
       
-      console.log('Datos de actualización limpiados:', cleanData);
+      console.log('📋 Datos de actualización limpiados:', cleanData);
+      console.log('🚀 Ejecutando mutación con ID:', selectedSpecies.id);
       updateMutation.mutate({ id: selectedSpecies.id, data: cleanData });
+    } else {
+      console.error('❌ No hay especie seleccionada para actualizar');
     }
   };
 
@@ -823,7 +829,12 @@ const FaunaSpeciesAdmin: React.FC = () => {
               </DialogDescription>
             </DialogHeader>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleUpdate)} className="space-y-4">
+              <form onSubmit={(e) => {
+                console.log('🔄 Form onSubmit ejecutándose');
+                console.log('📋 Form errors:', form.formState.errors);
+                console.log('📋 Form values:', form.getValues());
+                form.handleSubmit(handleUpdate)(e);
+              }} className="space-y-4">
                 {/* Subida de Imagen */}
                 <div className="space-y-2">
                   <Label>Fotografía de la Especie</Label>
