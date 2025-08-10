@@ -70,6 +70,8 @@ const uploadCSV = multer({
 // Obtener todas las especies de fauna con paginación y filtros
 router.get('/species', async (req, res) => {
   try {
+    console.log('📋 Fauna species request params:', req.query);
+    
     const { 
       page = '1', 
       limit = '9', 
@@ -114,15 +116,17 @@ router.get('/species', async (req, res) => {
 
     // Aplicar filtros si existen
     const species = filters.length > 0 
-      ? await speciesQuery.where(filters.reduce((acc, filter) => acc && filter))
+      ? await speciesQuery.where(filters.length === 1 ? filters[0] : filters.reduce((acc, filter) => acc && filter))
       : await speciesQuery;
 
     // Obtener total para paginación
     const totalQuery = filters.length > 0 
-      ? await db.select({ count: count() }).from(faunaSpecies).where(filters.reduce((acc, filter) => acc && filter))
+      ? await db.select({ count: count() }).from(faunaSpecies).where(filters.length === 1 ? filters[0] : filters.reduce((acc, filter) => acc && filter))
       : await db.select({ count: count() }).from(faunaSpecies);
 
     const total = totalQuery[0]?.count || 0;
+    
+    console.log(`📊 Fauna pagination: page ${pageNum}, limit ${limitNum}, total ${total}, pages ${Math.ceil(Number(total) / limitNum)}`);
 
     res.json({
       success: true,
