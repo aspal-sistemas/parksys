@@ -369,18 +369,6 @@ function ActivitiesPage() {
   return (
     <PublicLayout>
       <div className="bg-gradient-to-br from-green-50 to-blue-50">
-      {/* Header Ad Space */}
-      <div className="w-full bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 py-2">
-          <AdSpace 
-            spaceId="6" 
-            position="header" 
-            pageType="activities" 
-            className="w-full"
-          />
-        </div>
-      </div>
-
       {/* Hero Section */}
       <section 
         className="relative py-24 px-4 text-center text-white"
@@ -421,6 +409,18 @@ function ActivitiesPage() {
           </div>
         </div>
       </section>
+
+      {/* Header Ad Space - Moved after Hero Section */}
+      <div className="w-full bg-white border-b">
+        <div className="max-w-7xl mx-auto px-4 py-2">
+          <AdSpace 
+            spaceId="6" 
+            position="header" 
+            pageType="activities" 
+            className="w-full"
+          />
+        </div>
+      </div>
 
       {/* Filtros */}
       <section className="sticky top-0 z-10 bg-white/90 backdrop-blur-sm border-b border-gray-200 shadow-sm">
