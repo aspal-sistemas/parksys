@@ -40,6 +40,33 @@ const upload = multer({
   }
 });
 
+// Configuración de multer específica para archivos CSV
+const csvStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadPath = path.join(process.cwd(), 'uploads', 'temp');
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+    cb(null, uploadPath);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, `csv-import-${uniqueSuffix}.csv`);
+  }
+});
+
+const uploadCSV = multer({ 
+  storage: csvStorage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'text/csv' || path.extname(file.originalname).toLowerCase() === '.csv') {
+      return cb(null, true);
+    } else {
+      cb(new Error('Solo se permiten archivos CSV'));
+    }
+  }
+});
+
 // Obtener todas las especies de fauna con paginación y filtros
 router.get('/species', async (req, res) => {
   try {
@@ -318,7 +345,7 @@ router.get('/stats', async (req, res) => {
 });
 
 // Ruta para importar CSV de fauna
-router.post('/import-csv', upload.single('csvFile'), async (req, res) => {
+router.post('/import-csv', uploadCSV.single('csvFile'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({
@@ -416,7 +443,11 @@ router.post('/import-csv', upload.single('csvFile'), async (req, res) => {
     }
 
     // Limpiar archivo temporal
-    fs.unlinkSync(req.file.path);
+    try {
+      fs.unlinkSync(req.file.path);
+    } catch (cleanupError) {
+      console.error('Error eliminando archivo temporal:', cleanupError);
+    }
 
     res.json({
       success: true,
@@ -426,6 +457,16 @@ router.post('/import-csv', upload.single('csvFile'), async (req, res) => {
 
   } catch (error) {
     console.error('Error en importación CSV:', error);
+    
+    // Intentar limpiar archivo temporal en caso de error
+    if (req.file?.path) {
+      try {
+        fs.unlinkSync(req.file.path);
+      } catch (cleanupError) {
+        console.error('Error eliminando archivo temporal tras fallo:', cleanupError);
+      }
+    }
+    
     res.status(500).json({
       success: false,
       error: 'Error interno del servidor durante la importación'
