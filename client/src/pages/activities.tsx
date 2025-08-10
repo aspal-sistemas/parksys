@@ -589,45 +589,43 @@ function ActivitiesPage() {
           ) : (
             /* Carrusel cuando no hay filtros */
             <div className="relative">
-              <div className="flex items-center gap-4">
-                {/* Botón anterior */}
-                <Button 
-                  variant="outline" 
-                  size="icon"
-                  onClick={() => setCarouselIndex(Math.max(0, carouselIndex - 3))}
-                  disabled={carouselIndex === 0}
-                  className="shrink-0 h-12 w-12 border-green-200 hover:bg-green-50"
+              {/* Contenedor del carrusel */}
+              <div className="overflow-hidden">
+                <div 
+                  className="flex gap-6 transition-transform duration-500 ease-in-out"
+                  style={{
+                    transform: `translateX(-${(carouselIndex / 3) * 100}%)`
+                  }}
                 >
-                  <ChevronLeft className="h-6 w-6" />
-                </Button>
-
-                {/* Contenedor del carrusel */}
-                <div className="flex-1 overflow-hidden">
-                  <div 
-                    className="flex gap-6 transition-transform duration-500 ease-in-out"
-                    style={{
-                      transform: `translateX(-${(carouselIndex / 3) * 100}%)`
-                    }}
-                  >
-                    {currentActivities.map((activity) => (
-                      <div key={activity.id} className="flex-none" style={{ width: 'calc((100% - 3rem) / 3)' }}>
-                        <CarouselActivityCard activity={activity} />
-                      </div>
-                    ))}
-                  </div>
+                  {currentActivities.map((activity) => (
+                    <div key={activity.id} className="flex-none" style={{ width: 'calc((100% - 3rem) / 3)' }}>
+                      <CarouselActivityCard activity={activity} />
+                    </div>
+                  ))}
                 </div>
-
-                {/* Botón siguiente */}
-                <Button 
-                  variant="outline" 
-                  size="icon"
-                  onClick={() => setCarouselIndex(Math.min(currentActivities.length - 3, carouselIndex + 3))}
-                  disabled={carouselIndex >= currentActivities.length - 3}
-                  className="shrink-0 h-12 w-12 border-green-200 hover:bg-green-50"
-                >
-                  <ChevronRight className="h-6 w-6" />
-                </Button>
               </div>
+
+              {/* Botón anterior - posicionado encima */}
+              <Button 
+                variant="outline" 
+                size="icon"
+                onClick={() => setCarouselIndex(Math.max(0, carouselIndex - 3))}
+                disabled={carouselIndex === 0}
+                className="absolute left-4 top-1/2 -translate-y-1/2 z-10 h-12 w-12 border-green-200 hover:bg-green-50 bg-white shadow-lg"
+              >
+                <ChevronLeft className="h-6 w-6" />
+              </Button>
+
+              {/* Botón siguiente - posicionado encima */}
+              <Button 
+                variant="outline" 
+                size="icon"
+                onClick={() => setCarouselIndex(Math.min(currentActivities.length - 3, carouselIndex + 3))}
+                disabled={carouselIndex >= currentActivities.length - 3}
+                className="absolute right-4 top-1/2 -translate-y-1/2 z-10 h-12 w-12 border-green-200 hover:bg-green-50 bg-white shadow-lg"
+              >
+                <ChevronRight className="h-6 w-6" />
+              </Button>
 
               {/* Indicadores de página */}
               <div className="flex justify-center mt-6 gap-2">
