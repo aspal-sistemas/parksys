@@ -352,10 +352,7 @@ export default function ParkMultimediaManager({ parkId }: ParkMultimediaManagerP
     formData.append('description', newDocumentDescription);
     formData.append('category', newDocumentCategory);
     
-    // La URL es opcional como referencia adicional
-    if (newDocumentUrl.trim()) {
-      formData.append('referenceUrl', newDocumentUrl);
-    }
+    // URL field removed - not supported in current database schema
     
     uploadDocumentMutation.mutate(formData);
   };

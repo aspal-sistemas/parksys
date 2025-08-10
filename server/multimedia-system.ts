@@ -372,7 +372,7 @@ export function registerMultimediaRoutes(app: any, apiRouter: Router, isAuthenti
       
       // Buscar en la tabla 'documents' que es la que usa el frontend
       const docResult = await pool.query(
-        'SELECT file_path FROM documents WHERE id = $1',
+        'SELECT file_url FROM documents WHERE id = $1',
         [documentId]
       );
       
@@ -386,12 +386,18 @@ export function registerMultimediaRoutes(app: any, apiRouter: Router, isAuthenti
         });
       }
       
-      const filePath = docResult.rows[0].file_path;
+      const fileUrl = docResult.rows[0].file_url;
+      console.log(`📄 Documento encontrado con URL: ${fileUrl}`);
       
-      // Eliminar archivo físico si existe
-      if (filePath && fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
-        console.log(`🗑️ Archivo físico eliminado: ${filePath}`);
+      // Solo eliminar archivo físico si es un archivo local (no URL externa)
+      if (fileUrl && fileUrl.startsWith('/uploads/')) {
+        const filePath = `public${fileUrl}`;
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+          console.log(`🗑️ Archivo físico eliminado: ${filePath}`);
+        }
+      } else {
+        console.log(`📋 Documento es una URL externa, no se elimina archivo físico: ${fileUrl}`);
       }
       
       // Eliminar registro de base de datos de la tabla 'documents'

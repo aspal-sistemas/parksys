@@ -3005,7 +3005,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           fileUrl: `/uploads/documents/${req.file.filename}`,
           fileType: req.file.mimetype,
           fileSize: req.file.size,
-          referenceUrl: req.body.referenceUrl || null // URL opcional de referencia
+          // referenceUrl removed - column doesn't exist in database
         };
         console.log(`📎 Archivo subido:`, req.file);
       } else {
@@ -3052,7 +3052,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         fileSize: documentData.fileSize || null,
         description: documentData.description || '',
         uploadedById: req.user?.id || null,
-        referenceUrl: documentData.referenceUrl || null
+        // referenceUrl removed - column doesn't exist in database
       };
       const result = await storage.createDocument(data);
       
