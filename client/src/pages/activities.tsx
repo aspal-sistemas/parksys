@@ -401,11 +401,6 @@ function ActivitiesPage() {
               <Calendar className="h-5 w-5" />
               <span>{totalActivities} actividades</span>
             </div>
-            <Separator orientation="vertical" className="h-6 bg-green-300" />
-            <div className="flex items-center gap-2">
-              <Trophy className="h-5 w-5" />
-              <span>{uniqueCategories.length} categorías</span>
-            </div>
           </div>
         </div>
       </section>
