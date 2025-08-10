@@ -59,7 +59,10 @@ const FaunaSpeciesAdmin: React.FC = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [selectedSpecies, setSelectedSpecies] = useState<FaunaSpecies | null>(null);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [isImporting, setIsImporting] = useState(false);
   
   const itemsPerPage = 9;
   const { toast } = useToast();
@@ -224,6 +227,102 @@ const FaunaSpeciesAdmin: React.FC = () => {
     }
   };
 
+  // Funciones de importación CSV
+  const handleImportCSV = async () => {
+    if (!importFile) {
+      toast({
+        title: 'Error',
+        description: 'Por favor selecciona un archivo CSV',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setIsImporting(true);
+    
+    try {
+      const formData = new FormData();
+      formData.append('csvFile', importFile);
+
+      const response = await fetch('/api/fauna/import-csv', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast({
+          title: 'Importación exitosa',
+          description: result.message
+        });
+        
+        // Refrescar datos
+        queryClient.invalidateQueries({ queryKey: ['/api/fauna/species'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/fauna/stats'] });
+        
+        // Cerrar diálogo y limpiar
+        setIsImportDialogOpen(false);
+        setImportFile(null);
+      } else {
+        toast({
+          title: 'Error en importación',
+          description: result.error,
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      console.error('Error importing CSV:', error);
+      toast({
+        title: 'Error',
+        description: 'Error al importar el archivo CSV',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
+  const handleDownloadTemplate = async () => {
+    try {
+      const response = await fetch('/api/fauna/csv-template', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = 'plantilla_fauna_especies.csv';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        toast({
+          title: 'Plantilla descargada',
+          description: 'La plantilla CSV se ha descargado correctamente'
+        });
+      } else {
+        throw new Error('Error al descargar plantilla');
+      }
+    } catch (error) {
+      console.error('Error downloading template:', error);
+      toast({
+        title: 'Error',
+        description: 'Error al descargar la plantilla CSV',
+        variant: 'destructive'
+      });
+    }
+  };
+
   const handleView = (speciesData: FaunaSpecies) => {
     setSelectedSpecies(speciesData);
     setIsViewDialogOpen(true);
@@ -272,7 +371,7 @@ const FaunaSpeciesAdmin: React.FC = () => {
             <p className="text-gray-600">Administra el catálogo de especies de fauna urbana</p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={() => setIsImportDialogOpen(true)}>
               <FileUp className="h-4 w-4 mr-2" />
               Importar
             </Button>
@@ -777,6 +876,128 @@ const FaunaSpeciesAdmin: React.FC = () => {
                 </div>
               </form>
             </Form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Diálogo de Importación CSV */}
+        <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <FileUp className="h-5 w-5" />
+                Importar Especies desde CSV
+              </DialogTitle>
+              <DialogDescription>
+                Sube un archivo CSV con la información de las especies de fauna para importación masiva
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-6">
+              {/* Descarga de plantilla */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h3 className="font-semibold text-blue-900 mb-2">📋 Descargar Plantilla</h3>
+                <p className="text-sm text-blue-800 mb-3">
+                  Descarga la plantilla CSV con el formato correcto y ejemplos de datos.
+                </p>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleDownloadTemplate}
+                  className="border-blue-300 text-blue-700 hover:bg-blue-100"
+                >
+                  <FileDown className="h-4 w-4 mr-2" />
+                  Descargar Plantilla CSV
+                </Button>
+              </div>
+
+              {/* Selección de archivo */}
+              <div className="space-y-3">
+                <Label htmlFor="csv-file">Seleccionar archivo CSV</Label>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                  <input
+                    id="csv-file"
+                    type="file"
+                    accept=".csv"
+                    onChange={(e) => setImportFile(e.target.files?.[0] || null)}
+                    className="hidden"
+                  />
+                  
+                  {importFile ? (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-center text-green-600">
+                        <FileUp className="h-8 w-8 mr-2" />
+                        <span className="font-medium">{importFile.name}</span>
+                      </div>
+                      <p className="text-sm text-gray-600">
+                        Tamaño: {(importFile.size / 1024).toFixed(2)} KB
+                      </p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => document.getElementById('csv-file')?.click()}
+                      >
+                        Cambiar archivo
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-center text-gray-400">
+                        <FileUp className="h-8 w-8 mr-2" />
+                        <span>Arrastra tu archivo CSV aquí</span>
+                      </div>
+                      <Button
+                        variant="outline"
+                        onClick={() => document.getElementById('csv-file')?.click()}
+                      >
+                        Seleccionar archivo
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Información importante */}
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <h3 className="font-semibold text-yellow-900 mb-2">⚠️ Información Importante</h3>
+                <ul className="text-sm text-yellow-800 space-y-1">
+                  <li>• El archivo debe estar en formato CSV con codificación UTF-8</li>
+                  <li>• Los campos obligatorios son: nombre_común y nombre_científico</li>
+                  <li>• Las categorías válidas son: aves, mamiferos, insectos, vida_acuatica</li>
+                  <li>• Los valores booleanos se escriben como: true/false, sí/no, 1/0</li>
+                  <li>• Si hay errores, se mostrará un reporte detallado</li>
+                </ul>
+              </div>
+
+              {/* Botones de acción */}
+              <div className="flex justify-end gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setIsImportDialogOpen(false);
+                    setImportFile(null);
+                  }}
+                  disabled={isImporting}
+                >
+                  Cancelar
+                </Button>
+                <Button 
+                  onClick={handleImportCSV}
+                  disabled={!importFile || isImporting}
+                >
+                  {isImporting ? (
+                    <>
+                      <div className="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full"></div>
+                      Importando...
+                    </>
+                  ) : (
+                    <>
+                      <FileUp className="h-4 w-4 mr-2" />
+                      Importar Especies
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
           </DialogContent>
         </Dialog>
 

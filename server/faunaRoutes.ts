@@ -3,6 +3,7 @@ import { z } from 'zod';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import Papa from 'papaparse';
 import { db } from './db';
 import { faunaSpecies, insertFaunaSpeciesSchema } from '../shared/schema';
 import { eq, like, desc, asc, count } from 'drizzle-orm';
@@ -312,6 +313,194 @@ router.get('/stats', async (req, res) => {
     res.status(500).json({ 
       success: false, 
       error: 'Error al obtener estadísticas de fauna' 
+    });
+  }
+});
+
+// Ruta para importar CSV de fauna
+router.post('/import-csv', upload.single('csvFile'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        error: 'No se proporcionó ningún archivo CSV'
+      });
+    }
+
+    // Verificar que sea un archivo CSV
+    if (!req.file.originalname.toLowerCase().endsWith('.csv')) {
+      return res.status(400).json({
+        success: false,
+        error: 'El archivo debe ser de formato CSV'
+      });
+    }
+
+    // fs y Papa ya están importados al inicio del archivo
+    
+    // Leer el archivo CSV
+    const csvContent = fs.readFileSync(req.file.path, 'utf8');
+    
+    // Parsear CSV
+    const parseResult = Papa.parse(csvContent, {
+      header: true,
+      skipEmptyLines: true,
+      transformHeader: (header) => header.trim().toLowerCase()
+    });
+
+    if (parseResult.errors.length > 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Error al procesar el archivo CSV',
+        details: parseResult.errors
+      });
+    }
+
+    const data = parseResult.data;
+    const results = {
+      success: 0,
+      errors: [],
+      total: data.length
+    };
+
+    // Procesar cada fila
+    for (let i = 0; i < data.length; i++) {
+      const row = data[i];
+      
+      try {
+        // Mapear campos del CSV a la estructura de la base de datos
+        const speciesData = {
+          commonName: row['nombre_común'] || row['nombre_comun'] || row['common_name'] || '',
+          scientificName: row['nombre_científico'] || row['nombre_cientifico'] || row['scientific_name'] || '',
+          family: row['familia'] || row['family'] || '',
+          category: mapCategory(row['categoría'] || row['categoria'] || row['category'] || ''),
+          habitat: row['hábitat'] || row['habitat'] || '',
+          description: row['descripción'] || row['descripcion'] || row['description'] || '',
+          conservationStatus: mapConservationStatus(row['estado_conservación'] || row['estado_conservacion'] || row['conservation_status'] || ''),
+          sizeCm: parseFloat(row['tamaño_cm'] || row['size_cm'] || '0') || null,
+          weightGrams: parseFloat(row['peso_gramos'] || row['weight_grams'] || '0') || null,
+          lifespan: parseInt(row['esperanza_vida'] || row['lifespan'] || '0') || null,
+          diet: row['dieta'] || row['diet'] || '',
+          behavior: row['comportamiento'] || row['behavior'] || '',
+          ecologicalImportance: row['importancia_ecológica'] || row['importancia_ecologica'] || row['ecological_importance'] || '',
+          threats: row['amenazas'] || row['threats'] || '',
+          observationTips: row['consejos_observación'] || row['consejos_observacion'] || row['observation_tips'] || '',
+          photoUrl: row['foto_url'] || row['photo_url'] || '',
+          isEndangered: parseBooleanValue(row['en_peligro'] || row['is_endangered'] || 'false'),
+          isNocturnal: parseBooleanValue(row['nocturno'] || row['is_nocturnal'] || 'false'),
+          isMigratory: parseBooleanValue(row['migratorio'] || row['is_migratory'] || 'false'),
+          iconType: 'default'
+        };
+
+        // Validar campos requeridos
+        if (!speciesData.commonName || !speciesData.scientificName) {
+          results.errors.push({
+            row: i + 1,
+            error: 'Nombre común y nombre científico son obligatorios',
+            data: row
+          });
+          continue;
+        }
+
+        // Insertar en la base de datos
+        await db.insert(faunaSpecies).values(speciesData);
+        results.success++;
+
+      } catch (error) {
+        console.error(`Error procesando fila ${i + 1}:`, error);
+        results.errors.push({
+          row: i + 1,
+          error: error.message || 'Error desconocido',
+          data: row
+        });
+      }
+    }
+
+    // Limpiar archivo temporal
+    fs.unlinkSync(req.file.path);
+
+    res.json({
+      success: true,
+      message: `Importación completada. ${results.success} especies importadas de ${results.total} registros.`,
+      results
+    });
+
+  } catch (error) {
+    console.error('Error en importación CSV:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error interno del servidor durante la importación'
+    });
+  }
+});
+
+// Funciones auxiliares para mapeo de datos
+function mapCategory(category) {
+  const categoryMap = {
+    'ave': 'aves',
+    'aves': 'aves',
+    'bird': 'aves',
+    'birds': 'aves',
+    'mamífero': 'mamiferos',
+    'mamifero': 'mamiferos',
+    'mamíferos': 'mamiferos',
+    'mamiferos': 'mamiferos',
+    'mammal': 'mamiferos',
+    'mammals': 'mamiferos',
+    'insecto': 'insectos',
+    'insectos': 'insectos',
+    'insect': 'insectos',
+    'insects': 'insectos',
+    'vida_acuática': 'vida_acuatica',
+    'vida_acuatica': 'vida_acuatica',
+    'acuática': 'vida_acuatica',
+    'acuatica': 'vida_acuatica',
+    'aquatic': 'vida_acuatica',
+    'water_life': 'vida_acuatica'
+  };
+  return categoryMap[category.toLowerCase()] || 'aves';
+}
+
+function mapConservationStatus(status) {
+  const statusMap = {
+    'estable': 'estable',
+    'stable': 'estable',
+    'vulnerable': 'vulnerable',
+    'en_peligro': 'en_peligro',
+    'en peligro': 'en_peligro',
+    'endangered': 'en_peligro',
+    'en_peligro_crítico': 'en_peligro_critico',
+    'en_peligro_critico': 'en_peligro_critico',
+    'peligro_crítico': 'en_peligro_critico',
+    'peligro_critico': 'en_peligro_critico',
+    'critically_endangered': 'en_peligro_critico',
+    'extinto_local': 'extinto_local',
+    'extinto local': 'extinto_local',
+    'locally_extinct': 'extinto_local'
+  };
+  return statusMap[status.toLowerCase()] || 'estable';
+}
+
+function parseBooleanValue(value) {
+  const trueValues = ['true', '1', 'sí', 'si', 'yes', 'verdadero', 'cierto'];
+  return trueValues.includes(value.toLowerCase());
+}
+
+// Ruta para descargar plantilla CSV
+router.get('/csv-template', (req, res) => {
+  try {
+    const csvTemplate = `nombre_común,nombre_científico,familia,categoría,hábitat,descripción,estado_conservación,tamaño_cm,peso_gramos,esperanza_vida,dieta,comportamiento,importancia_ecológica,amenazas,consejos_observación,foto_url,en_peligro,nocturno,migratorio
+Cardenal Rojo,Cardinalis cardinalis,Cardinalidae,aves,Bosques y jardines,Ave cantora de color rojo brillante,estable,21,45,4,Semillas e insectos,Territorial y social,Dispersor de semillas,Pérdida de hábitat,Observar en comederos al amanecer,,false,false,false
+Ardilla Gris,Sciurus carolinensis,Sciuridae,mamiferos,Parques urbanos,Pequeño roedor arbóreo muy ágil,estable,25,500,6,Nueces y bellotas,Activo durante el día,Control de plagas,Tráfico vehicular,Buscar en árboles de roble,https://ejemplo.com/ardilla.jpg,false,false,false`;
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="plantilla_fauna_especies.csv"');
+    res.send('\uFEFF' + csvTemplate); // BOM para UTF-8
+    
+  } catch (error) {
+    console.error('Error generando plantilla CSV:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error al generar plantilla CSV'
     });
   }
 });
