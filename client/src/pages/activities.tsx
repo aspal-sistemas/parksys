@@ -491,15 +491,7 @@ function ActivitiesPage() {
         </div>
       </section>
 
-      {/* Banner Publicitario - Ancho completo independiente */}
-      <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] py-8">
-        <AdSpace 
-          spaceId="34" 
-          position="banner" 
-          pageType="activities" 
-          className="w-full"
-        />
-      </div>
+
 
       {/* Contenido Principal */}
       <section className="max-w-7xl mx-auto px-4 py-2">
