@@ -649,68 +649,122 @@ function ActivitiesPage() {
 
       {/* Calendario de Eventos */}
       <section className="max-w-7xl mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           
           {/* Calendario de Eventos */}
           <Card className="p-0 overflow-hidden">
             <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6">
               <div className="flex items-center gap-3">
                 <Calendar className="h-6 w-6" />
-                <h3 className="text-xl font-semibold">Próximos Eventos</h3>
+                <h3 className="text-xl font-semibold">Próximos Eventos del Mes</h3>
               </div>
-              <p className="mt-2 text-blue-100">No te pierdas nuestras actividades</p>
+              <p className="mt-2 text-blue-100">Actividades y eventos programados para este mes</p>
             </div>
             <CardContent className="p-6">
               <div className="space-y-4">
-                {[
-                  { 
-                    date: '15 Ago', 
-                    title: 'Yoga al Amanecer', 
-                    park: 'Parque Colomos',
-                    time: '6:00 AM',
-                    spots: 20
-                  },
-                  { 
-                    date: '18 Ago', 
-                    title: 'Taller de Jardinería', 
-                    park: 'Parque Revolución',
-                    time: '10:00 AM',
-                    spots: 15
-                  },
-                  { 
-                    date: '22 Ago', 
-                    title: 'Concierto al Aire Libre', 
-                    park: 'Parque Metropolitano',
-                    time: '7:00 PM',
-                    spots: 100
-                  },
-                  { 
-                    date: '25 Ago', 
-                    title: 'Clase de Baile', 
-                    park: 'Parque Agua Azul',
-                    time: '5:00 PM',
-                    spots: 30
-                  }
-                ].map((event, index) => (
-                  <div key={index} className="flex items-start gap-4 p-4 hover:bg-gray-50 rounded-lg transition-colors border border-gray-100">
-                    <div className="bg-blue-100 text-blue-800 px-3 py-2 rounded-lg text-center min-w-fit">
-                      <div className="text-sm font-bold">{event.date}</div>
-                      <div className="text-xs">{event.time}</div>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold text-gray-900 mb-1">{event.title}</h4>
-                      <p className="text-sm text-gray-600 mb-2">{event.park}</p>
-                      <div className="flex items-center gap-2">
-                        <Users className="h-4 w-4 text-gray-400" />
-                        <span className="text-xs text-gray-500">{event.spots} lugares disponibles</span>
+                {currentActivities
+                  .filter(activity => {
+                    const startDate = new Date(activity.startDate);
+                    const currentDate = new Date();
+                    return startDate.getMonth() === currentDate.getMonth() && 
+                           startDate.getFullYear() === currentDate.getFullYear() &&
+                           startDate >= currentDate; // Solo eventos futuros
+                  })
+                  .slice(0, 4) // Limitar a 4 eventos
+                  .map((activity) => {
+                    const startDate = new Date(activity.startDate);
+                    const parkData = parksData.find(p => p.id === activity.parkId);
+                    
+                    return (
+                      <div key={activity.id} className="flex items-center gap-4 p-4 hover:bg-gray-50 rounded-lg transition-colors border border-gray-100">
+                        {/* Imagen de la actividad */}
+                        <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
+                          {activity.images && activity.images.length > 0 ? (
+                            <img 
+                              src={activity.images[0].imageUrl} 
+                              alt={activity.images[0].altText || activity.title}
+                              className="w-full h-full object-cover"
+                              loading="lazy"
+                            />
+                          ) : activity.imageUrl ? (
+                            <img 
+                              src={activity.imageUrl} 
+                              alt={activity.imageCaption || activity.title}
+                              className="w-full h-full object-cover"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <div className="bg-gradient-to-br from-green-100 to-blue-100 w-full h-full flex items-center justify-center">
+                              <Activity className="h-8 w-8 text-green-600/50" />
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Fecha y hora */}
+                        <div className="bg-blue-100 text-blue-800 px-3 py-2 rounded-lg text-center min-w-fit">
+                          <div className="text-sm font-bold">
+                            {format(startDate, 'dd MMM', { locale: es })}
+                          </div>
+                          <div className="text-xs">
+                            {format(startDate, 'HH:mm', { locale: es })}
+                          </div>
+                        </div>
+                        
+                        {/* Información del evento */}
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold text-gray-900 mb-1 line-clamp-1">{activity.title}</h4>
+                          <div className="flex items-center gap-2 mb-2">
+                            <MapPin className="h-3 w-3 text-green-600" />
+                            <p className="text-sm text-gray-600 truncate">{parkData?.name || 'Parque'}</p>
+                          </div>
+                          {activity.category && (
+                            <Badge className={`${categoryColors[activity.category as keyof typeof categoryColors] || 'bg-gray-100 text-gray-800 border-gray-200'} text-xs`}>
+                              {activity.category}
+                            </Badge>
+                          )}
+                        </div>
+                        
+                        {/* Botón de acción */}
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          className="ml-auto"
+                          onClick={() => window.open(`/activity/${activity.id}`, '_blank')}
+                        >
+                          Ver detalle
+                          <ExternalLink className="h-3 w-3 ml-1" />
+                        </Button>
                       </div>
-                    </div>
+                    );
+                  })}
+                
+                {/* Mensaje si no hay eventos del mes */}
+                {currentActivities.filter(activity => {
+                  const startDate = new Date(activity.startDate);
+                  const currentDate = new Date();
+                  return startDate.getMonth() === currentDate.getMonth() && 
+                         startDate.getFullYear() === currentDate.getFullYear() &&
+                         startDate >= currentDate;
+                }).length === 0 && (
+                  <div className="text-center py-8">
+                    <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                    <h4 className="text-lg font-semibold text-gray-700 mb-2">No hay eventos próximos este mes</h4>
+                    <p className="text-gray-500">Mantente atento a nuestras próximas actividades</p>
                   </div>
-                ))}
+                )}
               </div>
-              <Button className="w-full mt-6 bg-blue-600 hover:bg-blue-700">
-                Ver todos los eventos
-              </Button>
+              
+              {currentActivities.filter(activity => {
+                const startDate = new Date(activity.startDate);
+                const currentDate = new Date();
+                return startDate.getMonth() === currentDate.getMonth() && 
+                       startDate.getFullYear() === currentDate.getFullYear() &&
+                       startDate >= currentDate;
+              }).length > 0 && (
+                <Button className="w-full mt-6 bg-blue-600 hover:bg-blue-700">
+                  Ver todos los eventos del mes
+                </Button>
+              )}
             </CardContent>
           </Card>
         </div>
