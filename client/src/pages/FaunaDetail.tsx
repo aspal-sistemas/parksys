@@ -26,6 +26,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PublicLayout from '@/components/PublicLayout';
+import AdSpace from '@/components/AdSpace';
 
 interface FaunaSpecies {
   id: number;
@@ -135,351 +136,380 @@ export default function FaunaDetail() {
 
   return (
     <PublicLayout>
-      <div className="min-h-screen bg-gray-50">
-        {/* Header with gradient background */}
-        <div className={`bg-gradient-to-r ${config.gradient} py-12 relative overflow-hidden`}>
-          <div className="absolute inset-0 bg-black bg-opacity-20"></div>
-          <div className="relative max-w-7xl mx-auto px-4">
+      <div className="bg-gradient-to-br from-blue-50 to-green-50 min-h-screen">
+        {/* Botón de regreso */}
+        <div className="bg-white border-b">
+          <div className="max-w-7xl mx-auto px-4 py-4">
             <Link href="/fauna">
-              <Button variant="outline" className="mb-6 bg-white/90 hover:bg-white">
-                <ArrowLeft className="h-4 w-4 mr-2" />
+              <Button
+                variant="ghost"
+                className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+              >
+                <ArrowLeft className="h-4 w-4" />
                 Volver a Fauna
               </Button>
             </Link>
-            
-            <div className="flex flex-col lg:flex-row items-start gap-8">
-              <div className="flex-1 text-white">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="p-3 bg-white/20 rounded-full">
-                    <IconComponent className="h-8 w-8 text-white" />
-                  </div>
-                  <Badge className={`${config.bg} ${config.text} text-sm`}>
-                    {species.category}
-                  </Badge>
-                  {species.isEndangered && (
-                    <Badge className="bg-red-500 text-white">
-                      <Shield className="h-3 w-3 mr-1" />
-                      Protegida
-                    </Badge>
-                  )}
-                </div>
-                
-                <h1 className="text-4xl font-bold mb-2">
-                  {species.commonName}
-                </h1>
-                <p className="text-xl italic text-white/90 mb-4">
-                  {species.scientificName}
-                </p>
-                <p className="text-lg text-white/80 mb-6">
-                  Familia: {species.family}
-                </p>
-                
-                <div className="flex items-center gap-4">
-                  <Badge className={`${conservationConfig.bg} ${conservationConfig.text} px-4 py-2 text-sm`}>
-                    Estado: {conservationConfig.label}
-                  </Badge>
-                  {species.isNocturnal && (
-                    <Badge variant="outline" className="bg-white/20 text-white border-white/30">
-                      Nocturno
-                    </Badge>
-                  )}
-                  {species.isMigratory && (
-                    <Badge variant="outline" className="bg-white/20 text-white border-white/30">
-                      Migratorio
-                    </Badge>
-                  )}
-                </div>
-              </div>
-              
-              {/* Imagen principal */}
-              <div className="relative">
-                {species.photoUrl || species.imageUrl ? (
-                  <div className="relative">
-                    <img
-                      src={species.photoUrl || species.imageUrl}
-                      alt={species.commonName}
-                      className="w-80 h-80 rounded-lg object-cover shadow-xl border-4 border-white/20"
-                    />
-                    {species.photoCaption && (
-                      <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white p-2 rounded-b-lg text-sm">
-                        <Camera className="h-4 w-4 inline mr-1" />
-                        {species.photoCaption}
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="w-80 h-80 bg-white/20 rounded-lg flex items-center justify-center">
-                    <IconComponent className="h-24 w-24 text-white/60" />
-                  </div>
-                )}
-              </div>
-            </div>
           </div>
         </div>
 
+        {/* Imagen principal */}
+        <section className="bg-white">
+          <div className="max-w-7xl mx-auto">
+            <div className="aspect-video relative overflow-hidden">
+              <img
+                src={species.imageUrl || species.photoUrl || '/images/default-fauna.jpg'}
+                alt={species.commonName}
+                className="w-full h-full object-cover bg-gray-100"
+              />
+              <div className="absolute inset-0 bg-black/20"></div>
+              
+              {/* Información superpuesta */}
+              <div className="absolute bottom-8 left-8">
+                <div className="bg-white/90 backdrop-blur-sm rounded-lg p-6">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="p-2 bg-white/20 rounded-full">
+                      <IconComponent className="h-6 w-6 text-gray-700" />
+                    </div>
+                    <Badge className={`${config.bg} ${config.text} text-sm`}>
+                      {species.category.charAt(0).toUpperCase() + species.category.slice(1)}
+                    </Badge>
+                    <Badge className={`${conservationConfig.bg} ${conservationConfig.text} text-sm`}>
+                      <Shield className="h-3 w-3 mr-1" />
+                      {conservationConfig.label}
+                    </Badge>
+                  </div>
+                  <h1 className="text-3xl font-bold text-gray-900 mb-1">{species.commonName}</h1>
+                  <p className="text-lg italic text-gray-600 mb-2">{species.scientificName}</p>
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <Leaf className="h-4 w-4" />
+                    <span>Familia: {species.family}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Contenido principal */}
         <div className="max-w-7xl mx-auto px-4 py-8">
-          <Tabs defaultValue="general" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="general">Información General</TabsTrigger>
-              <TabsTrigger value="habitat">Hábitat y Comportamiento</TabsTrigger>
-              <TabsTrigger value="conservation">Conservación</TabsTrigger>
-              <TabsTrigger value="observation">Observación</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="general" className="mt-8">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Descripción */}
-                {species.description && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Info className="h-5 w-5" />
-                        Descripción
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-gray-700 leading-relaxed">
-                        {species.description}
-                      </p>
-                    </CardContent>
-                  </Card>
-                )}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Columna principal */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Información básica */}
+              <Card>
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <CardTitle className="text-2xl mb-2">{species.commonName}</CardTitle>
+                      <p className="text-lg italic text-gray-600 mb-3">{species.scientificName}</p>
+                      <div className="flex items-center gap-2 mb-3">
+                        <Badge className={`${config.bg} ${config.text} border`}>
+                          <IconComponent className="h-3 w-3 mr-1" />
+                          {species.category.charAt(0).toUpperCase() + species.category.slice(1)}
+                        </Badge>
+                        <Badge className={`${conservationConfig.bg} ${conservationConfig.text}`}>
+                          <Shield className="h-3 w-3 mr-1" />
+                          {conservationConfig.label}
+                        </Badge>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-lg font-semibold text-gray-700 mb-1">
+                        Familia: {species.family}
+                      </div>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {species.description && (
+                    <p className="text-gray-700 mb-6 leading-relaxed">{species.description}</p>
+                  )}
+                  
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+                    {species.sizeCm && (
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <Eye className="h-4 w-4 text-blue-600" />
+                        <div>
+                          <div className="font-medium">Tamaño</div>
+                          <div>{species.sizeCm}</div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {species.weightGrams && (
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <Star className="h-4 w-4 text-purple-600" />
+                        <div>
+                          <div className="font-medium">Peso</div>
+                          <div>{species.weightGrams}</div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {species.lifespan && (
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <Clock className="h-4 w-4 text-green-600" />
+                        <div>
+                          <div className="font-medium">Longevidad</div>
+                          <div>{species.lifespan} años</div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {species.habitat && (
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <MapPin className="h-4 w-4 text-red-600" />
+                        <div>
+                          <div className="font-medium">Hábitat</div>
+                          <div>{species.habitat}</div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
 
-                {/* Características físicas */}
+                  {(species.isNocturnal || species.isMigratory || species.isEndangered) && (
+                    <div className="flex flex-wrap gap-2 mt-4">
+                      {species.isNocturnal && (
+                        <Badge variant="secondary" className="bg-purple-100 text-purple-800">
+                          <Clock className="h-3 w-3 mr-1" />
+                          Nocturno
+                        </Badge>
+                      )}
+                      {species.isMigratory && (
+                        <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                          <Calendar className="h-3 w-3 mr-1" />
+                          Migratorio
+                        </Badge>
+                      )}
+                      {species.isEndangered && (
+                        <Badge variant="secondary" className="bg-red-100 text-red-800">
+                          <AlertTriangle className="h-3 w-3 mr-1" />
+                          Protegida
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Comportamiento y Dieta */}
+              {(species.behavior || species.diet) && (
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Star className="h-5 w-5" />
-                      Características Físicas
+                      <Eye className="h-5 w-5 text-blue-600" />
+                      Comportamiento y Alimentación
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    {species.sizeCm && (
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-600">Tamaño:</span>
-                        <span className="font-semibold">{species.sizeCm} cm</span>
-                      </div>
-                    )}
-                    {species.weightGrams && (
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-600">Peso:</span>
-                        <span className="font-semibold">{species.weightGrams} g</span>
-                      </div>
-                    )}
-                    {species.lifespan && (
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-600">Esperanza de vida:</span>
-                        <span className="font-semibold">{species.lifespan} años</span>
-                      </div>
-                    )}
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Estado de conservación:</span>
-                      <Badge className={`${conservationConfig.bg} ${conservationConfig.text}`}>
-                        {conservationConfig.label}
-                      </Badge>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Alimentación y comportamiento */}
-                {(species.diet || species.behavior) && (
-                  <Card className="lg:col-span-2">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Leaf className="h-5 w-5" />
-                        Alimentación y Comportamiento
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      {species.diet && (
-                        <div>
-                          <h4 className="font-semibold text-gray-900 mb-2">Dieta:</h4>
-                          <p className="text-gray-700">{species.diet}</p>
-                        </div>
-                      )}
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {species.behavior && (
                         <div>
-                          <h4 className="font-semibold text-gray-900 mb-2">Comportamiento:</h4>
-                          <p className="text-gray-700">{species.behavior}</p>
+                          <h4 className="font-medium text-gray-900 mb-2">Comportamiento</h4>
+                          <p className="text-gray-700 text-sm leading-relaxed">{species.behavior}</p>
                         </div>
                       )}
-                      {species.reproductionPeriod && (
+                      {species.diet && (
                         <div>
-                          <h4 className="font-semibold text-gray-900 mb-2">Período de reproducción:</h4>
-                          <p className="text-gray-700">{species.reproductionPeriod}</p>
+                          <h4 className="font-medium text-gray-900 mb-2">Alimentación</h4>
+                          <p className="text-gray-700 text-sm leading-relaxed">{species.diet}</p>
                         </div>
                       )}
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="habitat" className="mt-8">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {species.habitat && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <MapPin className="h-5 w-5" />
-                        Hábitat
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-gray-700 leading-relaxed">
-                        {species.habitat}
-                      </p>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {species.ecologicalImportance && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Heart className="h-5 w-5" />
-                        Importancia Ecológica
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-gray-700 leading-relaxed">
-                        {species.ecologicalImportance}
-                      </p>
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="conservation" className="mt-8">
-              <div className="space-y-6">
-                <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-blue-50 to-green-50 rounded-lg border border-blue-200">
-                  <div className={`p-3 rounded-full ${conservationConfig.bg}`}>
-                    <Shield className={`h-6 w-6 ${conservationConfig.text}`} />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900">
-                      Estado de Conservación: {conservationConfig.label}
-                    </h3>
-                    <p className="text-gray-600">
-                      {species.isEndangered 
-                        ? 'Esta especie está en peligro y requiere protección especial.'
-                        : 'Esta especie cuenta con poblaciones estables en la región.'}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  {species.threats && (
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-orange-700">
-                          <AlertTriangle className="h-5 w-5" />
-                          Amenazas
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-gray-700 leading-relaxed">
-                          {species.threats}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  )}
-
-                  {species.protectionMeasures && (
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-green-700">
-                          <Shield className="h-5 w-5" />
-                          Medidas de Protección
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-gray-700 leading-relaxed">
-                          {species.protectionMeasures}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  )}
-                </div>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="observation" className="mt-8">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {species.observationTips && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Eye className="h-5 w-5" />
-                        Consejos de Observación
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-gray-700 leading-relaxed mb-4">
-                        {species.observationTips}
-                      </p>
-                      
-                      {species.bestObservationTime && (
-                        <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Clock className="h-4 w-4 text-blue-600" />
-                            <span className="font-semibold text-blue-900">Mejor momento:</span>
-                          </div>
-                          <p className="text-blue-800 text-sm">
-                            {species.bestObservationTime}
-                          </p>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                )}
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Calendar className="h-5 w-5" />
-                      Información de Actividad
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Actividad:</span>
-                      <Badge variant={species.isNocturnal ? "secondary" : "default"}>
-                        {species.isNocturnal ? 'Nocturno' : 'Diurno'}
-                      </Badge>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Patrón migratorio:</span>
-                      <Badge variant={species.isMigratory ? "secondary" : "outline"}>
-                        {species.isMigratory ? 'Migratorio' : 'Residente'}
-                      </Badge>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Categoría:</span>
-                      <Badge className={`${config.bg} ${config.text}`}>
-                        {species.category}
-                      </Badge>
                     </div>
                   </CardContent>
                 </Card>
-              </div>
-            </TabsContent>
-          </Tabs>
+              )}
 
-          {/* Botones de acción */}
-          <div className="flex justify-center gap-4 mt-12 pt-8 border-t">
-            <Link href="/fauna">
-              <Button variant="outline" size="lg">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Volver a Fauna
-              </Button>
-            </Link>
-            <Button size="lg" className="bg-gradient-to-r from-blue-600 to-green-600 text-white">
-              <Shield className="h-4 w-4 mr-2" />
-              Reportar Avistamiento
-            </Button>
+              {/* Reproducción y Ecología */}
+              {(species.reproductionPeriod || species.ecologicalImportance) && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Heart className="h-5 w-5 text-green-600" />
+                      Reproducción e Importancia Ecológica
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {species.reproductionPeriod && (
+                        <div>
+                          <h4 className="font-medium text-gray-900 mb-2">Periodo Reproductivo</h4>
+                          <p className="text-gray-700 text-sm leading-relaxed">{species.reproductionPeriod}</p>
+                        </div>
+                      )}
+                      {species.ecologicalImportance && (
+                        <div>
+                          <h4 className="font-medium text-gray-900 mb-2">Importancia Ecológica</h4>
+                          <p className="text-gray-700 text-sm leading-relaxed">{species.ecologicalImportance}</p>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Conservación */}
+              {(species.threats || species.protectionMeasures) && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Shield className="h-5 w-5 text-red-600" />
+                      Estado de Conservación
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {species.threats && (
+                        <div>
+                          <h4 className="font-medium text-gray-900 mb-2">Amenazas</h4>
+                          <p className="text-gray-700 text-sm leading-relaxed">{species.threats}</p>
+                        </div>
+                      )}
+                      {species.protectionMeasures && (
+                        <div>
+                          <h4 className="font-medium text-gray-900 mb-2">Medidas de Protección</h4>
+                          <p className="text-gray-700 text-sm leading-relaxed">{species.protectionMeasures}</p>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Observación */}
+              {(species.observationTips || species.bestObservationTime) && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Camera className="h-5 w-5 text-blue-600" />
+                      Guía de Observación
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {species.observationTips && (
+                        <div>
+                          <h4 className="font-medium text-gray-900 mb-2">Consejos de Observación</h4>
+                          <p className="text-gray-700 text-sm leading-relaxed">{species.observationTips}</p>
+                        </div>
+                      )}
+                      {species.bestObservationTime && (
+                        <div>
+                          <h4 className="font-medium text-gray-900 mb-2">Mejor Horario</h4>
+                          <p className="text-gray-700 text-sm leading-relaxed">{species.bestObservationTime}</p>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+
+            {/* Sidebar */}
+            <div className="space-y-6">
+              {/* Datos rápidos */}
+              <Card className="sticky top-4">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Info className="h-5 w-5 text-blue-600" />
+                    Datos Principales
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4 text-sm">
+                    <div className="text-center p-4 bg-blue-50 rounded-lg">
+                      <Badge className={`${conservationConfig.bg} ${conservationConfig.text} mb-2`}>
+                        {conservationConfig.label}
+                      </Badge>
+                      <div className="text-xs text-gray-600">Estado de conservación</div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="flex justify-between">
+                        <span className="font-medium text-gray-600">Categoría:</span>
+                        <span className="text-gray-900">{species.category.charAt(0).toUpperCase() + species.category.slice(1)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="font-medium text-gray-600">Familia:</span>
+                        <span className="text-gray-900">{species.family}</span>
+                      </div>
+                      {species.sizeCm && (
+                        <div className="flex justify-between">
+                          <span className="font-medium text-gray-600">Tamaño:</span>
+                          <span className="text-gray-900">{species.sizeCm}</span>
+                        </div>
+                      )}
+                      {species.weightGrams && (
+                        <div className="flex justify-between">
+                          <span className="font-medium text-gray-600">Peso:</span>
+                          <span className="text-gray-900">{species.weightGrams}</span>
+                        </div>
+                      )}
+                      {species.lifespan && (
+                        <div className="flex justify-between">
+                          <span className="font-medium text-gray-600">Longevidad:</span>
+                          <span className="text-gray-900">{species.lifespan} años</span>
+                        </div>
+                      )}
+                      {species.habitat && (
+                        <div className="flex justify-between">
+                          <span className="font-medium text-gray-600">Hábitat:</span>
+                          <span className="text-gray-900">{species.habitat}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {(species.isNocturnal || species.isMigratory || species.isEndangered) && (
+                      <>
+                        <Separator />
+                        <div className="space-y-2">
+                          {species.isNocturnal && (
+                            <div className="flex items-center gap-2 text-purple-600">
+                              <Clock className="h-4 w-4" />
+                              <span>Actividad nocturna</span>
+                            </div>
+                          )}
+                          {species.isMigratory && (
+                            <div className="flex items-center gap-2 text-blue-600">
+                              <Calendar className="h-4 w-4" />
+                              <span>Especie migratoria</span>
+                            </div>
+                          )}
+                          {species.isEndangered && (
+                            <div className="flex items-center gap-2 text-red-600">
+                              <AlertTriangle className="h-4 w-4" />
+                              <span>Bajo protección</span>
+                            </div>
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Llamada a la acción */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Camera className="h-5 w-5 text-green-600" />
+                    ¿La has visto?
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Ayúdanos a documentar la biodiversidad urbana reportando tus avistamientos.
+                  </p>
+                  <Button className="w-full bg-green-600 hover:bg-green-700 text-white">
+                    <Camera className="h-4 w-4 mr-2" />
+                    Reportar Avistamiento
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Publicidad lateral */}
+              <AdSpace placementId={37} />
+            </div>
           </div>
         </div>
       </div>
