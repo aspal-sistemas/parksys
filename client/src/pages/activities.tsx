@@ -411,68 +411,70 @@ function ActivitiesPage() {
       </section>
 
       {/* Filtros */}
-      <section className="sticky top-0 z-10 bg-white/90 backdrop-blur-sm border-b border-gray-200 shadow-sm">
+      <section className="sticky top-0 z-10 bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
-            <div className="flex-1 max-w-md">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Buscar actividades..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 border-gray-200 focus:border-green-400 focus:ring-green-400"
-                />
+          <div className="bg-green-800 rounded-lg border border-green-700 shadow-sm p-4">
+            <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
+              <div className="flex-1 max-w-md">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-green-300" />
+                  <Input
+                    placeholder="Buscar actividades..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 bg-white/90 border-green-600 focus:border-green-400 focus:ring-green-400 placeholder-gray-600"
+                  />
+                </div>
               </div>
-            </div>
-            
-            <div className="flex items-center gap-3">
-              <Select value={filterPark} onValueChange={setFilterPark}>
-                <SelectTrigger className="w-48 border-gray-200">
-                  <Filter className="h-4 w-4 mr-2" />
-                  <SelectValue placeholder="Todos los parques" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos los parques</SelectItem>
-                  {parksData.map((park: any) => (
-                    <SelectItem key={park.id} value={park.id.toString()}>
-                      {park.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              
+              <div className="flex items-center gap-3">
+                <Select value={filterPark} onValueChange={setFilterPark}>
+                  <SelectTrigger className="w-48 bg-white/90 border-green-600 text-gray-800">
+                    <Filter className="h-4 w-4 mr-2 text-green-600" />
+                    <SelectValue placeholder="Todos los parques" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los parques</SelectItem>
+                    {parksData.map((park: any) => (
+                      <SelectItem key={park.id} value={park.id.toString()}>
+                        {park.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
-              <Select value={filterCategory} onValueChange={setFilterCategory}>
-                <SelectTrigger className="w-48 border-gray-200">
-                  <SelectValue placeholder="Todas las categorías" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas las categorías</SelectItem>
-                  {uniqueCategories.map((category) => (
-                    <SelectItem key={category} value={category}>
-                      {category}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                <Select value={filterCategory} onValueChange={setFilterCategory}>
+                  <SelectTrigger className="w-48 bg-white/90 border-green-600 text-gray-800">
+                    <SelectValue placeholder="Todas las categorías" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas las categorías</SelectItem>
+                    {uniqueCategories.map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
-              <div className="flex items-center border border-gray-200 rounded-md">
-                <Button
-                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewMode('grid')}
-                  className={viewMode === 'grid' ? 'bg-green-600 hover:bg-green-700' : ''}
-                >
-                  <Grid className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant={viewMode === 'list' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewMode('list')}
-                  className={viewMode === 'list' ? 'bg-green-600 hover:bg-green-700' : ''}
-                >
-                  <List className="h-4 w-4" />
-                </Button>
+                <div className="flex items-center border border-green-600 rounded-md bg-white/90">
+                  <Button
+                    variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('grid')}
+                    className={viewMode === 'grid' ? 'bg-green-600 hover:bg-green-700 text-white' : 'text-green-700 hover:bg-green-100'}
+                  >
+                    <Grid className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === 'list' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('list')}
+                    className={viewMode === 'list' ? 'bg-green-600 hover:bg-green-700 text-white' : 'text-green-700 hover:bg-green-100'}
+                  >
+                    <List className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
