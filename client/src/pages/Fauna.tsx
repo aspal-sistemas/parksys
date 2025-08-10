@@ -314,7 +314,7 @@ export default function Fauna() {
         {/* Hero Section con imagen */}
         <div className="relative h-96 overflow-hidden">
           <img 
-            src="/images/park-lake-bridge.jpg" 
+            src="/images/fauna-hero.jpg" 
             alt="Fauna urbana en parques de Guadalajara" 
             className="w-full h-full object-cover"
           />
