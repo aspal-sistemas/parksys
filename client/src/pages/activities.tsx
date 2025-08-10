@@ -110,35 +110,37 @@ function HorizontalActivityCard({ activity }: { activity: ActivityData }) {
           )}
           
           {/* Información superpuesta sobre la foto */}
-          <div className="absolute inset-0 bg-black bg-opacity-40 flex flex-col justify-end p-3">
-            <h3 className="font-semibold text-lg text-white mb-1 line-clamp-1 drop-shadow-lg">
-              {activity.title}
-            </h3>
-            <p className="text-gray-200 text-sm line-clamp-2 drop-shadow-lg">
-              {activity.description}
-            </p>
-            
-            {/* Precio */}
+          <div className="absolute inset-0 bg-black bg-opacity-40 flex flex-col justify-between p-3">
+            {/* Precio en la parte superior derecha */}
             {activity.price !== undefined && (
-              <div className="flex items-center gap-1 mt-2 text-white text-sm drop-shadow-lg">
-                <DollarSign className="h-4 w-4" />
-                <span className="font-medium">
-                  {activity.price > 0 ? `$${Number(activity.price).toLocaleString('es-MX')}` : 'Gratis'}
-                </span>
+              <div className="flex justify-end">
+                <div className="flex items-center gap-1 text-white text-sm drop-shadow-lg bg-black bg-opacity-30 px-2 py-1 rounded">
+                  <DollarSign className="h-4 w-4" />
+                  <span className="font-medium">
+                    {activity.price > 0 ? `$${Number(activity.price).toLocaleString('es-MX')}` : 'Gratis'}
+                  </span>
+                </div>
               </div>
             )}
+            
+            {/* Nombre en la parte inferior izquierda */}
+            <div className="flex justify-start">
+              <h3 className="font-semibold text-xl text-white line-clamp-2 drop-shadow-lg">
+                {activity.title}
+              </h3>
+            </div>
           </div>
         </div>
 
         {/* Información del parque - 1/4 restante */}
         <div className="w-1/4 p-3 bg-gray-50 flex flex-col justify-center">
-          <div className="text-center">
-            <MapPin className="h-6 w-6 text-green-600 mx-auto mb-2" />
-            <p className="text-sm font-medium text-gray-900 leading-tight">
+          <div className="text-right">
+            <MapPin className="h-6 w-6 text-green-600 ml-auto mb-2" />
+            <p className="text-base font-medium text-gray-900 leading-tight">
               {activity.parkName || 'Parque no especificado'}
             </p>
             {activity.location && (
-              <p className="text-xs text-gray-500 mt-1 leading-tight">
+              <p className="text-sm text-gray-500 mt-1 leading-tight">
                 {activity.location}
               </p>
             )}
