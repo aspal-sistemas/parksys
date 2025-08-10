@@ -33,6 +33,14 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { insertFaunaSpeciesSchema, type FaunaSpecies } from '@shared/schema';
+import { z } from 'zod';
+
+// Esquema específico para actualizaciones (permite campos adicionales como id, createdAt, etc.)
+const updateFaunaSpeciesSchema = insertFaunaSpeciesSchema.extend({
+  id: z.number().optional(),
+  createdAt: z.any().optional(),
+  updatedAt: z.any().optional()
+}).partial();
 import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
@@ -106,7 +114,7 @@ const FaunaSpeciesAdmin: React.FC = () => {
 
   // Formulario para crear/editar especies
   const form = useForm({
-    resolver: zodResolver(insertFaunaSpeciesSchema),
+    resolver: zodResolver(updateFaunaSpeciesSchema),
     defaultValues: {
       commonName: '',
       scientificName: '',
@@ -241,38 +249,42 @@ const FaunaSpeciesAdmin: React.FC = () => {
     
     if (selectedSpecies) {
       console.log('✅ Especie seleccionada encontrada, procesando actualización...');
+      
+      // Remover campos que no deben ser enviados (como id, createdAt, updatedAt)
+      const { id, createdAt, updatedAt, ...formData } = data;
+      
       // Filtrar y limpiar datos similares a handleCreate
       const cleanData = {
-        commonName: data.commonName,
-        scientificName: data.scientificName,
-        family: data.family,
-        category: data.category,
-        conservationStatus: data.conservationStatus || 'estable',
-        isNocturnal: data.isNocturnal || false,
-        isMigratory: data.isMigratory || false,
-        isEndangered: data.isEndangered || false,
-        commonLocations: data.commonLocations || [],
-        iconColor: data.iconColor || '#16a085',
-        iconType: data.iconType || 'system'
+        commonName: formData.commonName,
+        scientificName: formData.scientificName,
+        family: formData.family,
+        category: formData.category,
+        conservationStatus: formData.conservationStatus || 'estable',
+        isNocturnal: formData.isNocturnal || false,
+        isMigratory: formData.isMigratory || false,
+        isEndangered: formData.isEndangered || false,
+        commonLocations: formData.commonLocations || [],
+        iconColor: formData.iconColor || '#16a085',
+        iconType: formData.iconType || 'system'
       };
 
       // Añadir campos opcionales solo si tienen valor
-      if (data.habitat) cleanData.habitat = data.habitat;
-      if (data.description) cleanData.description = data.description;
-      if (data.behavior) cleanData.behavior = data.behavior;
-      if (data.diet) cleanData.diet = data.diet;
-      if (data.reproductionPeriod) cleanData.reproductionPeriod = data.reproductionPeriod;
-      if (data.sizeCm) cleanData.sizeCm = data.sizeCm;
-      if (data.weightGrams) cleanData.weightGrams = data.weightGrams;
-      if (data.lifespan) cleanData.lifespan = data.lifespan;
-      if (data.imageUrl) cleanData.imageUrl = data.imageUrl;
-      if (data.photoUrl) cleanData.photoUrl = data.photoUrl;
-      if (data.photoCaption) cleanData.photoCaption = data.photoCaption;
-      if (data.ecologicalImportance) cleanData.ecologicalImportance = data.ecologicalImportance;
-      if (data.threats) cleanData.threats = data.threats;
-      if (data.protectionMeasures) cleanData.protectionMeasures = data.protectionMeasures;
-      if (data.observationTips) cleanData.observationTips = data.observationTips;
-      if (data.bestObservationTime) cleanData.bestObservationTime = data.bestObservationTime;
+      if (formData.habitat) cleanData.habitat = formData.habitat;
+      if (formData.description) cleanData.description = formData.description;
+      if (formData.behavior) cleanData.behavior = formData.behavior;
+      if (formData.diet) cleanData.diet = formData.diet;
+      if (formData.reproductionPeriod) cleanData.reproductionPeriod = formData.reproductionPeriod;
+      if (formData.sizeCm) cleanData.sizeCm = formData.sizeCm;
+      if (formData.weightGrams) cleanData.weightGrams = formData.weightGrams;
+      if (formData.lifespan) cleanData.lifespan = formData.lifespan;
+      if (formData.imageUrl) cleanData.imageUrl = formData.imageUrl;
+      if (formData.photoUrl) cleanData.photoUrl = formData.photoUrl;
+      if (formData.photoCaption) cleanData.photoCaption = formData.photoCaption;
+      if (formData.ecologicalImportance) cleanData.ecologicalImportance = formData.ecologicalImportance;
+      if (formData.threats) cleanData.threats = formData.threats;
+      if (formData.protectionMeasures) cleanData.protectionMeasures = formData.protectionMeasures;
+      if (formData.observationTips) cleanData.observationTips = formData.observationTips;
+      if (formData.bestObservationTime) cleanData.bestObservationTime = formData.bestObservationTime;
       
       console.log('📋 Datos de actualización limpiados:', cleanData);
       console.log('🚀 Ejecutando mutación con ID:', selectedSpecies.id);
@@ -833,7 +845,11 @@ const FaunaSpeciesAdmin: React.FC = () => {
                 console.log('🔄 Form onSubmit ejecutándose');
                 console.log('📋 Form errors:', form.formState.errors);
                 console.log('📋 Form values:', form.getValues());
-                form.handleSubmit(handleUpdate)(e);
+                try {
+                  form.handleSubmit(handleUpdate)(e);
+                } catch (error) {
+                  console.error('❌ Error en handleSubmit:', error);
+                }
               }} className="space-y-4">
                 {/* Subida de Imagen */}
                 <div className="space-y-2">
@@ -972,7 +988,6 @@ const FaunaSpeciesAdmin: React.FC = () => {
                   <Button 
                     type="submit" 
                     disabled={updateMutation.isPending}
-                    onClick={() => console.log('🔄 Botón Actualizar Especie clickeado')}
                   >
                     {updateMutation.isPending ? 'Actualizando...' : 'Actualizar Especie'}
                   </Button>
