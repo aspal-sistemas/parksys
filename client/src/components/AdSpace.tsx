@@ -284,7 +284,7 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
     sidebar: 'w-full h-64 bg-white border border-gray-200 rounded-lg shadow-sm mb-6',
     profile: 'bg-white rounded-lg border shadow-sm p-4',
     footer: 'w-full tree-species-wide-container h-20 bg-white border border-gray-200 rounded-lg shadow-sm mt-6',
-    banner: 'w-full h-[200px] bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300',
+    banner: 'w-full h-[120px] bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300',
     card: 'bg-white rounded-lg border shadow-sm p-4',
     'sidebar-sports': 'bg-white rounded-lg border shadow-sm p-4',
     'sidebar-events': 'bg-white rounded-lg border shadow-sm p-4',
@@ -336,29 +336,17 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
             </div>
           </>
         ) : position === 'banner' ? (
-          // Layout específico para banner - contenido multimedia completo con texto superpuesto
+          // Layout específico para banner - contenido multimedia con solo título
           <div className="w-full h-full relative">
             {advertisement.imageUrl && renderMedia("w-full h-full object-cover")}
             {/* Overlay con gradiente para mejor legibilidad del texto */}
             <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent"></div>
-            {/* Texto superpuesto */}
-            <div className="absolute inset-0 flex items-center justify-start p-8">
-              <div className="text-white max-w-md">
-                <h3 className="text-2xl font-bold mb-2 drop-shadow-lg">
+            {/* Solo título superpuesto */}
+            <div className="absolute inset-0 flex items-center justify-start p-6">
+              <div className="text-white">
+                <h3 className="text-2xl font-bold drop-shadow-lg">
                   {advertisement.title}
                 </h3>
-                <p className="text-white/90 text-sm mb-4 drop-shadow-md line-clamp-3">
-                  {advertisement.description}
-                </p>
-                <button 
-                  className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white border border-white/30 py-2 px-6 rounded-lg transition-all duration-200 font-medium"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleAdClick(e);
-                  }}
-                >
-                  {advertisement.buttonText || 'Conocer más'}
-                </button>
               </div>
             </div>
           </div>
