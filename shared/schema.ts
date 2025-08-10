@@ -508,7 +508,7 @@ export const documents = pgTable("documents", {
   fileType: text("file_type").notNull(),
   fileSize: integer("file_size"),
   description: text("description"),
-  referenceUrl: text("reference_url"), // URL opcional de referencia
+  // referenceUrl: text("reference_url"), // URL opcional de referencia - Column doesn't exist in DB
   uploadedById: integer("uploaded_by_id"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow()
