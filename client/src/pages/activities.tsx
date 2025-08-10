@@ -82,7 +82,7 @@ function CarouselActivityCard({ activity, isCenter = false }: { activity: Activi
   
   return (
     <Card className={`group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 overflow-hidden border-0 shadow-sm h-full ${isCenter ? 'scale-105 shadow-md' : ''}`}>
-      {/* Imagen más grande - aspecto 4:3 */}
+      {/* Imagen con contenido superpuesto */}
       <div className={`${isCenter ? 'aspect-[3/2]' : 'aspect-[4/3]'} relative overflow-hidden`}>
         {activity.images && activity.images.length > 0 ? (
           <>
@@ -92,7 +92,7 @@ function CarouselActivityCard({ activity, isCenter = false }: { activity: Activi
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
               loading="lazy"
             />
-            <div className="absolute inset-0 bg-black/10"></div>
+            <div className="absolute inset-0 bg-black/20"></div>
           </>
         ) : activity.imageUrl ? (
           <>
@@ -102,7 +102,7 @@ function CarouselActivityCard({ activity, isCenter = false }: { activity: Activi
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
               loading="lazy"
             />
-            <div className="absolute inset-0 bg-black/10"></div>
+            <div className="absolute inset-0 bg-black/20"></div>
           </>
         ) : (
           <>
@@ -118,32 +118,31 @@ function CarouselActivityCard({ activity, isCenter = false }: { activity: Activi
             {activity.category}
           </Badge>
         </div>
-      </div>
-      
-      {/* Contenido simplificado */}
-      <div className="p-4 space-y-3">
-        {/* Título de la actividad */}
-        <h3 className="font-semibold text-lg text-gray-900 group-hover:text-green-600 transition-colors line-clamp-2 min-h-[3.5rem]">
-          {activity.title}
-        </h3>
         
-        {/* Parque */}
-        <div className="flex items-center gap-2 text-gray-600">
-          <MapPin className="h-4 w-4 text-green-600 flex-shrink-0" />
-          <span className="text-sm truncate">
-            {parksData.find(p => p.id === activity.parkId)?.name || 'Parque'}
-          </span>
+        {/* Contenido superpuesto con fondo semitransparente */}
+        <div className="absolute bottom-0 left-0 right-0 bg-white/80 backdrop-blur-sm p-4 space-y-2">
+          {/* Título de la actividad */}
+          <h3 className="font-semibold text-base text-gray-900 group-hover:text-green-600 transition-colors line-clamp-2">
+            {activity.title}
+          </h3>
+          
+          {/* Parque */}
+          <div className="flex items-center gap-2 text-gray-700">
+            <MapPin className="h-3 w-3 text-green-600 flex-shrink-0" />
+            <span className="text-xs truncate">
+              {parksData.find(p => p.id === activity.parkId)?.name || 'Parque'}
+            </span>
+          </div>
+          
+          {/* Botón Ver detalle más pequeño */}
+          <Button 
+            className="w-full bg-green-600 hover:bg-green-700 text-white h-7 text-xs px-3" 
+            onClick={() => window.open(`/activity/${activity.id}`, '_blank')}
+          >
+            Ver detalle
+            <ExternalLink className="h-2 w-2 ml-1" />
+          </Button>
         </div>
-        
-        {/* Botón Ver detalle */}
-        <Button 
-          className="w-full bg-green-600 hover:bg-green-700 text-white" 
-          size="sm"
-          onClick={() => window.open(`/activity/${activity.id}`, '_blank')}
-        >
-          Ver detalle
-          <ExternalLink className="h-3 w-3 ml-2" />
-        </Button>
       </div>
     </Card>
   );
@@ -591,7 +590,7 @@ function ActivitiesPage() {
             <div className="relative">
               {/* Contenedor del carrusel */}
               <div className="overflow-hidden">
-                <div className="flex gap-4">
+                <div className="flex gap-6">
                   {/* Siempre mostrar 3 elementos visibles */}
                   {[0, 1, 2].map((offset) => {
                     const activityIndex = carouselIndex + offset;
@@ -633,21 +632,6 @@ function ActivitiesPage() {
               >
                 <ChevronRight className="h-5 w-5" />
               </Button>
-
-              {/* Indicadores de página */}
-              <div className="flex justify-center mt-6 gap-2">
-                {Array.from({ length: Math.max(1, currentActivities.length - 2) }).map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setCarouselIndex(index)}
-                    className={`w-2 h-2 rounded-full transition-colors ${
-                      carouselIndex === index 
-                        ? 'bg-green-600' 
-                        : 'bg-gray-300 hover:bg-gray-400'
-                    }`}
-                  />
-                ))}
-              </div>
             </div>
           )}
         </div>
