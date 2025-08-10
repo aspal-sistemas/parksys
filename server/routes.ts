@@ -2953,20 +2953,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const parkId = Number(req.params.id);
       console.log(`🔍 POST /parks/${parkId}/documents - Request body:`, req.body);
+      console.log(`🔍 POST /parks/${parkId}/documents - Content-Type:`, req.headers['content-type']);
       
-      const documentData = { ...req.body, parkId };
+      let documentData;
       
-      // Asegurar que fileType esté presente para URLs externas
-      if (!documentData.fileType && documentData.fileUrl) {
-        // Inferir tipo de archivo de la URL
-        const url = documentData.fileUrl.toLowerCase();
-        if (url.includes('.pdf')) documentData.fileType = 'application/pdf';
-        else if (url.includes('.doc')) documentData.fileType = 'application/msword';
-        else if (url.includes('.xls')) documentData.fileType = 'application/vnd.ms-excel';
-        else documentData.fileType = 'application/octet-stream';
+      // Si es FormData (archivo subido), los datos están en req.body directamente
+      if (req.headers['content-type']?.includes('multipart/form-data')) {
+        documentData = {
+          parkId,
+          title: req.body.title,
+          description: req.body.description || '',
+          category: req.body.category || 'general',
+          fileUrl: req.file ? `/uploads/documents/${req.file.filename}` : '',
+          fileType: req.file ? req.file.mimetype : 'application/octet-stream'
+        };
+        console.log(`📎 FormData upload - File info:`, req.file);
+      } else {
+        // Si es JSON (URL externa)
+        documentData = { ...req.body, parkId };
+        
+        // Asegurar que fileType esté presente para URLs externas
+        if (!documentData.fileType && documentData.fileUrl) {
+          const url = documentData.fileUrl.toLowerCase();
+          if (url.includes('.pdf')) documentData.fileType = 'application/pdf';
+          else if (url.includes('.doc')) documentData.fileType = 'application/msword';
+          else if (url.includes('.xls')) documentData.fileType = 'application/vnd.ms-excel';
+          else documentData.fileType = 'application/octet-stream';
+        }
       }
       
       console.log(`🔍 Parsed document data:`, documentData);
+      
+      // Validar campos requeridos manualmente antes del schema
+      if (!documentData.title || !documentData.fileUrl || !documentData.fileType) {
+        return res.status(400).json({ 
+          message: "Campos requeridos faltantes: title, fileUrl, fileType",
+          missing: {
+            title: !documentData.title,
+            fileUrl: !documentData.fileUrl,
+            fileType: !documentData.fileType
+          }
+        });
+      }
+      
       const data = insertDocumentSchema.parse(documentData);
       const result = await storage.createDocument(data);
       

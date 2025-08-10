@@ -319,6 +319,26 @@ export default function ParkMultimediaManager({ parkId }: ParkMultimediaManagerP
   };
 
   const handleDocumentSubmit = () => {
+    // Validar que se haya proporcionado un título
+    if (!newDocumentTitle.trim()) {
+      toast({
+        title: "Error",
+        description: "El título del documento es requerido.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validar que se haya proporcionado un archivo o URL
+    if (!newDocumentFile && !newDocumentUrl.trim()) {
+      toast({
+        title: "Error", 
+        description: "Debe proporcionar un archivo o una URL del documento.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (newDocumentFile) {
       const formData = new FormData();
       formData.append('document', newDocumentFile);
@@ -326,7 +346,7 @@ export default function ParkMultimediaManager({ parkId }: ParkMultimediaManagerP
       formData.append('description', newDocumentDescription);
       formData.append('category', newDocumentCategory);
       uploadDocumentMutation.mutate(formData);
-    } else if (newDocumentUrl) {
+    } else if (newDocumentUrl.trim()) {
       // Detectar tipo de archivo de la URL
       const url = newDocumentUrl.toLowerCase();
       let fileType = 'application/octet-stream';

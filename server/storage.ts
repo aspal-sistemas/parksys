@@ -1463,11 +1463,73 @@ export async function getAmenitiesDirectly() {
 
 // Métodos adicionales implementados en la clase DatabaseStorage
 DatabaseStorage.prototype.getParkDocuments = async function(parkId: number): Promise<any[]> {
-  return []; // Retorna array vacío temporalmente
+  try {
+    console.log(`📋 STORAGE: Consultando documentos para parque ${parkId}`);
+    const result = await pool.query(`
+      SELECT 
+        id,
+        park_id as "parkId",
+        title,
+        file_path as "filePath",
+        file_url as "fileUrl",
+        file_size as "fileSize",
+        file_type as "fileType",
+        description,
+        category,
+        uploaded_by_id as "uploadedById",
+        created_at as "createdAt",
+        updated_at as "updatedAt"
+      FROM documents 
+      WHERE park_id = $1
+      ORDER BY created_at DESC
+    `, [parkId]);
+    
+    console.log(`📋 STORAGE: Documentos encontrados para parque ${parkId}: ${result.rows.length}`);
+    return result.rows;
+  } catch (error) {
+    console.error(`❌ STORAGE: Error consultando documentos del parque ${parkId}:`, error);
+    return [];
+  }
 };
 
 DatabaseStorage.prototype.createDocument = async function(documentData: any): Promise<any> {
-  return { id: Date.now(), ...documentData };
+  try {
+    console.log(`📝 STORAGE: Creando documento:`, documentData);
+    const result = await pool.query(`
+      INSERT INTO documents (
+        park_id, title, file_url, file_type, description, category, uploaded_by_id, created_at, updated_at
+      ) VALUES (
+        $1, $2, $3, $4, $5, $6, $7, NOW(), NOW()
+      ) RETURNING 
+        id,
+        park_id as "parkId",
+        title,
+        file_path as "filePath",
+        file_url as "fileUrl",
+        file_size as "fileSize",
+        file_type as "fileType",
+        description,
+        category,
+        uploaded_by_id as "uploadedById",
+        created_at as "createdAt",
+        updated_at as "updatedAt"
+    `, [
+      documentData.parkId,
+      documentData.title,
+      documentData.fileUrl,
+      documentData.fileType,
+      documentData.description || '',
+      documentData.category || 'general',
+      documentData.uploadedById || null
+    ]);
+    
+    const document = result.rows[0];
+    console.log(`✅ STORAGE: Documento creado con ID ${document.id}`);
+    return document;
+  } catch (error) {
+    console.error(`❌ STORAGE: Error creando documento:`, error);
+    throw error;
+  }
 };
 
 DatabaseStorage.prototype.getDocument = async function(id: number): Promise<any> {
