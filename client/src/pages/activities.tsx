@@ -459,244 +459,258 @@ function ActivitiesPage() {
         </div>
       </section>
 
-      {/* Header Ad Space - After Filters */}
-      <div className="w-full bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 py-2">
-          <AdSpace 
-            spaceId="6" 
-            position="header" 
-            pageType="activities" 
-            className="w-full"
-          />
-        </div>
-      </div>
-
-      {/* Contenido Principal */}
-      <section className="max-w-7xl mx-auto px-4 py-2">
-        <div className="flex gap-8 items-start">
-          {/* Sidebar izquierda - 1/4 del ancho */}
-          <div className="w-80 space-y-6">
-            {/* Mapa de Actividades */}
-            <Card className="p-6">
-              <h3 className="font-semibold text-lg text-gray-800 mb-4 flex items-center">
-                <MapPin className="h-5 w-5 mr-2 text-green-600" />
-                Mapa de Actividades
-              </h3>
-              <div className="bg-gray-100 rounded-lg h-48 flex items-center justify-center">
-                <div className="text-center text-gray-500">
-                  <MapPin className="h-12 w-12 mx-auto mb-2" />
-                  <p className="text-sm">Próximamente: Mapa interactivo</p>
-                </div>
-              </div>
-            </Card>
-
-            {/* Contacto para Dudas */}
-            <Card className="p-6">
-              <h3 className="font-semibold text-lg text-gray-800 mb-4 flex items-center">
-                <Phone className="h-5 w-5 mr-2 text-blue-600" />
-                Contacto para Dudas
-              </h3>
-              <div className="space-y-3">
-                <div className="flex items-center text-sm">
-                  <Phone className="h-4 w-4 mr-2 text-blue-500" />
-                  <span>33 3333 3333</span>
-                </div>
-                <div className="flex items-center text-sm">
-                  <Mail className="h-4 w-4 mr-2 text-green-500" />
-                  <span>actividades@parques.gob.mx</span>
-                </div>
-                <div className="flex items-center text-sm">
-                  <Clock className="h-4 w-4 mr-2 text-orange-500" />
-                  <span>Lun-Vie 8:00-16:00</span>
-                </div>
-              </div>
-            </Card>
-
-            {/* Instructores */}
-            <Card className="p-6">
-              <h3 className="font-semibold text-lg text-gray-800 mb-4 flex items-center">
-                <Users className="h-5 w-5 mr-2 text-purple-600" />
-                Nuestros Instructores
-              </h3>
-              <div className="space-y-3">
-                <div className="flex items-center">
-                  <div className="w-10 h-10 bg-gradient-to-r from-purple-400 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
-                    A
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm font-medium">Ana García</p>
-                    <p className="text-xs text-gray-500">Yoga & Meditación</p>
-                  </div>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-10 h-10 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
-                    C
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm font-medium">Carlos López</p>
-                    <p className="text-xs text-gray-500">Deportes & Fitness</p>
-                  </div>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-10 h-10 bg-gradient-to-r from-green-400 to-green-600 rounded-full flex items-center justify-center text-white font-semibold">
-                    M
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm font-medium">María Rodríguez</p>
-                    <p className="text-xs text-gray-500">Arte & Cultura</p>
-                  </div>
-                </div>
-              </div>
-              <Link href="/instructors">
-                <Button variant="outline" size="sm" className="w-full mt-4 text-purple-600 border-purple-200 hover:bg-purple-50">
-                  Ver todos los instructores
-                </Button>
-              </Link>
-            </Card>
-
-            {/* Ad Space del sidebar */}
-            <AdSpace 
-              spaceId="4" 
-              position="sidebar" 
-              pageType="activities" 
-              className=""
-            />
+      {/* Actividades más populares - Carrusel */}
+      <section className="max-w-7xl mx-auto px-4 py-8">
+        <div>
+          <div className="flex items-center gap-3 mb-6">
+            <Star className="h-6 w-6 text-yellow-500" />
+            <h2 className="text-2xl font-semibold text-gray-800">Actividades más populares</h2>
           </div>
-
-          {/* Contenido principal - 3/4 del ancho */}
-          <div className="flex-1">
-            {currentActivities.length === 0 ? (
-              <div className="text-center py-16">
-                <Activity className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-600 mb-2">No se encontraron actividades</h3>
-                <p className="text-gray-500">Intenta ajustar los filtros para ver más resultados.</p>
-                <Button 
-                  onClick={() => {
-                    setSearchQuery('');
-                    setFilterPark('all');
-                    setFilterCategory('all');
-                  }}
-                  className="mt-4 bg-green-600 hover:bg-green-700"
-                >
-                  Limpiar filtros
-                </Button>
-              </div>
-            ) : (
-              <>
-                {/* Header de resultados */}
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <div className="flex items-center gap-3 mb-1">
-                      <Star className="h-6 w-6 text-yellow-500" />
-                      <h2 className="text-2xl font-semibold text-gray-800">Actividades más populares</h2>
+          <p className="text-gray-600 mb-8">Las 6 actividades más destacadas de nuestros parques</p>
+          
+          {currentActivities.length === 0 ? (
+            <div className="text-center py-16">
+              <Activity className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-gray-700 mb-2">No se encontraron actividades</h3>
+              <p className="text-gray-500 mb-6">Intenta ajustar tus filtros de búsqueda</p>
+              <Button 
+                onClick={() => {
+                  setSearchQuery('');
+                  setFilterPark('all');
+                  setFilterCategory('all');
+                }}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                Limpiar filtros
+              </Button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {currentActivities.map((activity, index) => (
+                <Card key={activity.id} className="h-full hover:shadow-lg transition-shadow duration-300 cursor-pointer group">
+                  <div className="relative">
+                    {activity.images && activity.images.length > 0 ? (
+                      <img 
+                        src={activity.images[0].imageUrl} 
+                        alt={activity.images[0].altText || activity.title}
+                        className="w-full h-48 object-cover rounded-t-lg group-hover:scale-105 transition-transform duration-300"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="w-full h-48 bg-gradient-to-br from-green-100 to-blue-100 rounded-t-lg flex items-center justify-center">
+                        <Activity className="h-12 w-12 text-gray-400" />
+                      </div>
+                    )}
+                    
+                    <div className="absolute top-3 right-3">
+                      <div className="bg-white/90 backdrop-blur-sm rounded-full px-2 py-1 text-xs font-medium text-gray-700">
+                        {parksData.find(p => p.id === activity.parkId)?.name || 'Parque'}
+                      </div>
                     </div>
-                    <p className="text-sm text-gray-600 ml-9">Las 6 actividades más destacadas de nuestros parques</p>
+                    
+                    {activity.category && (
+                      <div className="absolute top-3 left-3">
+                        <span className="bg-green-600 text-white px-2 py-1 rounded-full text-xs font-medium">
+                          {activity.category}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                  <Link href="/parks">
-                    <Button variant="outline" size="sm" className="text-green-600 border-green-200 hover:bg-green-50">
-                      <ArrowLeft className="h-4 w-4 mr-2" />
-                      Ver parques
-                    </Button>
-                  </Link>
-                </div>
-
-                {/* Lista horizontal de actividades */}
-                <div className="space-y-6">
-                  {currentActivities.slice(0, 6).map((activity: any, index) => (
-                    <div key={activity.id}>
-                      <Card className="border border-gray-200 hover:border-green-300 hover:shadow-md transition-all duration-200">
-                        <div className="flex">
-                          <div className="w-64 h-40 relative overflow-hidden flex-shrink-0">
-                            {activity.imageUrl ? (
-                              <img 
-                                src={activity.imageUrl.startsWith('http') ? activity.imageUrl : `${activity.imageUrl}?v=${Date.now()}`}
-                                alt={activity.title}
-                                className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                                onError={(e) => {
-                                  console.log(`Error loading image: ${activity.imageUrl}`);
-                                  e.currentTarget.src = "/api/placeholder/400/240";
-                                }}
-                              />
-                            ) : (
-                              <div className="w-full h-full bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center">
-                                <Activity className="h-16 w-16 text-green-400" />
-                              </div>
-                            )}
-                            {activity.category && (
-                              <div className="absolute top-3 left-3">
-                                <span className="px-2 py-1 bg-green-600 text-white text-xs font-medium rounded-full">
-                                  {activity.category}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                          <CardContent className="flex-1 p-6">
-                            <div className="flex justify-between items-start mb-4">
-                              <div className="flex-1">
-                                <h3 className="font-semibold text-xl text-gray-800 mb-2 hover:text-green-700 transition-colors">
-                                  {activity.title}
-                                </h3>
-                                <p className="text-gray-600 line-clamp-2 mb-4">
-                                  {activity.description}
-                                </p>
-                              </div>
-                              <Link href={`/activities/${activity.id}`}>
-                                <Button className="bg-green-600 hover:bg-green-700 ml-6">
-                                  Ver detalles
-                                </Button>
-                              </Link>
-                            </div>
-                            <div className="flex flex-wrap gap-6 text-sm text-gray-500">
-                              {activity.park_name && (
-                                <div className="flex items-center">
-                                  <MapPin className="h-4 w-4 mr-2 text-green-500" />
-                                  <span>{activity.park_name}</span>
-                                </div>
-                              )}
-                              {activity.schedule && (
-                                <div className="flex items-center">
-                                  <Clock className="h-4 w-4 mr-2 text-blue-500" />
-                                  <span>{activity.schedule}</span>
-                                </div>
-                              )}
-                              {activity.instructor_name && (
-                                <div className="flex items-center">
-                                  <Users className="h-4 w-4 mr-2 text-purple-500" />
-                                  <span>{activity.instructor_name}</span>
-                                </div>
-                              )}
-                              {activity.difficulty && (
-                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                                  activity.difficulty === 'Principiante' ? 'bg-green-100 text-green-800' :
-                                  activity.difficulty === 'Intermedio' ? 'bg-yellow-100 text-yellow-800' :
-                                  'bg-red-100 text-red-800'
-                                }`}>
-                                  {activity.difficulty}
-                                </span>
-                              )}
-                            </div>
-                          </CardContent>
-                        </div>
-                      </Card>
+                  
+                  <div className="p-4">
+                    <CardContent className="p-0">
+                      <div className="mb-3">
+                        <h3 className="font-semibold text-lg text-gray-900 mb-2 line-clamp-2 group-hover:text-green-700 transition-colors">
+                          {activity.title}
+                        </h3>
+                        <p className="text-gray-600 text-sm line-clamp-2 leading-relaxed">
+                          {activity.description}
+                        </p>
+                      </div>
                       
-                      {/* Ad Space cada 3 actividades */}
-                      {index > 0 && (index + 1) % 3 === 0 && (
-                        <div className="mt-6">
-                          <AdSpace 
-                            spaceId={`${15 + Math.floor(index / 3) - 1}`} 
-                            position="card" 
-                            pageType="activities" 
-                            className=""
-                          />
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                      <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
+                        {activity.startDate && (
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-4 w-4" />
+                            <span>{new Date(activity.startDate).toLocaleDateString()}</span>
+                          </div>
+                        )}
+                        {activity.price && (
+                          <div className="flex items-center gap-1">
+                            <DollarSign className="h-4 w-4" />
+                            <span>${activity.price}</span>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {activity.duration && (
+                          <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                            {activity.duration} min
+                          </span>
+                        )}
+                        {activity.difficulty && (
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            activity.difficulty === 'Principiante' ? 'bg-green-100 text-green-800' :
+                            activity.difficulty === 'Intermedio' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-red-100 text-red-800'
+                          }`}>
+                            {activity.difficulty}
+                          </span>
+                        )}
+                      </div>
+                    </CardContent>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Ad Space */}
+      <section className="max-w-7xl mx-auto px-4 py-6">
+        <AdSpace 
+          spaceId="15" 
+          position="card" 
+          pageType="activities" 
+          className=""
+        />
+      </section>
+
+      {/* Mapa y Calendario lado a lado */}
+      <section className="max-w-7xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          
+          {/* Mapa de Actividades */}
+          <Card className="p-0 overflow-hidden">
+            <div className="bg-gradient-to-r from-green-600 to-green-700 text-white p-6">
+              <div className="flex items-center gap-3">
+                <MapPin className="h-6 w-6" />
+                <h3 className="text-xl font-semibold">Mapa de Actividades</h3>
+              </div>
+              <p className="mt-2 text-green-100">Encuentra actividades cerca de ti</p>
+            </div>
+            <CardContent className="p-0">
+              <div className="h-80 bg-gradient-to-br from-green-100 to-blue-100 relative">
+                <div className="absolute inset-0 flex items-center justify-center text-gray-500">
+                  <div className="text-center">
+                    <MapPin className="h-16 w-16 mx-auto mb-4 text-green-600" />
+                    <p className="text-lg font-medium mb-2">Mapa interactivo próximamente</p>
+                    <p className="text-sm">Visualiza todas las actividades en el mapa</p>
+                  </div>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
 
+          {/* Calendario de Eventos */}
+          <Card className="p-0 overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6">
+              <div className="flex items-center gap-3">
+                <Calendar className="h-6 w-6" />
+                <h3 className="text-xl font-semibold">Próximos Eventos</h3>
+              </div>
+              <p className="mt-2 text-blue-100">No te pierdas nuestras actividades</p>
+            </div>
+            <CardContent className="p-6">
+              <div className="space-y-4">
+                {[
+                  { 
+                    date: '15 Ago', 
+                    title: 'Yoga al Amanecer', 
+                    park: 'Parque Colomos',
+                    time: '6:00 AM',
+                    spots: 20
+                  },
+                  { 
+                    date: '18 Ago', 
+                    title: 'Taller de Jardinería', 
+                    park: 'Parque Revolución',
+                    time: '10:00 AM',
+                    spots: 15
+                  },
+                  { 
+                    date: '22 Ago', 
+                    title: 'Concierto al Aire Libre', 
+                    park: 'Parque Metropolitano',
+                    time: '7:00 PM',
+                    spots: 100
+                  },
+                  { 
+                    date: '25 Ago', 
+                    title: 'Clase de Baile', 
+                    park: 'Parque Agua Azul',
+                    time: '5:00 PM',
+                    spots: 30
+                  }
+                ].map((event, index) => (
+                  <div key={index} className="flex items-start gap-4 p-4 hover:bg-gray-50 rounded-lg transition-colors border border-gray-100">
+                    <div className="bg-blue-100 text-blue-800 px-3 py-2 rounded-lg text-center min-w-fit">
+                      <div className="text-sm font-bold">{event.date}</div>
+                      <div className="text-xs">{event.time}</div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-semibold text-gray-900 mb-1">{event.title}</h4>
+                      <p className="text-sm text-gray-600 mb-2">{event.park}</p>
+                      <div className="flex items-center gap-2">
+                        <Users className="h-4 w-4 text-gray-400" />
+                        <span className="text-xs text-gray-500">{event.spots} lugares disponibles</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <Button className="w-full mt-6 bg-blue-600 hover:bg-blue-700">
+                Ver todos los eventos
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
 
-              </>
-            )}
+      {/* Sección de Contacto */}
+      <section className="bg-gray-50 py-12">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">¿Necesitas más información?</h2>
+            <p className="text-lg text-gray-600">Nuestro equipo está aquí para ayudarte</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Phone className="h-8 w-8 text-orange-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Teléfono</h3>
+              <p className="text-gray-600 mb-2">(33) 1234-5678</p>
+              <p className="text-sm text-gray-500">Lun-Vie 8:00-16:00</p>
+            </div>
+            
+            <div className="text-center">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Mail className="h-8 w-8 text-green-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Correo</h3>
+              <p className="text-gray-600 mb-2">actividades@parques.gdl.gob.mx</p>
+              <p className="text-sm text-gray-500">Respuesta en 24 horas</p>
+            </div>
+            
+            <div className="text-center">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <MapPin className="h-8 w-8 text-blue-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Ubicación</h3>
+              <p className="text-gray-600 mb-2">Av. Hidalgo 400, Centro</p>
+              <p className="text-sm text-gray-500">Guadalajara, Jalisco</p>
+            </div>
+          </div>
+          
+          <div className="text-center">
+            <Button size="lg" className="bg-green-600 hover:bg-green-700 px-8 py-3">
+              <Mail className="h-5 w-5 mr-2" />
+              Enviar mensaje
+            </Button>
           </div>
         </div>
       </section>
