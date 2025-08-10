@@ -80,15 +80,21 @@ export default function InstructorCard({ instructor, showActions = true, compact
             // Limpiar completamente: casos específicos de PostgreSQL
             let cleaned = s.trim();
             
-            // Caso específico: ""Palabra"" -> Palabra
+            // Casos específicos para PostgreSQL con comillas dobles escapadas
+            // Caso: ""Danza"" -> Danza
             cleaned = cleaned.replace(/^""(.*)""$/, '$1');
             
-            // Casos generales de limpieza
-            cleaned = cleaned.replace(/^["'\[\]]+|["'\[\]]+$/g, ''); // Quitar comillas y corchetes del inicio y final
-            cleaned = cleaned.replace(/^"(.*)"$/, '$1'); // Quitar comillas dobles externas
-            cleaned = cleaned.replace(/^'(.*)'$/, '$1'); // Quitar comillas simples externas
-            cleaned = cleaned.replace(/""/g, '"'); // Reemplazar comillas dobles escapadas
-            cleaned = cleaned.replace(/\\"/g, '"'); // Reemplazar comillas escapadas
+            // Casos generales de limpieza múltiple para cubrir todas las combinaciones
+            // Remover comillas dobles del inicio y final
+            cleaned = cleaned.replace(/^"+|"+$/g, '');
+            // Remover comillas simples del inicio y final  
+            cleaned = cleaned.replace(/^'+|'+$/g, '');
+            // Remover corchetes del inicio y final
+            cleaned = cleaned.replace(/^\[+|\]+$/g, '');
+            
+            // Limpiar comillas dobles escapadas internas
+            cleaned = cleaned.replace(/""/g, '"');
+            cleaned = cleaned.replace(/\\"/g, '"');
             
             return cleaned.trim();
           })
@@ -101,14 +107,30 @@ export default function InstructorCard({ instructor, showActions = true, compact
         specialtiesList = specialties.split(',').map(s => s.trim());
       }
     } catch (error) {
-      // Si falla el parsing, usar split por comas como fallback
+      // Si falla el parsing, usar split por comas como fallback con limpieza agresiva
       specialtiesList = specialties.split(',')
-        .map(s => s.trim().replace(/^["'\[\]]+|["'\[\]]+$/g, '').trim())
+        .map(s => {
+          let cleaned = s.trim();
+          // Aplicar todas las limpiezas posibles
+          cleaned = cleaned.replace(/^["'\[\]]+|["'\[\]]+$/g, '');
+          cleaned = cleaned.replace(/^"+|"+$/g, '');
+          cleaned = cleaned.replace(/^\[+|\]+$/g, '');
+          return cleaned.trim();
+        })
         .filter(s => s.length > 0);
     }
     
-    // Limpiar especialidades vacías o malformadas
-    specialtiesList = specialtiesList.filter(s => s && s.length > 0);
+    // Aplicar una limpieza final a todas las especialidades para asegurar que no queden comillas o corchetes
+    specialtiesList = specialtiesList
+      .map(s => {
+        let cleaned = s.trim();
+        // Limpieza final agresiva para cualquier caso que se haya escapado
+        cleaned = cleaned.replace(/^["'\[\]]+|["'\[\]]+$/g, '');
+        cleaned = cleaned.replace(/^"+|"+$/g, '');
+        cleaned = cleaned.replace(/^\[+|\]+$/g, '');
+        return cleaned.trim();
+      })
+      .filter(s => s && s.length > 0);
     
     if (specialtiesList.length <= 2 || compact) {
       return specialtiesList.map((specialty, index) => (
