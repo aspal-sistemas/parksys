@@ -428,6 +428,19 @@ function ActivitiesPage() {
   // Si no hay filtros, mostrar TODAS las actividades en el carrusel
   const currentActivities = filteredActivities;
 
+  // Actividades del mes independientes de filtros
+  const monthlyActivities = useMemo(() => {
+    if (!Array.isArray(activitiesData)) return [];
+    
+    const currentDate = new Date();
+    return activitiesData.filter(activity => {
+      const startDate = new Date(activity.startDate);
+      return startDate.getMonth() === currentDate.getMonth() && 
+             startDate.getFullYear() === currentDate.getFullYear() &&
+             startDate >= currentDate; // Solo eventos futuros
+    });
+  }, [activitiesData]);
+
   const uniqueCategories = Array.from(new Set(activitiesData.map(activity => activity.category).filter(Boolean)));
 
   if (isLoading) {
@@ -648,29 +661,22 @@ function ActivitiesPage() {
       </section>
 
       {/* Calendario de Eventos */}
-      <section className="py-8" style={{backgroundColor: '#19633c'}}>
+      <section className="py-8" style={{backgroundColor: '#51a19f'}}>
         <div className="max-w-7xl mx-auto px-4">
           <div className="max-w-6xl mx-auto">
           
           {/* Calendario de Eventos */}
           <Card className="p-0 overflow-hidden">
-            <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6">
+            <div className="bg-gradient-to-r from-green-800 to-green-900 text-white p-6">
               <div className="flex items-center gap-3">
                 <Calendar className="h-6 w-6" />
                 <h3 className="text-xl font-semibold">Próximos Eventos del Mes</h3>
               </div>
-              <p className="mt-2 text-blue-100">Actividades y eventos programados para este mes</p>
+              <p className="mt-2 text-green-100">Actividades y eventos programados para este mes</p>
             </div>
             <CardContent className="p-6">
               <div className="space-y-4">
-                {currentActivities
-                  .filter(activity => {
-                    const startDate = new Date(activity.startDate);
-                    const currentDate = new Date();
-                    return startDate.getMonth() === currentDate.getMonth() && 
-                           startDate.getFullYear() === currentDate.getFullYear() &&
-                           startDate >= currentDate; // Solo eventos futuros
-                  })
+                {monthlyActivities
                   .slice(0, 4) // Limitar a 4 eventos
                   .map((activity) => {
                     const startDate = new Date(activity.startDate);
@@ -702,7 +708,7 @@ function ActivitiesPage() {
                         </div>
                         
                         {/* Fecha y hora */}
-                        <div className="bg-blue-100 text-blue-800 px-3 py-2 rounded-lg text-center min-w-fit">
+                        <div className="bg-green-100 text-green-800 px-3 py-2 rounded-lg text-center min-w-fit">
                           <div className="text-sm font-bold">
                             {format(startDate, 'dd MMM', { locale: es })}
                           </div>
@@ -740,13 +746,7 @@ function ActivitiesPage() {
                   })}
                 
                 {/* Mensaje si no hay eventos del mes */}
-                {currentActivities.filter(activity => {
-                  const startDate = new Date(activity.startDate);
-                  const currentDate = new Date();
-                  return startDate.getMonth() === currentDate.getMonth() && 
-                         startDate.getFullYear() === currentDate.getFullYear() &&
-                         startDate >= currentDate;
-                }).length === 0 && (
+                {monthlyActivities.length === 0 && (
                   <div className="text-center py-8">
                     <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-3" />
                     <h4 className="text-lg font-semibold text-gray-700 mb-2">No hay eventos próximos este mes</h4>
@@ -755,14 +755,8 @@ function ActivitiesPage() {
                 )}
               </div>
               
-              {currentActivities.filter(activity => {
-                const startDate = new Date(activity.startDate);
-                const currentDate = new Date();
-                return startDate.getMonth() === currentDate.getMonth() && 
-                       startDate.getFullYear() === currentDate.getFullYear() &&
-                       startDate >= currentDate;
-              }).length > 0 && (
-                <Button className="w-full mt-6 bg-blue-600 hover:bg-blue-700">
+              {monthlyActivities.length > 0 && (
+                <Button className="w-full mt-6 bg-green-700 hover:bg-green-800">
                   Ver todos los eventos del mes
                 </Button>
               )}
