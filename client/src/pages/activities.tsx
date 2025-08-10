@@ -413,7 +413,7 @@ function ActivitiesPage() {
       {/* Filtros */}
       <section className="sticky top-0 z-10 bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="bg-green-800 rounded-lg border border-green-700 shadow-sm p-4">
+          <div className="bg-green-800 rounded-lg border border-green-700 shadow-sm p-6">
             <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
               <div className="flex-1 max-w-md">
                 <div className="relative">
