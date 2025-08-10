@@ -648,8 +648,9 @@ function ActivitiesPage() {
       </section>
 
       {/* Calendario de Eventos */}
-      <section className="max-w-7xl mx-auto px-4 py-8">
-        <div className="max-w-6xl mx-auto">
+      <section className="py-8" style={{backgroundColor: '#19633c'}}>
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="max-w-6xl mx-auto">
           
           {/* Calendario de Eventos */}
           <Card className="p-0 overflow-hidden">
@@ -767,6 +768,7 @@ function ActivitiesPage() {
               )}
             </CardContent>
           </Card>
+          </div>
         </div>
       </section>
 
