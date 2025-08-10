@@ -270,7 +270,7 @@ export function registerMultimediaRoutes(app: any, apiRouter: Router, isAuthenti
           description,
           category,
           created_at as "createdAt"
-        FROM park_documents 
+        FROM documents 
         WHERE park_id = $1 
         ORDER BY created_at DESC
       `;

@@ -954,7 +954,7 @@ app.get("/api/parks/:parkId/documents", async (req: Request, res: Response) => {
         description,
         category,
         created_at as "createdAt"
-      FROM park_documents 
+      FROM documents 
       WHERE park_id = $1 
       ORDER BY created_at DESC
     `;
