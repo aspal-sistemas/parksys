@@ -347,8 +347,12 @@ function ActivitiesPage() {
     });
   }, [activitiesData, searchQuery, filterPark, filterCategory]);
 
-  // Mostrar solo las 6 actividades más populares (las primeras 6 de los resultados filtrados)
-  const currentActivities = filteredActivities.slice(0, 6);
+  // Determinar si hay filtros activos
+  const hasActiveFilters = searchQuery || filterPark !== 'all' || filterCategory !== 'all';
+  
+  // Si hay filtros activos, mostrar TODAS las actividades que coincidan
+  // Si no hay filtros, mostrar solo las 6 más populares para el carrusel
+  const currentActivities = hasActiveFilters ? filteredActivities : filteredActivities.slice(0, 6);
 
   const uniqueCategories = Array.from(new Set(activitiesData.map(activity => activity.category).filter(Boolean)));
 
@@ -461,14 +465,28 @@ function ActivitiesPage() {
         </div>
       </section>
 
-      {/* Actividades más populares - Carrusel */}
+      {/* Actividades */}
       <section className="max-w-7xl mx-auto px-4 py-8">
         <div>
           <div className="flex items-center gap-3 mb-6">
-            <Star className="h-6 w-6 text-yellow-500" />
-            <h2 className="text-2xl font-semibold text-gray-800">Actividades más populares</h2>
+            {hasActiveFilters ? (
+              <Search className="h-6 w-6 text-blue-500" />
+            ) : (
+              <Star className="h-6 w-6 text-yellow-500" />
+            )}
+            <h2 className="text-2xl font-semibold text-gray-800">
+              {hasActiveFilters 
+                ? `Resultados de búsqueda (${currentActivities.length})` 
+                : 'Actividades más populares'
+              }
+            </h2>
           </div>
-          <p className="text-gray-600 mb-8">Las 6 actividades más destacadas de nuestros parques</p>
+          <p className="text-gray-600 mb-8">
+            {hasActiveFilters 
+              ? 'Actividades que coinciden con tu búsqueda'
+              : 'Las 6 actividades más destacadas de nuestros parques'
+            }
+          </p>
           
           {currentActivities.length === 0 ? (
             <div className="text-center py-16">
@@ -486,9 +504,16 @@ function ActivitiesPage() {
                 Limpiar filtros
               </Button>
             </div>
+          ) : hasActiveFilters ? (
+            /* Cuadrícula completa cuando hay filtros activos */
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {currentActivities.map((activity) => (
+                <ActivityCard key={activity.id} activity={activity} viewMode="grid" />
+              ))}
+            </div>
           ) : (
+            /* Carrusel cuando no hay filtros */
             <div className="relative">
-              {/* Carrusel */}
               <div className="flex items-center gap-4">
                 {/* Botón anterior */}
                 <Button 
@@ -509,83 +534,9 @@ function ActivitiesPage() {
                       transform: `translateX(-${(carouselIndex / 3) * 100}%)`
                     }}
                   >
-                    {currentActivities.map((activity, index) => (
+                    {currentActivities.map((activity) => (
                       <div key={activity.id} className="w-1/3 flex-shrink-0">
-                        <Card className="h-full hover:shadow-lg transition-shadow duration-300 cursor-pointer group">
-                          <div className="relative">
-                            {activity.images && activity.images.length > 0 ? (
-                              <img 
-                                src={activity.images[0].imageUrl} 
-                                alt={activity.images[0].altText || activity.title}
-                                className="w-full h-48 object-cover rounded-t-lg group-hover:scale-105 transition-transform duration-300"
-                                loading="lazy"
-                              />
-                            ) : (
-                              <div className="w-full h-48 bg-gradient-to-br from-green-100 to-blue-100 rounded-t-lg flex items-center justify-center">
-                                <Activity className="h-12 w-12 text-gray-400" />
-                              </div>
-                            )}
-                            
-                            <div className="absolute top-3 right-3">
-                              <div className="bg-white/90 backdrop-blur-sm rounded-full px-2 py-1 text-xs font-medium text-gray-700">
-                                {parksData.find(p => p.id === activity.parkId)?.name || 'Parque'}
-                              </div>
-                            </div>
-                            
-                            {activity.category && (
-                              <div className="absolute top-3 left-3">
-                                <span className="bg-green-600 text-white px-2 py-1 rounded-full text-xs font-medium">
-                                  {activity.category}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                          
-                          <div className="p-4">
-                            <CardContent className="p-0">
-                              <div className="mb-3">
-                                <h3 className="font-semibold text-lg text-gray-900 mb-2 line-clamp-2 group-hover:text-green-700 transition-colors">
-                                  {activity.title}
-                                </h3>
-                                <p className="text-gray-600 text-sm line-clamp-2 leading-relaxed">
-                                  {activity.description}
-                                </p>
-                              </div>
-                              
-                              <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
-                                {activity.startDate && (
-                                  <div className="flex items-center gap-1">
-                                    <Calendar className="h-4 w-4" />
-                                    <span>{new Date(activity.startDate).toLocaleDateString()}</span>
-                                  </div>
-                                )}
-                                {activity.price && (
-                                  <div className="flex items-center gap-1">
-                                    <DollarSign className="h-4 w-4" />
-                                    <span>${activity.price}</span>
-                                  </div>
-                                )}
-                              </div>
-                              
-                              <div className="flex items-center gap-2 flex-wrap">
-                                {activity.duration && (
-                                  <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
-                                    {activity.duration} min
-                                  </span>
-                                )}
-                                {activity.difficulty && (
-                                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                                    activity.difficulty === 'Principiante' ? 'bg-green-100 text-green-800' :
-                                    activity.difficulty === 'Intermedio' ? 'bg-yellow-100 text-yellow-800' :
-                                    'bg-red-100 text-red-800'
-                                  }`}>
-                                    {activity.difficulty}
-                                  </span>
-                                )}
-                              </div>
-                            </CardContent>
-                          </div>
-                        </Card>
+                        <ActivityCard activity={activity} viewMode="grid" />
                       </div>
                     ))}
                   </div>
