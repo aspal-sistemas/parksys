@@ -10,7 +10,6 @@ import {
   Users,
   Search,
   Filter,
-
   ArrowLeft,
   Star,
   Heart,
@@ -21,7 +20,9 @@ import {
   DollarSign,
   Trophy,
   Phone,
-  Mail
+  Mail,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 const heroImage = "/images/recorrido-nocturno-colomos-1024x683_1754846133930.jpg";
 import { Badge } from '@/components/ui/badge';
@@ -315,6 +316,7 @@ function ActivitiesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterPark, setFilterPark] = useState('all');
   const [filterCategory, setFilterCategory] = useState('all');
+  const [carouselIndex, setCarouselIndex] = useState(0);
 
   // Obtener todas las actividades con imágenes
   const { data: activitiesData = [], isLoading } = useQuery<ActivityData[]>({
@@ -485,84 +487,136 @@ function ActivitiesPage() {
               </Button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {currentActivities.map((activity, index) => (
-                <Card key={activity.id} className="h-full hover:shadow-lg transition-shadow duration-300 cursor-pointer group">
-                  <div className="relative">
-                    {activity.images && activity.images.length > 0 ? (
-                      <img 
-                        src={activity.images[0].imageUrl} 
-                        alt={activity.images[0].altText || activity.title}
-                        className="w-full h-48 object-cover rounded-t-lg group-hover:scale-105 transition-transform duration-300"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="w-full h-48 bg-gradient-to-br from-green-100 to-blue-100 rounded-t-lg flex items-center justify-center">
-                        <Activity className="h-12 w-12 text-gray-400" />
-                      </div>
-                    )}
-                    
-                    <div className="absolute top-3 right-3">
-                      <div className="bg-white/90 backdrop-blur-sm rounded-full px-2 py-1 text-xs font-medium text-gray-700">
-                        {parksData.find(p => p.id === activity.parkId)?.name || 'Parque'}
-                      </div>
-                    </div>
-                    
-                    {activity.category && (
-                      <div className="absolute top-3 left-3">
-                        <span className="bg-green-600 text-white px-2 py-1 rounded-full text-xs font-medium">
-                          {activity.category}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="p-4">
-                    <CardContent className="p-0">
-                      <div className="mb-3">
-                        <h3 className="font-semibold text-lg text-gray-900 mb-2 line-clamp-2 group-hover:text-green-700 transition-colors">
-                          {activity.title}
-                        </h3>
-                        <p className="text-gray-600 text-sm line-clamp-2 leading-relaxed">
-                          {activity.description}
-                        </p>
-                      </div>
-                      
-                      <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
-                        {activity.startDate && (
-                          <div className="flex items-center gap-1">
-                            <Calendar className="h-4 w-4" />
-                            <span>{new Date(activity.startDate).toLocaleDateString()}</span>
+            <div className="relative">
+              {/* Carrusel */}
+              <div className="flex items-center gap-4">
+                {/* Botón anterior */}
+                <Button 
+                  variant="outline" 
+                  size="icon"
+                  onClick={() => setCarouselIndex(Math.max(0, carouselIndex - 3))}
+                  disabled={carouselIndex === 0}
+                  className="shrink-0 h-12 w-12 border-green-200 hover:bg-green-50"
+                >
+                  <ChevronLeft className="h-6 w-6" />
+                </Button>
+
+                {/* Contenedor del carrusel */}
+                <div className="flex-1 overflow-hidden">
+                  <div 
+                    className="flex gap-6 transition-transform duration-500 ease-in-out"
+                    style={{
+                      transform: `translateX(-${(carouselIndex / 3) * 100}%)`
+                    }}
+                  >
+                    {currentActivities.map((activity, index) => (
+                      <div key={activity.id} className="w-1/3 flex-shrink-0">
+                        <Card className="h-full hover:shadow-lg transition-shadow duration-300 cursor-pointer group">
+                          <div className="relative">
+                            {activity.images && activity.images.length > 0 ? (
+                              <img 
+                                src={activity.images[0].imageUrl} 
+                                alt={activity.images[0].altText || activity.title}
+                                className="w-full h-48 object-cover rounded-t-lg group-hover:scale-105 transition-transform duration-300"
+                                loading="lazy"
+                              />
+                            ) : (
+                              <div className="w-full h-48 bg-gradient-to-br from-green-100 to-blue-100 rounded-t-lg flex items-center justify-center">
+                                <Activity className="h-12 w-12 text-gray-400" />
+                              </div>
+                            )}
+                            
+                            <div className="absolute top-3 right-3">
+                              <div className="bg-white/90 backdrop-blur-sm rounded-full px-2 py-1 text-xs font-medium text-gray-700">
+                                {parksData.find(p => p.id === activity.parkId)?.name || 'Parque'}
+                              </div>
+                            </div>
+                            
+                            {activity.category && (
+                              <div className="absolute top-3 left-3">
+                                <span className="bg-green-600 text-white px-2 py-1 rounded-full text-xs font-medium">
+                                  {activity.category}
+                                </span>
+                              </div>
+                            )}
                           </div>
-                        )}
-                        {activity.price && (
-                          <div className="flex items-center gap-1">
-                            <DollarSign className="h-4 w-4" />
-                            <span>${activity.price}</span>
+                          
+                          <div className="p-4">
+                            <CardContent className="p-0">
+                              <div className="mb-3">
+                                <h3 className="font-semibold text-lg text-gray-900 mb-2 line-clamp-2 group-hover:text-green-700 transition-colors">
+                                  {activity.title}
+                                </h3>
+                                <p className="text-gray-600 text-sm line-clamp-2 leading-relaxed">
+                                  {activity.description}
+                                </p>
+                              </div>
+                              
+                              <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
+                                {activity.startDate && (
+                                  <div className="flex items-center gap-1">
+                                    <Calendar className="h-4 w-4" />
+                                    <span>{new Date(activity.startDate).toLocaleDateString()}</span>
+                                  </div>
+                                )}
+                                {activity.price && (
+                                  <div className="flex items-center gap-1">
+                                    <DollarSign className="h-4 w-4" />
+                                    <span>${activity.price}</span>
+                                  </div>
+                                )}
+                              </div>
+                              
+                              <div className="flex items-center gap-2 flex-wrap">
+                                {activity.duration && (
+                                  <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                                    {activity.duration} min
+                                  </span>
+                                )}
+                                {activity.difficulty && (
+                                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                    activity.difficulty === 'Principiante' ? 'bg-green-100 text-green-800' :
+                                    activity.difficulty === 'Intermedio' ? 'bg-yellow-100 text-yellow-800' :
+                                    'bg-red-100 text-red-800'
+                                  }`}>
+                                    {activity.difficulty}
+                                  </span>
+                                )}
+                              </div>
+                            </CardContent>
                           </div>
-                        )}
+                        </Card>
                       </div>
-                      
-                      <div className="flex items-center gap-2 flex-wrap">
-                        {activity.duration && (
-                          <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
-                            {activity.duration} min
-                          </span>
-                        )}
-                        {activity.difficulty && (
-                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            activity.difficulty === 'Principiante' ? 'bg-green-100 text-green-800' :
-                            activity.difficulty === 'Intermedio' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-red-100 text-red-800'
-                          }`}>
-                            {activity.difficulty}
-                          </span>
-                        )}
-                      </div>
-                    </CardContent>
+                    ))}
                   </div>
-                </Card>
-              ))}
+                </div>
+
+                {/* Botón siguiente */}
+                <Button 
+                  variant="outline" 
+                  size="icon"
+                  onClick={() => setCarouselIndex(Math.min(currentActivities.length - 3, carouselIndex + 3))}
+                  disabled={carouselIndex >= currentActivities.length - 3}
+                  className="shrink-0 h-12 w-12 border-green-200 hover:bg-green-50"
+                >
+                  <ChevronRight className="h-6 w-6" />
+                </Button>
+              </div>
+
+              {/* Indicadores de página */}
+              <div className="flex justify-center mt-6 gap-2">
+                {Array.from({ length: Math.ceil(currentActivities.length / 3) }).map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCarouselIndex(index * 3)}
+                    className={`w-2 h-2 rounded-full transition-colors ${
+                      Math.floor(carouselIndex / 3) === index 
+                        ? 'bg-green-600' 
+                        : 'bg-gray-300 hover:bg-gray-400'
+                    }`}
+                  />
+                ))}
+              </div>
             </div>
           )}
         </div>
