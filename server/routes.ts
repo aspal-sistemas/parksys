@@ -2972,6 +2972,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } else {
           // FormData pero sin archivo - debe ser URL externa
           documentData = { ...req.body, parkId };
+          
+          // Validar que al menos haya título y URL
+          if (!documentData.title || !documentData.fileUrl) {
+            return res.status(400).json({ 
+              message: "Para documentos por URL se requiere título y URL del archivo",
+              missing: {
+                title: !documentData.title,
+                fileUrl: !documentData.fileUrl
+              }
+            });
+          }
+          
           if (!documentData.fileType && documentData.fileUrl) {
             const url = documentData.fileUrl.toLowerCase();
             if (url.includes('.pdf')) documentData.fileType = 'application/pdf';
@@ -3005,11 +3017,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
             title: !documentData.title,
             fileUrl: !documentData.fileUrl,
             fileType: !documentData.fileType
-          }
+          },
+          received: documentData
         });
       }
       
-      const data = insertDocumentSchema.parse(documentData);
+      // Crear la estructura de datos correcta para el storage
+      const data = {
+        parkId: documentData.parkId,
+        title: documentData.title,
+        fileUrl: documentData.fileUrl,
+        fileType: documentData.fileType,
+        description: documentData.description || '',
+        uploadedById: req.user?.id || null
+      };
       const result = await storage.createDocument(data);
       
       res.status(201).json(result);

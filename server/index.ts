@@ -951,7 +951,6 @@ app.get("/api/parks/:parkId/documents", async (req: Request, res: Response) => {
         file_size as "fileSize",
         file_type as "fileType",
         description,
-        category,
         created_at as "createdAt"
       FROM documents 
       WHERE park_id = $1 

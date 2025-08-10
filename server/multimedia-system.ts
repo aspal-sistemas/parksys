@@ -267,7 +267,6 @@ export function registerMultimediaRoutes(app: any, apiRouter: Router, isAuthenti
           file_size as "fileSize",
           file_type as "fileType",
           description,
-          category,
           created_at as "createdAt"
         FROM documents 
         WHERE park_id = $1 

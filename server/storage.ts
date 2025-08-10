@@ -1474,7 +1474,6 @@ DatabaseStorage.prototype.getParkDocuments = async function(parkId: number): Pro
         file_size as "fileSize",
         file_type as "fileType",
         description,
-        category,
         uploaded_by_id as "uploadedById",
         created_at as "createdAt",
         updated_at as "updatedAt"
@@ -1496,9 +1495,9 @@ DatabaseStorage.prototype.createDocument = async function(documentData: any): Pr
     console.log(`📝 STORAGE: Creando documento:`, documentData);
     const result = await pool.query(`
       INSERT INTO documents (
-        park_id, title, file_url, file_type, description, category, uploaded_by_id, created_at, updated_at
+        park_id, title, file_url, file_type, description, uploaded_by_id, created_at, updated_at
       ) VALUES (
-        $1, $2, $3, $4, $5, $6, $7, NOW(), NOW()
+        $1, $2, $3, $4, $5, $6, NOW(), NOW()
       ) RETURNING 
         id,
         park_id as "parkId",
@@ -1507,7 +1506,6 @@ DatabaseStorage.prototype.createDocument = async function(documentData: any): Pr
         file_size as "fileSize",
         file_type as "fileType",
         description,
-        category,
         uploaded_by_id as "uploadedById",
         created_at as "createdAt",
         updated_at as "updatedAt"
@@ -1517,7 +1515,6 @@ DatabaseStorage.prototype.createDocument = async function(documentData: any): Pr
       documentData.fileUrl,
       documentData.fileType,
       documentData.description || '',
-      documentData.category || 'general',
       documentData.uploadedById || null
     ]);
     
@@ -1542,7 +1539,6 @@ DatabaseStorage.prototype.getDocument = async function(id: number): Promise<any>
         file_size as "fileSize",
         file_type as "fileType",
         description,
-        category,
         uploaded_by_id as "uploadedById",
         created_at as "createdAt",
         updated_at as "updatedAt"
