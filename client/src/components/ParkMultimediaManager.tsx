@@ -237,26 +237,22 @@ export default function ParkMultimediaManager({ parkId }: ParkMultimediaManagerP
 
   // Mutaciones para documentos
   const uploadDocumentMutation = useMutation({
-    mutationFn: async (data: FormData | { title: string; description: string; category: string; fileUrl: string; fileType: string }) => {
-      if (data instanceof FormData) {
-        const response = await fetch(`/api/parks/${parkId}/documents`, {
-          method: 'POST',
-          headers: {
-            'Authorization': 'Bearer direct-token-1750522117022',
-            'X-User-Id': '1',
-            'X-User-Role': 'super_admin'
-          },
-          body: data
-        });
-        if (!response.ok) throw new Error('Error subiendo documento');
-        return response.json();
-      } else {
-        const response = await apiRequest(`/api/parks/${parkId}/documents`, {
-          method: 'POST',
-          data
-        });
-        return response.json();
+    mutationFn: async (data: FormData) => {
+      const response = await fetch(`/api/parks/${parkId}/documents`, {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer direct-token-1750522117022',
+          'X-User-Id': '1',
+          'X-User-Role': 'super_admin'
+        },
+        body: data
+      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Error uploading document:', errorText);
+        throw new Error('Error subiendo documento');
       }
+      return response.json();
     },
     onSuccess: () => {
       toast({
@@ -363,13 +359,15 @@ export default function ParkMultimediaManager({ parkId }: ParkMultimediaManagerP
         fileType
       });
       
-      uploadDocumentMutation.mutate({
-        title: newDocumentTitle,
-        description: newDocumentDescription,
-        category: newDocumentCategory,
-        fileUrl: newDocumentUrl,
-        fileType
-      });
+      // Crear FormData para URL también
+      const formData = new FormData();
+      formData.append('title', newDocumentTitle);
+      formData.append('description', newDocumentDescription);
+      formData.append('category', newDocumentCategory);
+      formData.append('fileUrl', newDocumentUrl);
+      formData.append('fileType', fileType);
+      
+      uploadDocumentMutation.mutate(formData);
     }
   };
 
