@@ -610,7 +610,7 @@ function ActivitiesPage() {
                     }}
                   >
                     {currentActivities.map((activity) => (
-                      <div key={activity.id} className="w-1/3 flex-shrink-0">
+                      <div key={activity.id} className="flex-none" style={{ width: 'calc((100% - 3rem) / 3)' }}>
                         <CarouselActivityCard activity={activity} />
                       </div>
                     ))}
