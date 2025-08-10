@@ -652,12 +652,14 @@ function ActivitiesPage() {
 
       {/* Ad Space - ID 6 */}
       <section className="max-w-7xl mx-auto px-4 py-6">
-        <AdSpace 
-          spaceId="6" 
-          position="banner" 
-          pageType="activities" 
-          className=""
-        />
+        <div className="max-w-4xl mx-auto">
+          <AdSpace 
+            spaceId="6" 
+            position="banner" 
+            pageType="activities" 
+            className=""
+          />
+        </div>
       </section>
 
       {/* Calendario de Eventos */}

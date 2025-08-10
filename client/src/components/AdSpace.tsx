@@ -336,9 +336,31 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
             </div>
           </>
         ) : position === 'banner' ? (
-          // Layout específico para banner - contenido multimedia completo
-          <div className="w-full h-full">
+          // Layout específico para banner - contenido multimedia completo con texto superpuesto
+          <div className="w-full h-full relative">
             {advertisement.imageUrl && renderMedia("w-full h-full object-cover")}
+            {/* Overlay con gradiente para mejor legibilidad del texto */}
+            <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent"></div>
+            {/* Texto superpuesto */}
+            <div className="absolute inset-0 flex items-center justify-start p-8">
+              <div className="text-white max-w-md">
+                <h3 className="text-2xl font-bold mb-2 drop-shadow-lg">
+                  {advertisement.title}
+                </h3>
+                <p className="text-white/90 text-sm mb-4 drop-shadow-md line-clamp-3">
+                  {advertisement.description}
+                </p>
+                <button 
+                  className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white border border-white/30 py-2 px-6 rounded-lg transition-all duration-200 font-medium"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAdClick(e);
+                  }}
+                >
+                  {advertisement.buttonText || 'Conocer más'}
+                </button>
+              </div>
+            </div>
           </div>
         ) : isCardType(position) ? (
           // Layout tipo tarjeta para TODOS los espacios promocionales
