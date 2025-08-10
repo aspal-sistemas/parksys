@@ -958,7 +958,11 @@ const FaunaSpeciesAdmin: React.FC = () => {
                   <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>
                     Cancelar
                   </Button>
-                  <Button type="submit" disabled={updateMutation.isPending}>
+                  <Button 
+                    type="submit" 
+                    disabled={updateMutation.isPending}
+                    onClick={() => console.log('🔄 Botón Actualizar Especie clickeado')}
+                  >
                     {updateMutation.isPending ? 'Actualizando...' : 'Actualizar Especie'}
                   </Button>
                 </div>

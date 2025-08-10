@@ -224,7 +224,11 @@ router.post('/species', async (req, res) => {
 router.put('/species/:id', async (req, res) => {
   try {
     const id = parseInt(req.params.id);
+    console.log(`🔄 PUT request recibido para especie ID: ${id}`);
+    console.log('📋 Datos recibidos para actualización:', JSON.stringify(req.body, null, 2));
+    
     const validatedData = insertFaunaSpeciesSchema.parse(req.body);
+    console.log('✅ Datos validados correctamente:', validatedData);
     
     const updatedSpecies = await db
       .update(faunaSpecies)
@@ -236,19 +240,22 @@ router.put('/species/:id', async (req, res) => {
       .returning();
 
     if (updatedSpecies.length === 0) {
+      console.log(`❌ Especie con ID ${id} no encontrada`);
       return res.status(404).json({ 
         success: false, 
         error: 'Especie no encontrada' 
       });
     }
 
+    console.log('✅ Especie actualizada exitosamente:', updatedSpecies[0]);
     res.json({
       success: true,
       data: updatedSpecies[0]
     });
   } catch (error) {
-    console.error('Error updating fauna species:', error);
+    console.error('❌ Error updating fauna species:', error);
     if (error instanceof z.ZodError) {
+      console.log('❌ Error de validación Zod:', error.errors);
       return res.status(400).json({ 
         success: false, 
         error: 'Datos inválidos',
