@@ -947,7 +947,6 @@ app.get("/api/parks/:parkId/documents", async (req: Request, res: Response) => {
         id, 
         park_id as "parkId", 
         title, 
-        file_path as "filePath",
         file_url as "fileUrl",
         file_size as "fileSize",
         file_type as "fileType",

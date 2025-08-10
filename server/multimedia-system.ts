@@ -263,7 +263,6 @@ export function registerMultimediaRoutes(app: any, apiRouter: Router, isAuthenti
           id, 
           park_id as "parkId", 
           title, 
-          file_path as "filePath",
           file_url as "fileUrl",
           file_size as "fileSize",
           file_type as "fileType",

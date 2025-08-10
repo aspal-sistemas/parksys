@@ -2957,17 +2957,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       let documentData;
       
-      // Si es FormData (archivo subido), los datos están en req.body directamente
+      // Si es FormData (archivo subido), verificar si hay archivo real
       if (req.headers['content-type']?.includes('multipart/form-data')) {
-        documentData = {
-          parkId,
-          title: req.body.title,
-          description: req.body.description || '',
-          category: req.body.category || 'general',
-          fileUrl: req.file ? `/uploads/documents/${req.file.filename}` : '',
-          fileType: req.file ? req.file.mimetype : 'application/octet-stream'
-        };
-        console.log(`📎 FormData upload - File info:`, req.file);
+        if (req.file) {
+          documentData = {
+            parkId,
+            title: req.body.title,
+            description: req.body.description || '',
+            category: req.body.category || 'general',
+            fileUrl: `/uploads/documents/${req.file.filename}`,
+            fileType: req.file.mimetype
+          };
+          console.log(`📎 FormData upload - Archivo subido:`, req.file);
+        } else {
+          // FormData pero sin archivo - debe ser URL externa
+          documentData = { ...req.body, parkId };
+          if (!documentData.fileType && documentData.fileUrl) {
+            const url = documentData.fileUrl.toLowerCase();
+            if (url.includes('.pdf')) documentData.fileType = 'application/pdf';
+            else if (url.includes('.doc')) documentData.fileType = 'application/msword';
+            else if (url.includes('.xls')) documentData.fileType = 'application/vnd.ms-excel';
+            else documentData.fileType = 'application/octet-stream';
+          }
+          console.log(`📎 FormData sin archivo - URL externa:`, documentData);
+        }
       } else {
         // Si es JSON (URL externa)
         documentData = { ...req.body, parkId };
