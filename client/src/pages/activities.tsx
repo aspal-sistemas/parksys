@@ -661,9 +661,9 @@ function ActivitiesPage() {
               ))}
             </div>
           ) : (
-            /* Tarjetas horizontales - mostrar 3 inicialmente */
+            /* Tarjetas horizontales - mostrar 5 inicialmente */
             <div className="space-y-4">
-              {(showAllActivities ? currentActivities : currentActivities.slice(0, 3)).map((activity, index) => (
+              {(showAllActivities ? currentActivities : currentActivities.slice(0, 5)).map((activity, index) => (
                 <HorizontalActivityCard 
                   key={activity.id} 
                   activity={activity} 
@@ -673,13 +673,13 @@ function ActivitiesPage() {
               ))}
               
               {/* Botón Ver más */}
-              {!showAllActivities && currentActivities.length > 3 && (
+              {!showAllActivities && currentActivities.length > 5 && (
                 <div className="text-center pt-6">
                   <Button 
                     onClick={() => setShowAllActivities(true)}
                     className="bg-green-600 hover:bg-green-700 text-white px-8 py-3"
                   >
-                    Ver más ({currentActivities.length - 3} actividades restantes)
+                    Ver más ({currentActivities.length - 5} actividades restantes)
                   </Button>
                 </div>
               )}
