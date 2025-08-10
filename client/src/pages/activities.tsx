@@ -75,12 +75,26 @@ const categoryColors = {
 };
 
 // Componente para tarjeta horizontal de actividad
-function HorizontalActivityCard({ activity }: { activity: ActivityData }) {
+function HorizontalActivityCard({ 
+  activity, 
+  allActivities, 
+  currentIndex 
+}: { 
+  activity: ActivityData;
+  allActivities: ActivityData[];
+  currentIndex: number;
+}) {
   const handleActivityClick = () => {
     window.location.href = `/activity/${activity.id}`;
   };
 
   const categoryColor = categoryColors[activity.category as keyof typeof categoryColors] || 'bg-gray-100 text-gray-800 border-gray-200';
+  
+  // Calcular el conteo de actividades del parque
+  const parkActivitiesCount = allActivities.filter(a => a.parkId === activity.parkId).length;
+  const currentActivityInPark = allActivities
+    .filter(a => a.parkId === activity.parkId)
+    .findIndex(a => a.id === activity.id) + 1;
 
   return (
     <Card 
@@ -104,7 +118,7 @@ function HorizontalActivityCard({ activity }: { activity: ActivityData }) {
           
           {/* Badge de categoría - esquina superior izquierda */}
           {activity.category && (
-            <Badge className={`${categoryColor} border text-xs absolute top-2 left-2 shadow-md`}>
+            <Badge className={`${categoryColor} border text-xs absolute top-2 left-2 shadow-md z-10`}>
               {activity.category}
             </Badge>
           )}
@@ -139,8 +153,11 @@ function HorizontalActivityCard({ activity }: { activity: ActivityData }) {
             <p className="text-base font-medium text-gray-900 leading-tight">
               {activity.parkName || 'Parque no especificado'}
             </p>
+            <p className="text-sm text-gray-500 mt-1 leading-tight italic">
+              {currentActivityInPark} de {parkActivitiesCount} actividades
+            </p>
             {activity.location && (
-              <p className="text-sm text-gray-500 mt-1 leading-tight">
+              <p className="text-xs text-gray-400 mt-1 leading-tight">
                 {activity.location}
               </p>
             )}
@@ -659,8 +676,13 @@ function ActivitiesPage() {
           ) : (
             /* Tarjetas horizontales - mostrar 3 inicialmente */
             <div className="space-y-4">
-              {(showAllActivities ? currentActivities : currentActivities.slice(0, 3)).map((activity) => (
-                <HorizontalActivityCard key={activity.id} activity={activity} />
+              {(showAllActivities ? currentActivities : currentActivities.slice(0, 3)).map((activity, index) => (
+                <HorizontalActivityCard 
+                  key={activity.id} 
+                  activity={activity} 
+                  allActivities={activitiesData}
+                  currentIndex={index}
+                />
               ))}
               
               {/* Botón Ver más */}
