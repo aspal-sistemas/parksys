@@ -224,6 +224,26 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
     return pos.startsWith('sidebar-') || pos === 'card' || pos === 'profile';
   };
 
+  // Función para obtener imagen de fondo temática basada en el contenido del anuncio
+  const getThemeBackgroundImage = (title: string, description: string) => {
+    const content = `${title} ${description}`.toLowerCase();
+    
+    if (content.includes('yoga') || content.includes('meditaci')) {
+      return 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60';
+    } else if (content.includes('deporte') || content.includes('futbol') || content.includes('ejercicio')) {
+      return 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60';
+    } else if (content.includes('parque') || content.includes('naturaleza') || content.includes('arbol') || content.includes('verde')) {
+      return 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60';
+    } else if (content.includes('instructor') || content.includes('certificaci') || content.includes('profesional')) {
+      return 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60';
+    } else if (content.includes('vivero') || content.includes('plantas') || content.includes('especie')) {
+      return 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60';
+    }
+    
+    // Imagen por defecto para actividades en parques
+    return 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60';
+  };
+
   // Función para obtener colores de botón basados en posición o hash del spaceId
   const getButtonColor = (pos: string, spaceId: string | number) => {
     // Colores predefinidos para posiciones específicas
@@ -254,9 +274,12 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
     return colors[spaceIdNum % colors.length];
   };
 
+  // Obtener imagen de fondo para el anuncio actual
+  const backgroundImage = getThemeBackgroundImage(advertisement.title, advertisement.description);
+
   // Estilos base según la posición
   const baseStyles = {
-    header: 'w-full tree-species-wide-container h-24 bg-white border border-gray-200 rounded-lg shadow-sm mb-6',
+    header: 'w-full tree-species-wide-container h-24 border border-gray-200 rounded-lg shadow-sm mb-6 relative overflow-hidden',
     hero: 'w-full max-w-4xl mx-auto h-20 bg-white/95 backdrop-blur-sm border border-white/20 rounded-lg shadow-lg',
     sidebar: 'w-full h-64 bg-white border border-gray-200 rounded-lg shadow-sm mb-6',
     profile: 'bg-white rounded-lg border shadow-sm p-4',
@@ -280,13 +303,39 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
         isCardType(position) ? '' : 'cursor-pointer'
       }`} 
       onClick={isCardType(position) ? undefined : handleAdClick}
-      style={{ minHeight: position === 'hero' ? '80px' : undefined }}
+      style={{ 
+        minHeight: position === 'hero' ? '80px' : undefined,
+        ...(position === 'header' ? {
+          backgroundImage: `url(${backgroundImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        } : {})
+      }}
     >
-      {/* Botón de cerrar removido para usuarios públicos */}
+      {/* Overlay oscuro para header con imagen de fondo */}
+      {position === 'header' && (
+        <div className="absolute inset-0 bg-black/50"></div>
+      )}
 
       {/* Contenido del anuncio */}
-      <div className={`h-full ${position === 'sidebar' ? 'flex flex-col' : position === 'banner' ? 'flex items-center justify-center' : isCardType(position) ? 'text-center' : 'flex items-center justify-between'} ${position === 'banner' ? 'p-0' : isCardType(position) ? '' : 'p-4'}`}>
-        {position === 'banner' ? (
+      <div className={`h-full relative z-10 ${position === 'sidebar' ? 'flex flex-col' : position === 'banner' ? 'flex items-center justify-center' : position === 'header' ? 'flex items-center justify-between text-white' : isCardType(position) ? 'text-center' : 'flex items-center justify-between'} ${position === 'banner' ? 'p-0' : isCardType(position) ? '' : 'p-4'}`}>
+        {position === 'header' ? (
+          // Layout específico para header con fondo de imagen y texto blanco
+          <>
+            <div className="flex-1 min-w-0">
+              <h4 className="font-semibold text-white text-lg mb-1">
+                {advertisement.title}
+              </h4>
+              <p className="text-white/90 text-sm line-clamp-2">
+                {advertisement.description}
+              </p>
+            </div>
+            <div className="flex-shrink-0 ml-4">
+              <ExternalLink className="h-5 w-5 text-white/80" />
+            </div>
+          </>
+        ) : position === 'banner' ? (
           // Layout específico para banner - contenido multimedia completo
           <div className="w-full h-full">
             {advertisement.imageUrl && renderMedia("w-full h-full object-cover")}
