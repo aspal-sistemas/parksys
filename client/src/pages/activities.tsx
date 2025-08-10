@@ -774,10 +774,6 @@ function ActivitiesPage() {
 
       {/* AdSpace específico para Yoga */}
       <section className="max-w-7xl mx-auto px-4 py-6">
-        <div className="text-center mb-4">
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">¿Te interesa el Yoga?</h3>
-          <p className="text-sm text-gray-500">Descubre más sobre nuestras clases de yoga y bienestar</p>
-        </div>
         <AdSpace 
           spaceId="23" 
           position="banner" 
