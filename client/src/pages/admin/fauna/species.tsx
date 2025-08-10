@@ -68,6 +68,11 @@ const FaunaSpeciesAdmin: React.FC = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Reset página cuando cambian los filtros
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, categoryFilter, conservationFilter]);
+
   // Query para obtener especies de fauna
   const { data: speciesResponse, isLoading } = useQuery<FaunaSpeciesWithPagination>({
     queryKey: ['/api/fauna/species', currentPage, itemsPerPage, searchTerm, categoryFilter, conservationFilter],
@@ -774,21 +779,32 @@ const FaunaSpeciesAdmin: React.FC = () => {
               {Math.min(pagination.page * pagination.limit, pagination.total)} de{' '}
               {pagination.total} especies
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 items-center">
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                disabled={pagination.page <= 1}
+                onClick={() => {
+                  console.log(`🔄 Navegando a página anterior desde ${currentPage}`);
+                  setCurrentPage(currentPage - 1);
+                }}
+                disabled={currentPage <= 1}
               >
                 <ChevronLeft className="h-4 w-4" />
                 Anterior
               </Button>
+              
+              <span className="px-3 py-1 bg-primary text-primary-foreground rounded text-sm">
+                {currentPage} de {pagination.totalPages}
+              </span>
+              
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, pagination.totalPages))}
-                disabled={pagination.page >= pagination.totalPages}
+                onClick={() => {
+                  console.log(`🔄 Navegando a página siguiente desde ${currentPage}`);
+                  setCurrentPage(currentPage + 1);
+                }}
+                disabled={currentPage >= pagination.totalPages}
               >
                 Siguiente
                 <ChevronRight className="h-4 w-4" />
