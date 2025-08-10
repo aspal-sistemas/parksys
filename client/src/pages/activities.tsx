@@ -139,7 +139,7 @@ function HorizontalActivityCard({
             
             {/* Nombre en la parte inferior izquierda */}
             <div className="flex justify-start">
-              <h3 className="font-semibold text-xl text-white line-clamp-2 drop-shadow-lg">
+              <h3 className="font-semibold text-2xl text-white line-clamp-2 drop-shadow-lg">
                 {activity.title}
               </h3>
             </div>
@@ -216,7 +216,7 @@ function CarouselActivityCard({ activity, isCenter = false }: { activity: Activi
         {/* Contenido superpuesto con fondo semitransparente */}
         <div className="absolute bottom-0 left-0 right-0 bg-white/80 backdrop-blur-sm p-4 space-y-2">
           {/* Título de la actividad */}
-          <h3 className="font-semibold text-base text-gray-900 group-hover:text-green-600 transition-colors line-clamp-2">
+          <h3 className="font-semibold text-lg text-gray-900 group-hover:text-green-600 transition-colors line-clamp-2">
             {activity.title}
           </h3>
           
@@ -394,7 +394,7 @@ function ActivityCard({ activity, viewMode }: { activity: ActivityData; viewMode
       </div>
       
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg group-hover:text-green-600 transition-colors">
+        <CardTitle className="text-xl group-hover:text-green-600 transition-colors">
           {activity.title}
         </CardTitle>
       </CardHeader>
