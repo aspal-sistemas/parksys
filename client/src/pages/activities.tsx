@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Link, useLocation, useNavigate } from 'wouter';
+import { Link, useLocation } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -88,8 +88,8 @@ function HorizontalActivityCard({ activity }: { activity: ActivityData }) {
       onClick={handleActivityClick}
     >
       <div className="flex h-32">
-        {/* Imagen */}
-        <div className="flex-shrink-0 w-48 relative">
+        {/* Imagen con información superpuesta - 3/4 de la tarjeta */}
+        <div className="w-3/4 relative">
           {activity.imageUrl ? (
             <img 
               src={activity.imageUrl} 
@@ -101,39 +101,46 @@ function HorizontalActivityCard({ activity }: { activity: ActivityData }) {
               <Activity className="h-8 w-8 text-green-500" />
             </div>
           )}
-        </div>
-
-        {/* Contenido */}
-        <div className="flex-1 p-4 flex flex-col justify-between">
-          <div>
-            <h3 className="font-semibold text-lg text-gray-900 mb-1 line-clamp-1">
+          
+          {/* Badge de categoría - esquina superior izquierda */}
+          {activity.category && (
+            <Badge className={`${categoryColor} border text-xs absolute top-2 left-2 shadow-md`}>
+              {activity.category}
+            </Badge>
+          )}
+          
+          {/* Información superpuesta sobre la foto */}
+          <div className="absolute inset-0 bg-black bg-opacity-40 flex flex-col justify-end p-3">
+            <h3 className="font-semibold text-lg text-white mb-1 line-clamp-1 drop-shadow-lg">
               {activity.title}
             </h3>
-            <p className="text-gray-600 text-sm mb-2 line-clamp-2">
+            <p className="text-gray-200 text-sm line-clamp-2 drop-shadow-lg">
               {activity.description}
             </p>
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4 text-sm text-gray-500">
-              {activity.parkName && (
-                <div className="flex items-center gap-1">
-                  <MapPin className="h-4 w-4" />
-                  <span>{activity.parkName}</span>
-                </div>
-              )}
-              {activity.price !== undefined && (
-                <div className="flex items-center gap-1">
-                  <DollarSign className="h-4 w-4" />
-                  <span>{activity.price > 0 ? `$${Number(activity.price).toLocaleString('es-MX')}` : 'Gratis'}</span>
-                </div>
-              )}
-            </div>
             
-            {activity.category && (
-              <Badge className={`${categoryColor} border text-xs`}>
-                {activity.category}
-              </Badge>
+            {/* Precio */}
+            {activity.price !== undefined && (
+              <div className="flex items-center gap-1 mt-2 text-white text-sm drop-shadow-lg">
+                <DollarSign className="h-4 w-4" />
+                <span className="font-medium">
+                  {activity.price > 0 ? `$${Number(activity.price).toLocaleString('es-MX')}` : 'Gratis'}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Información del parque - 1/4 restante */}
+        <div className="w-1/4 p-3 bg-gray-50 flex flex-col justify-center">
+          <div className="text-center">
+            <MapPin className="h-6 w-6 text-green-600 mx-auto mb-2" />
+            <p className="text-sm font-medium text-gray-900 leading-tight">
+              {activity.parkName || 'Parque no especificado'}
+            </p>
+            {activity.location && (
+              <p className="text-xs text-gray-500 mt-1 leading-tight">
+                {activity.location}
+              </p>
             )}
           </div>
         </div>
