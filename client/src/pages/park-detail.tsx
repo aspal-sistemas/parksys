@@ -143,13 +143,49 @@ const ParkDetail: React.FC = () => {
             )}
             
             {/* Tabs */}
-            <Tabs defaultValue="info" className="mt-6">
+            <Tabs defaultValue="images" className="mt-6">
               <TabsList>
-                <TabsTrigger value="info">Información</TabsTrigger>
+                <TabsTrigger value="images">Galería de Imágenes</TabsTrigger>
+                <TabsTrigger value="info">Información General</TabsTrigger>
                 <TabsTrigger value="amenities">Amenidades</TabsTrigger>
                 <TabsTrigger value="activities">Actividades</TabsTrigger>
-                <TabsTrigger value="images">Imágenes</TabsTrigger>
               </TabsList>
+              
+              <TabsContent value="images" className="mt-4">
+                {isAuthenticated ? (
+                  <div className="space-y-6">
+                    <div className="flex justify-between items-center">
+                      <h2 className="text-xl font-semibold">Gestión de Imágenes</h2>
+                      <p className="text-sm text-gray-500">Administra las imágenes del parque</p>
+                    </div>
+                    <ParkImageManager parkId={Number(id)} />
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <h2 className="text-xl font-semibold">Galería de Imágenes</h2>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {mainImage && (
+                        <div className="col-span-full mb-4">
+                          <img 
+                            src={mainImage} 
+                            alt={`Imagen principal de ${park.name}`}
+                            className="w-full h-auto rounded-lg"
+                          />
+                        </div>
+                      )}
+                      {additionalImages && additionalImages.map((img, index) => (
+                        <div key={index} className="aspect-square overflow-hidden rounded-lg">
+                          <img
+                            src={img}
+                            alt={`Vista de ${park.name} ${index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </TabsContent>
               
               <TabsContent value="info" className="mt-4">
                 {park.description && (
@@ -276,42 +312,6 @@ const ParkDetail: React.FC = () => {
                 ) : (
                   <div className="text-center py-10 bg-gray-50 rounded-lg">
                     <p className="text-gray-500">No hay actividades programadas actualmente.</p>
-                  </div>
-                )}
-              </TabsContent>
-              
-              <TabsContent value="images" className="mt-4">
-                {isAuthenticated ? (
-                  <div className="space-y-6">
-                    <div className="flex justify-between items-center">
-                      <h2 className="text-xl font-semibold">Gestión de Imágenes</h2>
-                      <p className="text-sm text-gray-500">Administra las imágenes del parque</p>
-                    </div>
-                    <ParkImageManager parkId={Number(id)} />
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <h2 className="text-xl font-semibold">Galería de Imágenes</h2>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                      {mainImage && (
-                        <div className="col-span-full mb-4">
-                          <img 
-                            src={mainImage} 
-                            alt={`Imagen principal de ${park.name}`}
-                            className="w-full h-auto rounded-lg"
-                          />
-                        </div>
-                      )}
-                      {additionalImages && additionalImages.map((img, index) => (
-                        <div key={index} className="aspect-square overflow-hidden rounded-lg">
-                          <img
-                            src={img}
-                            alt={`Vista de ${park.name} ${index + 1}`}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      ))}
-                    </div>
                   </div>
                 )}
               </TabsContent>
