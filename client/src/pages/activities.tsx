@@ -316,9 +316,6 @@ function ActivitiesPage() {
   const [filterPark, setFilterPark] = useState('all');
   const [filterCategory, setFilterCategory] = useState('all');
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const activitiesPerPage = 9;
-
   // Obtener todas las actividades con imágenes
   const { data: activitiesData = [], isLoading } = useQuery<ActivityData[]>({
     queryKey: ['/api/actividades-fotos'],
@@ -348,11 +345,8 @@ function ActivitiesPage() {
     });
   }, [activitiesData, searchQuery, filterPark, filterCategory]);
 
-  const totalActivities = filteredActivities.length;
-  const totalPages = Math.ceil(totalActivities / activitiesPerPage);
-  const startIndex = (currentPage - 1) * activitiesPerPage;
-  const endIndex = startIndex + activitiesPerPage;
-  const currentActivities = filteredActivities.slice(startIndex, endIndex);
+  // Mostrar solo las 6 actividades más populares (las primeras 6 de los resultados filtrados)
+  const currentActivities = filteredActivities.slice(0, 6);
 
   const uniqueCategories = Array.from(new Set(activitiesData.map(activity => activity.category).filter(Boolean)));
 
@@ -405,7 +399,7 @@ function ActivitiesPage() {
             <Separator orientation="vertical" className="h-6 bg-green-300" />
             <div className="flex items-center gap-2">
               <Calendar className="h-5 w-5" />
-              <span>{totalActivities} actividades</span>
+              <span>{activitiesData.length} actividades</span>
             </div>
           </div>
         </div>
@@ -591,8 +585,12 @@ function ActivitiesPage() {
               <>
                 {/* Header de resultados */}
                 <div className="flex items-center justify-between mb-6">
-                  <div className="text-gray-600">
-                    Mostrando {startIndex + 1}-{Math.min(endIndex, totalActivities)} de {totalActivities} actividades
+                  <div>
+                    <div className="flex items-center gap-3 mb-1">
+                      <Star className="h-6 w-6 text-yellow-500" />
+                      <h2 className="text-2xl font-semibold text-gray-800">Actividades más populares</h2>
+                    </div>
+                    <p className="text-sm text-gray-600 ml-9">Las 6 actividades más destacadas de nuestros parques</p>
                   </div>
                   <Link href="/parks">
                     <Button variant="outline" size="sm" className="text-green-600 border-green-200 hover:bg-green-50">
@@ -604,7 +602,7 @@ function ActivitiesPage() {
 
                 {/* Lista horizontal de actividades */}
                 <div className="space-y-6">
-                  {currentActivities.map((activity: any, index) => (
+                  {currentActivities.slice(0, 6).map((activity: any, index) => (
                     <div key={activity.id}>
                       <Card className="border border-gray-200 hover:border-green-300 hover:shadow-md transition-all duration-200">
                         <div className="flex">
@@ -696,45 +694,7 @@ function ActivitiesPage() {
                   ))}
                 </div>
 
-                {/* Paginación */}
-                {totalPages > 1 && (
-                  <div className="flex items-center justify-center gap-2 mt-12 mb-16">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage(currentPage - 1)}
-                      disabled={currentPage === 1}
-                      className="border-green-200 text-green-700 hover:bg-green-50"
-                    >
-                      Anterior
-                    </Button>
-                    
-                    {[...Array(totalPages)].map((_, i) => (
-                      <Button
-                        key={i + 1}
-                        variant={currentPage === i + 1 ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => setCurrentPage(i + 1)}
-                        className={currentPage === i + 1 
-                          ? 'bg-green-600 hover:bg-green-700' 
-                          : 'border-green-200 text-green-700 hover:bg-green-50'
-                        }
-                      >
-                        {i + 1}
-                      </Button>
-                    ))}
-                    
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage(currentPage + 1)}
-                      disabled={currentPage === totalPages}
-                      className="border-green-200 text-green-700 hover:bg-green-50"
-                    >
-                      Siguiente
-                    </Button>
-                  </div>
-                )}
+
               </>
             )}
           </div>
