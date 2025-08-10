@@ -22,7 +22,7 @@ import {
   DollarSign,
   Trophy
 } from 'lucide-react';
-const heroImage = "/images/activities-hero.jpg";
+const heroImage = "/images/recorrido-nocturno-colomos-1024x683_1754846133930.jpg";
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
