@@ -67,7 +67,116 @@ const uploadCSV = multer({
   }
 });
 
-// Obtener todas las especies de fauna con paginación y filtros
+// ENDPOINT PÚBLICO: Obtener todas las especies de fauna para la página pública /fauna
+router.get('/public/species', async (req, res) => {
+  try {
+    console.log('🌍 Public fauna species request params:', req.query);
+    
+    const { 
+      page = '1', 
+      limit = '12', 
+      search = '', 
+      category = '',
+      conservation_status = '',
+      sort_by = 'commonName',
+      sort_order = 'asc'
+    } = req.query;
+
+    const pageNum = parseInt(page as string);
+    const limitNum = parseInt(limit as string);
+    const offset = (pageNum - 1) * limitNum;
+
+    // Construir filtros dinámicamente
+    const filters: any[] = [];
+    
+    if (search) {
+      filters.push(like(faunaSpecies.commonName, `%${search}%`));
+    }
+    
+    if (category && category !== 'all') {
+      filters.push(eq(faunaSpecies.category, category as any));
+    }
+    
+    if (conservation_status && conservation_status !== 'all') {
+      filters.push(eq(faunaSpecies.conservationStatus, conservation_status as any));
+    }
+
+    // Determinar orden
+    const orderBy = sort_order === 'desc' 
+      ? desc(faunaSpecies[sort_by as keyof typeof faunaSpecies] as any)
+      : asc(faunaSpecies[sort_by as keyof typeof faunaSpecies] as any);
+
+    // Obtener datos con filtros
+    const speciesQuery = db
+      .select()
+      .from(faunaSpecies)
+      .limit(limitNum)
+      .offset(offset)
+      .orderBy(orderBy);
+
+    // Aplicar filtros si existen
+    const species = filters.length > 0 
+      ? await speciesQuery.where(filters.length === 1 ? filters[0] : filters.reduce((acc, filter) => acc && filter))
+      : await speciesQuery;
+
+    // Obtener total para paginación
+    const totalQuery = filters.length > 0 
+      ? await db.select({ count: count() }).from(faunaSpecies).where(filters.length === 1 ? filters[0] : filters.reduce((acc, filter) => acc && filter))
+      : await db.select({ count: count() }).from(faunaSpecies);
+
+    const total = totalQuery[0].count as number;
+    const totalPages = Math.ceil(total / limitNum);
+
+    console.log('🌍 Public fauna pagination:', { page: pageNum, limit: limitNum, total, pages: totalPages });
+
+    res.json({
+      species,
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total,
+        totalPages
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Error fetching public fauna species:', error);
+    res.status(500).json({ 
+      error: 'Error al obtener las especies de fauna',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// ENDPOINT PÚBLICO: Obtener una especie específica por ID para página de detalle
+router.get('/public/species/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log('🌍 Public fauna species detail request for ID:', id);
+    
+    const [species] = await db
+      .select()
+      .from(faunaSpecies)
+      .where(eq(faunaSpecies.id, parseInt(id)))
+      .limit(1);
+
+    if (!species) {
+      return res.status(404).json({ error: 'Especie no encontrada' });
+    }
+
+    console.log('✅ Public fauna species found:', species.commonName);
+    res.json(species);
+
+  } catch (error) {
+    console.error('❌ Error fetching public fauna species by ID:', error);
+    res.status(500).json({ 
+      error: 'Error al obtener la especie',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// ENDPOINT ADMINISTRATIVO: Obtener todas las especies de fauna con paginación y filtros
 router.get('/species', async (req, res) => {
   try {
     console.log('📋 Fauna species request params:', req.query);
