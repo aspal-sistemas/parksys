@@ -648,7 +648,17 @@ function ActivitiesPage() {
         </div>
       </section>
 
-      {/* Ad Space */}
+      {/* Ad Space - ID 6 */}
+      <section className="max-w-7xl mx-auto px-4 py-6">
+        <AdSpace 
+          spaceId="6" 
+          position="banner" 
+          pageType="activities" 
+          className=""
+        />
+      </section>
+
+      {/* Ad Space - ID 15 */}
       <section className="max-w-7xl mx-auto px-4 py-6">
         <AdSpace 
           spaceId="15" 
