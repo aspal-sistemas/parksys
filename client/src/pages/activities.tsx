@@ -75,15 +75,15 @@ const categoryColors = {
 };
 
 // Tarjeta simplificada para carrusel
-function CarouselActivityCard({ activity }: { activity: ActivityData }) {
+function CarouselActivityCard({ activity, isCenter = false }: { activity: ActivityData; isCenter?: boolean }) {
   const categoryColor = categoryColors[activity.category as keyof typeof categoryColors] || 'bg-gray-100 text-gray-800 border-gray-200';
   const parksResponse = useQuery({ queryKey: ['/api/parks'] });
   const parksData = parksResponse.data || [];
   
   return (
-    <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 overflow-hidden border-0 shadow-sm h-full">
+    <Card className={`group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 overflow-hidden border-0 shadow-sm h-full ${isCenter ? 'scale-105 shadow-md' : ''}`}>
       {/* Imagen más grande - aspecto 4:3 */}
-      <div className="aspect-[4/3] relative overflow-hidden">
+      <div className={`${isCenter ? 'aspect-[3/2]' : 'aspect-[4/3]'} relative overflow-hidden`}>
         {activity.images && activity.images.length > 0 ? (
           <>
             <img 
@@ -587,54 +587,61 @@ function ActivitiesPage() {
               ))}
             </div>
           ) : (
-            /* Carrusel cuando no hay filtros */
+            /* Carrusel cuando no hay filtros - diseño 1/4 - 2/4 - 1/4 */
             <div className="relative">
               {/* Contenedor del carrusel */}
               <div className="overflow-hidden">
-                <div 
-                  className="flex gap-6 transition-transform duration-500 ease-in-out"
-                  style={{
-                    transform: `translateX(-${(carouselIndex / 3) * 100}%)`
-                  }}
-                >
-                  {currentActivities.map((activity) => (
-                    <div key={activity.id} className="flex-none" style={{ width: 'calc((100% - 3rem) / 3)' }}>
-                      <CarouselActivityCard activity={activity} />
-                    </div>
-                  ))}
+                <div className="flex gap-4">
+                  {/* Siempre mostrar 3 elementos visibles */}
+                  {[0, 1, 2].map((offset) => {
+                    const activityIndex = carouselIndex + offset;
+                    const activity = currentActivities[activityIndex];
+                    const isCenter = offset === 1; // El elemento del medio es central
+                    
+                    if (!activity) return null;
+                    
+                    return (
+                      <div 
+                        key={activity.id}
+                        className={`flex-none ${isCenter ? 'w-2/4' : 'w-1/4'}`}
+                      >
+                        <CarouselActivityCard activity={activity} isCenter={isCenter} />
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
-              {/* Botón anterior - posicionado encima */}
+              {/* Botón anterior - sobre tarjeta izquierda */}
               <Button 
                 variant="outline" 
                 size="icon"
-                onClick={() => setCarouselIndex(Math.max(0, carouselIndex - 3))}
+                onClick={() => setCarouselIndex(Math.max(0, carouselIndex - 1))}
                 disabled={carouselIndex === 0}
-                className="absolute left-4 top-1/2 -translate-y-1/2 z-10 h-12 w-12 border-green-200 hover:bg-green-50 bg-white shadow-lg"
+                className="absolute left-8 top-1/2 -translate-y-1/2 z-10 h-10 w-10 border-green-200 hover:bg-green-50 bg-white/90 shadow-lg"
               >
-                <ChevronLeft className="h-6 w-6" />
+                <ChevronLeft className="h-5 w-5" />
               </Button>
 
-              {/* Botón siguiente - posicionado encima */}
+              {/* Botón siguiente - sobre tarjeta derecha */}
               <Button 
                 variant="outline" 
                 size="icon"
-                onClick={() => setCarouselIndex(Math.min(currentActivities.length - 3, carouselIndex + 3))}
+                onClick={() => setCarouselIndex(Math.min(currentActivities.length - 3, carouselIndex + 1))}
                 disabled={carouselIndex >= currentActivities.length - 3}
-                className="absolute right-4 top-1/2 -translate-y-1/2 z-10 h-12 w-12 border-green-200 hover:bg-green-50 bg-white shadow-lg"
+                className="absolute right-8 top-1/2 -translate-y-1/2 z-10 h-10 w-10 border-green-200 hover:bg-green-50 bg-white/90 shadow-lg"
               >
-                <ChevronRight className="h-6 w-6" />
+                <ChevronRight className="h-5 w-5" />
               </Button>
 
               {/* Indicadores de página */}
               <div className="flex justify-center mt-6 gap-2">
-                {Array.from({ length: Math.ceil(currentActivities.length / 3) }).map((_, index) => (
+                {Array.from({ length: Math.max(1, currentActivities.length - 2) }).map((_, index) => (
                   <button
                     key={index}
-                    onClick={() => setCarouselIndex(index * 3)}
+                    onClick={() => setCarouselIndex(index)}
                     className={`w-2 h-2 rounded-full transition-colors ${
-                      Math.floor(carouselIndex / 3) === index 
+                      carouselIndex === index 
                         ? 'bg-green-600' 
                         : 'bg-gray-300 hover:bg-gray-400'
                     }`}
