@@ -1,0 +1,35 @@
+SUBMIT EJECUTADO {commonName: 'Perro del Monte', scientificName: 'Leucaena esculenta', family: 'Casuarinaceae', category: 'mamiferos', habitat: 'Habitat', …}
+Console.js:61 Datos del formulario: {commonName: 'Perro del Monte', scientificName: 'Leucaena esculenta', family: 'Casuarinaceae', category: 'mamiferos', habitat: 'Habitat', …}
+Console.js:61 Datos limpiados: {commonName: 'Perro del Monte', scientificName: 'Leucaena esculenta', family: 'Casuarinaceae', category: 'mamiferos', conservationStatus: 'estable', …}
+Console.js:61 🌐 [API REQUEST] POST /api/fauna/species
+injected.js:253  POST https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/api/fauna/species 400 (Bad Request)
+window.fetch @ Network.js:219
+apply @ injected.js:253
+apiRequest @ queryClient.ts:121
+mutationFn @ species.tsx:118
+fn @ @tanstack_react-query.js?v=8644f05e:1203
+run @ @tanstack_react-query.js?v=8644f05e:500
+start @ @tanstack_react-query.js?v=8644f05e:542
+execute @ @tanstack_react-query.js?v=8644f05e:1239
+await in execute
+mutate @ @tanstack_react-query.js?v=8644f05e:2655
+(anonymous) @ @tanstack_react-query.js?v=8644f05e:3371
+handleCreate @ species.tsx:204
+(anonymous) @ species.tsx:298
+(anonymous) @ chunk-L5SG6GRX.js?v=8644f05e:1465
+await in (anonymous)
+callCallback2 @ chunk-SKRUXVEK.js?v=8644f05e:3674
+invokeGuardedCallbackDev @ chunk-SKRUXVEK.js?v=8644f05e:3699
+invokeGuardedCallback @ chunk-SKRUXVEK.js?v=8644f05e:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-SKRUXVEK.js?v=8644f05e:3736
+executeDispatch @ chunk-SKRUXVEK.js?v=8644f05e:7014
+processDispatchQueueItemsInOrder @ chunk-SKRUXVEK.js?v=8644f05e:7034
+processDispatchQueue @ chunk-SKRUXVEK.js?v=8644f05e:7043
+dispatchEventsForPlugins @ chunk-SKRUXVEK.js?v=8644f05e:7051
+(anonymous) @ chunk-SKRUXVEK.js?v=8644f05e:7174
+batchedUpdates$1 @ chunk-SKRUXVEK.js?v=8644f05e:18913
+batchedUpdates @ chunk-SKRUXVEK.js?v=8644f05e:3579
+dispatchEventForPluginEventSystem @ chunk-SKRUXVEK.js?v=8644f05e:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-SKRUXVEK.js?v=8644f05e:5478
+dispatchEvent @ chunk-SKRUXVEK.js?v=8644f05e:5472
+dispatchDiscreteEvent @ chunk-SKRUXVEK.js?v=8644f05e:5449Understand this error

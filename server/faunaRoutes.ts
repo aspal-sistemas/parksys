@@ -117,26 +117,37 @@ router.get('/species/:id', async (req, res) => {
 router.post('/species', async (req, res) => {
   try {
     console.log('Datos recibidos en backend:', JSON.stringify(req.body, null, 2));
-    const validatedData = insertFaunaSpeciesSchema.parse(req.body);
+    console.log('Tipo de content-type:', req.get('Content-Type'));
+    console.log('Datos req.body directos:', req.body);
     
-    const newSpecies = await db
-      .insert(faunaSpecies)
-      .values(validatedData)
-      .returning();
+    // Intentar validar los datos
+    try {
+      const validatedData = insertFaunaSpeciesSchema.parse(req.body);
+      console.log('✅ Validación exitosa, datos válidos:', validatedData);
+      
+      const newSpecies = await db
+        .insert(faunaSpecies)
+        .values(validatedData)
+        .returning();
 
-    res.status(201).json({
-      success: true,
-      data: newSpecies[0]
-    });
-  } catch (error) {
-    console.error('Error creating fauna species:', error);
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ 
-        success: false, 
-        error: 'Datos inválidos',
-        details: error.errors 
+      res.status(201).json({
+        success: true,
+        data: newSpecies[0]
       });
+    } catch (validationError) {
+      console.error('❌ Error de validación Zod:', validationError);
+      if (validationError instanceof z.ZodError) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Datos inválidos',
+          details: validationError.errors,
+          receivedData: req.body
+        });
+      }
+      throw validationError;
     }
+  } catch (error) {
+    console.error('Error general creating fauna species:', error);
     res.status(500).json({ 
       success: false, 
       error: 'Error al crear la especie' 

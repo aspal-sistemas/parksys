@@ -180,7 +180,8 @@ const FaunaSpeciesAdmin: React.FC = () => {
       isMigratory: data.isMigratory || false,
       isEndangered: data.isEndangered || false,
       commonLocations: data.commonLocations || [],
-      iconColor: data.iconColor || '#16a085'
+      iconColor: data.iconColor || '#16a085',
+      iconType: data.iconType || 'system'
     };
 
     // Añadir campos opcionales solo si tienen valor
