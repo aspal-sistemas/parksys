@@ -506,7 +506,9 @@ export const documents = pgTable("documents", {
   title: text("title").notNull(),
   fileUrl: text("file_url").notNull(),
   fileType: text("file_type").notNull(),
+  fileSize: integer("file_size"),
   description: text("description"),
+  referenceUrl: text("reference_url"), // URL opcional de referencia
   uploadedById: integer("uploaded_by_id"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow()

@@ -325,50 +325,28 @@ export default function ParkMultimediaManager({ parkId }: ParkMultimediaManagerP
       return;
     }
 
-    // Validar que se haya proporcionado un archivo o URL
-    if (!newDocumentFile && !newDocumentUrl.trim()) {
+    // Priorizar archivo sobre URL - el archivo es obligatorio
+    if (!newDocumentFile) {
       toast({
         title: "Error", 
-        description: "Debe proporcionar un archivo o una URL del documento.",
+        description: "Debe seleccionar un archivo para subir.",
         variant: "destructive",
       });
       return;
     }
 
-    if (newDocumentFile) {
-      const formData = new FormData();
-      formData.append('document', newDocumentFile);
-      formData.append('title', newDocumentTitle);
-      formData.append('description', newDocumentDescription);
-      formData.append('category', newDocumentCategory);
-      uploadDocumentMutation.mutate(formData);
-    } else if (newDocumentUrl.trim()) {
-      // Detectar tipo de archivo de la URL
-      const url = newDocumentUrl.toLowerCase();
-      let fileType = 'application/octet-stream';
-      if (url.includes('.pdf')) fileType = 'application/pdf';
-      else if (url.includes('.doc') || url.includes('.docx')) fileType = 'application/msword';
-      else if (url.includes('.xls') || url.includes('.xlsx')) fileType = 'application/vnd.ms-excel';
-      else if (url.includes('.ppt') || url.includes('.pptx')) fileType = 'application/vnd.ms-powerpoint';
-      
-      console.log('🔍 DOCUMENT UPLOAD - URL data:', {
-        title: newDocumentTitle,
-        description: newDocumentDescription,
-        category: newDocumentCategory,
-        fileUrl: newDocumentUrl,
-        fileType
-      });
-      
-      // Crear FormData para URL también
-      const formData = new FormData();
-      formData.append('title', newDocumentTitle);
-      formData.append('description', newDocumentDescription);
-      formData.append('category', newDocumentCategory);
-      formData.append('fileUrl', newDocumentUrl);
-      formData.append('fileType', fileType);
-      
-      uploadDocumentMutation.mutate(formData);
+    const formData = new FormData();
+    formData.append('document', newDocumentFile);
+    formData.append('title', newDocumentTitle);
+    formData.append('description', newDocumentDescription);
+    formData.append('category', newDocumentCategory);
+    
+    // La URL es opcional como referencia adicional
+    if (newDocumentUrl.trim()) {
+      formData.append('referenceUrl', newDocumentUrl);
     }
+    
+    uploadDocumentMutation.mutate(formData);
   };
 
   const formatFileSize = (bytes: number) => {
@@ -573,30 +551,30 @@ export default function ParkMultimediaManager({ parkId }: ParkMultimediaManagerP
                     />
                   </div>
                   <div>
-                    <label className="text-sm font-medium mb-2 block">Subir archivo</label>
+                    <label className="text-sm font-medium mb-2 block">Archivo del Documento *</label>
                     <Input
                       type="file"
-                      accept=".pdf,.doc,.docx,.txt"
+                      accept=".pdf,.doc,.docx,.txt,.xls,.xlsx,.ppt,.pptx"
                       onChange={(e) => {
                         const file = e.target.files?.[0];
-                        if (file) {
-                          setNewDocumentFile(file);
-                          setNewDocumentUrl('');
-                        }
+                        setNewDocumentFile(file || null);
                       }}
+                      required
                     />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Formatos permitidos: PDF, DOC, DOCX, TXT, XLS, XLSX, PPT, PPTX (máx. 10MB)
+                    </p>
                   </div>
-                  <div className="text-center text-sm text-gray-500">- O -</div>
                   <div>
-                    <label className="text-sm font-medium mb-2 block">URL del documento</label>
+                    <label className="text-sm font-medium mb-2 block">URL de Referencia (opcional)</label>
                     <Input
                       value={newDocumentUrl}
-                      onChange={(e) => {
-                        setNewDocumentUrl(e.target.value);
-                        if (e.target.value) setNewDocumentFile(null);
-                      }}
-                      placeholder="https://ejemplo.com/documento.pdf"
+                      onChange={(e) => setNewDocumentUrl(e.target.value)}
+                      placeholder="https://ejemplo.com/documento-original.pdf"
                     />
+                    <p className="text-xs text-gray-500 mt-1">
+                      URL opcional para referenciar el documento original o fuente
+                    </p>
                   </div>
                   <div>
                     <label className="text-sm font-medium mb-2 block">Categoría</label>
@@ -625,7 +603,7 @@ export default function ParkMultimediaManager({ parkId }: ParkMultimediaManagerP
                 <DialogFooter>
                   <Button 
                     onClick={handleDocumentSubmit}
-                    disabled={(!newDocumentFile && !newDocumentUrl) || !newDocumentTitle.trim() || uploadDocumentMutation.isPending}
+                    disabled={!newDocumentFile || !newDocumentTitle.trim() || uploadDocumentMutation.isPending}
                   >
                     {uploadDocumentMutation.isPending ? 'Subiendo...' : 'Agregar Documento'}
                   </Button>

@@ -236,6 +236,9 @@ app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 // Servir archivos de espacios desde uploads/spaces
 app.use('/uploads/spaces', express.static(path.join(process.cwd(), 'uploads/spaces')));
 
+// Servir archivos de documentos desde uploads/documents
+app.use('/uploads/documents', express.static(path.join(process.cwd(), 'uploads/documents')));
+
 // Endpoint para servir archivos de Object Storage
 app.get('/objects/uploads/:objectId', async (req: Request, res: Response) => {
   try {

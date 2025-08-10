@@ -84,6 +84,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Configure multer for file uploads
   const upload = multer({ storage: multer.memoryStorage() });
   
+  // Configure multer specifically for document uploads
+  const documentUpload = multer({
+    storage: multer.diskStorage({
+      destination: function (req, file, cb) {
+        cb(null, 'uploads/documents/');
+      },
+      filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const extension = file.originalname.split('.').pop();
+        cb(null, `doc-${uniqueSuffix}.${extension}`);
+      }
+    }),
+    fileFilter: (req, file, cb) => {
+      const allowedTypes = [
+        'application/pdf',
+        'application/msword', 
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 
+        'application/vnd.ms-powerpoint',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        'text/plain'
+      ];
+      if (allowedTypes.includes(file.mimetype)) {
+        cb(null, true);
+      } else {
+        cb(new Error('Formato de archivo no válido. Solo se permiten PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX y TXT'));
+      }
+    },
+    limits: {
+      fileSize: 10 * 1024 * 1024 // 10MB
+    }
+  });
+  
   // Configure multer specifically for icon uploads with disk storage
   const iconUpload = multer({
     storage: multer.diskStorage({
@@ -2948,63 +2982,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Add a document to a park (admin/municipality only)
-  apiRouter.post("/parks/:id/documents", isAuthenticated, hasParkAccess, async (req: Request, res: Response) => {
+  // Add a document to a park (admin/municipality only) - Use fields middleware para manejar FormData con o sin archivo
+  apiRouter.post("/parks/:id/documents", isAuthenticated, hasParkAccess, documentUpload.single('document'), async (req: Request, res: Response) => {
     try {
       const parkId = Number(req.params.id);
       console.log(`🔍 POST /parks/${parkId}/documents - Request body:`, req.body);
+      console.log(`🔍 POST /parks/${parkId}/documents - Request file:`, req.file);
       console.log(`🔍 POST /parks/${parkId}/documents - Content-Type:`, req.headers['content-type']);
       
       let documentData;
       
-      // Si es FormData (archivo subido), verificar si hay archivo real
-      if (req.headers['content-type']?.includes('multipart/form-data')) {
-        if (req.file) {
-          documentData = {
-            parkId,
-            title: req.body.title,
-            description: req.body.description || '',
-            category: req.body.category || 'general',
-            fileUrl: `/uploads/documents/${req.file.filename}`,
-            fileType: req.file.mimetype
-          };
-          console.log(`📎 FormData upload - Archivo subido:`, req.file);
-        } else {
-          // FormData pero sin archivo - debe ser URL externa
-          documentData = { ...req.body, parkId };
-          
-          // Validar que al menos haya título y URL
-          if (!documentData.title || !documentData.fileUrl) {
-            return res.status(400).json({ 
-              message: "Para documentos por URL se requiere título y URL del archivo",
-              missing: {
-                title: !documentData.title,
-                fileUrl: !documentData.fileUrl
-              }
-            });
-          }
-          
-          if (!documentData.fileType && documentData.fileUrl) {
-            const url = documentData.fileUrl.toLowerCase();
-            if (url.includes('.pdf')) documentData.fileType = 'application/pdf';
-            else if (url.includes('.doc')) documentData.fileType = 'application/msword';
-            else if (url.includes('.xls')) documentData.fileType = 'application/vnd.ms-excel';
-            else documentData.fileType = 'application/octet-stream';
-          }
-          console.log(`📎 FormData sin archivo - URL externa:`, documentData);
-        }
+      if (req.file) {
+        // Archivo subido (obligatorio)
+        documentData = {
+          parkId,
+          title: req.body.title,
+          description: req.body.description || '',
+          fileUrl: `/uploads/documents/${req.file.filename}`,
+          fileType: req.file.mimetype,
+          fileSize: req.file.size,
+          referenceUrl: req.body.referenceUrl || null // URL opcional de referencia
+        };
+        console.log(`📎 Archivo subido:`, req.file);
       } else {
-        // Si es JSON (URL externa)
-        documentData = { ...req.body, parkId };
-        
-        // Asegurar que fileType esté presente para URLs externas
-        if (!documentData.fileType && documentData.fileUrl) {
-          const url = documentData.fileUrl.toLowerCase();
-          if (url.includes('.pdf')) documentData.fileType = 'application/pdf';
-          else if (url.includes('.doc')) documentData.fileType = 'application/msword';
-          else if (url.includes('.xls')) documentData.fileType = 'application/vnd.ms-excel';
-          else documentData.fileType = 'application/octet-stream';
-        }
+        // Sin archivo - error porque ahora es obligatorio
+        return res.status(400).json({ 
+          message: "Es obligatorio subir un archivo. No se permiten solo URLs.",
+          error: "MISSING_FILE"
+        });
       }
       
       console.log(`🔍 Parsed document data:`, documentData);
@@ -3028,8 +3033,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         title: documentData.title,
         fileUrl: documentData.fileUrl,
         fileType: documentData.fileType,
+        fileSize: documentData.fileSize || null,
         description: documentData.description || '',
-        uploadedById: req.user?.id || null
+        uploadedById: req.user?.id || null,
+        referenceUrl: documentData.referenceUrl || null
       };
       const result = await storage.createDocument(data);
       
