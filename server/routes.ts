@@ -2986,9 +2986,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.post("/parks/:id/documents", isAuthenticated, hasParkAccess, documentUpload.single('document'), async (req: Request, res: Response) => {
     try {
       const parkId = Number(req.params.id);
-      console.log(`🔍 POST /parks/${parkId}/documents - Request body:`, req.body);
-      console.log(`🔍 POST /parks/${parkId}/documents - Request file:`, req.file);
-      console.log(`🔍 POST /parks/${parkId}/documents - Content-Type:`, req.headers['content-type']);
+      console.log(`🔍 POST /parks/${parkId}/documents - DETAILED DEBUG:`);
+      console.log(`  - Request body:`, req.body);
+      console.log(`  - Request file:`, req.file);
+      console.log(`  - Content-Type:`, req.headers['content-type']);
+      console.log(`  - All headers:`, Object.keys(req.headers));
+      console.log(`  - Body keys:`, Object.keys(req.body || {}));
+      console.log(`  - File exists:`, !!req.file);
       
       let documentData;
       
@@ -3005,10 +3009,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         };
         console.log(`📎 Archivo subido:`, req.file);
       } else {
-        // Sin archivo - error porque ahora es obligatorio
+        // Sin archivo - verificar si es un problema del FormData
+        console.log(`❌ NO HAY ARCHIVO - Debugging:`);
+        console.log(`  - req.body:`, req.body);
+        console.log(`  - req.body.title:`, req.body.title);
+        console.log(`  - req.body.description:`, req.body.description);
+        console.log(`  - Content-Type:`, req.headers['content-type']);
+        
         return res.status(400).json({ 
           message: "Es obligatorio subir un archivo. No se permiten solo URLs.",
-          error: "MISSING_FILE"
+          error: "MISSING_FILE",
+          debug: {
+            bodyKeys: Object.keys(req.body || {}),
+            bodyValues: req.body,
+            hasFile: !!req.file,
+            contentType: req.headers['content-type']
+          }
         });
       }
       
