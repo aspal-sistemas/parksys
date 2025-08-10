@@ -663,32 +663,10 @@ function ActivitiesPage() {
         />
       </section>
 
-      {/* Mapa y Calendario lado a lado */}
+      {/* Calendario de Eventos */}
       <section className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="max-w-4xl mx-auto">
           
-          {/* Mapa de Actividades */}
-          <Card className="p-0 overflow-hidden">
-            <div className="bg-gradient-to-r from-green-600 to-green-700 text-white p-6">
-              <div className="flex items-center gap-3">
-                <MapPin className="h-6 w-6" />
-                <h3 className="text-xl font-semibold">Mapa de Actividades</h3>
-              </div>
-              <p className="mt-2 text-green-100">Encuentra actividades cerca de ti</p>
-            </div>
-            <CardContent className="p-0">
-              <div className="h-80 bg-gradient-to-br from-green-100 to-blue-100 relative">
-                <div className="absolute inset-0 flex items-center justify-center text-gray-500">
-                  <div className="text-center">
-                    <MapPin className="h-16 w-16 mx-auto mb-4 text-green-600" />
-                    <p className="text-lg font-medium mb-2">Mapa interactivo próximamente</p>
-                    <p className="text-sm">Visualiza todas las actividades en el mapa</p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Calendario de Eventos */}
           <Card className="p-0 overflow-hidden">
             <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6">
