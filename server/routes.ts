@@ -1141,8 +1141,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('Paso 4: Consultando documentos del parque...');
       const documentsResult = await pool.query(`
         SELECT id, title, file_url as "fileUrl", file_type as "fileType", 
-               description, category, created_at as "createdAt"
-        FROM park_documents
+               description, file_size as "fileSize", created_at as "createdAt"
+        FROM documents
         WHERE park_id = $1
         ORDER BY created_at DESC
       `, [parkId]);
