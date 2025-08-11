@@ -151,9 +151,9 @@ export default function ConcessionsList() {
       </div>
 
       {/* Filtros - Movidos pegados al hero */}
-      <div className="py-8" style={{backgroundColor: '#19633c'}}>
+      <div className="py-6" style={{backgroundColor: '#19633c'}}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="rounded-lg shadow-sm p-6 mb-8" style={{backgroundColor: '#19633c'}}>
+          <div className="rounded-lg shadow-sm p-4" style={{backgroundColor: '#19633c'}}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {/* Búsqueda */}
               <div className="relative">
