@@ -313,7 +313,7 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
         address: volunteerData.address || '',
         emergencyContactName: volunteerData.emergency_contact || '',
         emergencyContactPhone: volunteerData.emergency_phone || '',
-        preferredParkId: volunteerData.preferred_park_id?.toString() || '5',
+        preferredParkId: volunteerData.preferred_park_id?.toString() || '',
         volunteerExperience: volunteerData.previous_experience || '',
         skills: volunteerData.skills || '',
         availability: volunteerData.available_hours || 'flexible',
@@ -593,6 +593,15 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
       
       // Preparar datos para la actualización
       console.log("Body completo recibido:", JSON.stringify(req.body, null, 2));
+      console.log("preferredParkId recibido:", req.body.preferredParkId, "tipo:", typeof req.body.preferredParkId);
+      console.log("Areas de interés recibidas:", {
+        nature: req.body.interestNature,
+        events: req.body.interestEvents,
+        education: req.body.interestEducation,
+        maintenance: req.body.interestMaintenance,
+        sports: req.body.interestSports,
+        cultural: req.body.interestCultural
+      });
       
       // Convertir los datos del formulario del frontend a formato backend
       const updateData = {
@@ -603,7 +612,7 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
         address: req.body.address,
         emergency_contact: req.body.emergencyContactName,
         emergency_phone: req.body.emergencyContactPhone,
-        preferred_park_id: req.body.preferredParkId ? parseInt(req.body.preferredParkId) : null,
+        preferred_park_id: req.body.preferredParkId && req.body.preferredParkId !== '' ? parseInt(req.body.preferredParkId) : null,
         previous_experience: req.body.volunteerExperience,
         skills: req.body.skills,
         available_hours: req.body.availability,
