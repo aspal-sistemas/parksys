@@ -522,7 +522,7 @@ export default function Fauna() {
           </div>
 
           {/* Banner Publicitario */}
-          <div className="mt-12">
+          <div className="mt-12 mb-8">
             <AdSpace spaceId="37" position="banner" pageType="fauna" />
           </div>
         </div>
