@@ -7,7 +7,7 @@ import ParksList from '@/components/ParksList';
 import ParkDetail from '@/components/ParkDetail';
 import ExtendedParksList from '@/components/ExtendedParksList';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, MapPin, Trees, Users, Search } from 'lucide-react';
+import { ChevronLeft, ChevronRight, MapPin, Trees, Users, Search, Compass } from 'lucide-react';
 const heroImage = "/images/parks-hero.jpg";
 const logoImage = "/images/logo-ambu.png";
 import AdSpaceIntelligent from '@/components/AdSpaceIntelligent';
@@ -131,8 +131,16 @@ const Parks: React.FC = () => {
         <div className="absolute inset-0 bg-black/40"></div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              Explora Nuestros <span className="text-yellow-300">Parques</span>
+            <h1 className="text-4xl md:text-6xl mb-6">
+              <div className="flex items-center justify-center gap-3 mb-2">
+                <Compass className="h-12 w-12 md:h-16 md:w-16 text-white" />
+                <span className="font-guttery font-thin text-white">
+                  Explora
+                </span>
+              </div>
+              <div className="font-bold text-white">
+                Nuestros Parques y Bosques
+              </div>
             </h1>
             <p className="text-xl md:text-2xl text-green-100 max-w-3xl mx-auto">
               Descubre espacios verdes únicos en la Zona Metropolitana de Guadalajara para toda la familia
