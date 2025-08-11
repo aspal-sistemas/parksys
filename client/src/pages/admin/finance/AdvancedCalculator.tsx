@@ -302,61 +302,61 @@ const AdvancedCalculator = () => {
                     Herramienta para calcular rentabilidad y costos de actividades
                   </p>
                 </div>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <Select value={selectedTemplate} onValueChange={loadTemplate}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="Cargar plantilla" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {templates.map(template => (
+                      <SelectItem key={template.id} value={template.id.toString()}>
+                        {template.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Dialog open={isTemplateDialogOpen} onOpenChange={setIsTemplateDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="flex items-center gap-2">
+                      <Save className="h-4 w-4" />
+                      Guardar como Plantilla
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Guardar Plantilla</DialogTitle>
+                      <DialogDescription>
+                        Guarda la configuración actual como plantilla reutilizable
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="templateName">Nombre de la plantilla</Label>
+                        <Input
+                          id="templateName"
+                          value={templateName}
+                          onChange={(e) => setTemplateName(e.target.value)}
+                          placeholder="Ej: Clase de Zumba Nocturna"
+                        />
+                      </div>
+                      <div className="flex justify-end gap-2">
+                        <Button variant="outline" onClick={() => setIsTemplateDialogOpen(false)}>
+                          Cancelar
+                        </Button>
+                        <Button onClick={saveAsTemplate}>
+                          Guardar Plantilla
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
             </div>
           </CardContent>
         </Card>
-
-          <div className="flex items-center gap-3">
-            <Select value={selectedTemplate} onValueChange={loadTemplate}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Cargar plantilla" />
-              </SelectTrigger>
-              <SelectContent>
-                {templates.map(template => (
-                  <SelectItem key={template.id} value={template.id.toString()}>
-                    {template.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Dialog open={isTemplateDialogOpen} onOpenChange={setIsTemplateDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" className="flex items-center gap-2">
-                  <Save className="h-4 w-4" />
-                  Guardar como Plantilla
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Guardar Plantilla</DialogTitle>
-                  <DialogDescription>
-                    Guarda la configuración actual como plantilla reutilizable
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="templateName">Nombre de la plantilla</Label>
-                    <Input
-                      id="templateName"
-                      value={templateName}
-                      onChange={(e) => setTemplateName(e.target.value)}
-                      placeholder="Ej: Clase de Zumba Nocturna"
-                    />
-                  </div>
-                  <div className="flex justify-end gap-2">
-                    <Button variant="outline" onClick={() => setIsTemplateDialogOpen(false)}>
-                      Cancelar
-                    </Button>
-                    <Button onClick={saveAsTemplate}>
-                      Guardar Plantilla
-                    </Button>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
-          </div>
-        </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-5">
