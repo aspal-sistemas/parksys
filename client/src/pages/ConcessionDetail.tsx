@@ -54,9 +54,11 @@ export default function ConcessionDetail() {
   const { id } = useParams();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  const { data: concessionResponse, isLoading, error } = useQuery({
+  const { data: concessionResponse, isLoading, error, refetch } = useQuery({
     queryKey: [`/api/active-concessions/${id}`],
     enabled: !!id,
+    refetchInterval: 5000, // Refresca cada 5 segundos
+    refetchIntervalInBackground: true,
   });
 
   const concession = (concessionResponse as any)?.data;
@@ -184,6 +186,25 @@ export default function ConcessionDetail() {
       {/* Galería de fotos */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold text-gray-900">Galería de Imágenes</h2>
+            <Button 
+              onClick={() => refetch()} 
+              variant="outline" 
+              size="sm"
+              className="text-green-600 border-green-300 hover:bg-green-50"
+            >
+              Actualizar Imágenes
+            </Button>
+          </div>
+          
+          {/* Debug info */}
+          <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm">
+            <p><strong>Debug:</strong> Total imágenes: {concession.images?.length || 0}</p>
+            <p><strong>Imagen principal:</strong> {concession.image_url ? '✓' : '✗'}</p>
+            <p><strong>Datos de imagen:</strong> {JSON.stringify(concession.images?.slice(0, 2), null, 2)}</p>
+          </div>
+          
           <div className="grid grid-cols-4 grid-rows-2 gap-2 h-64">
             {/* Imagen principal - ocupa 2x2 */}
             <div className="col-span-2 row-span-2 relative cursor-pointer" onClick={() => setSelectedImage(concession.image_url)}>
