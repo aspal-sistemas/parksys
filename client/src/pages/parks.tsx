@@ -131,7 +131,7 @@ const Parks: React.FC = () => {
         <div className="absolute inset-0 bg-black/40"></div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center">
-            <h1 className="text-4xl md:text-6xl mb-6">
+            <h1 className="text-4xl md:text-5xl mb-6">
               <div className="flex items-center justify-center gap-3 mb-2">
                 <Compass className="h-12 w-12 md:h-16 md:w-16 text-white" />
                 <span className="font-guttery font-thin text-white">
