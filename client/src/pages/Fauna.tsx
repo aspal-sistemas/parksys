@@ -363,7 +363,7 @@ export default function Fauna() {
         <div className="max-w-7xl mx-auto px-4">
 
           {/* Filtros y búsqueda */}
-          <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+          <div className="rounded-lg shadow-sm p-6 mb-8" style={{backgroundColor: '#19633c'}}>
             <div className="flex flex-col lg:flex-row gap-4 items-center justify-between mb-4">
               <div className="flex flex-col sm:flex-row gap-4 flex-1">
                 <div className="relative flex-1">
@@ -375,7 +375,7 @@ export default function Fauna() {
                       setSearchTerm(e.target.value);
                       setCurrentPage(1);
                     }}
-                    className="pl-10"
+                    className="pl-10 bg-white"
                   />
                 </div>
                 
@@ -383,7 +383,7 @@ export default function Fauna() {
                   setCategoryFilter(value);
                   setCurrentPage(1);
                 }}>
-                  <SelectTrigger className="w-full sm:w-48">
+                  <SelectTrigger className="w-full sm:w-48 bg-white">
                     <SelectValue placeholder="Categoría" />
                   </SelectTrigger>
                   <SelectContent>
@@ -401,7 +401,7 @@ export default function Fauna() {
                   setConservationFilter(value);
                   setCurrentPage(1);
                 }}>
-                  <SelectTrigger className="w-full sm:w-48">
+                  <SelectTrigger className="w-full sm:w-48 bg-white">
                     <SelectValue placeholder="Conservación" />
                   </SelectTrigger>
                   <SelectContent>
@@ -419,6 +419,7 @@ export default function Fauna() {
                   variant={viewMode === 'grid' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setViewMode('grid')}
+                  className={viewMode === 'grid' ? 'bg-white text-green-800 hover:bg-gray-100' : 'border-white text-white hover:bg-white hover:text-green-800'}
                 >
                   <Grid className="h-4 w-4" />
                 </Button>
@@ -426,13 +427,14 @@ export default function Fauna() {
                   variant={viewMode === 'list' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setViewMode('list')}
+                  className={viewMode === 'list' ? 'bg-white text-green-800 hover:bg-gray-100' : 'border-white text-white hover:bg-white hover:text-green-800'}
                 >
                   <List className="h-4 w-4" />
                 </Button>
               </div>
             </div>
             
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-green-100">
               Mostrando {species.length} de {pagination.total} especies
             </p>
           </div>
