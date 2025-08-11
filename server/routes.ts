@@ -45,6 +45,7 @@ import { registerConcessionEvaluationRoutes } from "./concession-evaluations-rou
 import { registerActiveConcessionRoutes } from "./active-concessions-routes";
 import { registerFinanceRoutes } from "./finance-routes";
 import { registerBudgetRoutes } from "./budget-routes";
+import { registerBudgetPlanningRoutes } from "./budget-planning-routes";
 import { registerFinanceUpdateRoutes } from "./finance-update-routes";
 import { 
   uploadParkFile, 
@@ -380,6 +381,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Registramos las rutas del módulo financiero
   registerFinanceRoutes(app, apiRouter, isAuthenticated);
   registerBudgetRoutes(app, apiRouter, isAuthenticated);
+  registerBudgetPlanningRoutes(app, apiRouter, isAuthenticated);
   registerFinanceUpdateRoutes(app, apiRouter);
   
   // Registramos las rutas del módulo de publicidad

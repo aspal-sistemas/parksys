@@ -61,8 +61,11 @@ export type InsertBudgetTemplate = z.infer<typeof insertBudgetTemplateSchema>;
 export interface BudgetEntry {
   categoryId: number;
   categoryName: string;
+  categoryType?: string;
+  categoryColor?: string;
   months: { [month: number]: number };
   total: number;
+  totalYear?: number;
 }
 
 export interface BudgetMatrix {
