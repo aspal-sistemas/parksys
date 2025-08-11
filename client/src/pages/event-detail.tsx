@@ -1,7 +1,7 @@
 import React from "react";
 import { useParams } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { PublicLayout } from "@/components/PublicLayout";
+import PublicLayout from "@/components/PublicLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
