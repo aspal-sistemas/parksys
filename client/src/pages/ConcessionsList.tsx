@@ -57,6 +57,11 @@ export default function ConcessionsList() {
   const concessions = (concessionsResponse as any)?.data || [];
   const parks = (parksResponse as any)?.data || [];
 
+  // Debug logging
+  console.log("Parks data:", parks);
+  console.log("Concessions data:", concessions.slice(0, 2));
+  console.log("Current parkFilter:", parkFilter);
+
   // Filtrar concesiones
   const filteredConcessions = concessions.filter((concession: Concession) => {
     const matchesSearch = (concession.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
