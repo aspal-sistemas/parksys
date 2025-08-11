@@ -314,21 +314,19 @@ const Events: React.FC = () => {
                   </div>
                 ) : (
                   <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-6">
+                      {/* Contenido del evento - 3/4 del espacio */}
                       <div className="flex-1">
-                        <div className="flex items-center gap-4 mb-2">
+                        <div className="flex items-center gap-4 mb-3">
                           <h3 className="text-lg font-semibold text-gray-900">
                             {event.title}
                           </h3>
-                          <Badge className={statusColors[event.status]}>
-                            {statusLabels[event.status]}
-                          </Badge>
                           <Badge variant="outline" className="text-xs">
                             {eventTypeLabels[event.eventType as keyof typeof eventTypeLabels] || event.eventType}
                           </Badge>
                         </div>
                         
-                        <div className="flex items-center gap-6 text-sm text-gray-500">
+                        <div className="flex items-center gap-6 text-sm text-gray-500 mb-2">
                           <div className="flex items-center">
                             <Calendar className="h-4 w-4 mr-1" />
                             {formatDate(event.startDate)} {event.startTime && `- ${formatTime(event.startTime)}`}
@@ -337,14 +335,31 @@ const Events: React.FC = () => {
                             <MapPin className="h-4 w-4 mr-1" />
                             {event.parks && event.parks.length > 0 ? event.parks[0].name : event.location}
                           </div>
-                          <div className="flex items-center">
-                            <Users className="h-4 w-4 mr-1" />
-                            {event.registeredCount || 0}/{event.capacity}
-                          </div>
-                          <div className="text-xs text-gray-400">
-                            Organiza: {event.organizerName}
-                          </div>
                         </div>
+                        
+                        <p className="text-gray-600 text-sm mb-2 line-clamp-2">
+                          {event.description}
+                        </p>
+                        
+                        <div className="text-xs text-gray-500">
+                          <span className="font-medium">Organiza: </span>
+                          <span className="text-gray-700">{event.organizerName}</span>
+                        </div>
+                      </div>
+                      
+                      {/* Imagen del evento - 1/4 del espacio */}
+                      <div className="w-32 h-24 flex-shrink-0">
+                        {event.featuredImageUrl ? (
+                          <img 
+                            src={event.featuredImageUrl} 
+                            alt={event.title}
+                            className="w-full h-full object-cover rounded-lg"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gray-200 rounded-lg flex items-center justify-center">
+                            <Calendar className="h-8 w-8 text-gray-400" />
+                          </div>
+                        )}
                       </div>
                     </div>
                   </CardContent>
