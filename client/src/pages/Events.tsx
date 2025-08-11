@@ -348,15 +348,15 @@ const Events: React.FC = () => {
                       </div>
                       
                       {/* Imagen del evento - 1/4 del espacio */}
-                      <div className="w-32 h-24 flex-shrink-0">
+                      <div className="w-32 h-24 flex-shrink-0 overflow-hidden rounded-lg">
                         {event.featuredImageUrl ? (
                           <img 
                             src={event.featuredImageUrl} 
                             alt={event.title}
-                            className="w-full h-full object-cover rounded-lg"
+                            className="w-full h-full object-cover"
                           />
                         ) : (
-                          <div className="w-full h-full bg-gray-200 rounded-lg flex items-center justify-center">
+                          <div className="w-full h-full bg-gray-200 flex items-center justify-center">
                             <Calendar className="h-8 w-8 text-gray-400" />
                           </div>
                         )}
