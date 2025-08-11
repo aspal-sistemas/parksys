@@ -739,6 +739,166 @@ function ActivityDetailPage() {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Sección de Contacto */}
+      <section className="bg-gray-50 py-12">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">¿Necesitas más información?</h2>
+            <p className="text-lg text-gray-600">Nuestro equipo está aquí para ayudarte</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{backgroundColor: '#51a19f'}}>
+                <Phone className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Teléfono</h3>
+              <p className="text-gray-600 mb-2">(33) 1234-5678</p>
+              <p className="text-sm text-gray-500">Lun-Vie 8:00-16:00</p>
+            </div>
+            
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{backgroundColor: '#51a19f'}}>
+                <Mail className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Correo</h3>
+              <p className="text-gray-600 mb-2">actividades@parques.gdl.gob.mx</p>
+              <p className="text-sm text-gray-500">Respuesta en 24 horas</p>
+            </div>
+            
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{backgroundColor: '#51a19f'}}>
+                <MapPin className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Ubicación</h3>
+              <p className="text-gray-600 mb-2">Av. Hidalgo 400, Centro</p>
+              <p className="text-sm text-gray-500">Guadalajara, Jalisco</p>
+            </div>
+          </div>
+          
+          <div className="text-center">
+            <Button size="lg" className="bg-green-600 hover:bg-green-700 px-8 py-3">
+              <Mail className="h-5 w-5 mr-2" />
+              Enviar mensaje
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer institucional */}
+      <footer className="bg-gradient-to-b from-[#067f5f] to-[#00a587] text-white">
+        {/* Logo y descripción principal */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="text-center mb-12">
+            <img 
+              src="/images/logo-ambu.png" 
+              alt="Agencia Metropolitana de Bosques Urbanos" 
+              className="h-16 w-auto mx-auto mb-6 filter brightness-0 invert"
+            />
+            <h2 className="text-2xl font-bold mb-4">Agencia Metropolitana de Bosques Urbanos</h2>
+            <p className="text-lg text-emerald-100 max-w-3xl mx-auto">
+              Fortalecemos el tejido social a través de espacios verdes que conectan comunidades, 
+              promueven la sostenibilidad y mejoran la calidad de vida en nuestra área metropolitana.
+            </p>
+          </div>
+
+          {/* Enlaces organizados en columnas */}
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-8 mb-8">
+            <div>
+              <h4 className="font-semibold text-[#bcd256] mb-4">Parques</h4>
+              <ul className="space-y-2 text-sm text-emerald-100">
+                <li><a href="/parks" className="hover:text-white transition-colors">Directorio</a></li>
+                <li><a href="/activities" className="hover:text-white transition-colors">Actividades</a></li>
+                <li><a href="/tree-species" className="hover:text-white transition-colors">Arbolado</a></li>
+                <li><a href="/concessions" className="hover:text-white transition-colors">Concesiones</a></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold text-[#bcd256] mb-4">Comunidad</h4>
+              <ul className="space-y-2 text-sm text-emerald-100">
+                <li><a href="/volunteers" className="hover:text-white transition-colors">Voluntarios</a></li>
+                <li><a href="/instructors" className="hover:text-white transition-colors">Instructores</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Eventos</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Noticias</a></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold text-[#bcd256] mb-4">Servicios</h4>
+              <ul className="space-y-2 text-sm text-emerald-100">
+                <li><a href="#" className="hover:text-white transition-colors">Mantenimiento</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Consultoría</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Capacitación</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Evaluación</a></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold text-[#bcd256] mb-4">Recursos</h4>
+              <ul className="space-y-2 text-sm text-emerald-100">
+                <li><a href="#" className="hover:text-white transition-colors">Guías</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Manuales</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Biblioteca</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Investigación</a></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold text-[#bcd256] mb-4">Transparencia</h4>
+              <ul className="space-y-2 text-sm text-emerald-100">
+                <li><a href="#" className="hover:text-white transition-colors">Informes</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Presupuesto</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Licitaciones</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Auditoría</a></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold text-[#bcd256] mb-4">Legal</h4>
+              <ul className="space-y-2 text-sm text-emerald-100">
+                <li><a href="#" className="hover:text-white transition-colors">Términos</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Privacidad</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Cookies</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Accesibilidad</a></li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Información de contacto */}
+          <div className="border-t border-emerald-500/30 pt-8 text-center">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              <div>
+                <h4 className="font-semibold text-[#bcd256] mb-2">Dirección</h4>
+                <p className="text-emerald-100 text-sm">
+                  Av. Alcalde 1351, Miraflores<br/>
+                  44270 Guadalajara, Jalisco
+                </p>
+              </div>
+              <div>
+                <h4 className="font-semibold text-[#bcd256] mb-2">Contacto</h4>
+                <p className="text-emerald-100 text-sm">
+                  Tel: (33) 3837-4400<br/>
+                  bosques@guadalajara.gob.mx
+                </p>
+              </div>
+              <div>
+                <h4 className="font-semibold text-[#bcd256] mb-2">Horarios</h4>
+                <p className="text-emerald-100 text-sm">
+                  Lunes a Viernes: 8:00 - 15:00<br/>
+                  Fines de semana: Espacios abiertos
+                </p>
+              </div>
+            </div>
+            
+            <div className="text-sm text-emerald-200">
+              © {new Date().getFullYear()} Agencia Metropolitana de Bosques Urbanos de Guadalajara. 
+              Todos los derechos reservados.
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
