@@ -133,7 +133,7 @@ const Parks: React.FC = () => {
           <div className="text-center">
             <h1 className="text-4xl md:text-5xl mb-6">
               <div className="flex items-center justify-center gap-3 mb-2">
-                <Compass className="h-12 w-12 md:h-16 md:w-16 text-white" />
+                <Compass className="h-12 w-12 md:h-10 md:w-10 text-white" />
                 <span className="font-guttery font-thin text-white">
                   Explora
                 </span>
