@@ -218,7 +218,7 @@ const CalendarPage: React.FC = () => {
         {/* === SECCIÓN DEL PANEL DE FILTROS === */}
         <section className="py-12" style={{backgroundColor: '#19633c'}}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="rounded-2xl shadow-sm border p-6" style={{backgroundColor: '#19633c'}}>
+            <div className="rounded-2xl shadow-sm p-6" style={{backgroundColor: '#19633c'}}>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                   <SelectTrigger className="border-gray-200 focus:border-primary focus:ring-primary">
