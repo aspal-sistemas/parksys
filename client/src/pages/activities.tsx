@@ -592,7 +592,7 @@ function ActivitiesPage() {
                     placeholder="Buscar actividades..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 bg-white/90 focus:border-green-400 focus:ring-green-400 placeholder-gray-600"
+                    className="pl-10 bg-white/90 placeholder-gray-600"
                   />
                 </div>
               </div>

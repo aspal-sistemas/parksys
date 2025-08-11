@@ -355,7 +355,7 @@ function ReservationsPage() {
                 Reserva
               </h1>
             </div>
-            <h2 className="text-2xl md:text-3xl font-bold">
+            <h2 className="text-3xl md:text-4xl font-bold">
               Espacios para Eventos
             </h2>
           </div>
