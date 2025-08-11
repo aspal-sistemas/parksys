@@ -185,43 +185,59 @@ export default function VolunteersList() {
 
       {/* 2. Galería de Voluntarios en Acción */}
       <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 auto-rows-[200px]">
-                {/* Imagen 1 - Grande vertical - Educación ambiental con niños */}
-                <div className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 row-span-2">
-                  <img 
-                    src="/volunteer-1.png"
-                    alt="Voluntarios educando niños sobre medio ambiente en parque"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
-
-                {/* Imagen 2 - Mediano - Actividades deportivas */}
-                <div className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300">
-                  <img 
-                    src="/volunteer-2.png"
-                    alt="Voluntarios organizando actividades deportivas para niños"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
-
-                {/* Imagen 3 - Grande horizontal - Gran grupo de voluntarios */}
-                <div className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 col-span-2">
-                  <img 
-                    src="/volunteer-3.webp"
-                    alt="Gran grupo de voluntarios celebrando en parque natural"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
-
-                {/* Imagen 4 - Grande cuadrado - Jardín japonés con voluntarios */}
-                <div className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 col-span-2 row-span-2">
-                  <img 
-                    src="/volunteer-4.jpg"
-                    alt="Voluntarios cuidando jardín japonés en parque de Guadalajara"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-8">
+            <h2 className="text-2xl font-semibold text-gray-900 text-center mb-4">Voluntarios en Acción</h2>
+            <p className="text-gray-600 text-center max-w-2xl mx-auto">
+              Conoce el impacto real de nuestros voluntarios en los parques de Guadalajara
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-4 grid-rows-2 gap-2 h-64">
+            {/* Imagen principal - ocupa 2x2 - Gran grupo de voluntarios */}
+            <div className="col-span-2 row-span-2 relative cursor-pointer group">
+              <img 
+                src="/volunteer-3.webp"
+                alt="Gran grupo de voluntarios celebrando en parque natural"
+                className="w-full h-full object-cover rounded-lg shadow-lg"
+              />
+              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
+            </div>
+            
+            {/* Imagen 1 - Educación ambiental con niños */}
+            <div className="relative cursor-pointer group">
+              <img 
+                src="/volunteer-1.png"
+                alt="Voluntarios educando niños sobre medio ambiente en parque"
+                className="w-full h-full object-cover rounded-lg shadow-md"
+              />
+              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
+            </div>
+            
+            {/* Imagen 2 - Actividades deportivas */}
+            <div className="relative cursor-pointer group">
+              <img 
+                src="/volunteer-2.png"
+                alt="Voluntarios organizando actividades deportivas para niños"
+                className="w-full h-full object-cover rounded-lg shadow-md"
+              />
+              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
+            </div>
+            
+            {/* Imagen 3 - Jardín japonés */}
+            <div className="relative cursor-pointer group">
+              <img 
+                src="/volunteer-4.jpg"
+                alt="Voluntarios cuidando jardín japonés en parque de Guadalajara"
+                className="w-full h-full object-cover rounded-lg shadow-md"
+              />
+              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
+            </div>
+            
+            {/* Imagen 4 - Placeholder para mostrar el patrón completo */}
+            <div className="relative bg-gray-100 rounded-lg flex items-center justify-center">
+              <span className="text-gray-400 text-sm">Más actividades</span>
+            </div>
           </div>
         </div>
       </section>
