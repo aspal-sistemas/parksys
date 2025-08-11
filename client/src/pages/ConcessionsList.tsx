@@ -57,17 +57,7 @@ export default function ConcessionsList() {
   const concessions = (concessionsResponse as any)?.data || [];
   const parks = (parksResponse as any)?.data || [];
 
-  // Debug logging
-  console.log("Parks data:", parks);
-  console.log("Concessions data:", concessions.slice(0, 2));
-  console.log("Current parkFilter:", parkFilter);
-  console.log("Park filter comparison:", concessions.slice(0, 2).map(c => ({
-    name: c.name,
-    park_id: c.park_id,
-    park_id_toString: c.park_id?.toString(),
-    parkFilter,
-    matches: c.park_id?.toString() === parkFilter
-  })));
+
 
   // Filtrar concesiones
   const filteredConcessions = concessions.filter((concession: Concession) => {
