@@ -198,91 +198,61 @@ export default function VolunteersList() {
               </p>
             </div>
 
-            {/* Galería - 3/4 del espacio */}
+            {/* Galería Irregular - 3/4 del espacio */}
             <div className="lg:col-span-3">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {/* Imagen 1 - Voluntarios plantando árboles */}
-                <div className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 auto-rows-[200px]">
+                {/* Imagen 1 - Grande vertical */}
+                <div className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 row-span-2">
                   <img 
                     src="https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
                     alt="Grupo de voluntarios plantando árboles en bosque urbano"
-                    className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="absolute bottom-0 left-0 right-0 p-4 text-white transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                    <h3 className="text-lg font-semibold mb-1">Reforestación Urbana</h3>
-                    <p className="text-sm text-green-200">Plantando árboles para un futuro más verde</p>
-                  </div>
                 </div>
 
-                {/* Imagen 2 - Cuidado de jardines */}
+                {/* Imagen 2 - Mediano */}
                 <div className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300">
                   <img 
                     src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
                     alt="Voluntarios cuidando jardines en parque público"
-                    className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="absolute bottom-0 left-0 right-0 p-4 text-white transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                    <h3 className="text-lg font-semibold mb-1">Jardinería Comunitaria</h3>
-                    <p className="text-sm text-green-200">Embelleciendo nuestros espacios verdes</p>
-                  </div>
                 </div>
 
-                {/* Imagen 3 - Limpieza de senderos */}
-                <div className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300">
+                {/* Imagen 3 - Grande horizontal */}
+                <div className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 col-span-2">
                   <img 
                     src="https://images.unsplash.com/photo-1569163139394-de44cb5a4842?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
                     alt="Voluntarios limpiando senderos en área natural"
-                    className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="absolute bottom-0 left-0 right-0 p-4 text-white transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                    <h3 className="text-lg font-semibold mb-1">Mantenimiento de Senderos</h3>
-                    <p className="text-sm text-green-200">Conservando espacios naturales accesibles</p>
-                  </div>
                 </div>
 
-                {/* Imagen 4 - Conservación de fauna */}
+                {/* Imagen 4 - Pequeño */}
                 <div className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300">
                   <img 
                     src="https://images.unsplash.com/photo-1473448912268-2022ce9509d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
                     alt="Voluntarios en programa de conservación de bosques"
-                    className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="absolute bottom-0 left-0 right-0 p-4 text-white transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                    <h3 className="text-lg font-semibold mb-1">Conservación del Bosque</h3>
-                    <p className="text-sm text-green-200">Protegiendo ecosistemas naturales</p>
-                  </div>
                 </div>
 
-                {/* Imagen 5 - Educación ambiental */}
-                <div className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300">
+                {/* Imagen 5 - Grande cuadrado */}
+                <div className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 col-span-2 row-span-2">
                   <img 
                     src="https://images.unsplash.com/photo-1464207687429-7505649dae38?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
                     alt="Voluntarios enseñando sobre naturaleza en parque"
-                    className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="absolute bottom-0 left-0 right-0 p-4 text-white transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                    <h3 className="text-lg font-semibold mb-1">Educación Ambiental</h3>
-                    <p className="text-sm text-green-200">Compartiendo conocimiento sobre la naturaleza</p>
-                  </div>
                 </div>
 
-                {/* Imagen 6 - Trabajo en equipo */}
+                {/* Imagen 6 - Mediano */}
                 <div className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300">
                   <img 
                     src="https://images.unsplash.com/photo-1593113598332-cd288d649433?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
                     alt="Equipo de voluntarios trabajando en reforestación"
-                    className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="absolute bottom-0 left-0 right-0 p-4 text-white transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                    <h3 className="text-lg font-semibold mb-1">Trabajo en Equipo</h3>
-                    <p className="text-sm text-green-200">Unidos por el cuidado del medio ambiente</p>
-                  </div>
                 </div>
               </div>
             </div>
