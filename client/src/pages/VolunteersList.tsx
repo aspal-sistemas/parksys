@@ -190,8 +190,7 @@ export default function VolunteersList() {
         <div className="max-w-7xl mx-auto px-4 text-center">
           {/* Textos */}
           <div className="mb-12">
-            <h2 className="text-2xl font-semibold text-gray-900 text-center mb-4">Voluntarios en Acción</h2>
-            <p className="text-gray-600 text-center max-w-2xl mx-auto mb-12">
+            <p className="text-gray-900 font-bold text-xl text-center max-w-2xl mx-auto mb-12">
               Conoce el impacto real de nuestros voluntarios en los parques de Guadalajara
             </p>
           </div>
