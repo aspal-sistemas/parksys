@@ -33,7 +33,6 @@ interface Event {
 const Events: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
-  const [statusFilter, setStatusFilter] = useState('all');
   const [parkFilter, setParkFilter] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
@@ -65,23 +64,12 @@ const Events: React.FC = () => {
                          parkName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          event.organizerName?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = categoryFilter === 'all' || event.eventType === categoryFilter;
-    const matchesStatus = statusFilter === 'all' || event.status === statusFilter;
     const matchesPark = parkFilter === 'all' || parkName === parkFilter;
     
-    return matchesSearch && matchesCategory && matchesStatus && matchesPark;
+    return matchesSearch && matchesCategory && matchesPark;
   });
 
-  const statusLabels = {
-    draft: 'Borrador',
-    published: 'Publicado',
-    cancelled: 'Cancelado'
-  };
 
-  const statusColors = {
-    draft: 'bg-yellow-100 text-yellow-800',
-    published: 'bg-green-100 text-green-800',
-    cancelled: 'bg-red-100 text-red-800'
-  };
 
   const eventTypeLabels = {
     cultural: 'Cultural',
@@ -208,17 +196,6 @@ const Events: React.FC = () => {
                     </SelectItem>
                   ))}
                 </SelectContent>
-                </Select>
-              
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-full sm:w-48">
-                    <SelectValue placeholder="Estado" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="draft">Borrador</SelectItem>
-                    <SelectItem value="published">Publicado</SelectItem>
-                    <SelectItem value="cancelled">Cancelado</SelectItem>
-                  </SelectContent>
                 </Select>
 
                 <Select value={parkFilter} onValueChange={setParkFilter}>
