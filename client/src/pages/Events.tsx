@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { Link } from 'wouter';
 import { Calendar, MapPin, Clock, Users, Search, Filter, Grid, List, Star, Eye, Phone, Mail } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -144,7 +145,7 @@ const Events: React.FC = () => {
               <h1 className="text-4xl md:text-5xl font-bold mb-6 drop-shadow-lg">
                 Eventos y Actividades
               </h1>
-              <p className="text-xl md:text-2xl text-green-100 mb-8 max-w-3xl mx-auto drop-shadow-md">
+              <p className="text-xl md:text-2xl text-green-100 mb-8 max-w-2xl mx-auto drop-shadow-md">
                 Descubre los eventos más emocionantes en los parques urbanos de Guadalajara. 
                 Cultura, deporte, naturaleza y diversión para toda la familia.
               </p>
@@ -252,7 +253,8 @@ const Events: React.FC = () => {
             : 'space-y-4'
           }>
             {filteredEvents.map((event: Event) => (
-              <Card key={event.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+              <Link key={event.id} href={`/event/${event.id}`}>
+                <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group">
                 {viewMode === 'grid' ? (
                   <div className="flex flex-col h-80">
                     {/* Imagen que ocupa 2/3 de la altura */}
@@ -261,7 +263,7 @@ const Events: React.FC = () => {
                         <img 
                           src={event.featuredImageUrl} 
                           alt={event.title}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                       ) : (
                         <div className="w-full h-full bg-gray-200 flex items-center justify-center">
@@ -353,7 +355,7 @@ const Events: React.FC = () => {
                           <img 
                             src={event.featuredImageUrl} 
                             alt={event.title}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />
                         ) : (
                           <div className="w-full h-full bg-gray-200 flex items-center justify-center">
@@ -364,7 +366,8 @@ const Events: React.FC = () => {
                     </div>
                   </CardContent>
                 )}
-              </Card>
+                </Card>
+              </Link>
             ))}
           </div>
         )}

@@ -105,6 +105,11 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/Events')))}
           </Suspense>
         </Route>
+        <Route path="/event/:id">
+          <Suspense fallback={<div className="p-8 text-center">Cargando evento...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/event-detail')))}
+          </Suspense>
+        </Route>
         <Route path="/activity/:id">
           <Suspense fallback={<div className="p-8 text-center">Cargando detalle de actividad...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/activity-detail')))}
