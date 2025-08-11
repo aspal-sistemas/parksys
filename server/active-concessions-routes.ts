@@ -187,6 +187,8 @@ export function registerActiveConcessionRoutes(app: any, apiRouter: any, isAuthe
         concessionaire_id: req.body.concessionaireId,
         park_id: req.body.parkId,
         specific_location: req.body.specificLocation,
+        coordinates: req.body.coordinates,
+        area: req.body.area,
         start_date: req.body.startDate,
         end_date: req.body.endDate,
         status: req.body.status || 'pending',
@@ -194,11 +196,15 @@ export function registerActiveConcessionRoutes(app: any, apiRouter: any, isAuthe
         operating_hours: req.body.operatingHours,
         operating_days: req.body.operatingDays,
         monthly_payment: req.body.monthlyPayment,
+        revenue_percentage: req.body.revenuePercentage,
+        deposit: req.body.deposit,
         emergency_contact: req.body.emergencyContact,
         emergency_phone: req.body.emergencyPhone,
         terms_conditions: req.body.termsConditions,
-        
-        
+        special_requirements: req.body.specialRequirements,
+        contract_number: req.body.contractNumber,
+        notes: req.body.notes,
+        internal_notes: req.body.internalNotes,
         created_at: new Date(),
         updated_at: new Date()
       };
@@ -206,20 +212,24 @@ export function registerActiveConcessionRoutes(app: any, apiRouter: any, isAuthe
       const result = await pool.query(`
         INSERT INTO active_concessions (
           name, description, concession_type_id, concessionaire_id, park_id, 
-          specific_location, start_date, end_date, status, priority, 
-          operating_hours, operating_days, monthly_payment, emergency_contact, 
-          emergency_phone, terms_conditions, created_at, updated_at
+          specific_location, coordinates, area, start_date, end_date, status, priority, 
+          operating_hours, operating_days, monthly_payment, revenue_percentage, deposit,
+          emergency_contact, emergency_phone, terms_conditions, special_requirements,
+          contract_number, notes, internal_notes, created_at, updated_at
         ) VALUES (
           $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 
-          $11, $12, $13, $14, $15, $16, $17, $18
+          $11, $12, $13, $14, $15, $16, $17, $18, $19, 
+          $20, $21, $22, $23, $24, $25, $26
         ) RETURNING *
       `, [
         concessionData.name, concessionData.description, concessionData.concession_type_id,
         concessionData.concessionaire_id, concessionData.park_id, concessionData.specific_location,
-        concessionData.start_date, concessionData.end_date, concessionData.status,
-        concessionData.priority, concessionData.operating_hours, concessionData.operating_days,
-        concessionData.monthly_payment, concessionData.emergency_contact, concessionData.emergency_phone,
-        concessionData.terms_conditions, concessionData.created_at, concessionData.updated_at
+        concessionData.coordinates, concessionData.area, concessionData.start_date, concessionData.end_date, 
+        concessionData.status, concessionData.priority, concessionData.operating_hours, concessionData.operating_days,
+        concessionData.monthly_payment, concessionData.revenue_percentage, concessionData.deposit,
+        concessionData.emergency_contact, concessionData.emergency_phone, concessionData.terms_conditions,
+        concessionData.special_requirements, concessionData.contract_number, concessionData.notes,
+        concessionData.internal_notes, concessionData.created_at, concessionData.updated_at
       ]);
 
       res.status(201).json({
@@ -249,6 +259,8 @@ export function registerActiveConcessionRoutes(app: any, apiRouter: any, isAuthe
         concessionaire_id: req.body.concessionaireId,
         park_id: req.body.parkId,
         specific_location: req.body.specificLocation,
+        coordinates: req.body.coordinates,
+        area: req.body.area,
         start_date: req.body.startDate,
         end_date: req.body.endDate,
         status: req.body.status,
@@ -256,30 +268,38 @@ export function registerActiveConcessionRoutes(app: any, apiRouter: any, isAuthe
         operating_hours: req.body.operatingHours,
         operating_days: req.body.operatingDays,
         monthly_payment: req.body.monthlyPayment,
+        revenue_percentage: req.body.revenuePercentage,
+        deposit: req.body.deposit,
         emergency_contact: req.body.emergencyContact,
         emergency_phone: req.body.emergencyPhone,
         terms_conditions: req.body.termsConditions,
-        
-        
+        special_requirements: req.body.specialRequirements,
+        contract_number: req.body.contractNumber,
+        notes: req.body.notes,
+        internal_notes: req.body.internalNotes,
         updated_at: new Date()
       };
 
       const result = await pool.query(`
         UPDATE active_concessions SET
           name = $1, description = $2, concession_type_id = $3, concessionaire_id = $4,
-          park_id = $5, specific_location = $6, start_date = $7, end_date = $8,
-          status = $9, priority = $10, operating_hours = $11, operating_days = $12,
-          monthly_payment = $13, emergency_contact = $14, emergency_phone = $15,
-          terms_conditions = $16, updated_at = $17
-        WHERE id = $18
+          park_id = $5, specific_location = $6, coordinates = $7, area = $8, 
+          start_date = $9, end_date = $10, status = $11, priority = $12, 
+          operating_hours = $13, operating_days = $14, monthly_payment = $15, 
+          revenue_percentage = $16, deposit = $17, emergency_contact = $18, 
+          emergency_phone = $19, terms_conditions = $20, special_requirements = $21,
+          contract_number = $22, notes = $23, internal_notes = $24, updated_at = $25
+        WHERE id = $26
         RETURNING *
       `, [
         updateData.name, updateData.description, updateData.concession_type_id,
         updateData.concessionaire_id, updateData.park_id, updateData.specific_location,
-        updateData.start_date, updateData.end_date, updateData.status,
-        updateData.priority, updateData.operating_hours, updateData.operating_days,
-        updateData.monthly_payment, updateData.emergency_contact, updateData.emergency_phone,
-        updateData.terms_conditions, updateData.updated_at, concessionId
+        updateData.coordinates, updateData.area, updateData.start_date, updateData.end_date, 
+        updateData.status, updateData.priority, updateData.operating_hours, updateData.operating_days,
+        updateData.monthly_payment, updateData.revenue_percentage, updateData.deposit,
+        updateData.emergency_contact, updateData.emergency_phone, updateData.terms_conditions,
+        updateData.special_requirements, updateData.contract_number, updateData.notes,
+        updateData.internal_notes, updateData.updated_at, concessionId
       ]);
 
       if (result.rows.length === 0) {
