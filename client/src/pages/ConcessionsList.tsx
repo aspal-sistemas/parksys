@@ -224,12 +224,8 @@ export default function ConcessionsList() {
           </h2>
         </div>
 
-        {/* Layout con Sidebar Publicitario */}
-        <div className="flex gap-6">
-          {/* Contenido Principal */}
-          <div className="flex-1 min-w-0">
-            {/* Grid de concesiones */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        {/* Grid de concesiones */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
               {currentConcessions.map((concession: Concession) => (
             <div key={concession.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
               {/* Image Section */}
@@ -296,26 +292,6 @@ export default function ConcessionsList() {
               </div>
             </div>
               ))}
-            </div>
-          </div>
-
-          {/* Sidebar Publicitario */}
-          <div className="w-80 flex-shrink-0 hidden lg:block">
-            <div className="sticky top-4 space-y-6">
-              {/* Espacio 5 (Concessions Sidebar) */}
-              <AdSpace 
-                spaceId="5" 
-                position="sidebar" 
-                pageType="concessions" 
-              />
-              
-              {/* Espacios publicitarios con diseño tipo tarjeta */}
-              <AdSpace spaceId="9" position="card" pageType="concessions" />
-              <AdSpace spaceId="19" position="card" pageType="concessions" />
-              <AdSpace spaceId="23" position="card" pageType="concessions" />
-              <AdSpace spaceId="24" position="card" pageType="concessions" />
-            </div>
-          </div>
         </div>
 
         {/* Paginación */}
