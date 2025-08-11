@@ -454,7 +454,7 @@ const Header: React.FC = () => {
                       style={{ backgroundColor: "#D2EAEA", borderColor: "#003D49" }}
                       title="Centro de ayuda"
                     >
-                      Ayuda
+                      <HelpCircle className="h-6 w-8 text-gray-700" />
                     </Button>
                   </HelpCenter>
 

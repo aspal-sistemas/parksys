@@ -183,19 +183,21 @@ export default function VolunteersList() {
         </div>
       </div>
 
-      {/* 2. Estadísticas de Impacto */}
+      {/* 2. Voluntarios en Acción - Sección Completa */}
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 text-center">
+          {/* Textos */}
           <div className="mb-12">
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">
-              Nuestro Impacto
-            </h2>
+            <h2 className="text-2xl font-semibold text-gray-900 text-center mb-4">Voluntarios en Acción</h2>
+            <p className="text-gray-600 text-center max-w-2xl mx-auto mb-12">
+              Conoce el impacto real de nuestros voluntarios en los parques de Guadalajara
+            </p>
           </div>
 
-          {/* Estadísticas grandes */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+          {/* Estadísticas */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16">
             <div className="text-center">
-              <div className="bg-[#51a19f] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="bg-[#a19f1f] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Users className="h-10 w-10 text-white" />
               </div>
               <div className="text-4xl md:text-5xl font-bold text-gray-900 mb-2">{filteredVolunteers.length}+</div>
@@ -203,7 +205,7 @@ export default function VolunteersList() {
             </div>
             
             <div className="text-center">
-              <div className="bg-[#00a587] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="bg-[#a19f1f] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <MapPin className="h-10 w-10 text-white" />
               </div>
               <div className="text-4xl md:text-5xl font-bold text-gray-900 mb-2">{parks.length}</div>
@@ -211,7 +213,7 @@ export default function VolunteersList() {
             </div>
             
             <div className="text-center">
-              <div className="bg-[#51a19f] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="bg-[#a19f1f] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Award className="h-10 w-10 text-white" />
               </div>
               <div className="text-4xl md:text-5xl font-bold text-gray-900 mb-2">150+</div>
@@ -219,70 +221,61 @@ export default function VolunteersList() {
             </div>
             
             <div className="text-center">
-              <div className="bg-[#19633c] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="bg-[#a19f1f] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Heart className="h-10 w-10 text-white" />
               </div>
               <div className="text-4xl md:text-5xl font-bold text-gray-900 mb-2">25+</div>
               <div className="text-lg text-gray-600 font-medium">Proyectos Completados</div>
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* 3. Galería de Voluntarios en Acción */}
-      <section className="py-16 bg-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-900 text-center mb-4">Voluntarios en Acción</h2>
-            <p className="text-gray-600 text-center max-w-2xl mx-auto">
-              Conoce el impacto real de nuestros voluntarios en los parques de Guadalajara
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-4 grid-rows-2 gap-2 h-64">
-            {/* Imagen principal - ocupa 2x2 - Gran grupo de voluntarios */}
-            <div className="col-span-2 row-span-2 relative cursor-pointer group">
-              <img 
-                src="/volunteer-3.webp"
-                alt="Gran grupo de voluntarios celebrando en parque natural"
-                className="w-full h-full object-cover rounded-lg shadow-lg"
-              />
-              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
-            </div>
-            
-            {/* Imagen 1 - Educación ambiental con niños */}
-            <div className="relative cursor-pointer group">
-              <img 
-                src="/volunteer-1.png"
-                alt="Voluntarios educando niños sobre medio ambiente en parque"
-                className="w-full h-full object-cover rounded-lg shadow-md"
-              />
-              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
-            </div>
-            
-            {/* Imagen 2 - Actividades deportivas */}
-            <div className="relative cursor-pointer group">
-              <img 
-                src="/volunteer-2.png"
-                alt="Voluntarios organizando actividades deportivas para niños"
-                className="w-full h-full object-cover rounded-lg shadow-md"
-              />
-              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
-            </div>
-            
-            {/* Imagen 3 - Jardín japonés */}
-            <div className="relative cursor-pointer group">
-              <img 
-                src="/volunteer-4.jpg"
-                alt="Voluntarios cuidando jardín japonés en parque de Guadalajara"
-                className="w-full h-full object-cover rounded-lg shadow-md"
-              />
-              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
-            </div>
-            
-            {/* Imagen 4 - Placeholder para mostrar el patrón completo */}
-            <div className="relative bg-gray-100 rounded-lg flex items-center justify-center">
-              <span className="text-gray-400 text-sm">Más actividades</span>
+          {/* Galería */}
+          <div className="max-w-4xl mx-auto">
+            <div className="grid grid-cols-4 grid-rows-2 gap-2 h-64">
+              {/* Imagen principal - ocupa 2x2 - Gran grupo de voluntarios */}
+              <div className="col-span-2 row-span-2 relative cursor-pointer group">
+                <img 
+                  src="/volunteer-3.webp"
+                  alt="Gran grupo de voluntarios celebrando en parque natural"
+                  className="w-full h-full object-cover rounded-lg shadow-lg"
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
+              </div>
+              
+              {/* Imagen 1 - Educación ambiental con niños */}
+              <div className="relative cursor-pointer group">
+                <img 
+                  src="/volunteer-1.png"
+                  alt="Voluntarios educando niños sobre medio ambiente en parque"
+                  className="w-full h-full object-cover rounded-lg shadow-md"
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
+              </div>
+              
+              {/* Imagen 2 - Actividades deportivas */}
+              <div className="relative cursor-pointer group">
+                <img 
+                  src="/volunteer-2.png"
+                  alt="Voluntarios organizando actividades deportivas para niños"
+                  className="w-full h-full object-cover rounded-lg shadow-md"
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
+              </div>
+              
+              {/* Imagen 3 - Jardín japonés */}
+              <div className="relative cursor-pointer group">
+                <img 
+                  src="/volunteer-4.jpg"
+                  alt="Voluntarios cuidando jardín japonés en parque de Guadalajara"
+                  className="w-full h-full object-cover rounded-lg shadow-md"
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
+              </div>
+              
+              {/* Imagen 4 - Placeholder para mostrar el patrón completo */}
+              <div className="relative bg-gray-100 rounded-lg flex items-center justify-center">
+                <span className="text-gray-400 text-sm">Más actividades</span>
+              </div>
             </div>
           </div>
         </div>
