@@ -394,7 +394,7 @@ const Header: React.FC = () => {
                     <div className="flex flex-col items-center">
                       <button className="w-9 h-9 flex items-center justify-center rounded-full hover:opacity-80 transition-colors">
                         <Megaphone className="h-5 w-5 text-gray-700" />
-                        <ChevronDown className="h-3 w-3 text-gray-500" />
+                        <ChevronDown className="h-3 w-3 text-gray-700" />
                       </button>
                     </div>
 
@@ -467,7 +467,7 @@ const Header: React.FC = () => {
                       style={{ backgroundColor: "#D2EAEA", borderColor: "#003D49" }}
                       title="Ver página pública"
                     >
-                      Inicio
+                      <Home className="h-6 w-8 text-gray-700" />
                     </Button>
                   </Link>
 

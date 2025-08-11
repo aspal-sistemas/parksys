@@ -294,41 +294,6 @@ export default function VolunteersList() {
             </p>
           </div>
 
-          {/* Estadísticas grandes */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
-            <div className="text-center">
-              <div className="bg-white/20 backdrop-blur-sm w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Users className="h-10 w-10 text-white" />
-              </div>
-              <div className="text-4xl md:text-5xl font-bold text-white mb-2">{filteredVolunteers.length}+</div>
-              <div className="text-lg text-green-100 font-medium">Voluntarios Activos</div>
-            </div>
-            
-            <div className="text-center">
-              <div className="bg-white/20 backdrop-blur-sm w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <MapPin className="h-10 w-10 text-white" />
-              </div>
-              <div className="text-4xl md:text-5xl font-bold text-white mb-2">{parks.length}</div>
-              <div className="text-lg text-green-100 font-medium">Parques Atendidos</div>
-            </div>
-            
-            <div className="text-center">
-              <div className="bg-white/20 backdrop-blur-sm w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Award className="h-10 w-10 text-white" />
-              </div>
-              <div className="text-4xl md:text-5xl font-bold text-white mb-2">150+</div>
-              <div className="text-lg text-green-100 font-medium">Horas Mensuales</div>
-            </div>
-            
-            <div className="text-center">
-              <div className="bg-white/20 backdrop-blur-sm w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Heart className="h-10 w-10 text-white" />
-              </div>
-              <div className="text-4xl md:text-5xl font-bold text-white mb-2">25+</div>
-              <div className="text-lg text-green-100 font-medium">Proyectos Completados</div>
-            </div>
-          </div>
-
           {/* Call to Action */}
           <div className="text-center">
             <Button 
