@@ -427,22 +427,24 @@ function ReservationsPage() {
                 </SelectContent>
               </Select>
 
-              <div className="flex border rounded-lg bg-gray-50">
+              <div className="flex border rounded-lg bg-white/90 shadow-sm">
                 <Button
                   variant={viewMode === 'grid' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setViewMode('grid')}
-                  className="h-12"
+                  className="h-12 px-4 rounded-r-none border-r"
                 >
-                  <Grid className="h-4 w-4" />
+                  <Grid className="h-4 w-4 mr-2" />
+                  <span className="hidden sm:inline">Cuadrícula</span>
                 </Button>
                 <Button
                   variant={viewMode === 'list' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setViewMode('list')}
-                  className="h-12"
+                  className="h-12 px-4 rounded-l-none"
                 >
-                  <List className="h-4 w-4" />
+                  <List className="h-4 w-4 mr-2" />
+                  <span className="hidden sm:inline">Lista</span>
                 </Button>
               </div>
             </div>
