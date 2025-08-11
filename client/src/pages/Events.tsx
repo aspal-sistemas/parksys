@@ -172,8 +172,7 @@ const Events: React.FC = () => {
           {/* Filtros y controles */}
           <div className="rounded-lg shadow-sm p-6">
             <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
-              <div className="flex flex-col sm:flex-row gap-4 flex-1">
-                <div className="relative flex-1 max-w-md">
+              <div className="relative flex-1 max-w-md">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
                   type="text"
@@ -182,20 +181,21 @@ const Events: React.FC = () => {
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
                 />
-                </div>
+              </div>
               
+              <div className="flex flex-col sm:flex-row gap-4 items-end">
                 <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger className="w-full sm:w-48">
-                  <SelectValue placeholder="Categoría" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas las categorías</SelectItem>
-                  {categories.map((category: string) => (
-                    <SelectItem key={category} value={category}>
-                      {eventTypeLabels[category as keyof typeof eventTypeLabels] || category}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
+                  <SelectTrigger className="w-full sm:w-48">
+                    <SelectValue placeholder="Categoría" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas las categorías</SelectItem>
+                    {categories.map((category: string) => (
+                      <SelectItem key={category} value={category}>
+                        {eventTypeLabels[category as keyof typeof eventTypeLabels] || category}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
                 </Select>
 
                 <Select value={parkFilter} onValueChange={setParkFilter}>
