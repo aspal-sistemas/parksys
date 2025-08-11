@@ -269,31 +269,27 @@ const Events: React.FC = () => {
                         </div>
                       )}
                       
-                      {/* Título del evento encima de la foto */}
-                      <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/70 to-transparent p-4">
-                        <h3 className="text-white font-semibold text-lg leading-tight">
-                          {event.title}
-                        </h3>
-                      </div>
-                      
                       {/* Badge de categoría arriba a la izquierda */}
-                      <div className="absolute top-4 left-4">
+                      <div className="absolute top-4 left-4 z-10">
                         <Badge variant="outline" className="bg-white/90 text-xs border-white/50">
                           {eventTypeLabels[event.eventType as keyof typeof eventTypeLabels] || event.eventType}
                         </Badge>
                       </div>
                       
-                      {/* Información de fecha y ubicación abajo a la izquierda */}
+                      {/* Información del evento abajo a la izquierda */}
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-                        <div className="space-y-1 text-white text-sm">
-                          <div className="flex items-center">
-                            <Calendar className="h-3 w-3 mr-2" />
+                        <div className="space-y-1 text-white">
+                          <h3 className="font-semibold text-lg leading-tight mb-1">
+                            {event.title}
+                          </h3>
+                          <div className="flex items-center text-sm">
+                            <Calendar className="h-3 w-3 mr-2 flex-shrink-0" />
                             <span className="text-xs">
                               {formatDate(event.startDate)} {event.startTime && `a las ${formatTime(event.startTime)}`}
                             </span>
                           </div>
-                          <div className="flex items-center">
-                            <MapPin className="h-3 w-3 mr-2" />
+                          <div className="flex items-center text-sm">
+                            <MapPin className="h-3 w-3 mr-2 flex-shrink-0" />
                             <span className="text-xs">
                               {event.parks && event.parks.length > 0 ? event.parks[0].name : event.location}
                             </span>
