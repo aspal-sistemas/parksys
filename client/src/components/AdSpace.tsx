@@ -52,7 +52,7 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
     queryKey: [`/api/advertising-management/placements`, spaceId, pageType], // Query key estable
     queryFn: async () => {
       const timestamp = Date.now();
-      const response = await fetch(`/api/advertising-management/placements?spaceId=${spaceId}&pageType=${pageType}&_t=${timestamp}`);
+      const response = await fetch(`/api/advertising-management/placements?spaceId=${spaceId}&_t=${timestamp}`);
       if (!response.ok) throw new Error('Error al cargar asignaciones');
       return response.json();
     },
@@ -63,7 +63,7 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
   });
 
   // Obtener la asignación activa (si existe)
-  const activePlacement = placementsResponse?.success && placementsResponse.data?.length > 0 
+  const activePlacement = placementsResponse?.success && Array.isArray(placementsResponse.data) && placementsResponse.data.length > 0 
     ? placementsResponse.data[0] 
     : null;
 
@@ -73,7 +73,7 @@ const AdSpace: React.FC<AdSpaceProps> = ({ spaceId, position, pageType, classNam
       isLoading,
       placementsResponse,
       activePlacement,
-      hasData: !!activePlacement
+      hasData: placementsResponse?.success && Array.isArray(placementsResponse.data) && placementsResponse.data.length > 0
     });
   }, [spaceId, pageType, position, isLoading, placementsResponse, activePlacement]);
 
