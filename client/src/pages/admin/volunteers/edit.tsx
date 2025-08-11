@@ -166,11 +166,31 @@ export default function EditVolunteerPage() {
   });
 
   // Obtener parques para el selector
-  const { data: parksResponse } = useQuery<{data: any[], pagination: any}>({
+  const { data: parksResponse, isLoading: isLoadingParks, error: parksError } = useQuery<{data: any[], pagination: any}>({
     queryKey: ['/api/parks'],
+    queryFn: async () => {
+      const response = await fetch('/api/parks', {
+        headers: {
+          'Authorization': 'Bearer direct-token',
+          'Content-Type': 'application/json'
+        }
+      });
+      if (!response.ok) throw new Error('Error al obtener parques');
+      return response.json();
+    }
   });
   
   const parks = parksResponse?.data || [];
+  
+  // Debug logging para parques
+  useEffect(() => {
+    console.log('Parques cargados:', { 
+      parksResponse, 
+      parks, 
+      isLoadingParks, 
+      parksError: parksError?.message 
+    });
+  }, [parksResponse, parks, isLoadingParks, parksError]);
 
   // Llenar el formulario cuando se cargan los datos
   useEffect(() => {
@@ -564,19 +584,31 @@ export default function EditVolunteerPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Parque Preferido</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value || "none"}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Seleccione un parque" />
+                            <SelectValue placeholder={
+                              isLoadingParks 
+                                ? "Cargando parques..." 
+                                : parksError 
+                                  ? "Error al cargar parques" 
+                                  : "Seleccione un parque"
+                            } />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="none">Sin preferencia</SelectItem>
-                          {parks && parks.map((park: any) => (
-                            <SelectItem key={park.id} value={park.id.toString()}>
-                              {park.name}
-                            </SelectItem>
-                          ))}
+                          {parks && parks.length > 0 ? (
+                            parks.map((park: any) => (
+                              <SelectItem key={park.id} value={park.id.toString()}>
+                                {park.name}
+                              </SelectItem>
+                            ))
+                          ) : isLoadingParks ? (
+                            <SelectItem value="loading" disabled>Cargando parques...</SelectItem>
+                          ) : (
+                            <SelectItem value="no_parks" disabled>No hay parques disponibles</SelectItem>
+                          )}
                         </SelectContent>
                       </Select>
                       <FormMessage />
