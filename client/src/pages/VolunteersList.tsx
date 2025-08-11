@@ -311,6 +311,10 @@ export default function VolunteersList() {
       <section className="py-6 bg-white">
         <div className="max-w-7xl mx-auto px-4">
           <div className="rounded-lg p-6">
+            {/* Título del panel */}
+            <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">
+              Contacta con los voluntarios registrados
+            </h3>
             <div className="flex flex-col lg:flex-row gap-4 items-center justify-between mb-4">
               <div className="flex flex-col sm:flex-row gap-4 flex-1">
                 <div className="relative flex-1">
