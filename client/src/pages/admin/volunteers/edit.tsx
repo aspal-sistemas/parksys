@@ -166,7 +166,7 @@ export default function EditVolunteerPage() {
   });
 
   // Obtener parques para el selector
-  const { data: parksResponse, isLoading: isLoadingParks, error: parksError } = useQuery<{data: any[], pagination: any}>({
+  const { data: parksResponse, isLoading: isLoadingParks, error: parksError } = useQuery({
     queryKey: ['/api/parks'],
     queryFn: async () => {
       const response = await fetch('/api/parks', {
@@ -180,13 +180,15 @@ export default function EditVolunteerPage() {
     }
   });
   
-  const parks = parksResponse?.data || [];
+  // Los parques vienen directamente como array, no dentro de un objeto 'data'
+  const parks = Array.isArray(parksResponse) ? parksResponse : (parksResponse?.data || []);
   
   // Debug logging para parques
   useEffect(() => {
-    console.log('Parques cargados:', { 
+    console.log('Parques procesados:', { 
       parksResponse, 
       parks, 
+      parksCount: parks.length,
       isLoadingParks, 
       parksError: parksError?.message 
     });
