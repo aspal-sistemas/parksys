@@ -55,7 +55,7 @@ export default function ConcessionsList() {
   });
 
   const concessions = (concessionsResponse as any)?.data || [];
-  const parks = (parksResponse as any)?.data || [];
+  const parks = Array.isArray(parksResponse) ? parksResponse : (parksResponse as any)?.data || [];
 
 
 
