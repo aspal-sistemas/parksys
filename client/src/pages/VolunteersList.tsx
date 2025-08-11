@@ -179,31 +179,6 @@ export default function VolunteersList() {
             <p className="text-xl text-green-100 mb-8 max-w-2xl mx-auto">
               Personas comprometidas que dedican su tiempo y esfuerzo para hacer de nuestros parques lugares mejores para todos
             </p>
-            <div className="flex items-center justify-center gap-4 text-green-100 flex-wrap">
-              <div className="flex items-center gap-2">
-                <Heart className="h-5 w-5" />
-                <span>{filteredVolunteers.length} voluntarios activos</span>
-              </div>
-              <div className="hidden sm:block w-px h-6 bg-green-300"></div>
-              <div className="flex items-center gap-2">
-                <MapPin className="h-5 w-5" />
-                <span>{parks.length} parques</span>
-              </div>
-              <div className="hidden sm:block w-px h-6 bg-green-300"></div>
-              <div className="flex items-center gap-2">
-                <Award className="h-5 w-5" />
-                <span>{filteredVolunteers.filter(v => v.preferredParkId).length} asignados</span>
-              </div>
-            </div>
-            <div className="mt-8">
-              <Button 
-                className="bg-[#00a587] hover:bg-[#067f5f] text-white px-8 py-3 text-lg font-semibold shadow-lg"
-                size="lg"
-                onClick={() => navigate('/volunteers/register')}
-              >
-                Únete como Voluntario
-              </Button>
-            </div>
           </div>
         </div>
       </div>
@@ -313,44 +288,75 @@ export default function VolunteersList() {
             </div>
           </div>
 
-          {/* Estadísticas de impacto */}
-          <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8">
+        </div>
+      </section>
+
+      {/* 3. Sección Motivacional con Estadísticas y CTA */}
+      <section className="py-20 bg-gradient-to-br from-[#51a19f] to-[#00a587]">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <div className="mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+              ¡Sé Parte del Cambio!
+            </h2>
+            <p className="text-xl text-green-100 mb-8 max-w-3xl mx-auto">
+              Únete a nuestra comunidad de voluntarios y ayuda a transformar los parques de Guadalajara. 
+              Tu tiempo y dedicación marcan la diferencia en el cuidado de nuestros espacios verdes.
+            </p>
+          </div>
+
+          {/* Estadísticas grandes */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
             <div className="text-center">
-              <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Users className="h-8 w-8 text-green-600" />
+              <div className="bg-white/20 backdrop-blur-sm w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Users className="h-10 w-10 text-white" />
               </div>
-              <div className="text-3xl font-bold text-gray-900 mb-2">{filteredVolunteers.length}+</div>
-              <div className="text-sm text-gray-600">Voluntarios Activos</div>
+              <div className="text-4xl md:text-5xl font-bold text-white mb-2">{filteredVolunteers.length}+</div>
+              <div className="text-lg text-green-100 font-medium">Voluntarios Activos</div>
             </div>
             
             <div className="text-center">
-              <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <MapPin className="h-8 w-8 text-blue-600" />
+              <div className="bg-white/20 backdrop-blur-sm w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <MapPin className="h-10 w-10 text-white" />
               </div>
-              <div className="text-3xl font-bold text-gray-900 mb-2">{parks.length}</div>
-              <div className="text-sm text-gray-600">Parques Atendidos</div>
+              <div className="text-4xl md:text-5xl font-bold text-white mb-2">{parks.length}</div>
+              <div className="text-lg text-green-100 font-medium">Parques Atendidos</div>
             </div>
             
             <div className="text-center">
-              <div className="bg-yellow-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Award className="h-8 w-8 text-yellow-600" />
+              <div className="bg-white/20 backdrop-blur-sm w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Award className="h-10 w-10 text-white" />
               </div>
-              <div className="text-3xl font-bold text-gray-900 mb-2">150+</div>
-              <div className="text-sm text-gray-600">Horas Mensuales</div>
+              <div className="text-4xl md:text-5xl font-bold text-white mb-2">150+</div>
+              <div className="text-lg text-green-100 font-medium">Horas Mensuales</div>
             </div>
             
             <div className="text-center">
-              <div className="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Heart className="h-8 w-8 text-purple-600" />
+              <div className="bg-white/20 backdrop-blur-sm w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Heart className="h-10 w-10 text-white" />
               </div>
-              <div className="text-3xl font-bold text-gray-900 mb-2">25+</div>
-              <div className="text-sm text-gray-600">Proyectos Completados</div>
+              <div className="text-4xl md:text-5xl font-bold text-white mb-2">25+</div>
+              <div className="text-lg text-green-100 font-medium">Proyectos Completados</div>
             </div>
+          </div>
+
+          {/* Call to Action */}
+          <div className="text-center">
+            <Button 
+              className="bg-white text-[#00a587] hover:bg-gray-100 px-12 py-4 text-xl font-bold shadow-2xl transform hover:scale-105 transition-all duration-300"
+              size="lg"
+              onClick={() => navigate('/volunteers/register')}
+            >
+              <Heart className="mr-3 h-6 w-6" />
+              Únete como Voluntario
+            </Button>
+            <p className="text-green-100 mt-4 text-lg">
+              Tu pasión por el medio ambiente puede transformar nuestra ciudad
+            </p>
           </div>
         </div>
       </section>
 
-      {/* 3. Sección de panel de filtros y búsqueda */}
+      {/* 4. Sección de panel de filtros y búsqueda */}
       <section className="py-6" style={{backgroundColor: '#19633c'}}>
         <div className="max-w-7xl mx-auto px-4">
           <div className="rounded-lg p-6">
@@ -408,7 +414,7 @@ export default function VolunteersList() {
         </div>
       </section>
 
-      {/* 4. Sección de contenido */}
+      {/* 5. Sección de contenido */}
       <section className="py-12 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4">
           {viewMode === 'grid' ? (
