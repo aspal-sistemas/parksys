@@ -388,11 +388,17 @@ export default function TreeSpecies() {
           <div className="absolute inset-0 bg-black bg-opacity-40"></div>
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center text-white">
-              <h1 className="text-4xl md:text-6xl font-bold mb-4">
-                Especies Arbóreas
+              <h1 className="mb-4">
+                <div className="flex items-center justify-center gap-3 mb-2">
+                  <Leaf className="h-8 w-8 md:h-12 md:w-12 text-white" />
+                  <span className="font-guttery text-3xl md:text-5xl font-thin">Descubre</span>
+                </div>
+                <div className="text-4xl md:text-6xl font-bold">
+                  Especies Arbóreas
+                </div>
               </h1>
               <p className="text-lg md:text-xl max-w-2xl mx-auto px-4">
-                Descubre la diversidad de árboles en nuestros parques urbanos de Guadalajara
+                La diversidad de árboles en nuestros parques urbanos de Guadalajara
               </p>
             </div>
           </div>
