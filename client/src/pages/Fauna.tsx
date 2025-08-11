@@ -521,8 +521,8 @@ export default function Fauna() {
             </Button>
           </div>
 
-          {/* Banner Publicitario de Ancho Completo */}
-          <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] mt-12">
+          {/* Banner Publicitario */}
+          <div className="mt-12">
             <AdSpace spaceId="37" position="banner" pageType="fauna" />
           </div>
         </div>
