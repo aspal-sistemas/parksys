@@ -168,16 +168,28 @@ export default function PaymentsPage() {
     <AdminLayout title="Gestión de Pagos" subtitle="Administra todos los pagos procesados con Stripe">
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Gestión de Pagos</h1>
-          <p className="text-gray-600">Administra todos los pagos procesados con Stripe</p>
-        </div>
-        <Button onClick={loadPayments} disabled={isLoading}>
-          <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-          Actualizar
-        </Button>
-      </div>
+      <Card className="bg-gray-50">
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <CreditCard className="w-8 h-8 text-black" />
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">
+                  Gestión de Pagos
+                </h1>
+                <p className="text-sm text-gray-600 mt-1">
+                  Administra todos los pagos procesados con Stripe
+                </p>
+              </div>
+            </div>
+            
+            <Button onClick={loadPayments} disabled={isLoading}>
+              <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+              Actualizar
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Estadísticas */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
