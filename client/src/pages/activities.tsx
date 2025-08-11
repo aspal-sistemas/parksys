@@ -558,7 +558,7 @@ function ActivitiesPage() {
                 Descubre
               </h1>
             </div>
-            <h2 className="text-5xl md:text-6xl font-bold">
+            <h2 className="text-4xl md:text-5xl font-bold">
               Actividades en el Parque
             </h2>
           </div>
