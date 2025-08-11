@@ -306,8 +306,8 @@ const Events: React.FC = () => {
                         </p>
                         
                         <div className="text-xs text-gray-500">
-                          <span className="font-medium">Organiza:</span>
-                          <div className="text-gray-700">{event.organizerName}</div>
+                          <span className="font-medium">Organiza: </span>
+                          <span className="text-gray-700">{event.organizerName}</span>
                         </div>
                       </div>
                     </div>
