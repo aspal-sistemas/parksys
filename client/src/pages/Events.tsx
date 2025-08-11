@@ -137,7 +137,7 @@ const Events: React.FC = () => {
             <div className="text-center">
               <div className="flex items-center justify-center gap-3 mb-4">
                 <Eye className="h-8 w-8 md:h-10 md:w-10 text-white drop-shadow-lg" />
-                <h2 className="text-3xl md:text-4xl font-guttery font-light drop-shadow-lg">
+                <h2 className="text-4xl md:text-5xl font-guttery font-light drop-shadow-lg">
                   Conoce
                 </h2>
               </div>
