@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Search, Edit, Eye, Users, MapPin, Calendar, Award, Clock, Download, Upload, ChevronLeft, ChevronRight, FileText, Filter } from "lucide-react";
+import { Plus, Search, Edit, Eye, Users, MapPin, Calendar, Award, Clock, Download, Upload, ChevronLeft, ChevronRight, FileText, Filter, Trash2 } from "lucide-react";
 
 interface Volunteer {
   id: number;
@@ -74,6 +74,30 @@ export default function VolunteersPage() {
   });
   
   const parks = parksResponse?.data || [];
+
+  // Mutación para eliminar voluntario
+  const deleteVolunteerMutation = useMutation({
+    mutationFn: async (volunteerId: number) => {
+      await apiRequest(`/api/volunteers/${volunteerId}`, {
+        method: 'DELETE'
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/volunteers'] });
+      toast({
+        title: "Voluntario eliminado",
+        description: "El voluntario ha sido desactivado correctamente",
+      });
+    },
+    onError: (error) => {
+      console.error('Error al eliminar voluntario:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar el voluntario",
+        variant: "destructive"
+      });
+    }
+  });
 
   // Filtrar voluntarios con filtros extendidos
   const filteredVolunteers = volunteers.filter((volunteer: any) => {
@@ -175,6 +199,16 @@ export default function VolunteersPage() {
 
   const handleEditVolunteer = (volunteerId: number) => {
     navigate(`/admin/volunteers/edit/${volunteerId}`);
+  };
+
+  const handleDeleteVolunteer = async (volunteer: Volunteer) => {
+    const confirmDelete = window.confirm(
+      `¿Estás seguro de que deseas eliminar al voluntario "${volunteer.full_name || `${volunteer.firstName} ${volunteer.lastName}`}"?\n\nEsta acción cambiará su estado a "inactivo".`
+    );
+    
+    if (confirmDelete) {
+      deleteVolunteerMutation.mutate(volunteer.id);
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -561,6 +595,16 @@ export default function VolunteersPage() {
                             >
                               <Edit className="h-4 w-4 mr-1" />
                               Editar
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDeleteVolunteer(volunteer)}
+                              disabled={deleteVolunteerMutation.isPending}
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            >
+                              <Trash2 className="h-4 w-4 mr-1" />
+                              {deleteVolunteerMutation.isPending ? 'Eliminando...' : 'Eliminar'}
                             </Button>
                           </div>
                         </div>
