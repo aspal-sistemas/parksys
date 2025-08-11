@@ -538,7 +538,7 @@ function ActivitiesPage() {
 
   return (
     <PublicLayout>
-      <div className="bg-gradient-to-br from-green-50 to-blue-50">
+      <div className="bg-gray-50">
       {/* Hero Section */}
       <section 
         className="relative py-24 px-4 text-center text-white"
