@@ -310,7 +310,7 @@ export default function VolunteersList() {
       </section>
 
       {/* 4. Sección de panel de filtros y búsqueda */}
-      <section className="py-6 bg-gray-100">
+      <section className="py-6 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4">
           <div className="rounded-lg p-6">
             {/* Título del panel */}
