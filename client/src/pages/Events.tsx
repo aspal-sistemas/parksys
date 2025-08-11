@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AdSpace from '@/components/AdSpace';
+import PublicLayout from '@/components/PublicLayout';
 import heroImage from '@assets/ImageTransformer_1754921197180.webp';
 
 interface Event {
@@ -122,33 +123,34 @@ const Events: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <div className="relative text-white overflow-hidden">
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url(${heroImage})` }}
-        >
-          <div className="absolute inset-0 bg-black opacity-50"></div>
-        </div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <Eye className="h-8 w-8 md:h-10 md:w-10 text-white drop-shadow-lg" />
-              <h2 className="text-3xl md:text-4xl font-guttery font-light drop-shadow-lg">
-                Conoce
-              </h2>
+    <PublicLayout>
+      <div className="min-h-screen bg-gray-50">
+        {/* Hero Section */}
+        <div className="relative text-white overflow-hidden">
+          <div 
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: `url(${heroImage})` }}
+          >
+            <div className="absolute inset-0 bg-black opacity-50"></div>
+          </div>
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-3 mb-4">
+                <Eye className="h-8 w-8 md:h-10 md:w-10 text-white drop-shadow-lg" />
+                <h2 className="text-3xl md:text-4xl font-guttery font-light drop-shadow-lg">
+                  Conoce
+                </h2>
+              </div>
+              <h1 className="text-4xl md:text-6xl font-bold mb-6 drop-shadow-lg">
+                Eventos y Actividades
+              </h1>
+              <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto drop-shadow-md">
+                Descubre los eventos más emocionantes en los parques urbanos de Guadalajara. 
+                Cultura, deporte, naturaleza y diversión para toda la familia.
+              </p>
             </div>
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 drop-shadow-lg">
-              Eventos y Actividades
-            </h1>
-            <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto drop-shadow-md">
-              Descubre los eventos más emocionantes en los parques urbanos de Guadalajara. 
-              Cultura, deporte, naturaleza y diversión para toda la familia.
-            </p>
           </div>
         </div>
-      </div>
 
       {/* Banner publicitario */}
       <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]">
@@ -345,79 +347,8 @@ const Events: React.FC = () => {
         )}
       </div>
 
-      {/* Footer Institucional */}
-      <footer className="bg-gradient-to-r from-green-800 to-green-900 text-white mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8">
-            {/* Logo y descripción */}
-            <div className="lg:col-span-2">
-              <div className="flex items-center mb-4">
-                <div className="bg-white p-2 rounded-lg mr-3">
-                  <div className="w-8 h-8 bg-green-600 rounded"></div>
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold">Agencia Metropolitana</h3>
-                  <p className="text-sm text-green-100">de Bosques Urbanos</p>
-                </div>
-              </div>
-              <p className="text-green-100 text-sm leading-relaxed">
-                Promovemos el desarrollo sostenible y la conservación de los espacios verdes urbanos 
-                de Guadalajara, creando experiencias significativas para toda la comunidad.
-              </p>
-            </div>
-
-            {/* Enlaces principales */}
-            <div>
-              <h4 className="text-white font-semibold mb-4">Enlaces</h4>
-              <ul className="space-y-2 text-sm">
-                <li><a href="/parks" className="text-green-100 hover:text-white transition-colors">Parques</a></li>
-                <li><a href="/activities" className="text-green-100 hover:text-white transition-colors">Actividades</a></li>
-                <li><a href="/events" className="text-green-100 hover:text-white transition-colors">Eventos</a></li>
-                <li><a href="/tree-species" className="text-green-100 hover:text-white transition-colors">Arbolado</a></li>
-              </ul>
-            </div>
-
-            {/* Bosques urbanos */}
-            <div>
-              <h4 className="text-white font-semibold mb-4">Bosques Urbanos</h4>
-              <ul className="space-y-2 text-sm">
-                <li><a href="#" className="text-green-100 hover:text-white transition-colors">Los Colomos</a></li>
-                <li><a href="#" className="text-green-100 hover:text-white transition-colors">Agua Azul</a></li>
-                <li><a href="#" className="text-green-100 hover:text-white transition-colors">Metropolitano</a></li>
-                <li><a href="#" className="text-green-100 hover:text-white transition-colors">González Gallo</a></li>
-              </ul>
-            </div>
-
-            {/* Transparencia */}
-            <div>
-              <h4 className="text-white font-semibold mb-4">Transparencia</h4>
-              <ul className="space-y-2 text-sm">
-                <li><a href="#" className="text-green-100 hover:text-white transition-colors">Portal de Transparencia</a></li>
-                <li><a href="#" className="text-green-100 hover:text-white transition-colors">Información Pública</a></li>
-                <li><a href="#" className="text-green-100 hover:text-white transition-colors">Presupuesto</a></li>
-                <li><a href="#" className="text-green-100 hover:text-white transition-colors">Rendición de Cuentas</a></li>
-              </ul>
-            </div>
-
-            {/* Contacto */}
-            <div>
-              <h4 className="text-white font-semibold mb-4">Contacto</h4>
-              <div className="space-y-2 text-sm text-green-100">
-                <p>Av. Miraflores 1234</p>
-                <p>Col. Miraflores, Guadalajara</p>
-                <p>Tel: (33) 1234-5678</p>
-                <p>contacto@bosquesurbanos.gob.mx</p>
-                <p className="text-xs mt-2">Lun-Vie: 8:00-16:00</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="border-t border-green-700 mt-8 pt-8 text-center text-sm text-green-100">
-            <p>&copy; 2025 Agencia Metropolitana de Bosques Urbanos. Todos los derechos reservados.</p>
-          </div>
-        </div>
-      </footer>
-    </div>
+      </div>
+    </PublicLayout>
   );
 };
 
