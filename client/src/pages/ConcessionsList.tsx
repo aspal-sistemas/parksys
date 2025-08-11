@@ -218,13 +218,10 @@ export default function ConcessionsList() {
 
       {/* Resultados */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center mb-6">
+        <div className="mb-6">
           <h2 className="text-2xl font-bold text-gray-900">
-            {filteredConcessions.length} concesiones encontradas
+            Concesiones
           </h2>
-          <div className="text-sm text-gray-600">
-            Página {currentPage} de {totalPages} - Mostrando {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredConcessions.length)} de {filteredConcessions.length}
-          </div>
         </div>
 
         {/* Layout con Sidebar Publicitario */}
