@@ -358,9 +358,9 @@ export default function Fauna() {
         </div>
         
         {/* 2. Sección de panel de filtros y búsqueda */}
-        <section className="py-12" style={{backgroundColor: '#19633c'}}>
+        <section className="py-6" style={{backgroundColor: '#19633c'}}>
           <div className="max-w-7xl mx-auto px-4">
-            <div className="rounded-lg shadow-sm p-6 mb-8 bg-black bg-opacity-10">
+            <div className="rounded-lg shadow-sm p-6 bg-black bg-opacity-10">
               <div className="flex flex-col lg:flex-row gap-4 items-center justify-between mb-4">
                 <div className="flex flex-col sm:flex-row gap-4 flex-1">
                   <div className="relative flex-1">
