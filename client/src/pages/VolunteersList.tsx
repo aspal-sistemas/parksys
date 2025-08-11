@@ -48,8 +48,7 @@ export default function VolunteersList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [parkFilter, setParkFilter] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 12;
+  const [cardsToShow, setCardsToShow] = useState(3); // Inicialmente mostrar 3 cards
 
   // Consulta para obtener todos los voluntarios con información del parque
   const { data: volunteersResponse, isLoading, error } = useQuery({
@@ -99,15 +98,18 @@ export default function VolunteersList() {
     return matchesSearch && matchesPark && volunteer.status === 'active';
   });
 
-  // Paginación
-  const totalPages = Math.ceil(filteredVolunteers.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentVolunteers = filteredVolunteers.slice(startIndex, endIndex);
+  // Lógica de "Ver más"
+  const currentVolunteers = filteredVolunteers.slice(0, cardsToShow);
+  const hasMore = cardsToShow < filteredVolunteers.length;
 
-  // Resetear página cuando cambian los filtros
+  // Función para mostrar más voluntarios
+  const showMore = () => {
+    setCardsToShow(prev => prev + 9); // Agregar 9 más cada vez
+  };
+
+  // Resetear cantidad cuando cambian los filtros
   useEffect(() => {
-    setCurrentPage(1);
+    setCardsToShow(3); // Volver a mostrar solo 3 inicialmente
   }, [searchTerm, parkFilter]);
 
   const formatDate = (dateString: string) => {
@@ -363,7 +365,7 @@ export default function VolunteersList() {
             </div>
             
             <p className="text-sm text-green-100">
-              Mostrando {startIndex + 1} a {Math.min(endIndex, filteredVolunteers.length)} de {filteredVolunteers.length} voluntarios
+              Mostrando {Math.min(cardsToShow, filteredVolunteers.length)} de {filteredVolunteers.length} voluntarios
             </p>
           </div>
         </div>
@@ -515,49 +517,14 @@ export default function VolunteersList() {
                 </div>
               )}
 
-              {/* Paginación */}
-              {totalPages > 1 && (
-                <div className="flex justify-center items-center space-x-2 mt-8">
+              {/* Botón Ver más */}
+              {hasMore && (
+                <div className="flex justify-center mt-8">
                   <Button
-                    variant="outline"
-                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    disabled={currentPage === 1}
-                    className="text-primary border-primary hover:bg-primary hover:text-white"
+                    onClick={showMore}
+                    className="bg-[#51a19f] text-white hover:bg-[#458a88] px-8 py-3 text-lg font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
                   >
-                    Anterior
-                  </Button>
-                  
-                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    let pageNum;
-                    if (totalPages <= 5) {
-                      pageNum = i + 1;
-                    } else if (currentPage <= 3) {
-                      pageNum = i + 1;
-                    } else if (currentPage >= totalPages - 2) {
-                      pageNum = totalPages - 4 + i;
-                    } else {
-                      pageNum = currentPage - 2 + i;
-                    }
-                    
-                    return (
-                      <Button
-                        key={pageNum}
-                        variant={currentPage === pageNum ? "default" : "outline"}
-                        onClick={() => setCurrentPage(pageNum)}
-                        className={currentPage === pageNum ? "bg-primary text-white" : "text-primary border-primary hover:bg-primary hover:text-white"}
-                      >
-                        {pageNum}
-                      </Button>
-                    );
-                  })}
-                  
-                  <Button
-                    variant="outline"
-                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                    disabled={currentPage === totalPages}
-                    className="text-primary border-primary hover:bg-primary hover:text-white"
-                  >
-                    Siguiente
+                    Ver más voluntarios
                   </Button>
                 </div>
               )}

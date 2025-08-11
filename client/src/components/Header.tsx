@@ -5,7 +5,6 @@ import {
   X,
   ChevronDown,
   LogIn,
-  LogOut,
   HelpCircle,
   FolderOpen,
   Wrench,
