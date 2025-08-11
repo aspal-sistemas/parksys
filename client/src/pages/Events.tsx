@@ -254,56 +254,68 @@ const Events: React.FC = () => {
             {filteredEvents.map((event: Event) => (
               <Card key={event.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                 {viewMode === 'grid' ? (
-                  <>
-                    {event.featuredImageUrl && (
-                      <div className="h-48 overflow-hidden">
+                  <div className="flex h-64">
+                    {/* Imagen que ocupa 3/4 de la tarjeta */}
+                    <div className="relative w-3/4 overflow-hidden">
+                      {event.featuredImageUrl ? (
                         <img 
                           src={event.featuredImageUrl} 
                           alt={event.title}
                           className="w-full h-full object-cover"
                         />
-                      </div>
-                    )}
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between mb-3">
-                        <h3 className="text-lg font-semibold text-gray-900 flex-1 mr-2">
+                      ) : (
+                        <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                          <Calendar className="h-12 w-12 text-gray-400" />
+                        </div>
+                      )}
+                      
+                      {/* Título del evento encima de la foto */}
+                      <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/70 to-transparent p-4">
+                        <h3 className="text-white font-semibold text-lg leading-tight">
                           {event.title}
                         </h3>
-                        <Badge className={statusColors[event.status]}>
-                          {statusLabels[event.status]}
-                        </Badge>
                       </div>
                       
-                      <div className="mb-3">
-                        <Badge variant="outline" className="text-xs">
+                      {/* Badge de categoría arriba a la izquierda */}
+                      <div className="absolute top-4 left-4">
+                        <Badge variant="outline" className="bg-white/90 text-xs border-white/50">
                           {eventTypeLabels[event.eventType as keyof typeof eventTypeLabels] || event.eventType}
                         </Badge>
                       </div>
                       
-                      <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                        {event.description}
-                      </p>
-                      
-                      <div className="space-y-2 text-sm text-gray-500 mb-4">
-                        <div className="flex items-center">
-                          <Calendar className="h-4 w-4 mr-2" />
-                          {formatDate(event.startDate)} {event.startTime && `a las ${formatTime(event.startTime)}`}
-                        </div>
-                        <div className="flex items-center">
-                          <MapPin className="h-4 w-4 mr-2" />
-                          {event.parks && event.parks.length > 0 ? event.parks[0].name : event.location}
-                        </div>
-                        <div className="flex items-center">
-                          <Users className="h-4 w-4 mr-2" />
-                          {event.registeredCount || 0} / {event.capacity} participantes
+                      {/* Información de fecha y ubicación abajo a la izquierda */}
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                        <div className="space-y-1 text-white text-sm">
+                          <div className="flex items-center">
+                            <Calendar className="h-3 w-3 mr-2" />
+                            <span className="text-xs">
+                              {formatDate(event.startDate)} {event.startTime && `a las ${formatTime(event.startTime)}`}
+                            </span>
+                          </div>
+                          <div className="flex items-center">
+                            <MapPin className="h-3 w-3 mr-2" />
+                            <span className="text-xs">
+                              {event.parks && event.parks.length > 0 ? event.parks[0].name : event.location}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                      
-                      <div className="text-xs text-gray-400">
-                        Organiza: {event.organizerName}
+                    </div>
+                    
+                    {/* Área de contenido 1/4 restante */}
+                    <div className="w-1/4 p-4 flex flex-col justify-between">
+                      <div className="flex-1">
+                        <p className="text-gray-600 text-xs leading-relaxed line-clamp-4 mb-3">
+                          {event.description}
+                        </p>
                       </div>
-                    </CardContent>
-                  </>
+                      
+                      <div className="text-xs text-gray-500 border-t pt-2">
+                        <div className="font-medium">Organiza:</div>
+                        <div className="text-gray-700">{event.organizerName}</div>
+                      </div>
+                    </div>
+                  </div>
                 ) : (
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
