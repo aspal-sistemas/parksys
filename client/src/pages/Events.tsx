@@ -371,11 +371,11 @@ const Events: React.FC = () => {
             ))}
           </div>
         )}
-      </div>
 
-      {/* Banner publicitario */}
-      <div className="my-8">
-        <AdSpace spaceId="35" pageType="activities" position="banner" />
+        {/* Banner publicitario */}
+        <div className="my-8">
+          <AdSpace spaceId="35" pageType="activities" position="banner" />
+        </div>
       </div>
 
       {/* Sección de información de contacto */}
