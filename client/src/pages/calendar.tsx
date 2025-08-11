@@ -75,104 +75,76 @@ const CalendarPage: React.FC = () => {
         });
       }
     });
+  const instructors = Array.from(uniqueInstructors.values());
   
-  const instructors = Array.from(uniqueInstructors.values())
-    .sort((a, b) => a.name.localeCompare(b.name));
-  
-  // Navegación entre meses
-  const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
-  const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
-  
-  // Filtrar actividades por fecha y filtros aplicados
+  // Colores por categoría
+  const getCategoryColor = (category: string) => {
+    const colors: Record<string, string> = {
+      'Deportes': 'bg-blue-500',
+      'Cultura': 'bg-purple-500',
+      'Ecología': 'bg-green-500',
+      'Recreación': 'bg-orange-500',
+      'Educación': 'bg-indigo-500',
+      'Bienestar': 'bg-pink-500',
+      'Arte': 'bg-red-500',
+      'Música': 'bg-yellow-500',
+      'Tecnología': 'bg-gray-500',
+      'default': 'bg-teal-500'
+    };
+    return colors[category] || colors.default;
+  };
+
+  // Filtrar actividades
+  const filteredActivities = activities.filter(activity => {
+    if (categoryFilter !== 'all' && activity.category !== categoryFilter) return false;
+    if (parkFilter !== 'all' && activity.parkName !== parkFilter) return false;
+    if (instructorFilter !== 'all' && activity.instructorId?.toString() !== instructorFilter) return false;
+    if (priceFilter === 'free' && !activity.isFree) return false;
+    if (priceFilter === 'paid' && activity.isFree) return false;
+    return true;
+  });
+
+  // Obtener actividades por fecha
   const getActivitiesForDate = (date: Date) => {
-    return activities.filter(activity => {
-      // Solo considerar actividades con fechas válidas
-      if (!activity.startDate || !isValid(parseISO(activity.startDate))) {
-        return false;
-      }
-      
-      // Verificar si la actividad ocurre en la fecha seleccionada
+    return filteredActivities.filter(activity => {
+      if (!activity.startDate || !isValid(parseISO(activity.startDate))) return false;
       const activityDate = parseISO(activity.startDate);
-      const sameDay = isSameDay(date, activityDate);
-      
-      // Aplicar filtros
-      const matchesCategory = categoryFilter === 'all' || activity.category === categoryFilter;
-      const matchesPark = parkFilter === 'all' || activity.parkName === parkFilter;
-      const matchesInstructor = instructorFilter === 'all' ||
-        (activity.instructorId && activity.instructorId.toString() === instructorFilter);
-      
-      // Filtrar por precio
-      let matchesPrice = true;
-      if (priceFilter === 'free') {
-        matchesPrice = !activity.price || activity.price === 0;
-      } else if (priceFilter === 'paid') {
-        matchesPrice = activity.price !== undefined && activity.price > 0;
-      } else if (priceFilter === 'all') {
-        matchesPrice = true;
-      }
-      
-      return sameDay && matchesCategory && matchesPark && matchesInstructor && matchesPrice;
+      return isSameDay(date, activityDate);
     });
   };
-  
-  // Ver detalles de una actividad
-  const viewActivityDetails = (activity: Activity) => {
+
+  // Funciones de navegación del calendario
+  const goToPrevMonth = () => {
+    setCurrentMonth(prev => subMonths(prev, 1));
+  };
+
+  const goToNextMonth = () => {
+    setCurrentMonth(prev => addMonths(prev, 1));
+  };
+
+  // Función para manejar la selección de una actividad
+  const handleActivityClick = (activity: Activity) => {
     setSelectedActivity(activity);
     setDialogOpen(true);
   };
+
+  // Configurar fechas del calendario
+  const monthStart = startOfMonth(currentMonth);
+  const monthEnd = endOfMonth(currentMonth);
+  const startDate = new Date(monthStart);
+  startDate.setDate(startDate.getDate() - getDay(monthStart));
   
-  // Generar días del mes actual
-  const daysInMonth = eachDayOfInterval({
-    start: startOfMonth(currentMonth),
-    end: endOfMonth(currentMonth),
-  });
+  const endDate = new Date(monthEnd);
+  endDate.setDate(endDate.getDate() + (6 - getDay(monthEnd)));
   
-  // Determinar el primer día del mes (0 = domingo, 1 = lunes, etc.)
-  const firstDayOfMonth = getDay(startOfMonth(currentMonth));
-  
-  // Nombres de los días de la semana
-  const weekdays = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-  
-  // Formatear precio
-  const formatPrice = (price?: number | string) => {
-    if (price === undefined || price === null || price === 0 || price === '0.00') return 'Gratis';
-    const numPrice = typeof price === 'string' ? parseFloat(price) : price;
-    if (isNaN(numPrice) || numPrice === 0) return 'Gratis';
-    return `$${numPrice.toFixed(2)} MXN`;
-  };
-  
-  // Generar color según categoría
-  const getCategoryColor = (category: string) => {
-    if (!category) return 'bg-gray-100 text-gray-800 border-gray-200';
-    
-    switch (category.toLowerCase()) {
-      case 'arte y cultura':
-        return 'bg-purple-100 text-purple-800 border-purple-200';
-      case 'deportes':
-      case 'deporte y bienestar':
-      case 'deportivo':
-        return 'bg-emerald-100 text-emerald-800 border-emerald-200';
-      case 'educación':
-      case 'educativo':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'recreación':
-      case 'recreación y bienestar':
-        return 'bg-amber-100 text-amber-800 border-amber-200';
-      case 'eventos de temporada':
-        return 'bg-red-100 text-red-800 border-red-200';
-      case 'naturaleza':
-      case 'naturaleza y ciencia':
-      case 'naturaleza, ciencia y conservación':
-        return 'bg-teal-100 text-teal-800 border-teal-200';
-      case 'fitness y ejercicio':
-        return 'bg-indigo-100 text-indigo-800 border-indigo-200';
-      case 'actividades familiares':
-        return 'bg-pink-100 text-pink-800 border-pink-200';
-      case 'comunidad':
-        return 'bg-violet-100 text-violet-800 border-violet-200';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
+  const dateRange = eachDayOfInterval({ start: startDate, end: endDate });
+
+  // Función para resetear filtros
+  const resetFilters = () => {
+    setCategoryFilter('all');
+    setParkFilter('all');
+    setInstructorFilter('all');
+    setPriceFilter('all');
   };
 
   // Calcular estadísticas para el hero
@@ -201,424 +173,298 @@ const CalendarPage: React.FC = () => {
     <PublicLayout>
       <div className="bg-gray-50">
         {/* Hero Section con imagen de fondo */}
-      <div 
-        className="relative text-white"
-        style={{
-          backgroundImage: `url(${heroImage})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
-        }}
-      >
-        <div className="absolute inset-0 bg-black/50"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-          <div className="text-center">
-            <h1 className="text-4xl md:text-6xl mb-6">
-              <div className="flex items-center justify-center gap-3">
-                <CalendarIcon className="h-12 w-12 md:h-16 md:w-16 text-white" />
-                <span className="font-light text-white" style={{ fontFamily: 'Guttery, sans-serif' }}>Nuestro</span>
+        <div 
+          className="relative text-white"
+          style={{
+            backgroundImage: `url(${heroImage})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
+          }}
+        >
+          <div className="absolute inset-0 bg-black/50"></div>
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+            <div className="text-center">
+              <h1 className="text-4xl md:text-6xl mb-6">
+                <div className="flex items-center justify-center gap-3">
+                  <CalendarIcon className="h-12 w-12 md:h-16 md:w-16 text-white" />
+                  <span className="font-light text-white" style={{ fontFamily: 'Guttery, sans-serif' }}>Nuestro</span>
+                </div>
+                <span className="font-bold text-white">Calendario de Actividades</span>
+              </h1>
+              <p className="text-xl md:text-2xl text-blue-100 max-w-3xl mx-auto">
+                Descubre eventos y actividades programadas en todos nuestros parques durante el mes
+              </p>
+            </div>
+            <div className="flex items-center justify-center gap-4 text-blue-100 mt-8">
+              <div className="flex items-center gap-2">
+                <CalendarIcon className="h-5 w-5" />
+                <span>{activitiesThisMonth} actividades este mes</span>
               </div>
-              <span className="font-bold text-white">Calendario de Actividades</span>
-            </h1>
-            <p className="text-xl md:text-2xl text-blue-100 max-w-3xl mx-auto">
-              Descubre eventos y actividades programadas en todos nuestros parques durante el mes
-            </p>
-          </div>
-          <div className="flex items-center justify-center gap-4 text-blue-100 mt-8">
-            <div className="flex items-center gap-2">
-              <CalendarIcon className="h-5 w-5" />
-              <span>{activitiesThisMonth} actividades este mes</span>
-            </div>
-            <Separator orientation="vertical" className="h-6 bg-blue-300" />
-            <div className="flex items-center gap-2">
-              <Trees className="h-5 w-5" />
-              <span>{uniqueParks} parques activos</span>
-            </div>
-            <Separator orientation="vertical" className="h-6 bg-blue-300" />
-            <div className="flex items-center gap-2">
-              <Tag className="h-5 w-5" />
-              <span>{categories.length} categorías</span>
+              <Separator orientation="vertical" className="h-6 bg-blue-300" />
+              <div className="flex items-center gap-2">
+                <Trees className="h-5 w-5" />
+                <span>{uniqueParks} parques activos</span>
+              </div>
+              <Separator orientation="vertical" className="h-6 bg-blue-300" />
+              <div className="flex items-center gap-2">
+                <Tag className="h-5 w-5" />
+                <span>{categories.length} categorías</span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Filtros */}
-        <div className="mb-8">
-          <div className="rounded-2xl shadow-sm border p-6" style={{backgroundColor: '#19633c'}}>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger className="border-gray-200 focus:border-primary focus:ring-primary">
-                  <SelectValue placeholder="Categoría" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas las categorías</SelectItem>
-                  {categories.map(category => (
-                    <SelectItem key={category} value={category}>{category}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              
-              <Select value={parkFilter} onValueChange={setParkFilter}>
-                <SelectTrigger className="border-gray-200 focus:border-primary focus:ring-primary">
-                  <SelectValue placeholder="Parque" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos los parques</SelectItem>
-                  {parks.map(park => (
-                    <SelectItem key={park} value={park}>{park}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              
-              <Select value={instructorFilter} onValueChange={setInstructorFilter}>
-                <SelectTrigger className="border-gray-200 focus:border-primary focus:ring-primary">
-                  <SelectValue placeholder="Instructor" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos los instructores</SelectItem>
-                  {instructors.map(instructor => (
-                    <SelectItem key={instructor.id} value={instructor.id.toString()}>
-                      {instructor.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              
-              <Select value={priceFilter} onValueChange={setPriceFilter}>
-                <SelectTrigger className="border-gray-200 focus:border-primary focus:ring-primary">
-                  <SelectValue placeholder="Precio" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos los precios</SelectItem>
-                  <SelectItem value="free">Gratis</SelectItem>
-                  <SelectItem value="paid">De pago</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            {(categoryFilter !== 'all' || parkFilter !== 'all' || instructorFilter !== 'all' || priceFilter !== 'all') && (
-              <div className="flex justify-center mt-4">
-                <Button 
-                  variant="outline"
-                  onClick={() => {
-                    setCategoryFilter('all');
-                    setParkFilter('all');
-                    setInstructorFilter('all');
-                    setPriceFilter('all');
-                  }}
-                  className="text-primary border-primary hover:bg-primary hover:text-white"
-                >
-                  <X className="h-4 w-4 mr-2" />
-                  Limpiar Filtros
-                </Button>
+        {/* Sección de filtros con fondo verde */}
+        <div className="py-12" style={{backgroundColor: '#19633c'}}>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            {/* Panel de filtros */}
+            <div className="mb-8">
+              <div className="rounded-2xl shadow-sm border p-6 bg-white">
+                {/* Filtros organizados en grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                    <SelectTrigger className="border-gray-200 focus:border-primary focus:ring-primary">
+                      <SelectValue placeholder="Categoría" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todas las categorías</SelectItem>
+                      {categories.map((category) => (
+                        <SelectItem key={category} value={category}>{category}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <Select value={parkFilter} onValueChange={setParkFilter}>
+                    <SelectTrigger className="border-gray-200 focus:border-primary focus:ring-primary">
+                      <SelectValue placeholder="Parque" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos los parques</SelectItem>
+                      {parks.map((park) => (
+                        <SelectItem key={park} value={park}>{park}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <Select value={instructorFilter} onValueChange={setInstructorFilter}>
+                    <SelectTrigger className="border-gray-200 focus:border-primary focus:ring-primary">
+                      <SelectValue placeholder="Instructor" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos los instructores</SelectItem>
+                      {instructors.map((instructor) => (
+                        <SelectItem key={instructor.id} value={instructor.id.toString()}>{instructor.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <Select value={priceFilter} onValueChange={setPriceFilter}>
+                    <SelectTrigger className="border-gray-200 focus:border-primary focus:ring-primary">
+                      <SelectValue placeholder="Precio" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos los precios</SelectItem>
+                      <SelectItem value="free">Gratuitas</SelectItem>
+                      <SelectItem value="paid">De pago</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="mt-4 flex items-center justify-between">
+                  <div className="text-sm text-gray-600">
+                    Mostrando {filteredActivities.length} de {totalActivities} actividades
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={resetFilters}
+                    className="hover:bg-gray-50"
+                  >
+                    <X className="w-4 h-4 mr-2" />
+                    Limpiar filtros
+                  </Button>
+                </div>
               </div>
-            )}
+            </div>
+
+            {/* Navegación del calendario */}
+            <div className="flex items-center justify-between mb-8">
+              <Button
+                variant="outline"
+                onClick={goToPrevMonth}
+                className="flex items-center gap-2 bg-white border-white hover:bg-gray-50"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                Anterior
+              </Button>
+              
+              <h2 className="text-2xl font-bold text-white capitalize">
+                {format(currentMonth, 'MMMM yyyy', { locale: es })}
+              </h2>
+              
+              <Button
+                variant="outline"
+                onClick={goToNextMonth}
+                className="flex items-center gap-2 bg-white border-white hover:bg-gray-50"
+              >
+                Siguiente
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </div>
-        
-        {/* Navegación del calendario */}
-        <div className="bg-white rounded-2xl shadow-sm border p-6 mb-8">
-          <div className="flex justify-between items-center">
-            <Button 
-              variant="outline" 
-              onClick={prevMonth}
-              className="text-primary border-primary hover:bg-primary hover:text-white"
-            >
-              <ChevronLeft className="h-4 w-4 mr-1" />
-              Mes Anterior
-            </Button>
-            
-            <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              {format(currentMonth, 'MMMM yyyy', { locale: es }).replace(/^\w/, c => c.toUpperCase())}
-            </h2>
-            
-            <Button 
-              variant="outline" 
-              onClick={nextMonth}
-              className="text-primary border-primary hover:bg-primary hover:text-white"
-            >
-              Mes Siguiente
-              <ChevronRight className="h-4 w-4 ml-1" />
-            </Button>
-          </div>
-        </div>
-        
+
         {/* Calendario */}
-        <div className="bg-white rounded-2xl shadow-sm border overflow-hidden">
-          {/* Encabezados de días */}
-          <div className="grid grid-cols-7 gap-0 bg-gradient-to-r from-blue-50 to-purple-50">
-            {weekdays.map(day => (
-              <div key={day} className="text-center font-semibold text-sm py-4 text-gray-700 border-r border-gray-200 last:border-r-0">
-                {day}
-              </div>
-            ))}
-          </div>
-          
-          {/* Días del calendario */}
-          <div className="grid grid-cols-7 gap-0">
-            {/* Espacios en blanco para alinear el primer día del mes */}
-            {Array.from({ length: firstDayOfMonth }).map((_, index) => (
-              <div key={`empty-${index}`} className="h-32 bg-gray-50 border-r border-b border-gray-200"></div>
-            ))}
-            
-            {/* Días del mes actual */}
-            {daysInMonth.map(day => {
-              const activitiesForDay = getActivitiesForDate(day);
-              const isActive = activitiesForDay.length > 0;
-              const isSelected = selectedDate && isSameDay(day, selectedDate);
-              const isToday = isSameDay(day, new Date());
-              
-              return (
-                <div 
-                  key={day.toString()} 
-                  className={`h-32 border-r border-b border-gray-200 p-2 overflow-hidden transition-all duration-200 ${
-                    isActive 
-                      ? 'hover:bg-blue-50 cursor-pointer' 
-                      : 'bg-gray-50/50'
-                  } ${
-                    isSelected ? 'ring-2 ring-primary ring-inset bg-primary/5' : ''
-                  } ${
-                    isToday ? 'bg-gradient-to-br from-blue-50 to-purple-50' : ''
-                  }`}
-                  onClick={() => {
-                    if (isActive) {
-                      setSelectedDate(day);
-                    }
-                  }}
-                >
-                  <div className={`text-right text-sm font-semibold mb-1 ${
-                    isToday ? 'text-primary' : 'text-gray-700'
-                  }`}>
-                    {format(day, 'd')}
-                    {isToday && (
-                      <div className="w-2 h-2 bg-primary rounded-full inline-block ml-1"></div>
-                    )}
-                  </div>
-                  
-                  <div className="space-y-1 overflow-y-auto max-h-20 text-xs">
-                    {activitiesForDay.slice(0, 2).map(activity => (
-                      <div 
-                        key={activity.id}
-                        className={`${getCategoryColor(activity.category)} px-2 py-1 rounded-md truncate border cursor-pointer hover:shadow-sm transition-shadow`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          viewActivityDetails(activity);
-                        }}
-                        title={activity.title}
-                      >
-                        {activity.title}
-                      </div>
-                    ))}
-                    
-                    {activitiesForDay.length > 2 && (
-                      <div className="text-center text-primary text-xs font-medium cursor-pointer hover:underline"
-                           onClick={() => setSelectedDate(day)}>
-                        +{activitiesForDay.length - 2} más
-                      </div>
-                    )}
-                  </div>
+        <div className="py-12 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            {/* Encabezados de días */}
+            <div className="grid grid-cols-7 gap-2 mb-4">
+              {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map((day) => (
+                <div key={day} className="text-center font-semibold text-gray-700 py-2">
+                  {day}
                 </div>
-              );
-            })}
-          </div>
-        </div>
-        
-        {/* Panel lateral para actividades del día seleccionado */}
-        {selectedDate && (
-          <Card className="mt-8 border-0 shadow-lg">
-            <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50">
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-xl text-gray-900">
-                    Actividades para {format(selectedDate, 'EEEE d \'de\' MMMM', { locale: es })}
-                  </CardTitle>
-                  <CardDescription className="text-gray-600">
-                    {getActivitiesForDate(selectedDate).length} actividades encontradas
-                  </CardDescription>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSelectedDate(null)}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="p-6">
-              {getActivitiesForDate(selectedDate).length === 0 ? (
-                <div className="text-center py-12">
-                  <Activity className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No hay actividades</h3>
-                  <p className="text-gray-600">
-                    No se encontraron actividades para esta fecha con los filtros seleccionados.
-                  </p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {getActivitiesForDate(selectedDate).map(activity => (
-                    <Card 
-                      key={activity.id} 
-                      className="cursor-pointer hover:shadow-md transition-all duration-200 border-l-4 border-l-primary"
-                      onClick={() => viewActivityDetails(activity)}
-                    >
-                      <CardContent className="p-4">
-                        <div className="flex justify-between items-start mb-3">
-                          <h3 className="font-semibold text-gray-900 line-clamp-2">{activity.title}</h3>
-                          <Badge className={`${getCategoryColor(activity.category)} ml-2 flex-shrink-0`}>
-                            {activity.category}
-                          </Badge>
-                        </div>
-                        
-                        <div className="space-y-2 text-sm">
-                          <div className="flex items-center text-gray-600">
-                            <Clock className="h-4 w-4 mr-2 text-primary" />
-                            <span>
-                              {format(parseISO(activity.startDate), 'HH:mm', { locale: es })}
-                            </span>
-                          </div>
-                          
-                          <div className="flex items-center text-gray-600">
-                            <MapPin className="h-4 w-4 mr-2 text-primary" />
-                            <span>{activity.parkName}</span>
-                          </div>
-                          
-                          {activity.instructorName && (
-                            <div className="flex items-center text-gray-600">
-                              <User className="h-4 w-4 mr-2 text-primary" />
-                              <span>{activity.instructorName}</span>
-                            </div>
-                          )}
+              ))}
+            </div>
 
-                          {(activity.capacity || activity.price !== undefined) && (
-                            <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-                              {activity.capacity && (
-                                <div className="flex items-center text-gray-600">
-                                  <Users className="h-4 w-4 mr-1 text-primary" />
-                                  <span className="text-xs">{activity.capacity} personas</span>
-                                </div>
-                              )}
-                              {activity.price !== undefined && (
-                                <div className="text-sm font-semibold text-primary">
-                                  {formatPrice(activity.price)}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
-        
-        {/* Diálogo de detalles de actividad */}
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="sm:max-w-lg">
-            {selectedActivity && (
-              <>
-                <DialogHeader>
-                  <DialogTitle className="text-xl text-gray-900">{selectedActivity.title}</DialogTitle>
-                  <DialogDescription>
-                    <Badge className={getCategoryColor(selectedActivity.category)}>
-                      {selectedActivity.category}
-                    </Badge>
-                  </DialogDescription>
-                </DialogHeader>
-                
-                <div className="space-y-4">
-                  {selectedActivity.description && (
-                    <div>
-                      <h4 className="font-semibold text-gray-900 mb-2">Descripción</h4>
-                      <p className="text-gray-600">{selectedActivity.description}</p>
-                    </div>
-                  )}
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <h4 className="font-semibold text-gray-900 mb-2">Fecha y Hora</h4>
-                      <div className="space-y-1 text-sm text-gray-600">
-                        <div className="flex items-center">
-                          <CalendarIcon className="h-4 w-4 mr-2 text-primary" />
-                          <span>{format(parseISO(selectedActivity.startDate), 'EEEE d \'de\' MMMM', { locale: es })}</span>
-                        </div>
-                        <div className="flex items-center">
-                          <Clock className="h-4 w-4 mr-2 text-primary" />
-                          <span>
-                            {selectedActivity.startTime && `Inicio: ${selectedActivity.startTime}`}
-                            {selectedActivity.endTime && ` - Fin: ${selectedActivity.endTime}`}
-                          </span>
-                        </div>
-                        {selectedActivity.duration && (
-                          <div className="text-xs text-gray-500">
-                            Duración: {selectedActivity.duration} minutos
-                          </div>
-                        )}
-                      </div>
+            {/* Días del calendario */}
+            <div className="grid grid-cols-7 gap-2">
+              {dateRange.map((date, index) => {
+                const dayActivities = getActivitiesForDate(date);
+                const isCurrentMonth = date.getMonth() === currentMonth.getMonth();
+                const isToday = isSameDay(date, new Date());
+
+                return (
+                  <div
+                    key={index}
+                    className={`min-h-32 p-2 border rounded-lg ${
+                      isCurrentMonth ? 'bg-white border-gray-200' : 'bg-gray-50 border-gray-100'
+                    } ${isToday ? 'ring-2 ring-primary' : ''}`}
+                  >
+                    <div className={`text-sm font-medium mb-2 ${
+                      isCurrentMonth ? 'text-gray-900' : 'text-gray-400'
+                    } ${isToday ? 'text-primary font-bold' : ''}`}>
+                      {format(date, 'd')}
                     </div>
                     
-                    <div>
-                      <h4 className="font-semibold text-gray-900 mb-2">Ubicación</h4>
-                      <div className="flex items-center text-sm text-gray-600">
-                        <MapPin className="h-4 w-4 mr-2 text-primary" />
-                        <span>{selectedActivity.parkName}</span>
-                      </div>
-                      {selectedActivity.location && (
-                        <p className="text-sm text-gray-500 mt-1">{selectedActivity.location}</p>
+                    <div className="space-y-1">
+                      {dayActivities.slice(0, 3).map((activity, actIndex) => (
+                        <div
+                          key={actIndex}
+                          onClick={() => handleActivityClick(activity)}
+                          className={`text-xs p-1 rounded cursor-pointer hover:opacity-80 transition-opacity ${getCategoryColor(activity.category)} text-white`}
+                        >
+                          <div className="font-medium truncate">{activity.title}</div>
+                          {activity.startTime && (
+                            <div className="text-xs opacity-90">{activity.startTime}</div>
+                          )}
+                        </div>
+                      ))}
+                      
+                      {dayActivities.length > 3 && (
+                        <div className="text-xs text-gray-500 font-medium">
+                          +{dayActivities.length - 3} más...
+                        </div>
                       )}
                     </div>
                   </div>
-                  
-                  {selectedActivity.instructorName && (
-                    <div>
-                      <h4 className="font-semibold text-gray-900 mb-2">Instructor</h4>
-                      <div className="flex items-center text-sm text-gray-600">
-                        <User className="h-4 w-4 mr-2 text-primary" />
-                        <span>{selectedActivity.instructorName}</span>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Dialog de detalles de actividad */}
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogContent className="max-w-2xl">
+            {selectedActivity && (
+              <>
+                <DialogHeader>
+                  <div className="flex items-start gap-4">
+                    <div className={`w-12 h-12 rounded-lg ${getCategoryColor(selectedActivity.category)} flex items-center justify-center flex-shrink-0`}>
+                      <Activity className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <DialogTitle className="text-xl font-bold text-gray-900 leading-tight">
+                        {selectedActivity.title}
+                      </DialogTitle>
+                      <div className="flex items-center gap-2 mt-2">
+                        <Badge variant="secondary" className={`${getCategoryColor(selectedActivity.category)} text-white`}>
+                          {selectedActivity.category}
+                        </Badge>
+                        {selectedActivity.isFree && (
+                          <Badge variant="outline" className="text-green-600 border-green-600">
+                            Gratuita
+                          </Badge>
+                        )}
                       </div>
                     </div>
-                  )}
+                  </div>
+                </DialogHeader>
+                
+                <div className="space-y-4">
+                  <p className="text-gray-700 leading-relaxed">{selectedActivity.description}</p>
                   
-                  <div className="grid grid-cols-2 gap-4">
-                    {selectedActivity.capacity && (
-                      <div>
-                        <h4 className="font-semibold text-gray-900 mb-2">Capacidad</h4>
-                        <div className="flex items-center text-sm text-gray-600">
-                          <Users className="h-4 w-4 mr-2 text-primary" />
-                          <span>{selectedActivity.capacity} personas</span>
-                        </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <MapPin className="w-4 h-4 text-primary" />
+                      <span className="font-medium">{selectedActivity.parkName}</span>
+                    </div>
+                    
+                    {selectedActivity.startDate && (
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <CalendarIcon className="w-4 h-4 text-primary" />
+                        <span className="font-medium">
+                          {format(parseISO(selectedActivity.startDate), 'PPP', { locale: es })}
+                        </span>
                       </div>
                     )}
                     
-                    {selectedActivity.price !== undefined && (
-                      <div>
-                        <h4 className="font-semibold text-gray-900 mb-2">Precio</h4>
-                        <div className="text-lg font-bold text-primary">
-                          {formatPrice(selectedActivity.price)}
-                        </div>
+                    {selectedActivity.startTime && (
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <Clock className="w-4 h-4 text-primary" />
+                        <span className="font-medium">
+                          {selectedActivity.startTime}
+                          {selectedActivity.endTime && ` - ${selectedActivity.endTime}`}
+                        </span>
+                      </div>
+                    )}
+                    
+                    {selectedActivity.capacity && (
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <Users className="w-4 h-4 text-primary" />
+                        <span className="font-medium">{selectedActivity.capacity} personas max.</span>
+                      </div>
+                    )}
+                    
+                    {selectedActivity.instructorName && (
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <User className="w-4 h-4 text-primary" />
+                        <span className="font-medium">{selectedActivity.instructorName}</span>
+                      </div>
+                    )}
+                    
+                    {!selectedActivity.isFree && selectedActivity.price && (
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <Tag className="w-4 h-4 text-primary" />
+                        <span className="font-medium">${selectedActivity.price}</span>
                       </div>
                     )}
                   </div>
 
-                  {/* Información adicional */}
-                  {(selectedActivity.isRecurring || selectedActivity.targetMarket || selectedActivity.specialNeeds) && (
-                    <div className="space-y-3 pt-4 border-t border-gray-100">
-                      {selectedActivity.isRecurring && (
+                  {(selectedActivity.materials || selectedActivity.requirements || selectedActivity.targetMarket?.length || selectedActivity.specialNeeds?.length) && (
+                    <div className="space-y-3 pt-4 border-t">
+                      {selectedActivity.materials && (
                         <div>
-                          <h4 className="font-semibold text-gray-900 mb-1">Recurrencia</h4>
-                          <p className="text-sm text-gray-600">
-                            {selectedActivity.recurringDays?.length > 0 
-                              ? `Se repite: ${selectedActivity.recurringDays.join(', ')}`
-                              : 'Actividad recurrente'
-                            }
-                          </p>
+                          <h4 className="font-semibold text-gray-900 mb-1">Materiales</h4>
+                          <p className="text-sm text-gray-600">{selectedActivity.materials}</p>
+                        </div>
+                      )}
+
+                      {selectedActivity.requirements && (
+                        <div>
+                          <h4 className="font-semibold text-gray-900 mb-1">Requisitos</h4>
+                          <p className="text-sm text-gray-600">{selectedActivity.requirements}</p>
                         </div>
                       )}
 
@@ -669,7 +515,6 @@ const CalendarPage: React.FC = () => {
             )}
           </DialogContent>
         </Dialog>
-      </div>
       </div>
     </PublicLayout>
   );
