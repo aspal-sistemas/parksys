@@ -214,10 +214,7 @@ export default function ConcessionsList() {
         </div>
       </div>
 
-      {/* Banner Publicitario de Ancho Completo */}
-      <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] mb-8">
-        <AdSpace spaceId="35" position="banner" pageType="concessions" />
-      </div>
+
 
       {/* Resultados */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -326,7 +323,7 @@ export default function ConcessionsList() {
 
         {/* Paginación */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-center space-x-2">
+          <div className="flex items-center justify-center space-x-2 mb-8">
             <Button
               variant="outline"
               onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
@@ -360,6 +357,13 @@ export default function ConcessionsList() {
             </Button>
           </div>
         )}
+
+        {/* Banner Publicitario al Final */}
+        <div className="flex justify-center mb-8">
+          <div className="max-w-2xl w-full">
+            <AdSpace spaceId="35" position="banner" pageType="concessions" />
+          </div>
+        </div>
       </div>
       </div>
     </PublicLayout>
