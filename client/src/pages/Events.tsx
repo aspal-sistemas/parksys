@@ -107,7 +107,7 @@ const Events: React.FC = () => {
 
   if (eventsLoading) {
     return (
-      <div className="min-h-screen" style={{backgroundColor: '#19633c'}}>
+      <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="animate-pulse">
             <div className="h-32 bg-gray-200 rounded-lg mb-8"></div>
@@ -124,7 +124,7 @@ const Events: React.FC = () => {
 
   return (
     <PublicLayout>
-      <div className="min-h-screen" style={{backgroundColor: '#19633c'}}>
+      <div className="min-h-screen bg-gray-50">
         {/* Hero Section */}
         <div className="relative text-white overflow-hidden">
           <div 
