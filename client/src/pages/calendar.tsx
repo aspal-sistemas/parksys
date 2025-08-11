@@ -212,8 +212,10 @@ const CalendarPage: React.FC = () => {
         <div className="absolute inset-0 bg-black/50"></div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              Calendario de <span className="text-yellow-300">Actividades</span>
+            <h1 className="text-4xl md:text-6xl mb-6">
+              <span className="font-light text-white" style={{ fontFamily: 'Guttery, sans-serif' }}>Nuestro</span>
+              <br />
+              <span className="font-bold text-white">Calendario de Actividades</span>
             </h1>
             <p className="text-xl md:text-2xl text-blue-100 max-w-3xl mx-auto">
               Descubre eventos y actividades programadas en todos nuestros parques durante el mes

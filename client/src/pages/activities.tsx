@@ -582,7 +582,7 @@ function ActivitiesPage() {
 
       {/* Filtros */}
       <section className="sticky top-0 z-10 border-b border-gray-200 shadow-sm" style={{backgroundColor: '#19633c'}}>
-        <div className="max-w-7xl mx-auto px-4 py-4">
+        <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="rounded-lg shadow-sm p-6">
             <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
               <div className="flex-1 max-w-md">
@@ -711,7 +711,15 @@ function ActivitiesPage() {
         />
       </section>
 
-
+      {/* AdSpace específico para Yoga */}
+      <section className="max-w-7xl mx-auto px-4 py-6">
+        <AdSpace 
+          spaceId="23" 
+          position="banner" 
+          pageType="activities" 
+          className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4"
+        />
+      </section>
 
       {/* Sección de Contacto */}
       <section className="bg-gray-50 py-12">
