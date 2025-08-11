@@ -125,6 +125,48 @@ export default function VolunteersList() {
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
   };
 
+  // Función para traducir áreas de interés al español
+  const translateInterestArea = (area: string) => {
+    const translations: { [key: string]: string } = {
+      'nature': 'Naturaleza',
+      'naturaleza': 'Naturaleza',
+      'events': 'Eventos',
+      'eventos': 'Eventos', 
+      'education': 'Educación',
+      'educacion': 'Educación',
+      'maintenance': 'Mantenimiento',
+      'mantenimiento': 'Mantenimiento',
+      'sports': 'Deportes',
+      'deportes': 'Deportes',
+      'cultural': 'Cultural',
+      'culture': 'Cultural'
+    };
+    
+    const cleaned = area.toLowerCase().trim();
+    return translations[cleaned] || area.charAt(0).toUpperCase() + area.slice(1).toLowerCase();
+  };
+
+  // Función para asignar colores a las etiquetas
+  const getBadgeColor = (area: string) => {
+    const colorMap: { [key: string]: string } = {
+      'nature': 'bg-green-100 text-green-800 hover:bg-green-200',
+      'naturaleza': 'bg-green-100 text-green-800 hover:bg-green-200',
+      'events': 'bg-purple-100 text-purple-800 hover:bg-purple-200',
+      'eventos': 'bg-purple-100 text-purple-800 hover:bg-purple-200',
+      'education': 'bg-blue-100 text-blue-800 hover:bg-blue-200',
+      'educacion': 'bg-blue-100 text-blue-800 hover:bg-blue-200',
+      'maintenance': 'bg-orange-100 text-orange-800 hover:bg-orange-200',
+      'mantenimiento': 'bg-orange-100 text-orange-800 hover:bg-orange-200',
+      'sports': 'bg-red-100 text-red-800 hover:bg-red-200',
+      'deportes': 'bg-red-100 text-red-800 hover:bg-red-200',
+      'cultural': 'bg-pink-100 text-pink-800 hover:bg-pink-200',
+      'culture': 'bg-pink-100 text-pink-800 hover:bg-pink-200'
+    };
+    
+    const cleaned = area.toLowerCase().trim();
+    return colorMap[cleaned] || 'bg-gray-100 text-gray-800 hover:bg-gray-200';
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
@@ -421,14 +463,14 @@ export default function VolunteersList() {
                             <div className="flex flex-wrap justify-center gap-1">
                               {volunteer.interestAreas && Array.isArray(volunteer.interestAreas) ? (
                                 volunteer.interestAreas.map((activity, index) => (
-                                  <Badge key={index} variant="secondary" className="text-xs">
-                                    {activity}
+                                  <Badge key={index} className={`text-xs ${getBadgeColor(activity)} border-0`}>
+                                    {translateInterestArea(activity)}
                                   </Badge>
                                 ))
                               ) : volunteer.interestAreas && typeof volunteer.interestAreas === 'string' ? (
                                 volunteer.interestAreas.split(',').map((activity, index) => (
-                                  <Badge key={index} variant="secondary" className="text-xs">
-                                    {activity.trim()}
+                                  <Badge key={index} className={`text-xs ${getBadgeColor(activity)} border-0`}>
+                                    {translateInterestArea(activity.trim())}
                                   </Badge>
                                 ))
                               ) : (
@@ -488,14 +530,14 @@ export default function VolunteersList() {
                           <div className="flex flex-wrap gap-1 mt-1">
                             {volunteer.interestAreas && Array.isArray(volunteer.interestAreas) ? (
                               volunteer.interestAreas.map((activity, index) => (
-                                <Badge key={index} variant="secondary" className="text-xs">
-                                  {activity}
+                                <Badge key={index} className={`text-xs ${getBadgeColor(activity)} border-0`}>
+                                  {translateInterestArea(activity)}
                                 </Badge>
                               ))
                             ) : volunteer.interestAreas && typeof volunteer.interestAreas === 'string' ? (
                               volunteer.interestAreas.split(',').map((activity, index) => (
-                                <Badge key={index} variant="secondary" className="text-xs">
-                                  {activity.trim()}
+                                <Badge key={index} className={`text-xs ${getBadgeColor(activity)} border-0`}>
+                                  {translateInterestArea(activity.trim())}
                                 </Badge>
                               ))
                             ) : (
