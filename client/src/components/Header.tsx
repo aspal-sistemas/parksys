@@ -21,6 +21,14 @@ import { HelpCenter } from "@/components/HelpCenter";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import UserProfileImage from "@/components/UserProfileImage";
 import { useAuth } from "@/hooks/useAuth";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 const logoImage = "/images/logo-ambu.png";
 const agencyLogo = "/images/logo-ambu.png";
 
