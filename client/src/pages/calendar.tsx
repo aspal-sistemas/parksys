@@ -257,38 +257,38 @@ const CalendarPage: React.FC = () => {
           </div>
         </section>
 
-        {/* === SECCIÓN DE NAVEGACIÓN DEL CALENDARIO === */}
-        <section className="py-8 bg-white border-t">
+        {/* === CONTENEDOR DEL CALENDARIO === */}
+        <section className="bg-white border-t">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between">
-              <Button
-                variant="outline"
-                onClick={goToPrevMonth}
-                className="flex items-center gap-2"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                Anterior
-              </Button>
-              
-              <h2 className="text-2xl font-bold text-gray-900 capitalize">
-                {format(currentMonth, 'MMMM yyyy', { locale: es })}
-              </h2>
-              
-              <Button
-                variant="outline"
-                onClick={goToNextMonth}
-                className="flex items-center gap-2"
-              >
-                Siguiente
-                <ChevronRight className="w-4 h-4" />
-              </Button>
+            {/* === NAVEGACIÓN DEL CALENDARIO === */}
+            <div className="py-8">
+              <div className="flex items-center justify-between">
+                <Button
+                  variant="outline"
+                  onClick={goToPrevMonth}
+                  className="flex items-center gap-2"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  Anterior
+                </Button>
+                
+                <h2 className="text-2xl font-bold text-gray-900 capitalize">
+                  {format(currentMonth, 'MMMM yyyy', { locale: es })}
+                </h2>
+                
+                <Button
+                  variant="outline"
+                  onClick={goToNextMonth}
+                  className="flex items-center gap-2"
+                >
+                  Siguiente
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
-          </div>
-        </section>
 
-        {/* === SECCIÓN CALENDARIO PRINCIPAL === */}
-        <section className="py-12 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            {/* === CALENDARIO PRINCIPAL === */}
+            <div className="pb-12">
             {/* Encabezados de días */}
             <div className="grid grid-cols-7 gap-2 mb-4">
               {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map((day) => (
@@ -341,6 +341,7 @@ const CalendarPage: React.FC = () => {
                   </div>
                 );
               })}
+            </div>
             </div>
           </div>
         </section>
