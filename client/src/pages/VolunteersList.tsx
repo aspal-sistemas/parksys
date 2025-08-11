@@ -269,11 +269,7 @@ export default function VolunteersList() {
       {/* 3. Sección de contenido */}
       <section className="py-12 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex gap-8 items-start">
-            {/* Contenido principal */}
-            <div className="flex-1">
-
-              {viewMode === 'grid' ? (
+          {viewMode === 'grid' ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {currentVolunteers.map((volunteer) => (
                     <Card key={volunteer.id} className="hover:shadow-lg transition-shadow">
@@ -462,18 +458,6 @@ export default function VolunteersList() {
                   </Button>
                 </div>
               )}
-            </div>
-
-            {/* Sidebar Publicitario */}
-            <div className="w-80 flex-shrink-0 hidden lg:block">
-              <div className="sticky top-4 space-y-6 mt-12">
-                {/* Espacios publicitarios con diseño tipo tarjeta */}
-                <AdSpace spaceId="20" position="card" pageType="volunteers" />
-                <AdSpace spaceId="21" position="card" pageType="volunteers" />
-                <AdSpace spaceId="22" position="card" pageType="volunteers" />
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 
