@@ -20,6 +20,7 @@ import { registerInstructorRoutes } from "./instructor-routes";
 import { registerPublicRoutes } from "./publicRoutes";
 import { registerAssetRoutes } from "./asset_routes";
 import { registerAssetImageRoutes } from "./asset-image-routes";
+import { registerAssetCategoriesRoutes } from "./asset-categories-routes";
 import activityImageRouter from "./activity-image-routes";
 import { registerMaintenanceRoutes } from "./maintenance_routes_fixed";
 import { registerAssetAssignmentRoutes } from "./asset_assignment_routes";
@@ -255,6 +256,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   registerAssetImageRoutes(app, apiRouter, isAuthenticated);
+  
+  // Registramos las rutas de categorías de activos
+  registerAssetCategoriesRoutes(app, apiRouter);
   
   // Registramos las rutas del módulo de actividades
   registerActivityRoutes(app, apiRouter, isAuthenticated, hasParkAccess);
