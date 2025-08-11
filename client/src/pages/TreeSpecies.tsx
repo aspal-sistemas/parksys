@@ -20,7 +20,10 @@ import {
   Sun,
   Clock,
   TreePine,
-  Info
+  Info,
+  Phone,
+  Mail,
+  MapPin
 } from 'lucide-react';
 import PublicLayout from '@/components/PublicLayout';
 import { Link, useLocation } from 'wouter';
