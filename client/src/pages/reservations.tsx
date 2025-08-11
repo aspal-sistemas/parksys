@@ -450,7 +450,7 @@ function ReservationsPage() {
       {/* Lista/Grid de espacios */}
       <section className="py-8">
         <div className="max-w-7xl mx-auto px-4">
-          {currentSpaces.length === 0 ? (
+          {filteredSpaces.length === 0 ? (
             <div className="text-center py-16">
               <Building className="h-16 w-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
