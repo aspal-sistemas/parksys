@@ -381,7 +381,7 @@ export default function VolunteersList() {
                       <CardContent className="p-6">
                         <div className="text-center space-y-4">
                           {/* Fotografía del voluntario */}
-                          <div className="w-24 h-24 mx-auto bg-green-100 rounded-full flex items-center justify-center overflow-hidden">
+                          <div className="w-24 h-24 mx-auto rounded-full flex items-center justify-center overflow-hidden" style={{backgroundColor: '#51a19f'}}>
                             {volunteer.profileImageUrl ? (
                               <img 
                                 src={volunteer.profileImageUrl} 
@@ -389,7 +389,7 @@ export default function VolunteersList() {
                                 className="w-24 h-24 rounded-full object-cover"
                               />
                             ) : (
-                              <span className="text-green-600 font-semibold text-xl">
+                              <span className="text-white font-semibold text-xl">
                                 {getInitials(volunteer.fullName)}
                               </span>
                             )}
@@ -446,7 +446,7 @@ export default function VolunteersList() {
                   <CardContent className="p-6">
                     <div className="flex items-start space-x-6">
                       {/* Fotografía del voluntario */}
-                      <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center overflow-hidden">
+                      <div className="w-16 h-16 rounded-full flex items-center justify-center overflow-hidden" style={{backgroundColor: '#51a19f'}}>
                         {volunteer.profileImageUrl ? (
                           <img 
                             src={volunteer.profileImageUrl} 
@@ -454,7 +454,7 @@ export default function VolunteersList() {
                             className="w-16 h-16 rounded-full object-cover"
                           />
                         ) : (
-                          <span className="text-green-600 font-semibold text-lg">
+                          <span className="text-white font-semibold text-lg">
                             {getInitials(volunteer.fullName)}
                           </span>
                         )}
