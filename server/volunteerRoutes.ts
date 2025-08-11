@@ -162,8 +162,7 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
             age,
             available_hours as availability,
             previous_experience,
-            'module' as source,
-            user_id
+            'module' as source
           FROM volunteers 
           WHERE status = 'active'
           ORDER BY id DESC`
@@ -173,61 +172,14 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
           // Agregamos los voluntarios tradicionales a nuestra lista
           allVolunteers = [...traditionalVolunteersResult.rows];
           
-          // Guardamos los IDs de usuarios asociados para evitar duplicados
-          traditionalVolunteersResult.rows.forEach((volunteer: any) => {
-            if (volunteer.user_id) {
-              userVolunteerIds.add(volunteer.user_id);
-            }
-          });
+          // Los voluntarios tradicionales no tienen user_id, simplemente agregamos los voluntarios
         }
       } catch (err) {
         console.error("Error al obtener voluntarios tradicionales:", err);
         // Continuamos con la siguiente consulta en caso de error
       }
       
-      // 2. Luego obtenemos los usuarios con rol 'voluntario' que NO están ya en la tabla de voluntarios
-      try {
-        // Lista de IDs a excluir
-        let excludeClause = "";
-        
-        if (userVolunteerIds.size > 0) {
-          const excludeIds = Array.from(userVolunteerIds).join(',');
-          excludeClause = `AND u.id NOT IN (${excludeIds})`;
-        }
-        
-        // Construimos la consulta SQL dinámicamente
-        const query = `
-          SELECT 
-            u.id as user_id,
-            u.full_name, 
-            u.email, 
-            null as phone, 
-            COALESCE(v.status, 'active') as status, 
-            null as profile_image_url, 
-            now() as created_at,
-            null as age,
-            null as availability,
-            null as previous_experience,
-            'user' as source,
-            u.id as user_id
-          FROM users u
-          LEFT JOIN volunteers v ON u.email = v.email
-          WHERE u.role = 'voluntario' 
-          AND (v.status IS NULL OR v.status = 'active')
-          ${excludeClause}
-          ORDER BY u.id DESC
-        `;
-        
-        const usersResult = await db.execute(query);
-        console.log("Usuarios voluntarios que no están en tabla volunteers:", usersResult.rows);
-        
-        if (usersResult.rows && Array.isArray(usersResult.rows)) {
-          allVolunteers = [...allVolunteers, ...usersResult.rows];
-        }
-      } catch (err) {
-        console.error("Error al obtener usuarios voluntarios:", err);
-        // Continuamos y devolvemos lo que tengamos
-      }
+      // Por ahora solo usamos los voluntarios de la tabla principal
       
       console.log(`Total de ${allVolunteers.length} voluntarios encontrados`);
       res.json(allVolunteers);
@@ -268,9 +220,8 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
           skills,
           created_at,
           updated_at,
-          user_id
         FROM volunteers 
-        WHERE user_id = ${userId}
+        WHERE id = ${userId}
         AND status = 'active'`
       );
       
@@ -316,15 +267,15 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
               v.available_days,
               v.interest_areas,
               v.legal_consent,
-              v.user_id,
+
               v.age,
               v.profile_image_url,
               v.created_at,
               v.updated_at,
-              COALESCE(u.full_name, v.full_name) as user_full_name,
-              COALESCE(u.birth_date, '1990-01-01') as birth_date
+              v.full_name as user_full_name,
+              '1990-01-01' as birth_date
             FROM volunteers v
-            LEFT JOIN users u ON v.user_id = u.id AND v.user_id IS NOT NULL
+
             WHERE v.id = ${volunteerId}`
       );
       
