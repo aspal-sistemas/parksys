@@ -255,8 +255,8 @@ const Events: React.FC = () => {
               <Card key={event.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                 {viewMode === 'grid' ? (
                   <div className="flex flex-col h-80">
-                    {/* Imagen que ocupa 3/4 de la altura */}
-                    <div className="relative h-3/4 overflow-hidden">
+                    {/* Imagen que ocupa 2/3 de la altura */}
+                    <div className="relative h-2/3 overflow-hidden">
                       {event.featuredImageUrl ? (
                         <img 
                           src={event.featuredImageUrl} 
@@ -302,18 +302,26 @@ const Events: React.FC = () => {
                       </div>
                     </div>
                     
-                    {/* Área de contenido 1/4 de la altura (abajo) */}
-                    <div className="h-1/4 p-4 bg-white flex flex-col justify-between">
-                      <div className="flex-1">
-                        <p className="text-gray-600 text-sm leading-relaxed line-clamp-3 mb-2">
+                    {/* Área de contenido 1/3 de la altura (abajo) */}
+                    <div className="h-1/3 p-4 bg-white flex flex-col justify-between">
+                      <div className="flex-1 space-y-3">
+                        <p className="text-gray-600 text-sm leading-relaxed line-clamp-2">
                           {event.description}
                         </p>
-                      </div>
-                      
-                      <div className="text-xs text-gray-500 border-t pt-2">
+                        
                         <div className="flex justify-between items-center">
-                          <span className="font-medium">Organiza:</span>
-                          <span className="text-gray-700">{event.organizerName}</span>
+                          <div className="text-xs text-gray-500">
+                            <span className="font-medium">Organiza:</span>
+                            <div className="text-gray-700">{event.organizerName}</div>
+                          </div>
+                          
+                          <Button 
+                            size="sm" 
+                            className="bg-[#00a587] hover:bg-[#067f5f] text-white text-xs px-3 py-2 h-8"
+                            onClick={() => window.location.href = `/events/${event.id}`}
+                          >
+                            Ver evento
+                          </Button>
                         </div>
                       </div>
                     </div>
