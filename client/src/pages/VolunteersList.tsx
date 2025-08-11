@@ -318,7 +318,7 @@ export default function VolunteersList() {
               {/* Imagen 4 - Voluntarios trabajando en jardín tradicional */}
               <div className="relative cursor-pointer group">
                 <img 
-                  src="@assets/jardin-japones_1754950415873.jpg"
+                  src="/volunteer-4.jpg"
                   alt="Voluntarios trabajando en restauración de jardín tradicional japonés"
                   className="w-full h-full object-cover rounded-lg shadow-md"
                 />
