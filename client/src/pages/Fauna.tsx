@@ -529,7 +529,6 @@ export default function Fauna() {
           <div className="mt-12 mb-8">
             <AdSpace spaceId="37" position="banner" pageType="fauna" />
           </div>
-          </div>
         </div>
 
         {/* Sección de Contacto */}
