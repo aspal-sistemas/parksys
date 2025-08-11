@@ -218,7 +218,7 @@ const CalendarPage: React.FC = () => {
         {/* === SECCIÓN DEL PANEL DE FILTROS === */}
         <section className="py-12" style={{backgroundColor: '#19633c'}}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="rounded-2xl shadow-sm border p-6 bg-white">
+            <div className="rounded-2xl shadow-sm border p-6" style={{backgroundColor: '#19633c'}}>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                   <SelectTrigger className="border-gray-200 focus:border-primary focus:ring-primary">
@@ -269,14 +269,14 @@ const CalendarPage: React.FC = () => {
               </div>
 
               <div className="mt-4 flex items-center justify-between">
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-white">
                   Mostrando {filteredActivities.length} de {totalActivities} actividades
                 </div>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={resetFilters}
-                  className="hover:bg-gray-50"
+                  className="bg-white text-gray-900 border-white hover:bg-gray-100"
                 >
                   <X className="w-4 h-4 mr-2" />
                   Limpiar filtros
