@@ -266,16 +266,7 @@ export default function VolunteersList() {
         </div>
       </section>
 
-      {/* 3. Banner publicitario de ancho completo */}
-      <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] mb-8">
-        <AdSpace 
-          spaceId={37}
-          pageType="volunteers"
-          position="banner"
-        />
-      </div>
-
-      {/* 4. Sección de contenido */}
+      {/* 3. Sección de contenido */}
       <section className="py-12 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex gap-8 items-start">
@@ -483,6 +474,17 @@ export default function VolunteersList() {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* 4. Banner publicitario */}
+      <section className="py-8 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4">
+          <AdSpace 
+            spaceId="37"
+            pageType="volunteers"
+            position="banner"
+          />
         </div>
       </section>
 
