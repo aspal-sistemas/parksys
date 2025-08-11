@@ -357,11 +357,13 @@ export default function Fauna() {
           </div>
         </div>
         
-        {/* Sección de filtros y búsqueda con fondo verde oscuro */}
-        <div className="py-12" style={{backgroundColor: '#19633c'}}>
-          <div className="max-w-7xl mx-auto px-4">
-            {/* Filtros y búsqueda */}
-            <div className="rounded-lg shadow-sm p-6 mb-8" style={{backgroundColor: 'rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(10px)'}}>
+        {/* Espacio después del hero */}
+        <div className="py-6"></div>
+
+        <div className="max-w-7xl mx-auto px-4">
+
+          {/* Filtros y búsqueda */}
+          <div className="rounded-lg shadow-sm p-6 mb-8" style={{backgroundColor: '#19633c'}}>
             <div className="flex flex-col lg:flex-row gap-4 items-center justify-between mb-4">
               <div className="flex flex-col sm:flex-row gap-4 flex-1">
                 <div className="relative flex-1">
