@@ -224,70 +224,77 @@ export default function ConcessionsList() {
           </h2>
         </div>
 
-        {/* Grid de concesiones */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        {/* Lista de concesiones - Diseño horizontal */}
+        <div className="space-y-4 mb-8">
               {currentConcessions.map((concession: Concession) => (
             <div key={concession.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-              {/* Image Section */}
-              <div className="aspect-video w-full bg-gradient-to-br from-[#00a587] via-[#067f5f] to-[#8498a5] relative overflow-hidden">
-                {concession.primaryImage ? (
-                  <img
-                    src={concession.primaryImage}
-                    alt={concession.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="flex items-center justify-center h-full text-white">
-                    <div className="text-center">
-                      <Building className="w-12 h-12 mx-auto mb-2 opacity-80" />
-                      <p className="text-sm font-medium opacity-90">{concession.concessionTypeName}</p>
+              <div className="flex flex-col md:flex-row h-auto md:h-48">
+                {/* Image Section - Horizontal Layout */}
+                <div className="w-full md:w-80 h-48 md:h-full bg-gradient-to-br from-[#00a587] via-[#067f5f] to-[#8498a5] relative overflow-hidden flex-shrink-0">
+                  {concession.primaryImage ? (
+                    <img
+                      src={concession.primaryImage}
+                      alt={concession.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-white">
+                      <div className="text-center">
+                        <Building className="w-12 h-12 mx-auto mb-2 opacity-80" />
+                        <p className="text-sm font-medium opacity-90">{concession.concessionTypeName}</p>
+                      </div>
+                    </div>
+                  )}
+                  <div className="absolute top-3 right-3">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      concession.status === 'activa' || concession.status === 'active'
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {concession.status}
+                    </span>
+                  </div>
+                </div>
+                
+                {/* Content Section - Expanded to fill remaining space */}
+                <div className="flex-1 p-6 flex flex-col justify-between min-h-0">
+                  <div className="flex-1">
+                    <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-3">
+                      <div className="flex-1 mb-3 lg:mb-0">
+                        <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                          {concession.name}
+                        </h3>
+                        <p className="text-sm text-[#00a587] font-medium">{concession.concessionTypeName}</p>
+                      </div>
+                      
+                      <div className="lg:ml-6">
+                        <Link href={`/concession/${concession.id}`}>
+                          <Button className="bg-[#00a587] text-white hover:bg-[#067f5f] whitespace-nowrap">
+                            Ver detalles
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 text-sm text-gray-600">
+                      <div className="flex items-center">
+                        <MapPin className="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" />
+                        <span className="truncate">{concession.specific_location}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Building className="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" />
+                        <span className="truncate">{concession.parkName}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Phone className="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" />
+                        <span className="truncate">{concession.emergency_phone}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Calendar className="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" />
+                        <span className="text-xs">{new Date(concession.start_date).toLocaleDateString('es-ES')} - {new Date(concession.end_date).toLocaleDateString('es-ES')}</span>
+                      </div>
                     </div>
                   </div>
-                )}
-                <div className="absolute top-3 right-3">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    concession.status === 'activa' || concession.status === 'active'
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-gray-100 text-gray-800'
-                  }`}>
-                    {concession.status}
-                  </span>
-                </div>
-              </div>
-              
-              {/* Content Section */}
-              <div className="p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  {concession.name}
-                </h3>
-                
-                <p className="text-sm text-[#00a587] font-medium mb-3">{concession.concessionTypeName}</p>
-                
-                <div className="space-y-2 text-sm text-gray-600">
-                  <div className="flex items-center">
-                    <MapPin className="w-4 h-4 mr-2 text-gray-400" />
-                    <span>{concession.specific_location}</span>
-                  </div>
-                  <div className="flex items-center">
-                    <Building className="w-4 h-4 mr-2 text-gray-400" />
-                    <span>{concession.parkName}</span>
-                  </div>
-                  <div className="flex items-center">
-                    <Phone className="w-4 h-4 mr-2 text-gray-400" />
-                    <span>{concession.emergency_phone}</span>
-                  </div>
-                  <div className="flex items-center">
-                    <Calendar className="w-4 h-4 mr-2 text-gray-400" />
-                    <span>{new Date(concession.start_date).toLocaleDateString('es-ES')} - {new Date(concession.end_date).toLocaleDateString('es-ES')}</span>
-                  </div>
-                </div>
-                
-                <div className="mt-4 pt-4 border-t border-gray-200">
-                  <Link href={`/concession/${concession.id}`}>
-                    <Button className="w-full bg-[#00a587] text-white hover:bg-[#067f5f]">
-                      Ver detalles
-                    </Button>
-                  </Link>
                 </div>
               </div>
             </div>
