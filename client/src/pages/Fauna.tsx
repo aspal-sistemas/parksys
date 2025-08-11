@@ -313,7 +313,7 @@ export default function Fauna() {
   return (
     <PublicLayout>
       <div className="min-h-screen bg-gray-50">
-        {/* Hero Section con imagen */}
+        {/* 1. Hero Section */}
         <div className="relative h-96 overflow-hidden">
           <img 
             src="/images/fauna-hero.jpg" 
@@ -357,182 +357,190 @@ export default function Fauna() {
           </div>
         </div>
         
-        {/* Espacio después del hero */}
-        <div className="py-6"></div>
-
-        <div className="max-w-7xl mx-auto px-4">
-
-          {/* Filtros y búsqueda */}
-          <div className="rounded-lg shadow-sm p-6 mb-8" style={{backgroundColor: '#19633c'}}>
-            <div className="flex flex-col lg:flex-row gap-4 items-center justify-between mb-4">
-              <div className="flex flex-col sm:flex-row gap-4 flex-1">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                  <Input
-                    placeholder="Buscar especies por nombre..."
-                    value={searchTerm}
-                    onChange={(e) => {
-                      setSearchTerm(e.target.value);
-                      setCurrentPage(1);
-                    }}
-                    className="pl-10 bg-white"
-                  />
-                </div>
-                
-                <Select value={categoryFilter} onValueChange={(value) => {
-                  setCategoryFilter(value);
-                  setCurrentPage(1);
-                }}>
-                  <SelectTrigger className="w-full sm:w-48 bg-white">
-                    <SelectValue placeholder="Categoría" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todas las categorías</SelectItem>
-                    <SelectItem value="aves">Aves</SelectItem>
-                    <SelectItem value="mamiferos">Mamíferos</SelectItem>
-                    <SelectItem value="reptiles">Reptiles</SelectItem>
-                    <SelectItem value="anfibios">Anfibios</SelectItem>
-                    <SelectItem value="insectos">Insectos</SelectItem>
-                    <SelectItem value="peces">Peces</SelectItem>
-                  </SelectContent>
-                </Select>
-                
-                <Select value={conservationFilter} onValueChange={(value) => {
-                  setConservationFilter(value);
-                  setCurrentPage(1);
-                }}>
-                  <SelectTrigger className="w-full sm:w-48 bg-white">
-                    <SelectValue placeholder="Conservación" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos los estados</SelectItem>
-                    <SelectItem value="estable">Estable</SelectItem>
-                    <SelectItem value="vulnerable">Vulnerable</SelectItem>
-                    <SelectItem value="en_peligro">En Peligro</SelectItem>
-                    <SelectItem value="critico">Crítico</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="flex gap-2">
-                <Button
-                  variant={viewMode === 'grid' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setViewMode('grid')}
-                  className={viewMode === 'grid' ? 'bg-white text-green-800 hover:bg-gray-100' : 'border-white text-white hover:bg-white hover:text-green-800'}
-                >
-                  <Grid className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant={viewMode === 'list' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setViewMode('list')}
-                  className={viewMode === 'list' ? 'bg-white text-green-800 hover:bg-gray-100' : 'border-white text-white hover:bg-white hover:text-green-800'}
-                >
-                  <List className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-            
-            <p className="text-sm text-green-100">
-              Mostrando {species.length} de {pagination.total} especies
-            </p>
-          </div>
-
-          {/* Contenido principal */}
-          {isLoading ? (
-            <div className="flex justify-center items-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-            </div>
-          ) : species.length === 0 ? (
-            <div className="text-center py-12">
-              <Bird className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                No se encontraron especies
-              </h3>
-              <p className="text-gray-600">
-                Intenta ajustar tus filtros de búsqueda
-              </p>
-            </div>
-          ) : (
-            <>
-              {/* Grid de especies */}
-              <div className={`mb-8 ${
-                viewMode === 'grid' 
-                  ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6' 
-                  : 'space-y-4'
-              }`}>
-                {species.map((species) => (
-                  <SpeciesCard 
-                    key={species.id} 
-                    species={species} 
-                    viewMode={viewMode}
-                  />
-                ))}
-              </div>
-
-              {/* Paginación */}
-              {pagination.totalPages > 1 && (
-                <div className="flex justify-center items-center gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                    disabled={currentPage === 1}
-                  >
-                    Anterior
-                  </Button>
-                  
-                  <div className="flex gap-1">
-                    {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((pageNum) => (
-                      <Button
-                        key={pageNum}
-                        variant={currentPage === pageNum ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => setCurrentPage(pageNum)}
-                      >
-                        {pageNum}
-                      </Button>
-                    ))}
+        {/* 2. Sección de panel de filtros y búsqueda */}
+        <section className="py-12 bg-white">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="rounded-lg shadow-sm p-6 mb-8" style={{backgroundColor: '#19633c'}}>
+              <div className="flex flex-col lg:flex-row gap-4 items-center justify-between mb-4">
+                <div className="flex flex-col sm:flex-row gap-4 flex-1">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                    <Input
+                      placeholder="Buscar especies por nombre..."
+                      value={searchTerm}
+                      onChange={(e) => {
+                        setSearchTerm(e.target.value);
+                        setCurrentPage(1);
+                      }}
+                      className="pl-10 bg-white"
+                    />
                   </div>
                   
+                  <Select value={categoryFilter} onValueChange={(value) => {
+                    setCategoryFilter(value);
+                    setCurrentPage(1);
+                  }}>
+                    <SelectTrigger className="w-full sm:w-48 bg-white">
+                      <SelectValue placeholder="Categoría" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todas las categorías</SelectItem>
+                      <SelectItem value="aves">Aves</SelectItem>
+                      <SelectItem value="mamiferos">Mamíferos</SelectItem>
+                      <SelectItem value="reptiles">Reptiles</SelectItem>
+                      <SelectItem value="anfibios">Anfibios</SelectItem>
+                      <SelectItem value="insectos">Insectos</SelectItem>
+                      <SelectItem value="peces">Peces</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  <Select value={conservationFilter} onValueChange={(value) => {
+                    setConservationFilter(value);
+                    setCurrentPage(1);
+                  }}>
+                    <SelectTrigger className="w-full sm:w-48 bg-white">
+                      <SelectValue placeholder="Conservación" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos los estados</SelectItem>
+                      <SelectItem value="estable">Estable</SelectItem>
+                      <SelectItem value="vulnerable">Vulnerable</SelectItem>
+                      <SelectItem value="en_peligro">En Peligro</SelectItem>
+                      <SelectItem value="critico">Crítico</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="flex gap-2">
                   <Button
-                    variant="outline"
-                    onClick={() => setCurrentPage(prev => Math.min(pagination.totalPages, prev + 1))}
-                    disabled={currentPage === pagination.totalPages}
+                    variant={viewMode === 'grid' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setViewMode('grid')}
+                    className={viewMode === 'grid' ? 'bg-white text-green-800 hover:bg-gray-100' : 'border-white text-white hover:bg-white hover:text-green-800'}
                   >
-                    Siguiente
+                    <Grid className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === 'list' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setViewMode('list')}
+                    className={viewMode === 'list' ? 'bg-white text-green-800 hover:bg-gray-100' : 'border-white text-white hover:bg-white hover:text-green-800'}
+                  >
+                    <List className="h-4 w-4" />
                   </Button>
                 </div>
-              )}
-            </>
-          )}
-
-          {/* Llamada a la acción */}
-          <div className="bg-gradient-to-r from-blue-600 to-green-600 rounded-lg p-8 text-white text-center mt-12">
-            <h2 className="text-2xl font-bold mb-4">
-              ¿Observaste alguna especie interesante?
-            </h2>
-            <p className="text-blue-100 mb-6">
-              Ayúdanos a documentar la biodiversidad urbana reportando tus avistamientos
-            </p>
-            <Button 
-              variant="secondary" 
-              size="lg"
-              className="bg-white text-blue-600 hover:bg-blue-50"
-            >
-              <Shield className="h-5 w-5 mr-2" />
-              Reportar Avistamiento
-            </Button>
+              </div>
+              
+              <p className="text-sm text-green-100">
+                Mostrando {species.length} de {pagination.total} especies
+              </p>
+            </div>
           </div>
+        </section>
 
-          {/* Banner Publicitario */}
-          <div className="mt-12 mb-8">
+        {/* 3. Sección de contenido */}
+        <section className="py-12 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4">
+            {isLoading ? (
+              <div className="flex justify-center items-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+              </div>
+            ) : species.length === 0 ? (
+              <div className="text-center py-12">
+                <Bird className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  No se encontraron especies
+                </h3>
+                <p className="text-gray-600">
+                  Intenta ajustar tus filtros de búsqueda
+                </p>
+              </div>
+            ) : (
+              <>
+                {/* Grid de especies */}
+                <div className={`mb-8 ${
+                  viewMode === 'grid' 
+                    ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6' 
+                    : 'space-y-4'
+                }`}>
+                  {species.map((species) => (
+                    <SpeciesCard 
+                      key={species.id} 
+                      species={species} 
+                      viewMode={viewMode}
+                    />
+                  ))}
+                </div>
+
+                {/* Paginación */}
+                {pagination.totalPages > 1 && (
+                  <div className="flex justify-center items-center gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={currentPage === 1}
+                    >
+                      Anterior
+                    </Button>
+                    
+                    <div className="flex gap-1">
+                      {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((pageNum) => (
+                        <Button
+                          key={pageNum}
+                          variant={currentPage === pageNum ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setCurrentPage(pageNum)}
+                        >
+                          {pageNum}
+                        </Button>
+                      ))}
+                    </div>
+                    
+                    <Button
+                      variant="outline"
+                      onClick={() => setCurrentPage(prev => Math.min(pagination.totalPages, prev + 1))}
+                      disabled={currentPage === pagination.totalPages}
+                    >
+                      Siguiente
+                    </Button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </section>
+
+        {/* 4. Sección de llamada a la acción */}
+        <section className="py-12 bg-white">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="bg-gradient-to-r from-blue-600 to-green-600 rounded-lg p-8 text-white text-center">
+              <h2 className="text-2xl font-bold mb-4">
+                ¿Observaste alguna especie interesante?
+              </h2>
+              <p className="text-blue-100 mb-6">
+                Ayúdanos a documentar la biodiversidad urbana reportando tus avistamientos
+              </p>
+              <Button 
+                variant="secondary" 
+                size="lg"
+                className="bg-white text-blue-600 hover:bg-blue-50"
+              >
+                <Shield className="h-5 w-5 mr-2" />
+                Reportar Avistamiento
+              </Button>
+            </div>
+          </div>
+        </section>
+
+        {/* 5. Sección de adspace */}
+        <section className="py-12 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4">
             <AdSpace spaceId="37" position="banner" pageType="fauna" />
           </div>
-        </div>
+        </section>
 
-        {/* Sección de Contacto */}
-        <section className="bg-gray-50 py-12">
+        {/* 6. Sección de información */}
+        <section className="py-12 bg-white">
           <div className="max-w-7xl mx-auto px-4">
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold text-gray-900 mb-4">¿Necesitas más información?</h2>
