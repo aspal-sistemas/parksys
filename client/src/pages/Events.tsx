@@ -149,6 +149,42 @@ const Events: React.FC = () => {
                 Descubre los eventos más emocionantes en los parques urbanos de Guadalajara. 
                 Cultura, deporte, naturaleza y diversión para toda la familia.
               </p>
+              
+              {/* Estadísticas de eventos */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+                <div className="text-center">
+                  <div className="text-3xl md:text-4xl font-bold text-white mb-1 drop-shadow-lg">
+                    {events.length}
+                  </div>
+                  <div className="text-sm md:text-base text-green-100 drop-shadow">
+                    Eventos Totales
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl md:text-4xl font-bold text-white mb-1 drop-shadow-lg">
+                    {events.filter((e: Event) => e.status === 'published').length}
+                  </div>
+                  <div className="text-sm md:text-base text-green-100 drop-shadow">
+                    Activos
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl md:text-4xl font-bold text-white mb-1 drop-shadow-lg">
+                    {categories.length}
+                  </div>
+                  <div className="text-sm md:text-base text-green-100 drop-shadow">
+                    Categorías
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl md:text-4xl font-bold text-white mb-1 drop-shadow-lg">
+                    {parks.length}
+                  </div>
+                  <div className="text-sm md:text-base text-green-100 drop-shadow">
+                    Parques
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
