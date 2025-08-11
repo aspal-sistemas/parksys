@@ -340,7 +340,7 @@ function ReservationsPage() {
 
   return (
     <PublicLayout>
-      <div className="bg-gradient-to-br from-blue-50 to-green-50">
+      <div className="bg-gray-50">
       {/* Hero Section */}
       <section 
         className="relative py-24 px-4 text-center text-white"
