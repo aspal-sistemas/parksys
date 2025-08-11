@@ -587,19 +587,19 @@ function ActivitiesPage() {
             <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
               <div className="flex-1 max-w-md">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-green-300" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-green-600" />
                   <Input
                     placeholder="Buscar actividades..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 bg-white/90 border-green-600 focus:border-green-400 focus:ring-green-400 placeholder-gray-600"
+                    className="pl-10 bg-white/90 focus:border-green-400 focus:ring-green-400 placeholder-gray-600"
                   />
                 </div>
               </div>
               
               <div className="flex items-center gap-3">
                 <Select value={filterPark} onValueChange={setFilterPark}>
-                  <SelectTrigger className="w-48 bg-white/90 border-green-600 text-gray-800">
+                  <SelectTrigger className="w-48 bg-white/90 text-gray-800">
                     <Filter className="h-4 w-4 mr-2 text-green-600" />
                     <SelectValue placeholder="Todos los parques" />
                   </SelectTrigger>
@@ -614,7 +614,7 @@ function ActivitiesPage() {
                 </Select>
 
                 <Select value={filterCategory} onValueChange={setFilterCategory}>
-                  <SelectTrigger className="w-48 bg-white/90 border-green-600 text-gray-800">
+                  <SelectTrigger className="w-48 bg-white/90  text-gray-800">
                     <SelectValue placeholder="Todas las categorías" />
                   </SelectTrigger>
                   <SelectContent>

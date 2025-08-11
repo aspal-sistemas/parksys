@@ -287,8 +287,7 @@ function ReservationsPage() {
   const [filterPark, setFilterPark] = useState('all');
   const [filterSpaceType, setFilterSpaceType] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [currentPage, setCurrentPage] = useState(1);
-  const spacesPerPage = 9;
+
 
   // Obtener todos los espacios reservables
   const { data: spacesData = [], isLoading } = useQuery<ReservableSpace[]>({
@@ -319,11 +318,7 @@ function ReservationsPage() {
     });
   }, [spacesData, searchQuery, filterPark, filterSpaceType]);
 
-  const totalSpaces = filteredSpaces.length;
-  const totalPages = Math.ceil(totalSpaces / spacesPerPage);
-  const startIndex = (currentPage - 1) * spacesPerPage;
-  const endIndex = startIndex + spacesPerPage;
-  const currentSpaces = filteredSpaces.slice(startIndex, endIndex);
+
 
   const uniqueSpaceTypes = Array.from(new Set(spacesData.map(space => space.spaceType).filter(Boolean)));
 
@@ -448,15 +443,7 @@ function ReservationsPage() {
             </div>
           </div>
 
-          {/* Estadísticas */}
-          <div className="mt-6 flex items-center justify-between text-sm text-gray-600">
-            <span>
-              Mostrando {startIndex + 1}-{Math.min(endIndex, totalSpaces)} de {totalSpaces} espacios
-            </span>
-            <span>
-              Página {currentPage} de {totalPages}
-            </span>
-          </div>
+
         </div>
       </section>
 
@@ -489,7 +476,7 @@ function ReservationsPage() {
                 ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" 
                 : "space-y-4"
               }>
-                {currentSpaces.map((space) => (
+                {filteredSpaces.map((space) => (
                   <SpaceCard 
                     key={space.id} 
                     space={space} 
@@ -498,37 +485,7 @@ function ReservationsPage() {
                 ))}
               </div>
 
-              {/* Paginación */}
-              {totalPages > 1 && (
-                <div className="flex justify-center items-center gap-2 mt-12">
-                  <Button
-                    variant="outline"
-                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                    disabled={currentPage === 1}
-                  >
-                    Anterior
-                  </Button>
-                  
-                  {Array.from({ length: totalPages }, (_, i) => (
-                    <Button
-                      key={i + 1}
-                      variant={currentPage === i + 1 ? 'default' : 'outline'}
-                      onClick={() => setCurrentPage(i + 1)}
-                      className="w-10"
-                    >
-                      {i + 1}
-                    </Button>
-                  ))}
-                  
-                  <Button
-                    variant="outline"
-                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                    disabled={currentPage === totalPages}
-                  >
-                    Siguiente
-                  </Button>
-                </div>
-              )}
+
             </>
           )}
         </div>
