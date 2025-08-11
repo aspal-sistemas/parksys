@@ -482,20 +482,20 @@ export default function TreeSpecies() {
                     </SelectContent>
                   </Select>
                   
-                  <div className="flex border border-gray-300 rounded-md">
+                  <div className="flex items-center gap-2">
                     <Button
-                      variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                      variant={viewMode === 'grid' ? 'default' : 'outline'}
                       size="sm"
                       onClick={() => setViewMode('grid')}
-                      className="rounded-r-none"
+                      className="bg-[#00a587] hover:bg-[#067f5f] text-white"
                     >
                       <Grid className="h-4 w-4" />
                     </Button>
                     <Button
-                      variant={viewMode === 'list' ? 'default' : 'ghost'}
+                      variant={viewMode === 'list' ? 'default' : 'outline'}
                       size="sm"
                       onClick={() => setViewMode('list')}
-                      className="rounded-l-none"
+                      className="bg-[#00a587] hover:bg-[#067f5f] text-white"
                     >
                       <List className="h-4 w-4" />
                     </Button>
