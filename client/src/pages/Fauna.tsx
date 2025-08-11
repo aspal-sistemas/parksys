@@ -355,13 +355,8 @@ export default function Fauna() {
           </div>
         </div>
         
-        {/* Espacio entre hero y banner */}
+        {/* Espacio después del hero */}
         <div className="py-6"></div>
-
-        {/* Banner Publicitario de Ancho Completo */}
-        <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] mb-8">
-          <AdSpace spaceId="37" position="banner" pageType="fauna" />
-        </div>
 
         <div className="max-w-7xl mx-auto px-4">
 
@@ -524,6 +519,11 @@ export default function Fauna() {
               <Shield className="h-5 w-5 mr-2" />
               Reportar Avistamiento
             </Button>
+          </div>
+
+          {/* Banner Publicitario de Ancho Completo */}
+          <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] mt-12">
+            <AdSpace spaceId="37" position="banner" pageType="fauna" />
           </div>
         </div>
       </div>
