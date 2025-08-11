@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
-import { Search, MapPin, Building, Phone, Calendar, Store, Users } from "lucide-react";
+import { Search, MapPin, Building, Phone, Calendar, Store, Users, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -154,7 +154,7 @@ export default function ConcessionsList() {
       <div className="py-8" style={{backgroundColor: '#19633c'}}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="rounded-lg shadow-sm p-6 mb-8" style={{backgroundColor: '#19633c'}}>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {/* Búsqueda */}
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-green-600 h-4 w-4" />
@@ -194,14 +194,20 @@ export default function ConcessionsList() {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
 
-              {/* Limpiar filtros */}
-              <Button 
-                variant="outline" 
+            <div className="mt-4 flex items-center justify-between">
+              <div className="text-sm text-white">
+                Mostrando {filteredConcessions.length} de {concessions.length} concesiones
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={resetFilters}
-                className="bg-white/90 border-white text-gray-800 hover:bg-white hover:text-gray-900"
+                className="bg-white text-gray-900 border-white hover:bg-gray-100"
               >
-                Limpiar Filtros
+                <X className="w-4 h-4 mr-2" />
+                Limpiar filtros
               </Button>
             </div>
           </div>
