@@ -186,21 +186,7 @@ export default function VolunteersList() {
       {/* 2. Galería de Voluntarios en Acción */}
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
-            {/* Enunciado - 1/4 del espacio */}
-            <div className="lg:col-span-1">
-              <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4 text-left">
-                Voluntarios en Acción
-              </h2>
-              <p className="text-base text-gray-600 text-left">
-                Descubre el impacto de nuestros voluntarios en los parques de Guadalajara. 
-                Cada imagen cuenta una historia de compromiso, trabajo en equipo y amor por nuestros espacios verdes.
-              </p>
-            </div>
-
-            {/* Galería Irregular - 3/4 del espacio */}
-            <div className="lg:col-span-3">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 auto-rows-[200px]">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 auto-rows-[200px]">
                 {/* Imagen 1 - Grande vertical */}
                 <div className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 row-span-2">
                   <img 
@@ -254,10 +240,7 @@ export default function VolunteersList() {
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 </div>
-              </div>
-            </div>
           </div>
-
         </div>
       </section>
 
