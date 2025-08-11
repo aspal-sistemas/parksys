@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
-import { Search, MapPin, Building, Phone, Calendar } from "lucide-react";
+import { Search, MapPin, Building, Phone, Calendar, Store, Users } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import PublicLayout from '@/components/PublicLayout';
 import AdSpace from '@/components/AdSpace';
 const heroImage = "/images/concessions-hero.jpg";
@@ -104,18 +105,6 @@ export default function ConcessionsList() {
   return (
     <PublicLayout>
       <div className="min-h-screen bg-gray-50">
-      {/* Header Ad Space */}
-      <div className="w-full bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 py-2">
-          <AdSpace 
-            spaceId="8" 
-            position="header" 
-            pageType="concessions" 
-            className="w-full"
-          />
-        </div>
-      </div>
-
       {/* Hero Section */}
       <div 
         className="relative text-white py-24"
@@ -129,12 +118,34 @@ export default function ConcessionsList() {
         <div className="absolute inset-0 bg-black/50"></div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            <div className="flex items-center justify-center gap-3 mb-2">
+              <Store className="h-10 w-10" />
+              <h1 className="font-guttery text-4xl md:text-5xl font-normal">
+                Conoce
+              </h1>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
               Servicios Comerciales
-            </h1>
-            <p className="text-xl md:text-2xl text-green-100 max-w-3xl mx-auto">
+            </h2>
+            <p className="text-xl md:text-2xl text-green-100 max-w-3xl mx-auto mb-8">
               Descubre todos los servicios comerciales disponibles en nuestros parques urbanos
             </p>
+            <div className="flex items-center justify-center gap-4 text-green-100">
+              <div className="flex items-center gap-2">
+                <MapPin className="h-5 w-5" />
+                <span>{parks.length} parques</span>
+              </div>
+              <Separator orientation="vertical" className="h-6 bg-green-300" />
+              <div className="flex items-center gap-2">
+                <Store className="h-5 w-5" />
+                <span>{concessions.length} concesiones activas</span>
+              </div>
+              <Separator orientation="vertical" className="h-6 bg-green-300" />
+              <div className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                <span>{Array.from(new Set(concessions.map((c: Concession) => c.concessionaire_id))).length} concesionarios</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
