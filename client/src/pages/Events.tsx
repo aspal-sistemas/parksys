@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Calendar, MapPin, Clock, Users, Search, Filter, Grid, List, Star } from 'lucide-react';
+import { Calendar, MapPin, Clock, Users, Search, Filter, Grid, List, Star, Eye } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -133,6 +133,12 @@ const Events: React.FC = () => {
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <Eye className="h-8 w-8 md:h-10 md:w-10 text-white drop-shadow-lg" />
+              <h2 className="text-3xl md:text-4xl font-guttery font-light drop-shadow-lg">
+                Conoce
+              </h2>
+            </div>
             <h1 className="text-4xl md:text-6xl font-bold mb-6 drop-shadow-lg">
               Eventos y Actividades
             </h1>
