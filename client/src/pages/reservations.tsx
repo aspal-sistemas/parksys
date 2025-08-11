@@ -380,13 +380,6 @@ function ReservationsPage() {
         </div>
       </section>
 
-      {/* Publicidad superior */}
-      <section className="py-4 bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4">
-          <AdSpace spaceId={1} position="banner" pageType="parks" />
-        </div>
-      </section>
-
       {/* Filtros y búsqueda */}
       <section className="py-8 bg-white">
         <div className="max-w-7xl mx-auto px-4">
