@@ -49,12 +49,36 @@ const Home: React.FC = () => {
     queryKey: ['/api/sponsors'],
   });
   
+  // Fetch eventos para la sección de eventos
+  const { data: eventsResponse = [], isLoading: eventsLoading } = useQuery<any[]>({
+    queryKey: ['/api/events'],
+  });
+  
   const allParks = parksResponse || [];
   
   // Filtrar parques sin nombre o marcados como eliminados
   const featuredParks = allParks.filter(park => 
     park.name.trim() !== '' && !park.isDeleted
   );
+  
+  // Obtener eventos destacados (máximo 3 para la página de inicio)
+  const featuredEvents = (eventsResponse || [])
+    .filter((event: any) => event.featuredImageUrl) // Solo eventos con imagen
+    .slice(0, 3); // Limitar a 3 eventos
+  
+  // Función para formatear fechas
+  const formatEventDate = (startDate: string, endDate: string, startTime?: string) => {
+    const start = new Date(startDate);
+    const options: Intl.DateTimeFormatOptions = { 
+      day: 'numeric', 
+      month: 'long' 
+    };
+    
+    if (startTime) {
+      return `${start.toLocaleDateString('es-ES', options)} a las ${startTime}`;
+    }
+    return start.toLocaleDateString('es-ES', options);
+  };
   
   // Funciones de navegación del carousel
   const nextSlide = () => {
@@ -375,89 +399,77 @@ const Home: React.FC = () => {
           </div>
 
           {/* Grid de eventos destacados */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-            {/* Evento 1 */}
-            <div className="bg-white rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 h-[500px] flex flex-col">
-              <div className="h-2/3 relative overflow-hidden">
-                <img 
-                  src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                  alt="Taller familiar en parque urbano"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute top-4 left-4 w-12 h-12 bg-orange-100/90 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                  <Calendar className="h-6 w-6 text-orange-600" />
+          {eventsLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="bg-white rounded-2xl overflow-hidden shadow-xl h-[500px] flex flex-col animate-pulse">
+                  <div className="h-2/3 bg-gray-200"></div>
+                  <div className="h-1/3 p-6">
+                    <div className="h-6 bg-gray-200 rounded mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+                  </div>
                 </div>
-              </div>
-              <div className="h-1/3 p-6 flex flex-col justify-between">
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Talleres de Fin de Semana</h3>
-                  <p className="text-gray-600 text-sm mb-3">Actividades familiares todos los sábados y domingos en nuestros parques urbanos</p>
-                </div>
-                <div className="flex items-center text-sm text-orange-600 font-semibold">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  Sábados y Domingos
-                </div>
-              </div>
+              ))}
             </div>
-
-            {/* Evento 2 */}
-            <div className="bg-white rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 h-[500px] flex flex-col">
-              <div className="h-2/3 relative overflow-hidden">
-                <img 
-                  src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                  alt="Jornada de reforestación con voluntarios"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute top-4 left-4 w-12 h-12 bg-green-100/90 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                  <Trees className="h-6 w-6 text-green-600" />
-                </div>
-              </div>
-              <div className="h-1/3 p-6 flex flex-col justify-between">
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Jornadas de Reforestación</h3>
-                  <p className="text-gray-600 text-sm mb-3">Únete a nuestras jornadas mensuales de plantación de árboles nativos</p>
-                </div>
-                <div className="flex items-center text-sm text-green-600 font-semibold">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  Primer sábado del mes
-                </div>
-              </div>
+          ) : featuredEvents.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+              {featuredEvents.map((event: any, index: number) => {
+                // Colores dinámicos basados en el tipo de evento
+                const eventColors = [
+                  { bg: 'bg-orange-100/90', icon: 'text-orange-600', text: 'text-orange-600' },
+                  { bg: 'bg-green-100/90', icon: 'text-green-600', text: 'text-green-600' },
+                  { bg: 'bg-purple-100/90', icon: 'text-purple-600', text: 'text-purple-600' }
+                ];
+                const colors = eventColors[index % eventColors.length];
+                
+                return (
+                  <Link key={event.id} href={`/events/${event.id}`}>
+                    <div className="bg-white rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 h-[500px] flex flex-col cursor-pointer">
+                      <div className="h-2/3 relative overflow-hidden">
+                        <img 
+                          src={event.featuredImageUrl}
+                          alt={event.title}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className={`absolute top-4 left-4 w-12 h-12 ${colors.bg} backdrop-blur-sm rounded-xl flex items-center justify-center`}>
+                          <Calendar className={`h-6 w-6 ${colors.icon}`} />
+                        </div>
+                      </div>
+                      <div className="h-1/3 p-6 flex flex-col justify-between">
+                        <div>
+                          <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2">{event.title}</h3>
+                          <p className="text-gray-600 text-sm mb-3 line-clamp-2">{event.description}</p>
+                        </div>
+                        <div className={`flex items-center text-sm ${colors.text} font-semibold`}>
+                          <Calendar className="h-4 w-4 mr-2" />
+                          {formatEventDate(event.startDate, event.endDate, event.startTime)}
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
-
-            {/* Evento 3 */}
-            <div className="bg-white rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 h-[500px] flex flex-col">
-              <div className="h-2/3 relative overflow-hidden">
-                <img 
-                  src="https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                  alt="Festival cultural comunitario en parque"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute top-4 left-4 w-12 h-12 bg-purple-100/90 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                  <Users className="h-6 w-6 text-purple-600" />
-                </div>
-              </div>
-              <div className="h-1/3 p-6 flex flex-col justify-between">
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Festivales Culturales</h3>
-                  <p className="text-gray-600 text-sm mb-3">Celebraciones comunitarias con música, arte y gastronomía local</p>
-                </div>
-                <div className="flex items-center text-sm text-purple-600 font-semibold">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  Eventos especiales
-                </div>
-              </div>
+          ) : (
+            <div className="text-center text-white py-12">
+              <Calendar className="h-16 w-16 mx-auto mb-4 opacity-50" />
+              <p className="text-xl">Próximamente nuevos eventos</p>
+              <p className="text-lg opacity-75">Mantente atento a nuestras próximas actividades</p>
             </div>
-          </div>
+          )}
 
-          {/* Call to action */}
-          <div className="text-center">
-            <Link href="/activities">
-              <Button size="lg" className="bg-[#bcd256] hover:bg-[#a8c142] text-[#19633c] font-bold px-10 py-4 text-lg rounded-2xl transition-all duration-300 hover:scale-105 hover:shadow-xl">
-                Ver Todos los Eventos
-                <ArrowRight className="h-5 w-5 ml-2" />
-              </Button>
-            </Link>
-          </div>
+          {/* Botón para ver todos los eventos si hay eventos disponibles */}
+          {featuredEvents.length > 0 && (
+            <div className="text-center">
+              <Link href="/events">
+                <Button size="lg" className="bg-[#bcd256] hover:bg-[#a8bd4a] text-[#19633c] font-bold px-10 py-4 text-lg rounded-2xl transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                  Ver todos los eventos
+                  <ArrowRight className="h-5 w-5 ml-2" />
+                </Button>
+              </Link>
+            </div>
+          )}
         </div>
       </section>
 
