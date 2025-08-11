@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'wouter';
-import { Calendar, MapPin, Clock, Users, Search, Filter, Grid, List, Star, Eye, Phone, Mail } from 'lucide-react';
+import { Calendar, MapPin, Clock, Users, Search, Filter, Grid, List, Star, Eye, Phone, Mail, CheckCircle, Tag, Trees } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -151,38 +151,25 @@ const Events: React.FC = () => {
               </p>
               
               {/* Estadísticas de eventos */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
-                <div className="text-center">
-                  <div className="text-3xl md:text-4xl font-bold text-white mb-1 drop-shadow-lg">
-                    {events.length}
-                  </div>
-                  <div className="text-sm md:text-base text-green-100 drop-shadow">
-                    Eventos Totales
-                  </div>
+              <div className="flex items-center justify-center gap-4 text-green-100">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5" />
+                  <span>{events.length} eventos</span>
                 </div>
-                <div className="text-center">
-                  <div className="text-3xl md:text-4xl font-bold text-white mb-1 drop-shadow-lg">
-                    {events.filter((e: Event) => e.status === 'published').length}
-                  </div>
-                  <div className="text-sm md:text-base text-green-100 drop-shadow">
-                    Activos
-                  </div>
+                <div className="h-6 w-px bg-green-300"></div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5" />
+                  <span>{events.filter((e: Event) => e.status === 'published').length} activos</span>
                 </div>
-                <div className="text-center">
-                  <div className="text-3xl md:text-4xl font-bold text-white mb-1 drop-shadow-lg">
-                    {categories.length}
-                  </div>
-                  <div className="text-sm md:text-base text-green-100 drop-shadow">
-                    Categorías
-                  </div>
+                <div className="h-6 w-px bg-green-300"></div>
+                <div className="flex items-center gap-2">
+                  <Tag className="h-5 w-5" />
+                  <span>{categories.length} categorías</span>
                 </div>
-                <div className="text-center">
-                  <div className="text-3xl md:text-4xl font-bold text-white mb-1 drop-shadow-lg">
-                    {parks.length}
-                  </div>
-                  <div className="text-sm md:text-base text-green-100 drop-shadow">
-                    Parques
-                  </div>
+                <div className="h-6 w-px bg-green-300"></div>
+                <div className="flex items-center gap-2">
+                  <Trees className="h-5 w-5" />
+                  <span>{parks.length} parques</span>
                 </div>
               </div>
             </div>
