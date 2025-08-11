@@ -254,9 +254,9 @@ const Events: React.FC = () => {
             {filteredEvents.map((event: Event) => (
               <Card key={event.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                 {viewMode === 'grid' ? (
-                  <div className="flex h-64">
-                    {/* Imagen que ocupa 3/4 de la tarjeta */}
-                    <div className="relative w-3/4 overflow-hidden">
+                  <div className="flex flex-col h-80">
+                    {/* Imagen que ocupa 3/4 de la altura */}
+                    <div className="relative h-3/4 overflow-hidden">
                       {event.featuredImageUrl ? (
                         <img 
                           src={event.featuredImageUrl} 
@@ -302,17 +302,19 @@ const Events: React.FC = () => {
                       </div>
                     </div>
                     
-                    {/* Área de contenido 1/4 restante */}
-                    <div className="w-1/4 p-4 flex flex-col justify-between">
+                    {/* Área de contenido 1/4 de la altura (abajo) */}
+                    <div className="h-1/4 p-4 bg-white flex flex-col justify-between">
                       <div className="flex-1">
-                        <p className="text-gray-600 text-xs leading-relaxed line-clamp-4 mb-3">
+                        <p className="text-gray-600 text-sm leading-relaxed line-clamp-3 mb-2">
                           {event.description}
                         </p>
                       </div>
                       
                       <div className="text-xs text-gray-500 border-t pt-2">
-                        <div className="font-medium">Organiza:</div>
-                        <div className="text-gray-700">{event.organizerName}</div>
+                        <div className="flex justify-between items-center">
+                          <span className="font-medium">Organiza:</span>
+                          <span className="text-gray-700">{event.organizerName}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
