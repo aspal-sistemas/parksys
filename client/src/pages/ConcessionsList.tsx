@@ -151,57 +151,59 @@ export default function ConcessionsList() {
       </div>
 
       {/* Filtros - Movidos pegados al hero */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Búsqueda */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
-                placeholder="Buscar concesiones..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
+      <div className="py-8" style={{backgroundColor: '#19633c'}}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="rounded-lg shadow-sm p-6 mb-8" style={{backgroundColor: '#19633c'}}>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Búsqueda */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-green-600 h-4 w-4" />
+                <Input
+                  placeholder="Buscar concesiones..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 bg-white/90 focus:border-green-400 focus:ring-green-400 placeholder-gray-600"
+                />
+              </div>
+
+              {/* Filtro por tipo */}
+              <Select value={typeFilter} onValueChange={setTypeFilter}>
+                <SelectTrigger className="bg-white/90 text-gray-800">
+                  <SelectValue placeholder="Tipo de concesión" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los tipos</SelectItem>
+                  <SelectItem value="Venta de alimentos">Venta de alimentos</SelectItem>
+                  <SelectItem value="Renta de bicicletas">Renta de bicicletas</SelectItem>
+                  <SelectItem value="Kiosco de información">Kiosco de información</SelectItem>
+                  <SelectItem value="Comercial">Comercial</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {/* Filtro por parque */}
+              <Select value={parkFilter} onValueChange={setParkFilter}>
+                <SelectTrigger className="bg-white/90 text-gray-800">
+                  <SelectValue placeholder="Parque" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los parques</SelectItem>
+                  {parks.map((park: any) => (
+                    <SelectItem key={park.id} value={park.id.toString()}>
+                      {park.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {/* Limpiar filtros */}
+              <Button 
+                variant="outline" 
+                onClick={resetFilters}
+                className="bg-white/90 border-white text-gray-800 hover:bg-white hover:text-gray-900"
+              >
+                Limpiar Filtros
+              </Button>
             </div>
-
-            {/* Filtro por tipo */}
-            <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="Tipo de concesión" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los tipos</SelectItem>
-                <SelectItem value="Venta de alimentos">Venta de alimentos</SelectItem>
-                <SelectItem value="Renta de bicicletas">Renta de bicicletas</SelectItem>
-                <SelectItem value="Kiosco de información">Kiosco de información</SelectItem>
-                <SelectItem value="Comercial">Comercial</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {/* Filtro por parque */}
-            <Select value={parkFilter} onValueChange={setParkFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="Parque" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los parques</SelectItem>
-                {parks.map((park: any) => (
-                  <SelectItem key={park.id} value={park.id.toString()}>
-                    {park.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            {/* Limpiar filtros */}
-            <Button 
-              variant="outline" 
-              onClick={resetFilters}
-              className="border-[#00a587] text-[#00a587] hover:bg-[#00a587] hover:text-white"
-            >
-              Limpiar Filtros
-            </Button>
           </div>
         </div>
       </div>
