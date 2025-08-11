@@ -176,10 +176,7 @@ const Events: React.FC = () => {
           </div>
         </div>
 
-      {/* Banner publicitario */}
-      <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]">
-        <AdSpace spaceId="35" pageType="activities" position="banner" />
-      </div>
+
 
       {/* Sección completa de filtros con fondo verde */}
       <div className="w-full py-8" style={{ backgroundColor: '#19633c' }}>
@@ -397,6 +394,11 @@ const Events: React.FC = () => {
             ))}
           </div>
         )}
+      </div>
+
+      {/* Banner publicitario */}
+      <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] my-8">
+        <AdSpace spaceId="35" pageType="activities" position="banner" />
       </div>
 
       {/* Sección de información de contacto */}
