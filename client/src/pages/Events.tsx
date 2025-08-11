@@ -305,19 +305,9 @@ const Events: React.FC = () => {
                           {event.description}
                         </p>
                         
-                        <div className="flex justify-between items-center">
-                          <div className="text-xs text-gray-500">
-                            <span className="font-medium">Organiza:</span>
-                            <div className="text-gray-700">{event.organizerName}</div>
-                          </div>
-                          
-                          <Button 
-                            size="sm" 
-                            className="bg-[#00a587] hover:bg-[#067f5f] text-white text-xs px-3 py-2 h-8"
-                            onClick={() => window.location.href = `/events/${event.id}`}
-                          >
-                            Ver evento
-                          </Button>
+                        <div className="text-xs text-gray-500">
+                          <span className="font-medium">Organiza:</span>
+                          <div className="text-gray-700">{event.organizerName}</div>
                         </div>
                       </div>
                     </div>
