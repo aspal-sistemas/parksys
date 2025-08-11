@@ -162,13 +162,14 @@ const Events: React.FC = () => {
           <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
             <div className="flex flex-col sm:flex-row gap-4 flex-1">
               <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white h-5 w-5" />
                 <Input
                   type="text"
                   placeholder="Buscar eventos..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 h-12 text-white placeholder-gray-300 border-transparent focus:border-green-400"
+                  style={{ backgroundColor: '#19633c' }}
                 />
               </div>
               
