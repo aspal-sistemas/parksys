@@ -54,7 +54,6 @@ export default function VolunteersList() {
   // Consulta para obtener todos los voluntarios con información del parque
   const { data: volunteersResponse, isLoading, error } = useQuery({
     queryKey: ['/api/volunteers/public'],
-    suspense: false,
     retry: 1,
     queryFn: async () => {
       const response = await fetch('/api/volunteers/public');
@@ -71,7 +70,6 @@ export default function VolunteersList() {
   // Consulta para obtener lista de parques para el filtro
   const { data: parksResponse } = useQuery({
     queryKey: ['/api/parks'],
-    suspense: false,
     retry: 1,
     queryFn: async () => {
       const response = await fetch('/api/parks');
@@ -156,24 +154,47 @@ export default function VolunteersList() {
 
   return (
     <PublicLayout>
-      <div className="min-h-screen bg-gray-50">
-      {/* Header Hero con imagen de fondo */}
-      <div 
-        className="relative py-24 text-white"
-        style={{
-          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)), url(${volunteerHeroImage})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
-        }}
-      >
-        <div className="container mx-auto px-4">
-          <div className="text-center">
-            <Users className="h-16 w-16 mx-auto mb-4 drop-shadow-lg" />
-            <h1 className="text-5xl font-bold mb-6 drop-shadow-lg">Nuestros Voluntarios</h1>
-            <p className="text-xl max-w-2xl mx-auto drop-shadow-md leading-relaxed">
-              Conoce a las personas comprometidas que dedican su tiempo y esfuerzo para hacer de nuestros parques lugares mejores para todos.
+      <div className="bg-gray-50">
+      {/* 1. Hero Section */}
+      <div className="relative h-96 overflow-hidden">
+        <img 
+          src={volunteerHeroImage} 
+          alt="Voluntarios en parques de Guadalajara" 
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center text-white max-w-4xl mx-auto px-4">
+            <div className="text-center mb-6">
+              <div className="flex items-center justify-center gap-3 mb-2">
+                <Users className="h-10 w-10" />
+                <h1 className="font-guttery text-4xl md:text-5xl font-normal">
+                  Conoce a
+                </h1>
+              </div>
+              <h2 className="text-4xl md:text-5xl font-bold">
+                Nuestros Voluntarios
+              </h2>
+            </div>
+            <p className="text-xl text-green-100 mb-8 max-w-2xl mx-auto">
+              Personas comprometidas que dedican su tiempo y esfuerzo para hacer de nuestros parques lugares mejores para todos
             </p>
+            <div className="flex items-center justify-center gap-4 text-green-100 flex-wrap">
+              <div className="flex items-center gap-2">
+                <Heart className="h-5 w-5" />
+                <span>{filteredVolunteers.length} voluntarios activos</span>
+              </div>
+              <div className="hidden sm:block w-px h-6 bg-green-300"></div>
+              <div className="flex items-center gap-2">
+                <MapPin className="h-5 w-5" />
+                <span>{parks.length} parques</span>
+              </div>
+              <div className="hidden sm:block w-px h-6 bg-green-300"></div>
+              <div className="flex items-center gap-2">
+                <Award className="h-5 w-5" />
+                <span>{filteredVolunteers.filter(v => v.preferredParkId).length} asignados</span>
+              </div>
+            </div>
             <div className="mt-8">
               <Button 
                 className="bg-[#00a587] hover:bg-[#067f5f] text-white px-8 py-3 text-lg font-semibold shadow-lg"
@@ -187,79 +208,65 @@ export default function VolunteersList() {
         </div>
       </div>
 
-      {/* Estadísticas */}
-      <div className="py-8 bg-white border-b">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-green-600">{filteredVolunteers.length}</div>
-              <div className="text-gray-600">Voluntarios Activos</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600">
-                {parks.length}
+      {/* 2. Sección de panel de filtros y búsqueda */}
+      <section className="py-6" style={{backgroundColor: '#19633c'}}>
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="rounded-lg p-6">
+            <div className="flex flex-col lg:flex-row gap-4 items-center justify-between mb-4">
+              <div className="flex flex-col sm:flex-row gap-4 flex-1">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    placeholder="Buscar por nombre, actividades o parque..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 bg-white"
+                  />
+                </div>
+                
+                <Select value={parkFilter} onValueChange={setParkFilter}>
+                  <SelectTrigger className="w-full sm:w-48 bg-white">
+                    <SelectValue placeholder="Filtrar por parque" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los parques</SelectItem>
+                    {parks.map((park: any) => (
+                      <SelectItem key={park.id} value={park.id.toString()}>
+                        {park.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-              <div className="text-gray-600">Parques con Voluntarios</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-purple-600">
-                {filteredVolunteers.filter(v => v.preferredParkId).length}
+              
+              <div className="flex gap-2">
+                <Button
+                  variant={viewMode === 'grid' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewMode('grid')}
+                  className={viewMode === 'grid' ? 'bg-white text-green-800 hover:bg-gray-100' : 'border-white text-white hover:bg-white hover:text-green-800'}
+                >
+                  Tarjetas
+                </Button>
+                <Button
+                  variant={viewMode === 'list' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewMode('list')}
+                  className={viewMode === 'list' ? 'bg-white text-green-800 hover:bg-gray-100' : 'border-white text-white hover:bg-white hover:text-green-800'}
+                >
+                  Lista
+                </Button>
               </div>
-              <div className="text-gray-600">Con Parque Asignado</div>
             </div>
+            
+            <p className="text-sm text-green-100">
+              Mostrando {startIndex + 1} a {Math.min(endIndex, filteredVolunteers.length)} de {filteredVolunteers.length} voluntarios
+            </p>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Filtros */}
-      <div className="py-6 bg-white border-b">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-            <div className="flex flex-col md:flex-row gap-4 flex-1">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Buscar por nombre, actividades o parque..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <Select value={parkFilter} onValueChange={setParkFilter}>
-                <SelectTrigger className="w-full md:w-48">
-                  <SelectValue placeholder="Filtrar por parque" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos los parques</SelectItem>
-                  {parks.map((park: any) => (
-                    <SelectItem key={park.id} value={park.id.toString()}>
-                      {park.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant={viewMode === 'grid' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setViewMode('grid')}
-              >
-                Tarjetas
-              </Button>
-              <Button
-                variant={viewMode === 'list' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setViewMode('list')}
-              >
-                Lista
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Banner publicitario de ancho completo */}
+      {/* 3. Banner publicitario de ancho completo */}
       <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] mb-8">
         <AdSpace 
           spaceId={37}
@@ -268,16 +275,12 @@ export default function VolunteersList() {
         />
       </div>
 
-      {/* Lista de voluntarios con sidebar */}
-      <div className="py-2">
-        <div className="container mx-auto px-4">
+      {/* 4. Sección de contenido */}
+      <section className="py-12 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4">
           <div className="flex gap-8 items-start">
             {/* Contenido principal */}
             <div className="flex-1">
-              {/* Información de paginación */}
-              <div className="mb-6 text-sm text-gray-600 text-center">
-                Mostrando {startIndex + 1} a {Math.min(endIndex, filteredVolunteers.length)} de {filteredVolunteers.length} voluntarios
-              </div>
 
               {viewMode === 'grid' ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -481,12 +484,12 @@ export default function VolunteersList() {
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Call to Action */}
-      <div className="bg-green-600 text-white py-12">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-4">¿Quieres ser voluntario?</h2>
+      {/* 5. Call to Action Section */}
+      <section className="py-12" style={{backgroundColor: '#19633c'}}>
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <h2 className="text-3xl font-bold mb-4 text-white">¿Quieres ser voluntario?</h2>
           <p className="text-xl text-green-100 mb-8 max-w-2xl mx-auto">
             Únete a nuestro equipo de voluntarios y ayuda a hacer la diferencia en tu comunidad.
           </p>
@@ -499,7 +502,7 @@ export default function VolunteersList() {
             Registrarse como Voluntario
           </Button>
         </div>
-      </div>
+      </section>
       </div>
     </PublicLayout>
   );
