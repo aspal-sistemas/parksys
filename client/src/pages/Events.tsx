@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AdSpace from '@/components/AdSpace';
+import heroImage from '@assets/ImageTransformer_1754921197180.webp';
 
 interface Event {
   id: number;
@@ -123,14 +124,19 @@ const Events: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <div className="relative bg-gradient-to-r from-green-600 to-blue-600 text-white">
-        <div className="absolute inset-0 bg-black opacity-20"></div>
+      <div className="relative text-white overflow-hidden">
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${heroImage})` }}
+        >
+          <div className="absolute inset-0 bg-black opacity-50"></div>
+        </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
+            <h1 className="text-4xl md:text-6xl font-bold mb-6 drop-shadow-lg">
               Eventos y Actividades
             </h1>
-            <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">
+            <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto drop-shadow-md">
               Descubre los eventos más emocionantes en los parques urbanos de Guadalajara. 
               Cultura, deporte, naturaleza y diversión para toda la familia.
             </p>
