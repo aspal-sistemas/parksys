@@ -57,8 +57,8 @@ export default function ConcessionDetail() {
   const { data: concessionResponse, isLoading, error, refetch } = useQuery({
     queryKey: [`/api/active-concessions/${id}`],
     enabled: !!id,
-    refetchInterval: 5000, // Refresca cada 5 segundos
-    refetchIntervalInBackground: true,
+    refetchInterval: 30000, // Refresca cada 30 segundos
+    refetchIntervalInBackground: false,
   });
 
   const concession = (concessionResponse as any)?.data;
@@ -198,12 +198,7 @@ export default function ConcessionDetail() {
             </Button>
           </div>
           
-          {/* Debug info */}
-          <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm">
-            <p><strong>Debug:</strong> Total imágenes: {concession.images?.length || 0}</p>
-            <p><strong>Imagen principal:</strong> {concession.image_url ? '✓' : '✗'}</p>
-            <p><strong>Datos de imagen:</strong> {JSON.stringify(concession.images?.slice(0, 2), null, 2)}</p>
-          </div>
+
           
           <div className="grid grid-cols-4 grid-rows-2 gap-2 h-64">
             {/* Imagen principal - ocupa 2x2 */}
