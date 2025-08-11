@@ -186,16 +186,8 @@ export default function ConcessionDetail() {
       {/* Galería de fotos */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <div className="flex justify-between items-center mb-4">
+          <div className="mb-4">
             <h2 className="text-xl font-semibold text-gray-900">Galería de Imágenes</h2>
-            <Button 
-              onClick={() => refetch()} 
-              variant="outline" 
-              size="sm"
-              className="text-green-600 border-green-300 hover:bg-green-50"
-            >
-              Actualizar Imágenes
-            </Button>
           </div>
           
 
