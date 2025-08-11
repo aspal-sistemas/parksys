@@ -266,20 +266,20 @@ const CalendarPage: React.FC = () => {
                 <Button
                   variant="outline"
                   onClick={goToPrevMonth}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 border-[#51a19f] text-[#51a19f] hover:bg-[#51a19f] hover:text-white"
                 >
                   <ChevronLeft className="w-4 h-4" />
                   Anterior
                 </Button>
                 
-                <h2 className="text-2xl font-bold text-gray-900 capitalize">
+                <h2 className="text-3xl font-bold capitalize" style={{color: '#51a19f'}}>
                   {format(currentMonth, 'MMMM yyyy', { locale: es })}
                 </h2>
                 
                 <Button
                   variant="outline"
                   onClick={goToNextMonth}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 border-[#51a19f] text-[#51a19f] hover:bg-[#51a19f] hover:text-white"
                 >
                   Siguiente
                   <ChevronRight className="w-4 h-4" />
