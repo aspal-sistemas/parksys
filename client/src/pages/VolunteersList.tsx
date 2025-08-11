@@ -187,56 +187,38 @@ export default function VolunteersList() {
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 auto-rows-[200px]">
-                {/* Imagen 1 - Grande vertical */}
+                {/* Imagen 1 - Grande vertical - Educación ambiental con niños */}
                 <div className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 row-span-2">
                   <img 
-                    src="https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
-                    alt="Grupo de voluntarios plantando árboles en bosque urbano"
+                    src="@assets/CECAM2_1754950314848.png"
+                    alt="Voluntarios educando niños sobre medio ambiente en parque"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 </div>
 
-                {/* Imagen 2 - Mediano */}
+                {/* Imagen 2 - Mediano - Actividades deportivas */}
                 <div className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300">
                   <img 
-                    src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
-                    alt="Voluntarios cuidando jardines en parque público"
+                    src="@assets/Recurso 6Iconos_1754950352878.png"
+                    alt="Voluntarios organizando actividades deportivas para niños"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 </div>
 
-                {/* Imagen 3 - Grande horizontal */}
+                {/* Imagen 3 - Grande horizontal - Gran grupo de voluntarios */}
                 <div className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 col-span-2">
                   <img 
-                    src="https://images.unsplash.com/photo-1569163139394-de44cb5a4842?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
-                    alt="Voluntarios limpiando senderos en área natural"
+                    src="@assets/ImageTransformer_1754950326017.webp"
+                    alt="Gran grupo de voluntarios celebrando en parque natural"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 </div>
 
-                {/* Imagen 4 - Pequeño */}
-                <div className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300">
-                  <img 
-                    src="https://images.unsplash.com/photo-1473448912268-2022ce9509d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
-                    alt="Voluntarios en programa de conservación de bosques"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
-
-                {/* Imagen 5 - Grande cuadrado */}
+                {/* Imagen 4 - Grande cuadrado - Jardín japonés con voluntarios */}
                 <div className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 col-span-2 row-span-2">
                   <img 
-                    src="https://images.unsplash.com/photo-1464207687429-7505649dae38?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
-                    alt="Voluntarios enseñando sobre naturaleza en parque"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
-
-                {/* Imagen 6 - Mediano */}
-                <div className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300">
-                  <img 
-                    src="https://images.unsplash.com/photo-1593113598332-cd288d649433?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
-                    alt="Equipo de voluntarios trabajando en reforestación"
+                    src="@assets/jardin-japones_1754950415873.jpg"
+                    alt="Voluntarios cuidando jardín japonés en parque de Guadalajara"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 </div>
