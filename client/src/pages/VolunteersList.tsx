@@ -318,8 +318,8 @@ export default function VolunteersList() {
               {/* Imagen 4 - Voluntarios trabajando en jardín tradicional */}
               <div className="relative cursor-pointer group">
                 <img 
-                  src="/volunteer-4.jpg"
-                  alt="Voluntarios trabajando en restauración de jardín tradicional japonés"
+                  src="/volunteer-garden.jpg"
+                  alt="Voluntarios felices con plantas y herramientas de jardinería trabajando en el parque"
                   className="w-full h-full object-cover rounded-lg shadow-md"
                 />
                 <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
