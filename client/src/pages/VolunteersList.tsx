@@ -273,9 +273,14 @@ export default function VolunteersList() {
                 <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
               </div>
               
-              {/* Imagen 4 - Placeholder para mostrar el patrón completo */}
-              <div className="relative bg-gray-100 rounded-lg flex items-center justify-center">
-                <span className="text-gray-400 text-sm">Más actividades</span>
+              {/* Imagen 4 - Voluntarios trabajando en jardín tradicional */}
+              <div className="relative cursor-pointer group">
+                <img 
+                  src="@assets/WhatsApp Image 2025-08-11 at 16.58.20_281ed812_1754953171279.jpg"
+                  alt="Voluntarios trabajando en restauración de jardín tradicional japonés"
+                  className="w-full h-full object-cover rounded-lg shadow-md"
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
               </div>
             </div>
           </div>
