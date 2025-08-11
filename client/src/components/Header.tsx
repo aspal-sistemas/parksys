@@ -508,9 +508,6 @@ const Header: React.FC = () => {
                       <DropdownMenuItem>
                         <LanguageSelector />
                       </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link href="/admin/security/ChangePassword">Cambiar contraseña</Link>
-                      </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={handleLogout}>Cerrar sesión</DropdownMenuItem>
                     </DropdownMenuContent>
