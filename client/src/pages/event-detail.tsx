@@ -62,7 +62,7 @@ const EventDetail = () => {
   const { id } = useParams();
 
   const { data: event, isLoading, error } = useQuery<Event>({
-    queryKey: ["/api/events", id],
+    queryKey: [`/api/events/${id}`],
     enabled: !!id,
   });
 
