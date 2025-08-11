@@ -426,83 +426,87 @@ export default function TreeSpecies() {
           </div>
         </div>
         
-        <div className="max-w-6xl mx-auto px-4">
-          {/* Filtros */}
-          <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-            <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
-              <div className="flex-1 max-w-md">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    placeholder="Buscar especies..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
+        {/* Sección de Filtros */}
+        <section className="sticky top-0 z-10 border-b border-gray-200 shadow-sm" style={{backgroundColor: '#19633c'}}>
+          <div className="max-w-6xl mx-auto px-4 py-8">
+            <div className="rounded-lg shadow-sm p-6" style={{backgroundColor: '#19633c'}}>
+              <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
+                <div className="flex-1 max-w-md">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="Buscar especies..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
                 </div>
-              </div>
-              
-              <div className="flex gap-3">
-                <Select value={parkFilter} onValueChange={setParkFilter}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue placeholder="Parque" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos los parques</SelectItem>
-                    {parks.map((park: any) => (
-                      <SelectItem key={park.id} value={park.id.toString()}>
-                        {park.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
                 
-                <Select value={originFilter} onValueChange={setOriginFilter}>
-                  <SelectTrigger className="w-40">
-                    <SelectValue placeholder="Origen" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos los orígenes</SelectItem>
-                    <SelectItem value="Nativo">Nativo</SelectItem>
-                    <SelectItem value="Introducido">Introducido</SelectItem>
-                    <SelectItem value="Naturalizado">Naturalizado</SelectItem>
-                  </SelectContent>
-                </Select>
-                
-                <Select value={growthRateFilter} onValueChange={setGrowthRateFilter}>
-                  <SelectTrigger className="w-40">
-                    <SelectValue placeholder="Crecimiento" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos los ritmos</SelectItem>
-                    <SelectItem value="Lento">Lento</SelectItem>
-                    <SelectItem value="Medio">Medio</SelectItem>
-                    <SelectItem value="Rápido">Rápido</SelectItem>
-                  </SelectContent>
-                </Select>
-                
-                <div className="flex border border-gray-300 rounded-md">
-                  <Button
-                    variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('grid')}
-                    className="rounded-r-none"
-                  >
-                    <Grid className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant={viewMode === 'list' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('list')}
-                    className="rounded-l-none"
-                  >
-                    <List className="h-4 w-4" />
-                  </Button>
+                <div className="flex gap-3">
+                  <Select value={parkFilter} onValueChange={setParkFilter}>
+                    <SelectTrigger className="w-48">
+                      <SelectValue placeholder="Parque" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos los parques</SelectItem>
+                      {parks.map((park: any) => (
+                        <SelectItem key={park.id} value={park.id.toString()}>
+                          {park.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  
+                  <Select value={originFilter} onValueChange={setOriginFilter}>
+                    <SelectTrigger className="w-40">
+                      <SelectValue placeholder="Origen" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos los orígenes</SelectItem>
+                      <SelectItem value="Nativo">Nativo</SelectItem>
+                      <SelectItem value="Introducido">Introducido</SelectItem>
+                      <SelectItem value="Naturalizado">Naturalizado</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  <Select value={growthRateFilter} onValueChange={setGrowthRateFilter}>
+                    <SelectTrigger className="w-40">
+                      <SelectValue placeholder="Crecimiento" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos los ritmos</SelectItem>
+                      <SelectItem value="Lento">Lento</SelectItem>
+                      <SelectItem value="Medio">Medio</SelectItem>
+                      <SelectItem value="Rápido">Rápido</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  <div className="flex border border-gray-300 rounded-md">
+                    <Button
+                      variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                      size="sm"
+                      onClick={() => setViewMode('grid')}
+                      className="rounded-r-none"
+                    >
+                      <Grid className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant={viewMode === 'list' ? 'default' : 'ghost'}
+                      size="sm"
+                      onClick={() => setViewMode('list')}
+                      className="rounded-l-none"
+                    >
+                      <List className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
+        </section>
 
+        <div className="max-w-6xl mx-auto px-4">
           {/* Resultados - Grid expandido sin sidebar */}
           {filteredSpecies.length > 0 ? (
             <>
