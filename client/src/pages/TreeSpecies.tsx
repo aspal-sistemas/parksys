@@ -427,7 +427,7 @@ export default function TreeSpecies() {
         </div>
         
         {/* Sección de Filtros */}
-        <section className="sticky top-0 z-10 border-b border-gray-200 shadow-sm" style={{backgroundColor: '#19633c'}}>
+        <section className="sticky top-0 z-10 border-b border-gray-200 shadow-sm mb-6" style={{backgroundColor: '#19633c'}}>
           <div className="max-w-6xl mx-auto px-4 py-8">
             <div className="rounded-lg shadow-sm p-6" style={{backgroundColor: '#19633c'}}>
               <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
@@ -506,7 +506,7 @@ export default function TreeSpecies() {
           </div>
         </section>
 
-        <div className="max-w-6xl mx-auto px-4">
+        <div className="max-w-6xl mx-auto px-4 pt-8">
           {/* Resultados - Grid expandido sin sidebar */}
           {filteredSpecies.length > 0 ? (
             <>
