@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, MapPin, Clock, Users, Tag, BookOpen, User, X, Filter, Activity, Trees } from 'lucide-react';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, MapPin, Clock, Users, Tag, BookOpen, User, X, Filter, Activity, Trees, Phone, Mail } from 'lucide-react';
 import PublicLayout from '@/components/PublicLayout';
 import heroImage from "@assets/jardin-japones_1754934376660.jpg";
 
@@ -172,8 +172,8 @@ const CalendarPage: React.FC = () => {
   return (
     <PublicLayout>
       <div className="bg-gray-50">
-        {/* Hero Section con imagen de fondo */}
-        <div 
+        {/* === HERO SECTION === */}
+        <section 
           className="relative text-white"
           style={{
             backgroundImage: `url(${heroImage})`,
@@ -213,83 +213,83 @@ const CalendarPage: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* Sección de filtros */}
-        <div className="py-12 bg-gray-50">
+        {/* === SECCIÓN DEL PANEL DE FILTROS === */}
+        <section className="py-12 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            {/* Panel de filtros */}
-            <div className="mb-8">
-              <div className="rounded-2xl shadow-sm border p-6 bg-white">
-                {/* Filtros organizados en grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                    <SelectTrigger className="border-gray-200 focus:border-primary focus:ring-primary">
-                      <SelectValue placeholder="Categoría" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todas las categorías</SelectItem>
-                      {categories.map((category) => (
-                        <SelectItem key={category} value={category}>{category}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+            <div className="rounded-2xl shadow-sm border p-6 bg-white">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                  <SelectTrigger className="border-gray-200 focus:border-primary focus:ring-primary">
+                    <SelectValue placeholder="Categoría" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas las categorías</SelectItem>
+                    {categories.map((category) => (
+                      <SelectItem key={category} value={category}>{category}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
-                  <Select value={parkFilter} onValueChange={setParkFilter}>
-                    <SelectTrigger className="border-gray-200 focus:border-primary focus:ring-primary">
-                      <SelectValue placeholder="Parque" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todos los parques</SelectItem>
-                      {parks.map((park) => (
-                        <SelectItem key={park} value={park}>{park}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                <Select value={parkFilter} onValueChange={setParkFilter}>
+                  <SelectTrigger className="border-gray-200 focus:border-primary focus:ring-primary">
+                    <SelectValue placeholder="Parque" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los parques</SelectItem>
+                    {parks.map((park) => (
+                      <SelectItem key={park} value={park}>{park}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
-                  <Select value={instructorFilter} onValueChange={setInstructorFilter}>
-                    <SelectTrigger className="border-gray-200 focus:border-primary focus:ring-primary">
-                      <SelectValue placeholder="Instructor" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todos los instructores</SelectItem>
-                      {instructors.map((instructor) => (
-                        <SelectItem key={instructor.id} value={instructor.id.toString()}>{instructor.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                <Select value={instructorFilter} onValueChange={setInstructorFilter}>
+                  <SelectTrigger className="border-gray-200 focus:border-primary focus:ring-primary">
+                    <SelectValue placeholder="Instructor" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los instructores</SelectItem>
+                    {instructors.map((instructor) => (
+                      <SelectItem key={instructor.id} value={instructor.id.toString()}>{instructor.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
-                  <Select value={priceFilter} onValueChange={setPriceFilter}>
-                    <SelectTrigger className="border-gray-200 focus:border-primary focus:ring-primary">
-                      <SelectValue placeholder="Precio" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todos los precios</SelectItem>
-                      <SelectItem value="free">Gratuitas</SelectItem>
-                      <SelectItem value="paid">De pago</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <Select value={priceFilter} onValueChange={setPriceFilter}>
+                  <SelectTrigger className="border-gray-200 focus:border-primary focus:ring-primary">
+                    <SelectValue placeholder="Precio" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los precios</SelectItem>
+                    <SelectItem value="free">Gratuitas</SelectItem>
+                    <SelectItem value="paid">De pago</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="mt-4 flex items-center justify-between">
+                <div className="text-sm text-gray-600">
+                  Mostrando {filteredActivities.length} de {totalActivities} actividades
                 </div>
-
-                <div className="mt-4 flex items-center justify-between">
-                  <div className="text-sm text-gray-600">
-                    Mostrando {filteredActivities.length} de {totalActivities} actividades
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={resetFilters}
-                    className="hover:bg-gray-50"
-                  >
-                    <X className="w-4 h-4 mr-2" />
-                    Limpiar filtros
-                  </Button>
-                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={resetFilters}
+                  className="hover:bg-gray-50"
+                >
+                  <X className="w-4 h-4 mr-2" />
+                  Limpiar filtros
+                </Button>
               </div>
             </div>
+          </div>
+        </section>
 
-            {/* Navegación del calendario */}
-            <div className="flex items-center justify-between mb-8">
+        {/* === SECCIÓN DE NAVEGACIÓN DEL CALENDARIO === */}
+        <section className="py-8 bg-white border-t">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between">
               <Button
                 variant="outline"
                 onClick={goToPrevMonth}
@@ -313,10 +313,10 @@ const CalendarPage: React.FC = () => {
               </Button>
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* Calendario */}
-        <div className="py-12 bg-white">
+        {/* === SECCIÓN CALENDARIO PRINCIPAL === */}
+        <section className="py-12 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {/* Encabezados de días */}
             <div className="grid grid-cols-7 gap-2 mb-4">
@@ -372,7 +372,53 @@ const CalendarPage: React.FC = () => {
               })}
             </div>
           </div>
-        </div>
+        </section>
+
+        {/* === SECCIÓN ¿NECESITAS MÁS INFORMACIÓN? === */}
+        <section className="bg-gray-50 py-12">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">¿Necesitas más información?</h2>
+              <p className="text-lg text-gray-600">Nuestro equipo está aquí para ayudarte</p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{backgroundColor: '#51a19f'}}>
+                  <Phone className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Teléfono</h3>
+                <p className="text-gray-600 mb-2">(33) 1234-5678</p>
+                <p className="text-sm text-gray-500">Lun-Vie 8:00-16:00</p>
+              </div>
+              
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{backgroundColor: '#51a19f'}}>
+                  <Mail className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Correo</h3>
+                <p className="text-gray-600 mb-2">actividades@parques.gdl.gob.mx</p>
+                <p className="text-sm text-gray-500">Respuesta en 24 horas</p>
+              </div>
+              
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{backgroundColor: '#51a19f'}}>
+                  <MapPin className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Ubicación</h3>
+                <p className="text-gray-600 mb-2">Av. Hidalgo 400, Centro</p>
+                <p className="text-sm text-gray-500">Guadalajara, Jalisco</p>
+              </div>
+            </div>
+            
+            <div className="text-center">
+              <Button size="lg" className="bg-green-600 hover:bg-green-700 px-8 py-3">
+                <Mail className="h-5 w-5 mr-2" />
+                Enviar mensaje
+              </Button>
+            </div>
+          </div>
+        </section>
 
         {/* Dialog de detalles de actividad */}
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -468,7 +514,7 @@ const CalendarPage: React.FC = () => {
                         </div>
                       )}
 
-                      {selectedActivity.targetMarket?.length > 0 && (
+                      {selectedActivity.targetMarket && selectedActivity.targetMarket.length > 0 && (
                         <div>
                           <h4 className="font-semibold text-gray-900 mb-1">Público Objetivo</h4>
                           <p className="text-sm text-gray-600">
@@ -477,7 +523,7 @@ const CalendarPage: React.FC = () => {
                         </div>
                       )}
 
-                      {selectedActivity.specialNeeds?.length > 0 && (
+                      {selectedActivity.specialNeeds && selectedActivity.specialNeeds.length > 0 && (
                         <div>
                           <h4 className="font-semibold text-gray-900 mb-1">Requerimientos Especiales</h4>
                           <div className="space-y-1">
