@@ -219,7 +219,7 @@ const CalendarPage: React.FC = () => {
         <section className="py-6" style={{backgroundColor: '#19633c'}}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="rounded-2xl shadow-sm p-6" style={{backgroundColor: '#19633c'}}>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                   <SelectTrigger className="border-gray-200 focus:border-primary focus:ring-primary">
                     <SelectValue placeholder="Categoría" />
@@ -240,18 +240,6 @@ const CalendarPage: React.FC = () => {
                     <SelectItem value="all">Todos los parques</SelectItem>
                     {parks.map((park) => (
                       <SelectItem key={park} value={park}>{park}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <Select value={instructorFilter} onValueChange={setInstructorFilter}>
-                  <SelectTrigger className="border-gray-200 focus:border-primary focus:ring-primary">
-                    <SelectValue placeholder="Instructor" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos los instructores</SelectItem>
-                    {instructors.map((instructor) => (
-                      <SelectItem key={instructor.id} value={instructor.id.toString()}>{instructor.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
