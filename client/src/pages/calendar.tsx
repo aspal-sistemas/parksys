@@ -216,7 +216,7 @@ const CalendarPage: React.FC = () => {
         </section>
 
         {/* === SECCIÓN DEL PANEL DE FILTROS === */}
-        <section className="py-12 bg-gray-50">
+        <section className="py-12" style={{backgroundColor: '#19633c'}}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="rounded-2xl shadow-sm border p-6 bg-white">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
