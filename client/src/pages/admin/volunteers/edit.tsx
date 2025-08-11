@@ -205,11 +205,20 @@ export default function EditVolunteerPage() {
         setUploadedImageUrl(imageUrl);
       }
       
-      // Separar el nombre completo en firstName y lastName
-      const fullName = volunteerData.full_name || '';
-      const nameParts = fullName.split(' ');
-      const firstName = nameParts[0] || '';
-      const lastName = nameParts.slice(1).join(' ') || '';
+      // Obtener firstName y lastName - usar los campos separados si están disponibles, 
+      // sino separar el nombre completo
+      let firstName = volunteerData.firstName || '';
+      let lastName = volunteerData.lastName || '';
+      
+      // Si no tenemos firstName y lastName separados, usar full_name
+      if (!firstName && !lastName && volunteerData.full_name) {
+        const fullName = volunteerData.full_name;
+        const nameParts = fullName.split(' ');
+        firstName = nameParts[0] || '';
+        lastName = nameParts.slice(1).join(' ') || '';
+      }
+      
+      console.log('Nombres procesados:', { firstName, lastName, full_name: volunteerData.full_name });
       
       // Parsear áreas de interés si están en JSON
       let interestAreas = [];
