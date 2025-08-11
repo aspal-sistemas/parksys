@@ -711,15 +711,7 @@ function ActivitiesPage() {
         />
       </section>
 
-      {/* AdSpace específico para Yoga */}
-      <section className="max-w-7xl mx-auto px-4 py-6">
-        <AdSpace 
-          spaceId="23" 
-          position="banner" 
-          pageType="activities" 
-          className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4"
-        />
-      </section>
+
 
       {/* Sección de Contacto */}
       <section className="bg-gray-50 py-12">

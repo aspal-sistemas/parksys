@@ -142,7 +142,7 @@ const Parks: React.FC = () => {
                 Nuestros Parques y Bosques
               </div>
             </h1>
-            <p className="text-xl md:text-2xl text-green-100 max-w-3xl mx-auto">
+            <p className="text-xl text-green-100 max-w-2xl mx-auto">
               Descubre espacios verdes únicos en la Zona Metropolitana de Guadalajara para toda la familia
             </p>
             <div className="mt-8 flex justify-center items-center space-x-8 text-green-100">
