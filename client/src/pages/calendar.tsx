@@ -215,8 +215,8 @@ const CalendarPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Sección de filtros con fondo verde */}
-        <div className="py-12" style={{backgroundColor: '#19633c'}}>
+        {/* Sección de filtros */}
+        <div className="py-12 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {/* Panel de filtros */}
             <div className="mb-8">
@@ -293,20 +293,20 @@ const CalendarPage: React.FC = () => {
               <Button
                 variant="outline"
                 onClick={goToPrevMonth}
-                className="flex items-center gap-2 bg-white border-white hover:bg-gray-50"
+                className="flex items-center gap-2"
               >
                 <ChevronLeft className="w-4 h-4" />
                 Anterior
               </Button>
               
-              <h2 className="text-2xl font-bold text-white capitalize">
+              <h2 className="text-2xl font-bold text-gray-900 capitalize">
                 {format(currentMonth, 'MMMM yyyy', { locale: es })}
               </h2>
               
               <Button
                 variant="outline"
                 onClick={goToNextMonth}
-                className="flex items-center gap-2 bg-white border-white hover:bg-gray-50"
+                className="flex items-center gap-2"
               >
                 Siguiente
                 <ChevronRight className="w-4 h-4" />
