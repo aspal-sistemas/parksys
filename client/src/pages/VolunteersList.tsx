@@ -314,7 +314,7 @@ export default function VolunteersList() {
           <div className="rounded-lg p-6">
             {/* Título del panel */}
             <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-              Contacta con los voluntarios registrados
+              Conoce a los voluntarios registrados
             </h3>
             <div className="flex flex-col lg:flex-row gap-4 items-center justify-between mb-4">
               <div className="flex flex-col sm:flex-row gap-4 flex-1">
