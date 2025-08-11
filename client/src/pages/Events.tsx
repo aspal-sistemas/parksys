@@ -218,7 +218,6 @@ const Events: React.FC = () => {
                     <SelectValue placeholder="Estado" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todos los estados</SelectItem>
                     <SelectItem value="draft">Borrador</SelectItem>
                     <SelectItem value="published">Publicado</SelectItem>
                     <SelectItem value="cancelled">Cancelado</SelectItem>
