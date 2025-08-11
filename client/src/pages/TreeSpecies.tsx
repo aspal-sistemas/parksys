@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Separator } from '@/components/ui/separator';
 import { 
   Trees, 
   Search, 
@@ -388,18 +389,39 @@ export default function TreeSpecies() {
           <div className="absolute inset-0 bg-black bg-opacity-40"></div>
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center text-white">
-              <h1 className="mb-4">
+              <div className="text-center mb-6">
                 <div className="flex items-center justify-center gap-3 mb-2">
-                  <Leaf className="h-8 w-8 md:h-12 md:w-12 text-white" />
-                  <span className="font-guttery text-3xl md:text-5xl font-thin">Descubre</span>
+                  <Leaf className="h-8 w-8 md:h-10 md:w-10 text-white" />
+                  <h1 className="font-guttery text-3xl md:text-4xl font-thin">Descubre</h1>
                 </div>
-                <div className="text-4xl md:text-6xl font-bold">
+                <h2 className="text-4xl md:text-5xl font-bold">
                   Especies Arbóreas
-                </div>
-              </h1>
-              <p className="text-lg md:text-xl max-w-2xl mx-auto px-4">
+                </h2>
+              </div>
+              <p className="text-lg md:text-xl text-green-100 mb-8 max-w-2xl mx-auto px-4">
                 La diversidad de árboles en nuestros parques urbanos de Guadalajara
               </p>
+              <div className="flex items-center justify-center gap-4 text-green-100 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <TreePine className="h-5 w-5" />
+                  <span>{Array.isArray(treeSpecies) ? treeSpecies.length : 0} especies</span>
+                </div>
+                <Separator orientation="vertical" className="h-6 bg-green-300" />
+                <div className="flex items-center gap-2">
+                  <Globe className="h-5 w-5" />
+                  <span>{Array.isArray(treeSpecies) ? treeSpecies.filter(s => s.origin === 'Nativo').length : 0} nativas</span>
+                </div>
+                <Separator orientation="vertical" className="h-6 bg-green-300" />
+                <div className="flex items-center gap-2">
+                  <Award className="h-5 w-5" />
+                  <span>{Array.isArray(treeSpecies) ? treeSpecies.filter(s => s.isEndangered).length : 0} en peligro</span>
+                </div>
+                <Separator orientation="vertical" className="h-6 bg-green-300" />
+                <div className="flex items-center gap-2">
+                  <Filter className="h-5 w-5" />
+                  <span>{filteredSpecies.length} filtradas</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -413,54 +435,7 @@ export default function TreeSpecies() {
         </div>
 
         <div className="max-w-6xl mx-auto px-4">
-          {/* Estadísticas */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-2xl font-bold text-green-600">
-                  {Array.isArray(treeSpecies) ? treeSpecies.length : 0}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-600">Especies registradas</p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-2xl font-bold text-blue-600">
-                  {Array.isArray(treeSpecies) ? treeSpecies.filter(s => s.origin === 'Nativo').length : 0}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-600">Especies nativas</p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-2xl font-bold text-red-600">
-                  {Array.isArray(treeSpecies) ? treeSpecies.filter(s => s.isEndangered).length : 0}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-600">En peligro</p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-2xl font-bold text-purple-600">
-                  {filteredSpecies.length}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-600">Resultados filtrados</p>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Filtros - Después de estadísticas */}
+          {/* Filtros */}
           <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
             <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
               <div className="flex-1 max-w-md">
