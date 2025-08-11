@@ -11,7 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, MapPin, Clock, Users, Tag, BookOpen, User, X, Filter, Activity, Trees } from 'lucide-react';
 import PublicLayout from '@/components/PublicLayout';
-const heroImage = "/images/people-calendar.jpg";
+import heroImage from "@assets/jardin-japones_1754934376660.jpg";
 
 // Tipo para las actividades
 interface Activity {
