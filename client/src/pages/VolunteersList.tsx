@@ -183,7 +183,56 @@ export default function VolunteersList() {
         </div>
       </div>
 
-      {/* 2. Galería de Voluntarios en Acción */}
+      {/* 2. Estadísticas de Impacto */}
+      <section className="py-16 bg-gradient-to-br from-[#51a19f] to-[#00a587]">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <div className="mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+              Nuestro Impacto
+            </h2>
+            <p className="text-xl text-green-100 mb-8 max-w-3xl mx-auto">
+              Conoce los números que demuestran el compromiso de nuestros voluntarios con los parques de Guadalajara
+            </p>
+          </div>
+
+          {/* Estadísticas grandes */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+            <div className="text-center">
+              <div className="bg-white/20 backdrop-blur-sm w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Users className="h-10 w-10 text-white" />
+              </div>
+              <div className="text-4xl md:text-5xl font-bold text-white mb-2">{filteredVolunteers.length}+</div>
+              <div className="text-lg text-green-100 font-medium">Voluntarios Activos</div>
+            </div>
+            
+            <div className="text-center">
+              <div className="bg-white/20 backdrop-blur-sm w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <MapPin className="h-10 w-10 text-white" />
+              </div>
+              <div className="text-4xl md:text-5xl font-bold text-white mb-2">{parks.length}</div>
+              <div className="text-lg text-green-100 font-medium">Parques Atendidos</div>
+            </div>
+            
+            <div className="text-center">
+              <div className="bg-white/20 backdrop-blur-sm w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Award className="h-10 w-10 text-white" />
+              </div>
+              <div className="text-4xl md:text-5xl font-bold text-white mb-2">150+</div>
+              <div className="text-lg text-green-100 font-medium">Horas Mensuales</div>
+            </div>
+            
+            <div className="text-center">
+              <div className="bg-white/20 backdrop-blur-sm w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Heart className="h-10 w-10 text-white" />
+              </div>
+              <div className="text-4xl md:text-5xl font-bold text-white mb-2">25+</div>
+              <div className="text-lg text-green-100 font-medium">Proyectos Completados</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 3. Galería de Voluntarios en Acción */}
       <section className="py-16 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
@@ -242,7 +291,7 @@ export default function VolunteersList() {
         </div>
       </section>
 
-      {/* 3. Sección Motivacional con Estadísticas y CTA */}
+      {/* 4. Sección Motivacional con CTA */}
       <section className="py-20 bg-gradient-to-br from-[#51a19f] to-[#00a587]">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <div className="mb-12">
