@@ -553,7 +553,7 @@ function ActivitiesPage() {
         <div className="relative max-w-4xl mx-auto">
           <div className="text-center mb-6">
             <div className="flex items-center justify-center gap-3 mb-2">
-              <Activity className="h-12 w-12" />
+              <Activity className="h-10 w-10" />
               <h1 className="font-guttery text-4xl md:text-5xl font-normal">
                 Descubre
               </h1>
