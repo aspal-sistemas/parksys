@@ -426,14 +426,6 @@ export default function TreeSpecies() {
           </div>
         </div>
         
-        {/* Espacio entre hero y banner */}
-        <div className="py-6"></div>
-
-        {/* Banner Publicitario de Ancho Completo */}
-        <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] mb-8">
-          <AdSpace spaceId="36" position="banner" pageType="tree-species" />
-        </div>
-
         <div className="max-w-6xl mx-auto px-4">
           {/* Filtros */}
           <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
@@ -588,6 +580,11 @@ export default function TreeSpecies() {
               </p>
             </div>
           )}
+          
+          {/* Banner Publicitario */}
+          <div className="mt-12 mb-8">
+            <AdSpace spaceId="36" position="banner" pageType="tree-species" />
+          </div>
         </div>
       </div>
     </PublicLayout>
