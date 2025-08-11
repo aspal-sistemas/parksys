@@ -364,7 +364,7 @@ export default function VolunteersList() {
               </div>
             </div>
             
-            <p className="text-sm text-green-100">
+            <p className="text-sm text-black">
               Mostrando {Math.min(cardsToShow, filteredVolunteers.length)} de {filteredVolunteers.length} voluntarios
             </p>
           </div>
