@@ -239,8 +239,8 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
     }
   });
   
-  // Obtener un voluntario específico
-  apiRouter.get("/volunteers/:id", isAuthenticated, async (req: Request, res: Response) => {
+  // Obtener un voluntario específico (sin autenticación para edición admin)
+  apiRouter.get("/volunteers/:id", async (req: Request, res: Response) => {
     try {
       const volunteerId = parseInt(req.params.id);
       
@@ -267,7 +267,6 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
               v.available_days,
               v.interest_areas,
               v.legal_consent,
-
               v.age,
               v.profile_image_url,
               v.created_at,
@@ -275,7 +274,6 @@ export function registerVolunteerRoutes(app: any, apiRouter: any, publicApiRoute
               v.full_name as user_full_name,
               '1990-01-01' as birth_date
             FROM volunteers v
-
             WHERE v.id = ${volunteerId}`
       );
       

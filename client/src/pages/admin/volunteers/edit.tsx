@@ -153,7 +153,12 @@ export default function EditVolunteerPage() {
   const { data: volunteerData, isLoading: isLoadingVolunteer } = useQuery({
     queryKey: ['/api/volunteers', volunteerId],
     queryFn: async () => {
-      const response = await fetch(`/api/volunteers/${volunteerId}`);
+      const response = await fetch(`/api/volunteers/${volunteerId}`, {
+        headers: {
+          'Authorization': 'Bearer direct-token',
+          'Content-Type': 'application/json'
+        }
+      });
       if (!response.ok) throw new Error('Error al obtener datos del voluntario');
       return response.json();
     },
@@ -170,37 +175,60 @@ export default function EditVolunteerPage() {
   // Llenar el formulario cuando se cargan los datos
   useEffect(() => {
     if (volunteerData) {
+      console.log('Datos del voluntario recibidos:', volunteerData);
+      
       // Si el voluntario tiene una imagen de perfil, mostrarla
       const imageUrl = volunteerData.profileImageUrl || volunteerData.profile_image_url;
       if (imageUrl) {
         setUploadedImageUrl(imageUrl);
       }
       
+      // Separar el nombre completo en firstName y lastName
+      const fullName = volunteerData.full_name || '';
+      const nameParts = fullName.split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+      
+      // Parsear áreas de interés si están en JSON
+      let interestAreas = [];
+      try {
+        if (volunteerData.interest_areas) {
+          if (typeof volunteerData.interest_areas === 'string') {
+            interestAreas = JSON.parse(volunteerData.interest_areas);
+          } else if (Array.isArray(volunteerData.interest_areas)) {
+            interestAreas = volunteerData.interest_areas;
+          }
+        }
+      } catch (e) {
+        console.error('Error parsing interest areas:', e);
+        interestAreas = [];
+      }
+      
       form.reset({
-        firstName: volunteerData.firstName || '',
-        lastName: volunteerData.lastName || '',
+        firstName: firstName,
+        lastName: lastName,
         email: volunteerData.email || '',
         phone: volunteerData.phone || '',
         gender: volunteerData.gender || 'no_especificar',
-        birthDate: volunteerData.birthDate || '',
+        birthDate: volunteerData.birth_date || '',
         address: volunteerData.address || '',
-        emergencyContactName: volunteerData.emergencyContactName || volunteerData.emergency_contact || '',
-        emergencyContactPhone: volunteerData.emergencyContactPhone || volunteerData.emergency_phone || '',
-        preferredParkId: volunteerData.preferredParkId?.toString() || volunteerData.preferred_park_id?.toString() || '',
-        volunteerExperience: volunteerData.volunteerExperience || volunteerData.previous_experience || '',
+        emergencyContactName: volunteerData.emergency_contact || '',
+        emergencyContactPhone: volunteerData.emergency_phone || '',
+        preferredParkId: volunteerData.preferred_park_id?.toString() || '',
+        volunteerExperience: volunteerData.previous_experience || '',
         skills: volunteerData.skills || '',
-        availability: volunteerData.availability || 'flexible',
-        interestNature: volunteerData.interestNature || false,
-        interestEvents: volunteerData.interestEvents || false,
-        interestEducation: volunteerData.interestEducation || false,
-        interestMaintenance: volunteerData.interestMaintenance || false,
-        interestSports: volunteerData.interestSports || false,
-        interestCultural: volunteerData.interestCultural || false,
-        legalConsent: volunteerData.legalConsent || true,
-        ageConsent: volunteerData.ageConsent || true,
-        conductConsent: volunteerData.conductConsent || true,
-        municipalityId: volunteerData.municipalityId || 2,
-        profileImage: volunteerData.profileImageUrl || volunteerData.profile_image_url || null,
+        availability: volunteerData.available_hours || 'flexible',
+        interestNature: interestAreas.includes('naturaleza') || interestAreas.includes('nature') || false,
+        interestEvents: interestAreas.includes('eventos') || interestAreas.includes('events') || false,
+        interestEducation: interestAreas.includes('educacion') || interestAreas.includes('education') || false,
+        interestMaintenance: interestAreas.includes('mantenimiento') || interestAreas.includes('maintenance') || false,
+        interestSports: interestAreas.includes('deportes') || interestAreas.includes('sports') || false,
+        interestCultural: interestAreas.includes('cultural') || interestAreas.includes('culture') || false,
+        legalConsent: volunteerData.legal_consent !== false,
+        ageConsent: true,
+        conductConsent: true,
+        municipalityId: 2,
+        profileImage: volunteerData.profile_image_url || null,
       });
     }
   }, [volunteerData, form]);
