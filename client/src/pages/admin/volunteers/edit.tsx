@@ -219,6 +219,15 @@ export default function EditVolunteerPage() {
       }
       
       console.log('Nombres procesados:', { firstName, lastName, full_name: volunteerData.full_name });
+      console.log('PreferredParkId actual:', volunteerData.preferredParkId, 'tipo:', typeof volunteerData.preferredParkId);
+      console.log('Áreas de interés del voluntario:', {
+        interestNature: volunteerData.interestNature,
+        interestEvents: volunteerData.interestEvents,
+        interestEducation: volunteerData.interestEducation,
+        interestMaintenance: volunteerData.interestMaintenance,
+        interestSports: volunteerData.interestSports,
+        interestCultural: volunteerData.interestCultural
+      });
       
       // Parsear áreas de interés si están en JSON
       let interestAreas = [];
@@ -245,16 +254,16 @@ export default function EditVolunteerPage() {
         address: volunteerData.address || '',
         emergencyContactName: volunteerData.emergencyContactName || volunteerData.emergency_contact || '',
         emergencyContactPhone: volunteerData.emergencyContactPhone || volunteerData.emergency_phone || '',
-        preferredParkId: volunteerData.preferred_park_id?.toString() || '',
+        preferredParkId: volunteerData.preferredParkId || volunteerData.preferred_park_id?.toString() || '',
         volunteerExperience: volunteerData.volunteerExperience || volunteerData.previous_experience || '',
         skills: volunteerData.skills || '',
         availability: volunteerData.available_hours || 'flexible',
-        interestNature: interestAreas.includes('naturaleza') || interestAreas.includes('nature') || false,
-        interestEvents: interestAreas.includes('eventos') || interestAreas.includes('events') || false,
-        interestEducation: interestAreas.includes('educacion') || interestAreas.includes('education') || false,
-        interestMaintenance: interestAreas.includes('mantenimiento') || interestAreas.includes('maintenance') || false,
-        interestSports: interestAreas.includes('deportes') || interestAreas.includes('sports') || false,
-        interestCultural: interestAreas.includes('cultural') || interestAreas.includes('culture') || false,
+        interestNature: volunteerData.interestNature || interestAreas.includes('naturaleza') || interestAreas.includes('nature') || false,
+        interestEvents: volunteerData.interestEvents || interestAreas.includes('eventos') || interestAreas.includes('events') || false,
+        interestEducation: volunteerData.interestEducation || interestAreas.includes('educacion') || interestAreas.includes('education') || false,
+        interestMaintenance: volunteerData.interestMaintenance || interestAreas.includes('mantenimiento') || interestAreas.includes('maintenance') || false,
+        interestSports: volunteerData.interestSports || interestAreas.includes('deportes') || interestAreas.includes('sports') || false,
+        interestCultural: volunteerData.interestCultural || interestAreas.includes('cultural') || interestAreas.includes('culture') || false,
         legalConsent: volunteerData.legal_consent !== false,
         ageConsent: true,
         conductConsent: true,
@@ -595,7 +604,7 @@ export default function EditVolunteerPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Parque Preferido</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value || "none"}>
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder={
