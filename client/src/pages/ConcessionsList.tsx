@@ -41,7 +41,7 @@ interface Concession {
 export default function ConcessionsList() {
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("all");
+
   const [parkFilter, setParkFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
@@ -64,10 +64,9 @@ export default function ConcessionsList() {
                          (concession.specific_location || "").toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesType = typeFilter === "all" || (concession.concessionTypeName || "").includes(typeFilter);
-    const matchesStatus = statusFilter === "all" || concession.status === statusFilter;
     const matchesPark = parkFilter === "all" || concession.park_id?.toString() === parkFilter;
     
-    return matchesSearch && matchesType && matchesStatus && matchesPark;
+    return matchesSearch && matchesType && matchesPark;
   });
 
   // Paginación
@@ -79,7 +78,6 @@ export default function ConcessionsList() {
   const resetFilters = () => {
     setSearchTerm("");
     setTypeFilter("all");
-    setStatusFilter("all");
     setParkFilter("all");
     setCurrentPage(1);
   };
@@ -130,7 +128,7 @@ export default function ConcessionsList() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              Concesiones y Servicios
+              Servicios Comerciales
             </h1>
             <p className="text-xl md:text-2xl text-green-100 max-w-3xl mx-auto">
               Descubre todos los servicios comerciales disponibles en nuestros parques urbanos
@@ -142,7 +140,7 @@ export default function ConcessionsList() {
       {/* Filtros - Movidos pegados al hero */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Búsqueda */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -165,19 +163,6 @@ export default function ConcessionsList() {
                 <SelectItem value="Renta de bicicletas">Renta de bicicletas</SelectItem>
                 <SelectItem value="Kiosco de información">Kiosco de información</SelectItem>
                 <SelectItem value="Comercial">Comercial</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {/* Filtro por estado */}
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="Estado" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los estados</SelectItem>
-                <SelectItem value="active">Activa</SelectItem>
-                <SelectItem value="expiring">Por vencer</SelectItem>
-                <SelectItem value="expired">Vencida</SelectItem>
               </SelectContent>
             </Select>
 
