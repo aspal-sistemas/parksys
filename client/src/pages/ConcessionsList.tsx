@@ -218,11 +218,6 @@ export default function ConcessionsList() {
 
       {/* Resultados */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">
-            Concesiones
-          </h2>
-        </div>
 
         {/* Lista de concesiones - Diseño horizontal */}
         <div className="space-y-4 mb-8">
