@@ -44,7 +44,7 @@ export default function ConcessionsList() {
 
   const [parkFilter, setParkFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 12;
+  const itemsPerPage = 9;
 
   const { data: concessionsResponse, isLoading } = useQuery({
     queryKey: ['/api/active-concessions'],
