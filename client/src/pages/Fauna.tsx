@@ -320,13 +320,37 @@ export default function Fauna() {
           />
           <div className="absolute inset-0 bg-black bg-opacity-40"></div>
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center text-white">
-              <h1 className="text-4xl md:text-6xl font-bold mb-4">
-                Fauna Urbana
-              </h1>
-              <p className="text-lg md:text-xl max-w-2xl mx-auto px-4">
+            <div className="text-center text-white max-w-4xl mx-auto px-4">
+              <div className="text-center mb-6">
+                <div className="flex items-center justify-center gap-3 mb-2">
+                  <Bird className="h-10 w-10" />
+                  <h1 className="font-guttery text-4xl md:text-5xl font-normal">
+                    Descubre
+                  </h1>
+                </div>
+                <h2 className="text-4xl md:text-5xl font-bold">
+                  Fauna Urbana
+                </h2>
+              </div>
+              <p className="text-xl text-green-100 mb-8 max-w-2xl mx-auto">
                 Descubre la diversidad de vida silvestre que habita en nuestros parques urbanos de Guadalajara
               </p>
+              <div className="flex items-center justify-center gap-4 text-green-100 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <Globe className="h-5 w-5" />
+                  <span>{pagination.total} especies</span>
+                </div>
+                <div className="hidden sm:block w-px h-6 bg-green-300"></div>
+                <div className="flex items-center gap-2">
+                  <Shield className="h-5 w-5" />
+                  <span>{species.filter(s => s.conservationStatus === 'estable').length} estables</span>
+                </div>
+                <div className="hidden sm:block w-px h-6 bg-green-300"></div>
+                <div className="flex items-center gap-2">
+                  <Heart className="h-5 w-5" />
+                  <span>{species.filter(s => s.conservationStatus === 'vulnerable' || s.conservationStatus === 'en_peligro').length} vulnerables</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -340,52 +364,6 @@ export default function Fauna() {
         </div>
 
         <div className="max-w-7xl mx-auto px-4">
-          {/* Estadísticas */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-2xl font-bold text-blue-600">
-                  {pagination.total}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-600">Especies registradas</p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-2xl font-bold text-green-600">
-                  {species.filter(s => s.conservation_status === 'estable').length}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-600">Especies estables</p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-2xl font-bold text-orange-600">
-                  {species.filter(s => s.conservation_status === 'vulnerable' || s.conservation_status === 'en_peligro').length}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-600">Especies vulnerables</p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-2xl font-bold text-purple-600">
-                  {species.filter(s => s.isNocturnal).length}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-600">Especies nocturnas</p>
-              </CardContent>
-            </Card>
-          </div>
 
           {/* Filtros y búsqueda */}
           <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
