@@ -51,7 +51,6 @@ const CalendarPage: React.FC = () => {
   // Filtros
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [parkFilter, setParkFilter] = useState('all');
-  const [instructorFilter, setInstructorFilter] = useState('all');
   const [priceFilter, setPriceFilter] = useState('all');
   
   // Consultar actividades desde la API
@@ -59,23 +58,9 @@ const CalendarPage: React.FC = () => {
     queryKey: ['/api/activities'],
   });
   
-  // Extraer categorías, parques e instructores únicos para los filtros
+  // Extraer categorías y parques únicos para los filtros
   const categories = Array.from(new Set(activities.map(a => a.category || 'Sin categoría')));
   const parks = Array.from(new Set(activities.map(a => a.parkName || 'Sin parque')));
-  
-  // Extraer instructores únicos 
-  const uniqueInstructors = new Map();
-  activities
-    .filter(a => a.instructorId && a.instructorName)
-    .forEach(a => {
-      if (!uniqueInstructors.has(a.instructorId)) {
-        uniqueInstructors.set(a.instructorId, { 
-          id: a.instructorId, 
-          name: a.instructorName || `Instructor ${a.instructorId}`
-        });
-      }
-    });
-  const instructors = Array.from(uniqueInstructors.values());
   
   // Colores por categoría
   const getCategoryColor = (category: string) => {
@@ -98,7 +83,6 @@ const CalendarPage: React.FC = () => {
   const filteredActivities = activities.filter(activity => {
     if (categoryFilter !== 'all' && activity.category !== categoryFilter) return false;
     if (parkFilter !== 'all' && activity.parkName !== parkFilter) return false;
-    if (instructorFilter !== 'all' && activity.instructorId?.toString() !== instructorFilter) return false;
     if (priceFilter === 'free' && !activity.isFree) return false;
     if (priceFilter === 'paid' && activity.isFree) return false;
     return true;
@@ -143,7 +127,6 @@ const CalendarPage: React.FC = () => {
   const resetFilters = () => {
     setCategoryFilter('all');
     setParkFilter('all');
-    setInstructorFilter('all');
     setPriceFilter('all');
   };
 
