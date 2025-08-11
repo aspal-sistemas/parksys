@@ -348,11 +348,16 @@ function ReservationsPage() {
       >
         <div className="absolute inset-0 bg-black/40"></div>
         <div className="relative max-w-4xl mx-auto">
-          <div className="flex items-center justify-center gap-4 mb-6">
-            <Building className="h-12 w-12" />
-            <h1 className="text-4xl md:text-5xl font-bold">
-              Reserva de Espacios
-            </h1>
+          <div className="mb-6">
+            <div className="flex items-center justify-center gap-4 mb-2">
+              <Building className="h-12 w-12" />
+              <h1 className="text-4xl md:text-5xl font-light" style={{fontFamily: 'Guttery, sans-serif'}}>
+                Reserva
+              </h1>
+            </div>
+            <h2 className="text-2xl md:text-3xl font-bold">
+              Espacios para Eventos
+            </h2>
           </div>
           <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
             Reserva espacios únicos en los parques de Guadalajara para tus eventos, 
