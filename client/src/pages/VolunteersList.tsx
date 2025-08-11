@@ -288,10 +288,6 @@ export default function VolunteersList() {
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
               ¡Sé Parte del Cambio!
             </h2>
-            <p className="text-xl text-green-100 mb-8 max-w-3xl mx-auto">
-              Únete a nuestra comunidad de voluntarios y ayuda a transformar los parques de Guadalajara. 
-              Tu tiempo y dedicación marcan la diferencia en el cuidado de nuestros espacios verdes.
-            </p>
           </div>
 
           {/* Call to Action */}
