@@ -49,13 +49,13 @@ interface Event {
 
 const eventTypeLabels = {
   cultural: "Cultural",
-  deportivo: "Deportivo", 
-  educativo: "Educativo",
-  ambiental: "Ambiental",
-  recreativo: "Recreativo",
-  comunitario: "Comunitario",
-  artistico: "Artístico",
-  gastronomico: "Gastronómico"
+  sports: "Deportivo", 
+  educational: "Educativo",
+  environmental: "Ambiental",
+  recreational: "Recreativo",
+  community: "Comunitario",
+  artistic: "Artístico",
+  gastronomy: "Gastronómico"
 };
 
 const EventDetail = () => {
@@ -223,32 +223,13 @@ const EventDetail = () => {
                       <MapPin className="h-5 w-5 text-red-600" />
                       <div>
                         <p className="font-medium text-gray-900">Ubicación</p>
-                        <p className="text-gray-600">
-                          {event.parks && event.parks.length > 0 ? (
-                            <span>
-                              {event.parks[0].name}
-                              {event.location && ` - ${event.location}`}
-                            </span>
-                          ) : (
-                            event.location
-                          )}
-                        </p>
+                        <p className="text-gray-600">{event.location}</p>
                       </div>
                     </div>
-
-                    {event.targetAudience && (
-                      <div className="flex items-center gap-3">
-                        <Users className="h-5 w-5 text-purple-600" />
-                        <div>
-                          <p className="font-medium text-gray-900">Dirigido a</p>
-                          <p className="text-gray-600">{event.targetAudience}</p>
-                        </div>
-                      </div>
-                    )}
-
+                    
                     {event.capacity && (
                       <div className="flex items-center gap-3">
-                        <Users className="h-5 w-5 text-orange-600" />
+                        <Users className="h-5 w-5 text-purple-600" />
                         <div>
                           <p className="font-medium text-gray-900">Capacidad</p>
                           <p className="text-gray-600">{event.capacity} personas</p>
@@ -258,16 +239,13 @@ const EventDetail = () => {
                   </div>
                 </CardContent>
               </Card>
-            </div>
 
-            {/* Barra lateral */}
-            <div className="space-y-6">
               {/* Información del organizador */}
               <Card>
                 <CardContent className="p-6">
-                  <h3 className="text-lg font-bold text-gray-900 mb-4">Organizador</h3>
+                  <h2 className="text-xl font-bold text-gray-900 mb-4">Organizador</h2>
                   
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     <div className="flex items-center gap-3">
                       <User className="h-5 w-5 text-gray-600" />
                       <div>
@@ -275,19 +253,17 @@ const EventDetail = () => {
                       </div>
                     </div>
                     
-                    {event.organizerEmail && (
-                      <div className="flex items-center gap-3">
-                        <Mail className="h-5 w-5 text-gray-600" />
-                        <div>
-                          <a 
-                            href={`mailto:${event.organizerEmail}`}
-                            className="text-blue-600 hover:text-blue-800"
-                          >
-                            {event.organizerEmail}
-                          </a>
-                        </div>
+                    <div className="flex items-center gap-3">
+                      <Mail className="h-5 w-5 text-gray-600" />
+                      <div>
+                        <a 
+                          href={`mailto:${event.organizerEmail}`}
+                          className="text-blue-600 hover:text-blue-800 transition-colors"
+                        >
+                          {event.organizerEmail}
+                        </a>
                       </div>
-                    )}
+                    </div>
                     
                     {event.organizerPhone && (
                       <div className="flex items-center gap-3">
@@ -295,7 +271,7 @@ const EventDetail = () => {
                         <div>
                           <a 
                             href={`tel:${event.organizerPhone}`}
-                            className="text-blue-600 hover:text-blue-800"
+                            className="text-blue-600 hover:text-blue-800 transition-colors"
                           >
                             {event.organizerPhone}
                           </a>
@@ -303,52 +279,91 @@ const EventDetail = () => {
                       </div>
                     )}
                   </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Sidebar */}
+            <div className="space-y-6">
+              {/* Información rápida */}
+              <Card>
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-bold text-gray-900 mb-4">Información rápida</h3>
                   
-                  <Separator className="my-4" />
-                  
-                  <Button className="w-full" size="lg">
-                    Contactar organizador
-                  </Button>
+                  <div className="space-y-3 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Tipo:</span>
+                      <span className="font-medium">
+                        {eventTypeLabels[event.eventType as keyof typeof eventTypeLabels] || event.eventType}
+                      </span>
+                    </div>
+                    
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Audiencia:</span>
+                      <span className="font-medium">
+                        {event.targetAudience === 'all' ? 'Público general' : 
+                         event.targetAudience === 'adults' ? 'Adultos' :
+                         event.targetAudience === 'children' ? 'Niños' :
+                         event.targetAudience === 'seniors' ? 'Adultos mayores' :
+                         event.targetAudience}
+                      </span>
+                    </div>
+                    
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Registro:</span>
+                      <span className="font-medium">
+                        {event.registrationType === 'registration' ? 'Requerido' : 
+                         event.registrationType === 'free' ? 'Libre acceso' : 
+                         'No especificado'}
+                      </span>
+                    </div>
+                    
+                    {event.isRecurring && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Recurrente:</span>
+                        <span className="font-medium">Sí</span>
+                      </div>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
 
-              {/* Registro */}
-              {event.registrationType && event.registrationType !== 'none' && (
+              {/* Acción principal */}
+              {event.registrationType === 'registration' && event.status === 'published' && (
                 <Card>
-                  <CardContent className="p-6">
-                    <h3 className="text-lg font-bold text-gray-900 mb-4">Participación</h3>
-                    
-                    <p className="text-gray-600 mb-4">
-                      {event.registrationType === 'required' 
-                        ? 'Este evento requiere registro previo' 
-                        : 'Registro opcional para este evento'
-                      }
+                  <CardContent className="p-6 text-center">
+                    <h3 className="text-lg font-bold text-gray-900 mb-2">¿Te interesa?</h3>
+                    <p className="text-gray-600 mb-4 text-sm">
+                      Regístrate para participar en este evento.
                     </p>
-                    
-                    <Button className="w-full" size="lg" style={{backgroundColor: '#19633c'}}>
-                      Registrarse al evento
+                    <Button className="w-full" size="lg">
+                      Registrarse
                     </Button>
                   </CardContent>
                 </Card>
               )}
 
-              {/* Información adicional */}
+              {/* Contacto */}
               <Card>
                 <CardContent className="p-6">
-                  <h3 className="text-lg font-bold text-gray-900 mb-4">Información adicional</h3>
+                  <h3 className="text-lg font-bold text-gray-900 mb-4">Contacto</h3>
                   
-                  <div className="space-y-3 text-sm text-gray-600">
-                    {event.isRecurring && (
-                      <p>Este es un evento recurrente</p>
-                    )}
+                  <div className="space-y-3">
+                    <Button variant="outline" className="w-full justify-start" asChild>
+                      <a href={`mailto:${event.organizerEmail}`}>
+                        <Mail className="h-4 w-4 mr-2" />
+                        Enviar email
+                      </a>
+                    </Button>
                     
-                    <p>Evento creado por el sistema de gestión de parques de Guadalajara</p>
-                    
-                    <div className="pt-3">
-                      <Button variant="outline" className="w-full" asChild>
-                        <Link href="/events">Ver más eventos</Link>
+                    {event.organizerPhone && (
+                      <Button variant="outline" className="w-full justify-start" asChild>
+                        <a href={`tel:${event.organizerPhone}`}>
+                          <Phone className="h-4 w-4 mr-2" />
+                          Llamar
+                        </a>
                       </Button>
-                    </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
