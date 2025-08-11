@@ -7,8 +7,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, MapPin, Clock, Users, Tag, BookOpen, User, X, Filter, Activity } from 'lucide-react';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, MapPin, Clock, Users, Tag, BookOpen, User, X, Filter, Activity, Trees } from 'lucide-react';
 import PublicLayout from '@/components/PublicLayout';
 const heroImage = "/images/people-calendar.jpg";
 
@@ -222,19 +223,21 @@ const CalendarPage: React.FC = () => {
             <p className="text-xl md:text-2xl text-blue-100 max-w-3xl mx-auto">
               Descubre eventos y actividades programadas en todos nuestros parques durante el mes
             </p>
-            <div className="mt-8 flex justify-center items-center space-x-8 text-blue-100">
-              <div className="text-center">
-                <div className="text-3xl font-bold">{activitiesThisMonth}</div>
-                <div className="text-sm">Este Mes</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold">{uniqueParks}</div>
-                <div className="text-sm">Parques Activos</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold">{categories.length}</div>
-                <div className="text-sm">Categorías</div>
-              </div>
+          </div>
+          <div className="flex items-center justify-center gap-4 text-blue-100 mt-8">
+            <div className="flex items-center gap-2">
+              <CalendarIcon className="h-5 w-5" />
+              <span>{activitiesThisMonth} actividades este mes</span>
+            </div>
+            <Separator orientation="vertical" className="h-6 bg-blue-300" />
+            <div className="flex items-center gap-2">
+              <Trees className="h-5 w-5" />
+              <span>{uniqueParks} parques activos</span>
+            </div>
+            <Separator orientation="vertical" className="h-6 bg-blue-300" />
+            <div className="flex items-center gap-2">
+              <Tag className="h-5 w-5" />
+              <span>{categories.length} categorías</span>
             </div>
           </div>
         </div>
