@@ -22,7 +22,9 @@ import {
   User,
   ExternalLink,
   Users,
-  Heart
+  Heart,
+  GraduationCap,
+  Star
 } from 'lucide-react';
 import { ExtendedPark } from '@shared/schema';
 import { Badge } from '@/components/ui/badge';
@@ -965,7 +967,7 @@ function ParkLandingPage() {
                               
                               <div className="flex items-center gap-2 text-gray-500 text-sm">
                                 <Clock className="h-4 w-4 flex-shrink-0" />
-                                <span>Desde {format(new Date(concession.startDate), 'MMM yyyy', { locale: es })}</span>
+                                <span>Desde {concession.startDate ? format(new Date(concession.startDate), 'MMM yyyy', { locale: es }) : 'Fecha no disponible'}</span>
                               </div>
 
                               {concession.vendorPhone && (
@@ -1005,6 +1007,170 @@ function ParkLandingPage() {
               )}
             </CardContent>
           </Card>
+        </div>
+      </div>
+
+      {/* Sección de Colaboradores del Parque */}
+      <div className="bg-purple-50/50">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Conoce a los colaboradores de este parque</h2>
+            <p className="text-gray-600">Nuestro equipo de voluntarios e instructores hace posible la experiencia en el parque</p>
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            
+            {/* Módulo de Voluntarios - Izquierda */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Heart className="h-5 w-5 text-red-600" />
+                  Voluntarios del Parque
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {park.volunteers && park.volunteers.length > 0 ? (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 gap-4">
+                      {park.volunteers.slice(0, 4).map((volunteer: any) => (
+                        <div key={volunteer.id} className="bg-white p-4 rounded-lg border border-red-200 hover:border-red-300 transition-all duration-200">
+                          <div className="flex items-center gap-3">
+                            {volunteer.profileImage ? (
+                              <img 
+                                src={volunteer.profileImage}
+                                alt={`${volunteer.firstName} ${volunteer.lastName}`}
+                                className="w-12 h-12 rounded-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                                <Heart className="h-6 w-6 text-red-600" />
+                              </div>
+                            )}
+                            <div className="flex-1">
+                              <h4 className="font-semibold text-gray-900">
+                                {volunteer.firstName} {volunteer.lastName}
+                              </h4>
+                              {volunteer.specialties && Array.isArray(volunteer.specialties) && volunteer.specialties.length > 0 && (
+                                <p className="text-sm text-gray-600">
+                                  {volunteer.specialties.join(', ')}
+                                </p>
+                              )}
+                              {volunteer.specialties && typeof volunteer.specialties === 'string' && (
+                                <p className="text-sm text-gray-600">
+                                  {volunteer.specialties}
+                                </p>
+                              )}
+                              <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
+                                <Calendar className="h-3 w-3" />
+                                <span>Activo desde {volunteer.startDate ? format(new Date(volunteer.startDate), 'MMM yyyy', { locale: es }) : 'Fecha no disponible'}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <div className="text-center pt-4 border-t">
+                      <Link href="/volunteers">
+                        <Button variant="outline" className="border-red-300 text-red-700 hover:bg-red-50">
+                          <Heart className="h-4 w-4 mr-2" />
+                          Ver todos los voluntarios ({park.volunteers.length})
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 bg-white rounded-lg">
+                    <Heart className="h-12 w-12 text-red-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-600 mb-2">No hay voluntarios asignados</h3>
+                    <p className="text-gray-500 mb-4">Este parque no cuenta con voluntarios registrados actualmente</p>
+                    <Link href="/volunteers">
+                      <Button variant="outline" className="border-red-300 text-red-700 hover:bg-red-50">
+                        <Heart className="h-4 w-4 mr-2" />
+                        Conocer programa de voluntariado
+                      </Button>
+                    </Link>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Módulo de Instructores - Derecha */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <GraduationCap className="h-5 w-5 text-purple-600" />
+                  Instructores del Parque
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {park.instructors && park.instructors.length > 0 ? (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 gap-4">
+                      {park.instructors.slice(0, 4).map((instructor: any) => (
+                        <div key={instructor.id} className="bg-white p-4 rounded-lg border border-purple-200 hover:border-purple-300 transition-all duration-200">
+                          <div className="flex items-center gap-3">
+                            {instructor.profileImage ? (
+                              <img 
+                                src={instructor.profileImage}
+                                alt={`${instructor.firstName} ${instructor.lastName}`}
+                                className="w-12 h-12 rounded-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
+                                <GraduationCap className="h-6 w-6 text-purple-600" />
+                              </div>
+                            )}
+                            <div className="flex-1">
+                              <h4 className="font-semibold text-gray-900">
+                                {instructor.firstName} {instructor.lastName}
+                              </h4>
+                              {instructor.specialties && Array.isArray(instructor.specialties) && instructor.specialties.length > 0 && (
+                                <p className="text-sm text-gray-600">
+                                  {instructor.specialties.join(', ')}
+                                </p>
+                              )}
+                              {instructor.specialties && typeof instructor.specialties === 'string' && (
+                                <p className="text-sm text-gray-600">
+                                  {instructor.specialties}
+                                </p>
+                              )}
+                              <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
+                                <Star className="h-3 w-3" />
+                                <span>Certificación: {instructor.certificationLevel || 'Básica'}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <div className="text-center pt-4 border-t">
+                      <Link href="/instructors">
+                        <Button variant="outline" className="border-purple-300 text-purple-700 hover:bg-purple-50">
+                          <GraduationCap className="h-4 w-4 mr-2" />
+                          Ver todos los instructores ({park.instructors.length})
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 bg-white rounded-lg">
+                    <GraduationCap className="h-12 w-12 text-purple-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-600 mb-2">No hay instructores asignados</h3>
+                    <p className="text-gray-500 mb-4">Este parque no cuenta con instructores registrados actualmente</p>
+                    <Link href="/instructors">
+                      <Button variant="outline" className="border-purple-300 text-purple-700 hover:bg-purple-50">
+                        <GraduationCap className="h-4 w-4 mr-2" />
+                        Conocer programa de instructores
+                      </Button>
+                    </Link>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+          </div>
         </div>
       </div>
 
