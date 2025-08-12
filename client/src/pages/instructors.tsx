@@ -269,25 +269,104 @@ const InstructorsPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Galería de fotos - Estilo Volunteers */}
-      <section className="py-12 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8">
-            <h3 className="text-2xl font-bold text-gray-900 mb-3">Nuestros Instructores en Acción</h3>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Descubre cómo nuestros instructores trabajan día a día creando experiencias memorables en los parques de Guadalajara
+      {/* Instructores en Acción - Sección Completa */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          {/* Textos */}
+          <div className="mb-12">
+            <p className="text-gray-900 font-bold text-xl text-center max-w-2xl mx-auto mb-12">
+              Conoce la experiencia y dedicación de nuestros instructores profesionales en los parques de Guadalajara
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {galleryImages.map((image, index) => (
-              <div key={index} className="group overflow-hidden rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
-                <img
-                  src={image.src}
-                  alt={image.alt}
-                  className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                />
+
+          {/* Estadísticas */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16">
+            <div className="text-center">
+              <div className="bg-[#19633c] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <User className="h-10 w-10 text-white" />
               </div>
-            ))}
+              <div className="text-4xl md:text-5xl font-bold text-gray-900 mb-2">{instructors.length}+</div>
+              <div className="text-lg text-gray-600 font-medium">Instructores Certificados</div>
+            </div>
+            
+            <div className="text-center">
+              <div className="bg-[#19633c] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Award className="h-10 w-10 text-white" />
+              </div>
+              <div className="text-4xl md:text-5xl font-bold text-gray-900 mb-2">{allSpecialties.size}</div>
+              <div className="text-lg text-gray-600 font-medium">Especialidades Disponibles</div>
+            </div>
+            
+            <div className="text-center">
+              <div className="bg-[#19633c] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Calendar className="h-10 w-10 text-white" />
+              </div>
+              <div className="text-4xl md:text-5xl font-bold text-gray-900 mb-2">300+</div>
+              <div className="text-lg text-gray-600 font-medium">Sesiones Mensuales</div>
+            </div>
+            
+            <div className="text-center">
+              <div className="bg-[#19633c] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Star className="h-10 w-10 text-white" />
+              </div>
+              <div className="text-4xl md:text-5xl font-bold text-gray-900 mb-2">4.8</div>
+              <div className="text-lg text-gray-600 font-medium">Calificación Promedio</div>
+            </div>
+          </div>
+
+          {/* Galería */}
+          <div className="max-w-4xl mx-auto">
+            <div className="grid grid-cols-4 grid-rows-2 gap-2 h-64">
+              {/* Imagen principal - ocupa 2x2 - Gran grupo trabajando */}
+              <div className="col-span-2 row-span-2 relative cursor-pointer group">
+                <img 
+                  src="/attached_assets/happy-volunteers-with-seedlings-and-garden-tools-2024-09-27-13-54-22-utc (1)_1754955545591.jpg"
+                  alt="Instructores profesionales guiando actividades grupales en parque"
+                  className="w-full h-full object-cover rounded-lg shadow-lg"
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
+              </div>
+              
+              {/* Imagen 1 - Jardín japonés con instructor */}
+              <div className="relative cursor-pointer group">
+                <img 
+                  src="/attached_assets/jardin-japones_1754950415873.jpg"
+                  alt="Instructor especializado guiando en el jardín japonés"
+                  className="w-full h-full object-cover rounded-lg shadow-md"
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
+              </div>
+              
+              {/* Imagen 2 - Actividades deportivas */}
+              <div className="relative cursor-pointer group">
+                <img 
+                  src="/attached_assets/download-7_1754927049169.jpg"
+                  alt="Instructor dirigiendo actividades deportivas y recreativas"
+                  className="w-full h-full object-cover rounded-lg shadow-md"
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
+              </div>
+              
+              {/* Imagen 3 - Instructor con participantes */}
+              <div className="relative cursor-pointer group">
+                <img 
+                  src="/attached_assets/People_23-02_1752941117659.jpg"
+                  alt="Instructor profesional interactuando con participantes de diferentes edades"
+                  className="w-full h-full object-cover rounded-lg shadow-md"
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
+              </div>
+              
+              {/* Imagen 4 - Sesión de yoga/meditación */}
+              <div className="relative cursor-pointer group">
+                <img 
+                  src="/attached_assets/ImageTransformer_1754950326017.webp"
+                  alt="Instructor de yoga guiando sesión de meditación al aire libre"
+                  className="w-full h-full object-cover rounded-lg shadow-md"
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
+              </div>
+            </div>
           </div>
         </div>
       </section>
