@@ -606,6 +606,142 @@ function ParkLandingPage() {
         </div>
       )}
 
+      {/* Sección de 3 Módulos - Evaluaciones | Información | Ubicación */}
+      <div className="bg-gray-50 border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 py-12">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            
+            {/* Evaluaciones Ciudadanas - 1/4 */}
+            <div className="lg:col-span-1">
+              <Card className="h-full">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Heart className="h-5 w-5 text-red-500" />
+                    Evaluaciones Ciudadanas
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ParkEvaluationsSectionSimple parkId={park.id} />
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Información General - 2/4 */}
+            <div className="lg:col-span-2">
+              <Card className="h-full">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-xl">
+                    <Globe className="h-6 w-6 text-green-600" />
+                    Información General
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-700 leading-relaxed text-lg mb-6">
+                    {park.description || 'Espacio verde público destinado al esparcimiento y recreación de la comunidad.'}
+                  </p>
+                  
+                  {/* Basic Details Grid */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                    <div className="text-center p-4 bg-gray-50 rounded-lg">
+                      <Globe className="h-6 w-6 mx-auto mb-2 text-blue-600" />
+                      <p className="text-sm text-gray-500">Tipo</p>
+                      <p className="font-semibold">{getParkTypeLabel(park.parkType || 'urbano')}</p>
+                    </div>
+                    
+                    {park.area && (
+                      <div className="text-center p-4 bg-gray-50 rounded-lg">
+                        <Trees className="h-6 w-6 mx-auto mb-2 text-green-600" />
+                        <p className="text-sm text-gray-500">Superficie</p>
+                        <p className="font-semibold">
+                          {Number(park.area) >= 10000 
+                            ? `${(Number(park.area) / 10000).toFixed(1)} ha` 
+                            : `${park.area} m²`}
+                        </p>
+                      </div>
+                    )}
+                    
+                    {park.foundationYear && (
+                      <div className="text-center p-4 bg-gray-50 rounded-lg">
+                        <Calendar className="h-6 w-6 mx-auto mb-2 text-purple-600" />
+                        <p className="text-sm text-gray-500">Fundado</p>
+                        <p className="font-semibold">{park.foundationYear}</p>
+                      </div>
+                    )}
+                    
+                    <div className="text-center p-4 bg-gray-50 rounded-lg">
+                      <Clock className="h-6 w-6 mx-auto mb-2 text-orange-600" />
+                      <p className="text-sm text-gray-500">Horario</p>
+                      <p className="font-semibold">7:00 - 19:30</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Ubicación con Mapa - 1/4 */}
+            <div className="lg:col-span-1">
+              <Card className="h-full">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <MapPin className="h-5 w-5 text-blue-600" />
+                    Ubicación
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div>
+                    <p className="text-sm text-gray-500">Dirección</p>
+                    <p className="font-medium text-sm">{park.address || 'No especificada'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Municipio</p>
+                    <p className="font-medium text-sm">{park.municipality?.name}, {park.municipality?.state}</p>
+                  </div>
+                  
+                  {/* Mapa compacto */}
+                  <div className="rounded-lg overflow-hidden h-32 bg-gray-200">
+                    <iframe
+                      title={`Mapa de ${park.name}`}
+                      className="w-full h-full"
+                      src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''}&q=${park.latitude},${park.longitude}`}
+                      allowFullScreen
+                    ></iframe>
+                  </div>
+                  
+                  <div className="flex flex-col gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full text-xs"
+                      onClick={() => {
+                        const coords = `${park.latitude},${park.longitude}`;
+                        const destination = encodeURIComponent(`${park.name}, ${park.address}`);
+                        window.open(`https://www.google.com/maps/dir/?api=1&destination=${destination}&destination_place_id=${coords}`, '_blank');
+                      }}
+                    >
+                      <MapPin className="h-3 w-3 mr-1" />
+                      Cómo llegar
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full text-xs"
+                      onClick={() => {
+                        const coords = `${park.latitude},${park.longitude}`;
+                        window.open(`https://www.google.com/maps/@${coords},17z`, '_blank');
+                      }}
+                    >
+                      <ExternalLink className="h-3 w-3 mr-1" />
+                      Ver en Maps
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -613,55 +749,7 @@ function ParkLandingPage() {
           {/* Content Column */}
           <div className="lg:col-span-2 space-y-8">
             
-            {/* Descripción General */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-xl">
-                  <Globe className="h-6 w-6 text-green-600" />
-                  Información General
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-700 leading-relaxed text-lg mb-6">
-                  {park.description || 'Espacio verde público destinado al esparcimiento y recreación de la comunidad.'}
-                </p>
-                
-                {/* Basic Details Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-                  <div className="text-center p-4 bg-gray-50 rounded-lg">
-                    <Globe className="h-6 w-6 mx-auto mb-2 text-blue-600" />
-                    <p className="text-sm text-gray-500">Tipo</p>
-                    <p className="font-semibold">{getParkTypeLabel(park.parkType || 'urbano')}</p>
-                  </div>
-                  
-                  {park.area && (
-                    <div className="text-center p-4 bg-gray-50 rounded-lg">
-                      <Trees className="h-6 w-6 mx-auto mb-2 text-green-600" />
-                      <p className="text-sm text-gray-500">Superficie</p>
-                      <p className="font-semibold">
-                        {Number(park.area) >= 10000 
-                          ? `${(Number(park.area) / 10000).toFixed(1)} ha` 
-                          : `${park.area} m²`}
-                      </p>
-                    </div>
-                  )}
-                  
-                  {park.foundationYear && (
-                    <div className="text-center p-4 bg-gray-50 rounded-lg">
-                      <Calendar className="h-6 w-6 mx-auto mb-2 text-purple-600" />
-                      <p className="text-sm text-gray-500">Fundado</p>
-                      <p className="font-semibold">{park.foundationYear}</p>
-                    </div>
-                  )}
-                  
-                  <div className="text-center p-4 bg-gray-50 rounded-lg">
-                    <Clock className="h-6 w-6 mx-auto mb-2 text-orange-600" />
-                    <p className="text-sm text-gray-500">Horario</p>
-                    <p className="font-semibold">7:00 - 19:30</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+
 
             {/* Amenidades */}
             <Card>
