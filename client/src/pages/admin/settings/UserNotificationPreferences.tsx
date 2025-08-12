@@ -1,17 +1,80 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Card, CardContent, CardDescription, CardHeader, CardTitle,
+  Switch, Badge, Separator
+} from "@/components/ui";
 import { toast } from "@/hooks/use-toast";
-import { Bell, Settings, Users, Mail, AlertTriangle, CheckCircle, BarChart3, Search, X } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import AdminLayout from "@/components/AdminLayout";
+import { useAuth } from "@/hooks/useAuth"; // Asumido
+
+const DEFAULT_NOTIFICATIONS: NotificationPreference[] = [/* ...tu lista completa... */];
+
+export default function NotificationPreferences() {
+  const { user } = useAuth(); // Usuario autenticado
+  const queryClient = useQueryClient();
+
+  const { data: userPreferences, isLoading } = useQuery<UserPreferences>({
+    queryKey: ["userPreferences", user?.id],
+    queryFn: async () => {
+      const response = await apiRequest(`/api/preferences/${user.id}`);
+      return response.data;
+    },
+    enabled: !!user?.id,
+  });
+
+  const mutation = useMutation({
+    mutationFn: async ({ key, value }: { key: string; value: boolean }) => {
+      await apiRequest(`/api/preferences/${user.id}`, {
+        method: "PATCH",
+        data: { [key]: value },
+      });
+    },
+    onSuccess: () => {
+      toast({ title: "Preferencia actualizada", variant: "success" });
+      queryClient.invalidateQueries(["userPreferences", user.id]);
+    },
+  });
+
+  const handleToggle = (key: string, value: boolean) => {
+    mutation.mutate({ key, value });
+  };
+
+  if (isLoading || !userPreferences) return <p>Cargando preferencias...</p>;
+
+  return (
+    <AdminLayout>
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle>Preferencias de notificación</CardTitle>
+          <CardDescription>
+            Configura cómo deseas recibir alertas y novedades del sistema.
+          </CardDescription>
+          <div className="mt-2">
+            <Badge variant="outline">{userPreferences.fullName}</Badge>
+            <p className="text-sm text-muted-foreground">{userPreferences.email}</p>
+          </div>
+        </CardHeader>
+        <Separator />
+        <CardContent className="space-y-4">
+          {DEFAULT_NOTIFICATIONS.map((notif) => (
+            <div key={notif.key} className="flex items-center justify-between py-2">
+              <div>
+                <p className="font-medium">{notif.label}</p>
+                <p className="text-sm text-muted-foreground">{notif.description}</p>
+              </div>
+              <Switch
+                checked={userPreferences.preferences[notif.key]}
+                onCheckedChange={(value) => handleToggle(notif.key, value)}
+              />
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+    </AdminLayout>
+  );
+}
 
 interface NotificationPreference {
   key: string;

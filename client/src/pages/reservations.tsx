@@ -288,6 +288,7 @@ function ReservationsPage() {
   const [filterPark, setFilterPark] = useState('all');
   const [filterSpaceType, setFilterSpaceType] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [showAll, setShowAll] = useState(false);
 
 
   // Obtener todos los espacios reservables
@@ -318,6 +319,19 @@ function ReservationsPage() {
       return space.isActive;
     });
   }, [spacesData, searchQuery, filterPark, filterSpaceType]);
+
+  // Espacios a mostrar según el estado showAll
+  const displayedSpaces = useMemo(() => {
+    const hasFilters = searchQuery !== '' || filterPark !== 'all' || filterSpaceType !== 'all';
+    
+    // Si hay filtros activos, mostrar todos los resultados
+    if (hasFilters) {
+      return filteredSpaces;
+    }
+    
+    // Si no hay filtros, mostrar según showAll
+    return showAll ? filteredSpaces : filteredSpaces.slice(0, 3);
+  }, [filteredSpaces, showAll, searchQuery, filterPark, filterSpaceType]);
 
 
 
@@ -482,7 +496,7 @@ function ReservationsPage() {
                 ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" 
                 : "space-y-4"
               }>
-                {filteredSpaces.map((space) => (
+                {displayedSpaces.map((space) => (
                   <SpaceCard 
                     key={space.id} 
                     space={space} 
@@ -491,7 +505,33 @@ function ReservationsPage() {
                 ))}
               </div>
 
+              {/* Botón Ver más - solo se muestra si no hay filtros activos y hay más de 3 espacios */}
+              {!showAll && filteredSpaces.length > 3 && 
+               searchQuery === '' && filterPark === 'all' && filterSpaceType === 'all' && (
+                <div className="text-center mt-8">
+                  <Button 
+                    onClick={() => setShowAll(true)}
+                    className="bg-green-600 hover:bg-green-700 text-white px-8 py-3"
+                    size="lg"
+                  >
+                    Ver más espacios ({filteredSpaces.length - 3} restantes)
+                  </Button>
+                </div>
+              )}
 
+              {/* Botón Ver menos - solo se muestra si showAll está activo y no hay filtros */}
+              {showAll && searchQuery === '' && filterPark === 'all' && filterSpaceType === 'all' && (
+                <div className="text-center mt-8">
+                  <Button 
+                    onClick={() => setShowAll(false)}
+                    variant="outline"
+                    className="border-green-600 text-green-600 hover:bg-green-50 px-8 py-3"
+                    size="lg"
+                  >
+                    Ver menos
+                  </Button>
+                </div>
+              )}
             </>
           )}
         </div>
