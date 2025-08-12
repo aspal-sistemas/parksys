@@ -1875,6 +1875,7 @@ function ParkLandingPage() {
         </div>
       )}
     </div>
+    </PublicLayout>
   );
 }
 
