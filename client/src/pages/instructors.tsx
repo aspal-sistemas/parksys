@@ -250,22 +250,6 @@ const InstructorsPage: React.FC = () => {
             Profesionales experimentados comprometidos con crear experiencias únicas en nuestros parques.
             Descubre su experiencia y especialidades.
           </p>
-          <div className="flex items-center justify-center gap-4 text-green-100">
-            <div className="flex items-center gap-2">
-              <User className="h-5 w-5" />
-              <span>{instructors.length} instructores</span>
-            </div>
-            <div className="w-px h-6 bg-green-300"></div>
-            <div className="flex items-center gap-2">
-              <Award className="h-5 w-5" />
-              <span>{allSpecialties.size} especialidades</span>
-            </div>
-            <div className="w-px h-6 bg-green-300"></div>
-            <div className="flex items-center gap-2">
-              <Star className="h-5 w-5" />
-              <span>4.8 calificación</span>
-            </div>
-          </div>
         </div>
       </section>
 
