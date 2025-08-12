@@ -1079,64 +1079,6 @@ function ParkLandingPage() {
               </Card>
             )}
 
-            {/* Ubicación */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MapPin className="h-5 w-5 text-blue-600" />
-                  Ubicación
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div>
-                  <p className="text-sm text-gray-500">Dirección</p>
-                  <p className="font-medium text-sm">{park.address || 'No especificada'}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Municipio</p>
-                  <p className="font-medium text-sm">{park.municipality?.name}, {park.municipality?.state}</p>
-                </div>
-                
-                {/* Mapa compacto */}
-                <div className="rounded-lg overflow-hidden h-40 bg-gray-200">
-                  <iframe
-                    title={`Mapa de ${park.name}`}
-                    className="w-full h-full"
-                    src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''}&q=${park.latitude},${park.longitude}`}
-                    allowFullScreen
-                  ></iframe>
-                </div>
-                
-                <div className="flex gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="flex-1 text-xs"
-                    onClick={() => {
-                      const coords = `${park.latitude},${park.longitude}`;
-                      const destination = encodeURIComponent(`${park.name}, ${park.address}`);
-                      window.open(`https://www.google.com/maps/dir/?api=1&destination=${destination}&destination_place_id=${coords}`, '_blank');
-                    }}
-                  >
-                    <MapPin className="h-3 w-3 mr-1" />
-                    Cómo llegar
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="flex-1 text-xs"
-                    onClick={() => {
-                      const coords = `${park.latitude},${park.longitude}`;
-                      window.open(`https://www.google.com/maps/@${coords},17z`, '_blank');
-                    }}
-                  >
-                    <ExternalLink className="h-3 w-3 mr-1" />
-                    Ver en Google Maps
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
 
 
             {/* Estadísticas de Árboles */}
