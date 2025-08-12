@@ -1278,50 +1278,6 @@ const AdminSidebarComplete: React.FC = () => {
             </CollapsibleSubmenu>
           </ModuleNav>
 
-          {/* 8. CONFIGURACIÓN - COLOR: #61B1A0 */}
-          <ModuleNav 
-            title={t('navigation.settings')} 
-            icon={<Settings className="h-5 w-5" />}
-            value="system"
-          >
-            <NavItem 
-              href="/admin/settings" 
-              icon={<Settings className="h-5 w-5" />}
-              active={location === '/admin/settings'}
-            >
-              {t('navigation.settings')}
-            </NavItem>
-            <NavItem 
-              href="/admin/users" 
-              icon={<UserCheck className="h-5 w-5" />}
-              active={location === '/admin/users'}
-            >
-              {t('navigation.users')}
-            </NavItem>
-            <NavItem 
-              href="/admin/permissions" 
-              icon={<Shield className="h-5 w-5" />}
-              active={location === '/admin/permissions'}
-            >
-              {t('navigation.permissions')}
-            </NavItem>
-            <NavItem 
-              href="/admin/users/notifications" 
-              icon={<Bell className="h-5 w-5" />}
-              active={location === '/admin/users/notifications'}
-            >
-              Notificaciones
-            </NavItem>
-          </ModuleNav>
-
-
-
-
-
-
-
-
-
         </Accordion>
       </ScrollArea>
 
