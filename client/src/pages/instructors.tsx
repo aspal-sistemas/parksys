@@ -459,14 +459,12 @@ const InstructorsPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Sección principal con fondo gris */}
-      <div className="bg-gray-50 min-h-screen">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-2">
-          {/* Vista Grid */}
-          {viewMode === 'grid' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-              {currentInstructors.map((instructor) => (
-                <Card key={instructor.id} className="group hover:shadow-lg transition-all duration-300 border-0 shadow-sm bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-2">
+            {/* Vista Grid */}
+            {viewMode === 'grid' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                {currentInstructors.map((instructor) => (
+              <Card key={instructor.id} className="group hover:shadow-lg transition-all duration-300 border-0 shadow-sm bg-white">
                 <CardHeader className="text-center pb-2">
                   <Avatar className="h-20 w-20 mx-auto mb-4 ring-4 ring-primary/10">
                     <AvatarImage 
@@ -624,7 +622,11 @@ const InstructorsPage: React.FC = () => {
             ))}
           </div>
         )}
-          
+          </div>
+
+
+        </div>
+
         {/* Paginación */}
         {totalPages > 1 && (
           <div className="flex justify-center items-center space-x-2">
@@ -695,8 +697,6 @@ const InstructorsPage: React.FC = () => {
             </Button>
           </div>
         )}
-          </div>
-        </div>
 
       {/* Dialog para ver perfil completo */}
       <Dialog open={profileDialogOpen} onOpenChange={setProfileDialogOpen}>
