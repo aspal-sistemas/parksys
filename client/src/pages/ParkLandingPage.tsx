@@ -929,7 +929,7 @@ function ParkLandingPage() {
               <CardContent>
                 {park.volunteers && park.volunteers.length > 0 ? (
                   <div className="space-y-3">
-                    {park.volunteers.slice(0, 3).map((volunteer) => (
+                    {park.volunteers.slice(0, 1).map((volunteer) => (
                       <div key={volunteer.id} className="flex items-start gap-3 p-4 bg-white rounded-lg border border-pink-200">
                         {volunteer.profileImageUrl ? (
                           <img 
@@ -1008,16 +1008,16 @@ function ParkLandingPage() {
                   </div>
                 )}
 
-                {park.volunteers && park.volunteers.length > 3 && (
-                  <div className="text-center pt-4 mt-4 border-t">
-                    <Link href="/volunteers">
-                      <Button variant="outline" className="border-pink-300 text-pink-700 hover:bg-pink-50 text-sm">
-                        <Heart className="h-4 w-4 mr-2" />
-                        Ver todos los voluntarios ({park.volunteers.length})
-                      </Button>
-                    </Link>
-                  </div>
-                )}
+                {/* Enlace a página de voluntarios */}
+                <div className="mt-6 text-center">
+                  <Link 
+                    href="/volunteers"
+                    className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-pink-600 to-pink-700 text-white font-medium rounded-lg hover:from-pink-700 hover:to-pink-800 transition-all duration-300 shadow-md hover:shadow-lg"
+                  >
+                    <Heart className="mr-2 h-5 w-5" />
+                    Conoce a nuestros voluntarios
+                  </Link>
+                </div>
               </CardContent>
             </Card>
 
