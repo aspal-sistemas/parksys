@@ -355,14 +355,7 @@ const InstructorsPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Banner publicitario - Estilo Volunteers */}
-      <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] mt-8 mb-8">
-        <AdSpace 
-          spaceId={37}
-          pageType="instructors"
-          position="banner"
-        />
-      </div>
+
 
       {/* Panel de filtros y búsqueda - Estilo Volunteers */}
       <section className="sticky top-0 z-10 border-b border-gray-200 shadow-sm bg-white">
@@ -822,8 +815,17 @@ const InstructorsPage: React.FC = () => {
         </div>
       </section>
 
+      {/* AdSpace 37 - Ajustado al ancho del grid */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 mb-8">
+        <AdSpace 
+          spaceId={37}
+          pageType="instructors"
+          position="banner"
+        />
+      </div>
+
       {/* AdSpace final */}
-      <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] mt-12 mb-8">
+      <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] mt-8 mb-8">
         <AdSpace 
           spaceId={38}
           pageType="instructors"
