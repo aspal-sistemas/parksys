@@ -65,7 +65,7 @@ export default function Employees() {
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [isViewEmployeeOpen, setIsViewEmployeeOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const recordsPerPage = 50;
+  const recordsPerPage = 14;
   
   // Filters
   const [departmentFilter, setDepartmentFilter] = useState("all");
