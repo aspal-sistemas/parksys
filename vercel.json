@@ -1,7 +1,7 @@
 {
   "version": 2,
   "functions": {
-    "server/index.ts": {
+    "dist/index.js": {
       "maxDuration": 30,
       "runtime": "nodejs20.x"
     }
@@ -9,23 +9,23 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/server/index.ts"
+      "destination": "/dist/index.js"
     },
     {
       "source": "/uploads/(.*)",
-      "destination": "/server/index.ts"
+      "destination": "/dist/index.js"
     },
     {
       "source": "/objects/(.*)",
-      "destination": "/server/index.ts"
+      "destination": "/dist/index.js"
     },
     {
       "source": "/assets/(.*)",
-      "destination": "/server/index.ts"
+      "destination": "/dist/index.js"
     },
     {
       "source": "/(.*)",
-      "destination": "/server/index.ts"
+      "destination": "/dist/index.js"
     }
   ],
   "env": {
