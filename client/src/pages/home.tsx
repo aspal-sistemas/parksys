@@ -423,8 +423,12 @@ const Home: React.FC = () => {
                 ];
                 const colors = eventColors[index % eventColors.length];
                 
+                // Enlaces específicos para cada tarjeta de evento
+                const eventLinks = ['/event/5', '/event/4', '/event/2'];
+                const eventLink = eventLinks[index] || `/events/${event.id}`;
+                
                 return (
-                  <Link key={event.id} href={`/events/${event.id}`}>
+                  <Link key={event.id} href={eventLink}>
                     <div className="bg-white rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 h-[500px] flex flex-col cursor-pointer">
                       <div className="h-2/3 relative overflow-hidden">
                         <img 
