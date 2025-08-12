@@ -25,7 +25,8 @@ import {
   Coffee,
   CheckCircle,
   Phone,
-  Mail
+  Mail,
+  X
 } from 'lucide-react';
 import heroImage from "@assets/download-7_1754927049169.jpg";
 import { Badge } from '@/components/ui/badge';
@@ -290,6 +291,13 @@ function ReservationsPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showAll, setShowAll] = useState(false);
 
+  // Función para resetear filtros
+  const resetFilters = () => {
+    setSearchQuery('');
+    setFilterPark('all');
+    setFilterSpaceType('all');
+  };
+
 
   // Obtener todos los espacios reservables
   const { data: spacesData = [], isLoading } = useQuery<ReservableSpace[]>({
@@ -463,7 +471,21 @@ function ReservationsPage() {
             </div>
           </div>
 
-
+          {/* Fila inferior con información de resultados y botón limpiar filtros */}
+          <div className="mt-4 flex items-center justify-between">
+            <div className="text-sm text-white">
+              Mostrando {filteredSpaces.length} de {spacesData.length} espacios
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={resetFilters}
+              className="bg-white text-gray-900 border-white hover:bg-gray-100"
+            >
+              <X className="w-4 h-4 mr-2" />
+              Limpiar filtros
+            </Button>
+          </div>
         </div>
       </section>
 
@@ -480,11 +502,7 @@ function ReservationsPage() {
                 No hay espacios que coincidan con los filtros seleccionados.
               </p>
               <Button
-                onClick={() => {
-                  setSearchQuery('');
-                  setFilterPark('all');
-                  setFilterSpaceType('all');
-                }}
+                onClick={resetFilters}
                 variant="outline"
               >
                 Limpiar filtros
