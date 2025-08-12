@@ -43,6 +43,7 @@ The application uses a client-server architecture with a modern full-stack.
 - **Park Collaborators Section Removal**: Completely removed the park collaborators section that was previously added after Concessions module. This included both the volunteers and instructors modules to streamline the park landing page content flow.
 - **Activities Layout Reversion and Evaluations Repositioning**: Reverted the activities section to its original full-width layout with 3-column grid. Relocated the Citizen Evaluations module from the sidebar to a new dedicated section positioned after Concessions with full-width (3/3) grid layout, providing better visual hierarchy and user flow organization.
 - **Event Request Module Integration**: Moved the "Realiza tu evento" module from the sidebar to the main content flow, positioning it alongside the Citizen Evaluations module in a 2-column grid layout (50/50 split). This creates better integration of event management functionality within the main park information flow.
+- **Documents Module Repositioning**: Relocated the "Documentos y Reglamentos" module from the sidebar to the main content flow, positioning it after the "Ubicación y Contacto" section as a dedicated full-width section. This improves document accessibility and maintains consistent content structure organization.
 
 ## Previous Changes (January 2025)
 - **Architecture Refactor**: Implemented complete separation of organizational users from catalog entities, eliminating data duplication across employees, volunteers, instructors, and concessionaires tables.
