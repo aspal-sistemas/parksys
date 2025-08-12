@@ -390,10 +390,7 @@ const AdminSidebarComplete: React.FC = () => {
     }
     
     // Otros módulos
-    if (location.startsWith('/admin/users') || location.startsWith('/admin/permissions') || location.startsWith('/admin/settings')) return ['system'];
     if (location.startsWith('/admin/hr')) return ['hr'];
-    if (location.startsWith('/admin/security') || location.startsWith('/admin/roles') || location.startsWith('/admin/role-assignments')) return ['security'];
-    if (location.startsWith('/admin/configuracion-seguridad/maintenance')) return ['security'];
     if (location.startsWith('/admin/documents') || location.startsWith('/admin/comments')) return ['system'];
     return []; // Sin módulos abiertos por defecto
   };
