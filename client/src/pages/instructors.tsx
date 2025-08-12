@@ -462,11 +462,6 @@ const InstructorsPage: React.FC = () => {
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-2">
-
-        {/* Layout con Sidebar Publicitario */}
-        <div className="flex gap-6">
-          {/* Contenido Principal */}
-          <div className="flex-1 min-w-0">
             {/* Vista Grid */}
             {viewMode === 'grid' && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
@@ -704,24 +699,6 @@ const InstructorsPage: React.FC = () => {
             </Button>
           </div>
         )}
-          </div>
-
-          {/* Sidebar Publicitario */}
-          <div className="hidden lg:block lg:w-80 space-y-4">
-            <AdSpace 
-              spaceId={24}
-              pageType="instructors"
-              position="sidebar"
-              className="sticky top-4"
-            />
-            <AdSpace 
-              spaceId={25}
-              pageType="instructors"
-              position="sidebar-secondary"
-              className="sticky top-80"
-            />
-          </div>
-        </div>
 
       {/* Dialog para ver perfil completo */}
       <Dialog open={profileDialogOpen} onOpenChange={setProfileDialogOpen}>
