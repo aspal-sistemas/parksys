@@ -606,27 +606,12 @@ function ParkLandingPage() {
         </div>
       )}
 
-      {/* Sección de 3 Módulos - Evaluaciones | Información | Ubicación */}
+      {/* Sección de 2 Módulos - Información | Ubicación */}
       <div className="bg-gray-50 border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 py-12">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
-            {/* Evaluaciones Ciudadanas - 1/4 */}
-            <div className="lg:col-span-1">
-              <Card className="h-full">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <Heart className="h-5 w-5 text-red-500" />
-                    Evaluaciones Ciudadanas
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ParkEvaluationsSectionSimple parkId={park.id} />
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Información General - 2/4 */}
+            {/* Información General - 2/3 */}
             <div className="lg:col-span-2">
               <Card className="h-full">
                 <CardHeader>
@@ -678,7 +663,7 @@ function ParkLandingPage() {
               </Card>
             </div>
 
-            {/* Ubicación con Mapa - 1/4 */}
+            {/* Ubicación con Mapa - 1/3 */}
             <div className="lg:col-span-1">
               <Card className="h-full">
                 <CardHeader>
