@@ -282,7 +282,7 @@ const InstructorsPage: React.FC = () => {
           {/* Estadísticas */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16">
             <div className="text-center">
-              <div className="bg-[#19633c] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="bg-[#51a19f] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <User className="h-10 w-10 text-white" />
               </div>
               <div className="text-4xl md:text-5xl font-bold text-gray-900 mb-2">{instructors.length}+</div>
@@ -290,7 +290,7 @@ const InstructorsPage: React.FC = () => {
             </div>
             
             <div className="text-center">
-              <div className="bg-[#19633c] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="bg-[#51a19f] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Award className="h-10 w-10 text-white" />
               </div>
               <div className="text-4xl md:text-5xl font-bold text-gray-900 mb-2">{allSpecialties.size}</div>
@@ -298,7 +298,7 @@ const InstructorsPage: React.FC = () => {
             </div>
             
             <div className="text-center">
-              <div className="bg-[#19633c] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="bg-[#51a19f] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Calendar className="h-10 w-10 text-white" />
               </div>
               <div className="text-4xl md:text-5xl font-bold text-gray-900 mb-2">30+</div>
@@ -306,7 +306,7 @@ const InstructorsPage: React.FC = () => {
             </div>
             
             <div className="text-center">
-              <div className="bg-[#19633c] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="bg-[#51a19f] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Star className="h-10 w-10 text-white" />
               </div>
               <div className="text-4xl md:text-5xl font-bold text-gray-900 mb-2">4.8</div>
