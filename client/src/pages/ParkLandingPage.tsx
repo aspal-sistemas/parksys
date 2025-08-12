@@ -505,47 +505,35 @@ function ParkLandingPage() {
           </div>
         </div>
 
-        {/* Bottom Statistics Cards */}
+        {/* Bottom Statistics - Activities Style */}
         <div className="absolute bottom-8 left-0 right-0 z-10">
           <div className="max-w-7xl mx-auto px-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
-              {/* Tipo de Parque */}
-              <div className="text-center">
-                <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3" style={{backgroundColor: '#51a19f'}}>
-                  <Trees className="h-8 w-8 text-white" />
-                </div>
-                <h3 className="text-lg font-semibold text-white mb-1">Tipo</h3>
-                <p className="text-white/90 text-sm">
-                  {getParkTypeLabel(park.parkType || 'urbano')}
-                </p>
+            <div className="flex items-center justify-center gap-4 text-green-100">
+              <div className="flex items-center gap-2">
+                <Trees className="h-5 w-5" />
+                <span>{getParkTypeLabel(park.parkType || 'urbano')}</span>
               </div>
-
-              {/* Superficie */}
               {park.area && (
-                <div className="text-center">
-                  <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3" style={{backgroundColor: '#51a19f'}}>
-                    <MapPin className="h-8 w-8 text-white" />
+                <>
+                  <Separator orientation="vertical" className="h-6 bg-green-300" />
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-5 w-5" />
+                    <span>
+                      {Number(park.area) >= 10000 
+                        ? `${(Number(park.area) / 10000).toFixed(1)} hectáreas` 
+                        : `${park.area} m²`}
+                    </span>
                   </div>
-                  <h3 className="text-lg font-semibold text-white mb-1">Superficie</h3>
-                  <p className="text-white/90 text-sm">
-                    {Number(park.area) >= 10000 
-                      ? `${(Number(park.area) / 10000).toFixed(1)} hectáreas` 
-                      : `${park.area} m²`}
-                  </p>
-                </div>
+                </>
               )}
-
-              {/* Año de Fundación */}
               {park.foundationYear && (
-                <div className="text-center">
-                  <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3" style={{backgroundColor: '#51a19f'}}>
-                    <Calendar className="h-8 w-8 text-white" />
+                <>
+                  <Separator orientation="vertical" className="h-6 bg-green-300" />
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5" />
+                    <span>Est. {park.foundationYear}</span>
                   </div>
-                  <h3 className="text-lg font-semibold text-white mb-1">Fundación</h3>
-                  <p className="text-white/90 text-sm">
-                    Est. {park.foundationYear}
-                  </p>
-                </div>
+                </>
               )}
             </div>
           </div>
