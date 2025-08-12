@@ -1014,88 +1014,13 @@ function ParkLandingPage() {
       <div className="bg-purple-50/50">
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Conoce a los colaboradores de este parque</h2>
-            <p className="text-gray-600">Nuestro equipo de voluntarios e instructores hace posible la experiencia en el parque</p>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Conoce a los instructores de este parque</h2>
+            <p className="text-gray-600">Nuestro equipo de instructores especializados ofrece actividades de calidad</p>
           </div>
           
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="max-w-2xl mx-auto">
             
-            {/* Módulo de Voluntarios - Izquierda */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Heart className="h-5 w-5 text-red-600" />
-                  Voluntarios del Parque
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {park.volunteers && park.volunteers.length > 0 ? (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-1 gap-4">
-                      {park.volunteers.slice(0, 4).map((volunteer: any) => (
-                        <div key={volunteer.id} className="bg-white p-4 rounded-lg border border-red-200 hover:border-red-300 transition-all duration-200">
-                          <div className="flex items-center gap-3">
-                            {volunteer.profileImage ? (
-                              <img 
-                                src={volunteer.profileImage}
-                                alt={`${volunteer.firstName} ${volunteer.lastName}`}
-                                className="w-12 h-12 rounded-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-                                <Heart className="h-6 w-6 text-red-600" />
-                              </div>
-                            )}
-                            <div className="flex-1">
-                              <h4 className="font-semibold text-gray-900">
-                                {volunteer.firstName} {volunteer.lastName}
-                              </h4>
-                              {volunteer.specialties && Array.isArray(volunteer.specialties) && volunteer.specialties.length > 0 && (
-                                <p className="text-sm text-gray-600">
-                                  {volunteer.specialties.join(', ')}
-                                </p>
-                              )}
-                              {volunteer.specialties && typeof volunteer.specialties === 'string' && (
-                                <p className="text-sm text-gray-600">
-                                  {volunteer.specialties}
-                                </p>
-                              )}
-                              <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
-                                <Calendar className="h-3 w-3" />
-                                <span>Activo desde {volunteer.startDate ? format(new Date(volunteer.startDate), 'MMM yyyy', { locale: es }) : 'Fecha no disponible'}</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    
-                    <div className="text-center pt-4 border-t">
-                      <Link href="/volunteers">
-                        <Button variant="outline" className="border-red-300 text-red-700 hover:bg-red-50">
-                          <Heart className="h-4 w-4 mr-2" />
-                          Ver todos los voluntarios ({park.volunteers.length})
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center py-8 bg-white rounded-lg">
-                    <Heart className="h-12 w-12 text-red-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-600 mb-2">No hay voluntarios asignados</h3>
-                    <p className="text-gray-500 mb-4">Este parque no cuenta con voluntarios registrados actualmente</p>
-                    <Link href="/volunteers">
-                      <Button variant="outline" className="border-red-300 text-red-700 hover:bg-red-50">
-                        <Heart className="h-4 w-4 mr-2" />
-                        Conocer programa de voluntariado
-                      </Button>
-                    </Link>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Módulo de Instructores - Derecha */}
+            {/* Módulo de Instructores - Centrado */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
