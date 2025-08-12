@@ -289,9 +289,14 @@ const EditarActividadPage = () => {
   
   // Actualizar la duración cuando cambian las horas
   useEffect(() => {
-    const duracion = calcularDuracionEnMinutos(horaInicio, horaFin);
-    form.setValue("duration", duracion);
-  }, [horaInicio, horaFin, form]);
+    const startTimeValue = form.watch("startTime");
+    const endTimeValue = form.watch("endTime");
+    
+    if (startTimeValue && endTimeValue) {
+      const duracion = calcularDuracionEnMinutos(startTimeValue, endTimeValue);
+      form.setValue("duration", duracion);
+    }
+  }, [form.watch("startTime"), form.watch("endTime"), form]);
   
   // Mutación para actualizar la actividad
   const actualizarActividad = useMutation({
@@ -412,19 +417,7 @@ const EditarActividadPage = () => {
     { id: "multiple", label: "Múltiple / Combinada" },
     { id: "temporal", label: "Temporal" }
   ];
-  
-  // Manejar cambios en las horas
-  const handleStartTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newTime = e.target.value;
-    setHoraInicio(newTime);
-    form.setValue("startTime", newTime);
-  };
-  
-  const handleEndTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newTime = e.target.value;
-    setHoraFin(newTime);
-    form.setValue("endTime", newTime);
-  };
+
   
   // Mostrar loading si los datos aún no están cargados
   if (isLoadingActividad || isLoadingParques || isLoadingInstructores) {
@@ -537,8 +530,8 @@ const EditarActividadPage = () => {
                             <SelectItem value="loading" disabled>
                               Cargando parques...
                             </SelectItem>
-                          ) : Array.isArray(parques?.data) && parques.data.length > 0 ? (
-                            parques.data.map((parque: any) => (
+                          ) : Array.isArray(parques) && parques.length > 0 ? (
+                            parques.map((parque: any) => (
                               <SelectItem key={parque.id} value={parque.id.toString()}>
                                 {parque.name || "Parque sin nombre"}
                               </SelectItem>
@@ -716,26 +709,48 @@ const EditarActividadPage = () => {
                 
                 {/* Horas de inicio y fin */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="startTime">Hora de inicio *</Label>
-                    <Input 
-                      id="startTime"
-                      type="time" 
-                      value={horaInicio}
-                      onChange={handleStartTimeChange}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="endTime">Hora de fin *</Label>
-                    <Input 
-                      id="endTime"
-                      type="time" 
-                      value={horaFin}
-                      onChange={handleEndTimeChange}
-                      className="mt-1"
-                    />
-                  </div>
+                  <FormField
+                    control={form.control}
+                    name="startTime"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Hora de inicio *</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="time" 
+                            {...field}
+                            onChange={(e) => {
+                              field.onChange(e.target.value);
+                              setHoraInicio(e.target.value);
+                            }}
+                            className="mt-1"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="endTime"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Hora de fin *</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="time" 
+                            {...field}
+                            onChange={(e) => {
+                              field.onChange(e.target.value);
+                              setHoraFin(e.target.value);
+                            }}
+                            className="mt-1"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
                 
                 {/* Duración (calculada automáticamente) */}
