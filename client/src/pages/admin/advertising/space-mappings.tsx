@@ -37,11 +37,24 @@ const SpaceMappings: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPage, setSelectedPage] = useState<string>('all');
 
-  const { data: response, isLoading } = useQuery<{success: boolean, data: SpaceMapping[], total: number}>({
+  const { data: response, isLoading, error } = useQuery<{success: boolean, data: SpaceMapping[], total: number}>({
     queryKey: ['/api/advertising-management/space-mappings'],
   });
 
   const mappings = response?.data || [];
+
+  if (error) {
+    return (
+      <AdminLayout>
+        <Card>
+          <CardContent className="p-12 text-center">
+            <div className="text-red-500 mb-4">Error al cargar los mapeos de espacios publicitarios</div>
+            <Button onClick={() => window.location.reload()}>Reintentar</Button>
+          </CardContent>
+        </Card>
+      </AdminLayout>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -108,16 +121,21 @@ const SpaceMappings: React.FC = () => {
 
   // Filter mappings by search term and dropdown selections
   const filteredMappings = mappings?.filter(mapping => {
+    // Ensure mapping has required properties
+    if (!mapping || !mapping.pageType || !mapping.position) {
+      return false;
+    }
+
     // Text search filter
     const searchMatch = !searchTerm || (() => {
       const searchLower = searchTerm.toLowerCase();
       return (
-        mapping.space?.name?.toLowerCase().includes(searchLower) ||
-        mapping.pageType.toLowerCase().includes(searchLower) ||
-        mapping.position.toLowerCase().includes(searchLower) ||
-        mapping.fallbackBehavior.toLowerCase().includes(searchLower) ||
-        getPageDisplayName(mapping.pageType).toLowerCase().includes(searchLower) ||
-        getPositionDisplayName(mapping.position).toLowerCase().includes(searchLower)
+        (mapping.space?.name || '').toLowerCase().includes(searchLower) ||
+        (mapping.pageType || '').toLowerCase().includes(searchLower) ||
+        (mapping.position || '').toLowerCase().includes(searchLower) ||
+        (mapping.fallbackBehavior || '').toLowerCase().includes(searchLower) ||
+        getPageDisplayName(mapping.pageType || '').toLowerCase().includes(searchLower) ||
+        getPositionDisplayName(mapping.position || '').toLowerCase().includes(searchLower)
       );
     })();
 
@@ -280,7 +298,7 @@ const SpaceMappings: React.FC = () => {
 
                         <div className="flex items-center gap-2">
                           <Calendar className="h-3 w-3 text-gray-500" />
-                          <span>Actualizado: {new Date(space.updatedAt).toLocaleDateString()}</span>
+                          <span>Actualizado: {space.updatedAt ? new Date(space.updatedAt).toLocaleDateString() : 'No disponible'}</span>
                         </div>
                       </div>
 
@@ -314,7 +332,7 @@ const SpaceMappings: React.FC = () => {
                           <span>•</span>
                           <span>Comportamiento: {getFallbackBehaviorName(space.fallbackBehavior)}</span>
                           <span>•</span>
-                          <span>Actualizado: {new Date(space.updatedAt).toLocaleDateString()}</span>
+                          <span>Actualizado: {space.updatedAt ? new Date(space.updatedAt).toLocaleDateString() : 'No disponible'}</span>
                         </div>
                       </div>
                       <div className="flex gap-2">
