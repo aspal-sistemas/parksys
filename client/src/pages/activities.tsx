@@ -421,51 +421,18 @@ function ActivityCard({ activity, viewMode }: { activity: ActivityData; viewMode
           </div>
           
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-gray-600">
-              <Users className="h-4 w-4 text-purple-600" />
-              <span className="text-xs">{activity.capacity > 0 ? `${activity.capacity} personas` : 'Sin límite'}</span>
-            </div>
+            {/* Mostrar hora en lugar de participantes */}
+            {activity.duration && (
+              <div className="flex items-center gap-2 text-gray-600">
+                <Clock className="h-4 w-4 text-blue-600 flex-shrink-0" />
+                <span className="text-xs">{(activity.duration / 60).toFixed(1)} hrs</span>
+              </div>
+            )}
             
             <div className="flex items-center gap-2 text-gray-600">
               <DollarSign className="h-4 w-4 text-yellow-600" />
               <span className="text-xs font-medium">{activity.price > 0 ? `$${Number(activity.price).toLocaleString('es-MX')}` : 'Gratis'}</span>
             </div>
-          </div>
-          
-          {activity.instructorName && (
-            <div className="flex items-center gap-2 text-gray-600 pt-2 border-t border-gray-100">
-              <User className="h-4 w-4 text-green-600" />
-              <span className="text-xs">{activity.instructorName}</span>
-            </div>
-          )}
-          
-          {/* Información adicional - vista grid */}
-          <div className="space-y-1 pt-2">
-            {activity.targetMarket && activity.targetMarket.length > 0 && (
-              <div className="flex items-center gap-2 text-gray-600">
-                <Trophy className="h-3 w-3 text-orange-600 flex-shrink-0" />
-                <span className="text-xs truncate">
-                  {activity.targetMarket.map(market => {
-                    const marketLabels: {[key: string]: string} = {
-                      'preescolar': 'Preescolar',
-                      'ninos': 'Niños',
-                      'adolescentes': 'Adolescentes', 
-                      'adultos': 'Adultos',
-                      'adultos_mayores': 'Adultos mayores',
-                      'familias': 'Familias'
-                    };
-                    return marketLabels[market] || market;
-                  }).join(', ')}
-                </span>
-              </div>
-            )}
-            
-            {activity.duration && (
-              <div className="flex items-center gap-2 text-gray-600">
-                <Clock className="h-3 w-3 text-blue-600 flex-shrink-0" />
-                <span className="text-xs">{(activity.duration / 60).toFixed(1)} hrs</span>
-              </div>
-            )}
           </div>
         </div>
         
