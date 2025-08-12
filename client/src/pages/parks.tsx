@@ -145,15 +145,20 @@ const Parks: React.FC = () => {
             <p className="text-xl text-green-100 max-w-2xl mx-auto">
               Descubre espacios verdes únicos en la Zona Metropolitana de Guadalajara para toda la familia
             </p>
-            <div className="mt-8 flex justify-center items-center space-x-8 text-green-100">
-              <div className="text-center">
-                <div className="text-3xl font-bold">{totalParks}</div>
-                <div className="text-sm">Parques Disponibles</div>
+            <div className="flex items-center justify-center gap-4 text-green-100">
+              <div className="flex items-center gap-2">
+                <Trees className="h-5 w-5" />
+                <span>{totalParks} parques</span>
               </div>
-
-              <div className="text-center">
-                <div className="text-3xl font-bold">{averageAmenities}</div>
-                <div className="text-sm">Amenidades Promedio</div>
+              <div className="w-px h-6 bg-green-300"></div>
+              <div className="flex items-center gap-2">
+                <MapPin className="h-5 w-5" />
+                <span>{uniqueTypes} tipos</span>
+              </div>
+              <div className="w-px h-6 bg-green-300"></div>
+              <div className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                <span>{averageAmenities} amenidades prom.</span>
               </div>
             </div>
           </div>
