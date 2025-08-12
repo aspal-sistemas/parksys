@@ -21,7 +21,7 @@ import AmenityIcon from '@/components/AmenityIcon';
 import ParkQuickActions from '@/components/ParkQuickActions';
 import { ParkImageManager } from '@/components/ParkImageManager';
 import { useAuth } from '@/hooks/useAuth';
-import AdSpace from '@/components/AdSpace';
+
 
 const ParkDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
