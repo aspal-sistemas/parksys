@@ -771,38 +771,41 @@ function ParkLandingPage() {
                   </div>
                 </div>
                 
-                {/* Información de Contacto - 1/4 */}
-                <div className="lg:col-span-1">
+                {/* Información de Contacto - 1/4 con altura coincidente al mapa */}
+                <div className="lg:col-span-1 flex flex-col">
+                  {/* Spacer superior para alinear con el mapa */}
+                  <div className="mb-16"></div>
+                  
                   {(park.administrator || park.contactPhone || park.contactEmail) && (
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <h4 className="font-semibold mb-3 text-gray-900">Información de Contacto</h4>
-                      <div className="space-y-3">
+                    <div className="bg-gray-50 rounded-lg p-6 flex-1 h-64 flex flex-col justify-center">
+                      <h4 className="font-semibold mb-4 text-gray-900 text-center">Información de Contacto</h4>
+                      <div className="space-y-4">
                         {park.administrator && (
-                          <div className="flex items-center">
-                            <User className="h-4 w-4 mr-3 text-gray-500" />
+                          <div className="flex items-start">
+                            <User className="h-4 w-4 mr-3 text-gray-500 mt-1" />
                             <div>
                               <p className="text-sm text-gray-500">Administrador</p>
-                              <p className="font-medium">{park.administrator}</p>
+                              <p className="font-medium text-sm">{park.administrator}</p>
                             </div>
                           </div>
                         )}
                         
                         {park.contactPhone && (
-                          <div className="flex items-center">
-                            <Phone className="h-4 w-4 mr-3 text-gray-500" />
+                          <div className="flex items-start">
+                            <Phone className="h-4 w-4 mr-3 text-gray-500 mt-1" />
                             <div>
                               <p className="text-sm text-gray-500">Teléfono</p>
-                              <p className="font-medium">{park.contactPhone}</p>
+                              <p className="font-medium text-sm">{park.contactPhone}</p>
                             </div>
                           </div>
                         )}
                         
                         {park.contactEmail && (
-                          <div className="flex items-center">
-                            <Mail className="h-4 w-4 mr-3 text-gray-500" />
+                          <div className="flex items-start">
+                            <Mail className="h-4 w-4 mr-3 text-gray-500 mt-1" />
                             <div>
                               <p className="text-sm text-gray-500">Email</p>
-                              <p className="font-medium">{park.contactEmail}</p>
+                              <p className="font-medium text-sm break-all">{park.contactEmail}</p>
                             </div>
                           </div>
                         )}
