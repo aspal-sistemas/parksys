@@ -372,9 +372,34 @@ const Events: React.FC = () => {
           </div>
         )}
 
-        {/* Banner publicitario */}
+        {/* Banner publicitario customizado */}
         <div className="my-8">
-          <AdSpace spaceId="35" pageType="activities" position="banner" />
+          <div className="relative w-full h-32 bg-cover bg-center bg-no-repeat rounded-xl overflow-hidden shadow-lg group hover:shadow-xl transition-shadow duration-300" 
+               style={{ 
+                 backgroundImage: `url(https://images.unsplash.com/photo-1441974231531-c6227db76b6e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80)`
+               }}>
+            {/* Overlay para mejorar legibilidad */}
+            <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-black/30"></div>
+            
+            {/* Contenido */}
+            <div className="relative h-full flex items-center justify-between px-8">
+              {/* Título a la izquierda */}
+              <div className="text-white">
+                <h3 className="text-2xl font-bold mb-1 drop-shadow-lg">Parks for Life</h3>
+                <p className="text-green-200 text-sm drop-shadow-md">Todo para tus actividades al aire libre</p>
+              </div>
+              
+              {/* Logo a la derecha */}
+              <div className="flex-shrink-0">
+                <div className="w-20 h-20 bg-white/90 rounded-full flex items-center justify-center shadow-lg group-hover:bg-white transition-colors">
+                  <svg className="w-12 h-12 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M17 8C8 10 5.9 16.17 3.82 21.34L5.17 22L6.58 19.58C8.81 20.81 11.33 21.5 14 21.5C19.71 21.5 24.5 16.71 24.5 11C24.5 5.29 19.71 0.5 14 0.5C8.29 0.5 3.5 5.29 3.5 11C3.5 12.38 3.81 13.7 4.34 14.9L2.79 16.45C2.03 14.75 1.5 12.92 1.5 11C1.5 4.93 6.43 0 12.5 0H14C20.07 0 25 4.93 25 11C25 17.07 20.07 22 14 22C11.24 22 8.69 21.22 6.58 19.93L3.42 23.09C3.02 23.5 2.35 23.5 1.95 23.09C1.54 22.69 1.54 22.02 1.95 21.61L3.82 19.74C5.9 14.57 8 8.4 17 8Z"/>
+                    <circle cx="12" cy="8" r="3" fill="currentColor"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
