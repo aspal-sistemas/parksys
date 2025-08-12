@@ -821,57 +821,7 @@ function ParkLandingPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
           {/* Content Column */}
-          <div className="lg:col-span-2 space-y-8">
-            
-
-
-            {/* Amenidades */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-xl">
-                  <Trees className="h-6 w-6 text-green-600" />
-                  Amenidades del Parque
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-
-                
-                {park.amenities && park.amenities.length > 0 ? (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                    {park.amenities.map((amenity) => (
-                      <div key={amenity.id} className="flex flex-col items-center p-4 bg-gray-50 rounded-lg border text-center">
-                        <div className="w-20 h-20 flex items-center justify-center mb-3">
-                          {amenity.iconType === 'custom' && amenity.customIconUrl ? (
-                            <img 
-                              src={amenity.customIconUrl} 
-                              alt={amenity.name}
-                              className="w-20 h-20 object-contain"
-                              onError={(e) => {
-                                console.error('Error cargando icono:', amenity.customIconUrl);
-                                e.currentTarget.style.display = 'none';
-                              }}
-                            />
-                          ) : (
-                            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center">
-                              <Trees className="h-10 w-10 text-green-600" />
-                            </div>
-                          )}
-                        </div>
-                        <span className="text-sm font-medium">{amenity.name}</span>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <Trees className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-600">No hay amenidades registradas para este parque</p>
-                    <p className="text-xs text-gray-500 mt-2">
-                      Parque ID: {park.id} | Amenidades: {park.amenities ? 'array definido' : 'undefined'}
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+          <div className="lg:col-span-2 space-y-8">{/* Continúa con otras secciones */}
 
             {/* Especies Arbóreas */}
             <Card>
