@@ -705,6 +705,108 @@ function ParkLandingPage() {
         </div>
       </div>
 
+      {/* Actividades del Parque - Sección después de amenidades */}
+      <div className="bg-white">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-xl">
+                <Calendar className="h-6 w-6 text-orange-600" />
+                Actividades del Parque
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {park.activities && park.activities.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  {park.activities.slice(0, 6).map((activity) => (
+                    <div 
+                      key={activity.id} 
+                      className="group cursor-pointer bg-white rounded-lg border border-orange-200 hover:border-orange-400 transition-all duration-300 overflow-hidden shadow-sm hover:shadow-md"
+                      onClick={() => {
+                        setSelectedActivityData(activity);
+                        setIsActivityModalOpen(true);
+                      }}
+                    >
+                      <div className="aspect-[4/3] relative overflow-hidden">
+                        {activity.imageUrl ? (
+                          <img 
+                            src={activity.imageUrl}
+                            alt={activity.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center">
+                            <Calendar className="h-16 w-16 text-orange-600 opacity-70" />
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300"></div>
+                        
+                        {/* Badge de categoría */}
+                        {activity.category && (
+                          <div className="absolute top-2 right-2">
+                            <Badge variant="secondary" className="text-xs bg-white/90 text-orange-700 border-orange-300">
+                              {activity.category}
+                            </Badge>
+                          </div>
+                        )}
+                        
+                        {/* Precio si no es gratuita */}
+                        {!activity.isFree && activity.price && (
+                          <div className="absolute bottom-2 left-2">
+                            <Badge className="text-xs bg-green-600 text-white">
+                              ${activity.price}
+                            </Badge>
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-4">
+                        <h4 className="font-semibold text-orange-800 text-sm line-clamp-2 mb-2">
+                          {activity.title}
+                        </h4>
+                        <div className="flex items-center text-xs text-gray-500 mb-2">
+                          <Clock className="h-3 w-3 mr-1" />
+                          {formatDate(activity.startDate)}
+                        </div>
+                        {activity.location && (
+                          <div className="flex items-center text-xs text-gray-500">
+                            <MapPin className="h-3 w-3 mr-1" />
+                            <span className="truncate">{activity.location}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12 bg-gray-50 rounded-lg">
+                  <Calendar className="h-16 w-16 mx-auto mb-4 text-gray-400" />
+                  <h3 className="text-lg font-semibold text-gray-600 mb-2">No hay actividades programadas</h3>
+                  <p className="text-gray-500 mb-4">Próximamente se publicarán nuevos eventos y actividades</p>
+                  <Link href="/activities">
+                    <Button variant="outline" className="border-orange-300 text-orange-700 hover:bg-orange-50">
+                      <Calendar className="h-4 w-4 mr-2" />
+                      Explorar todas las actividades
+                    </Button>
+                  </Link>
+                </div>
+              )}
+              
+              {/* Enlace para ver todas las actividades */}
+              {park.activities && park.activities.length > 0 && (
+                <div className="text-center pt-6 border-t mt-6">
+                  <Link href="/activities">
+                    <Button variant="outline" className="border-orange-300 text-orange-700 hover:bg-orange-50">
+                      <Calendar className="h-4 w-4 mr-2" />
+                      Ver todas las actividades ({park.activities.length})
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
       {/* Sección de Ubicación con Información de Contacto */}
       <div className="bg-white">
         <div className="max-w-7xl mx-auto px-4 py-8">
@@ -902,82 +1004,7 @@ function ParkLandingPage() {
               </CardContent>
             </Card>
 
-            {/* Actividades */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-xl">
-                  <Calendar className="h-6 w-6 text-orange-600" />
-                  Actividades
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {park.activities && park.activities.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                    {park.activities.slice(0, 3).map((activity) => (
-                      <div 
-                        key={activity.id} 
-                        className="group cursor-pointer bg-white rounded-lg border border-orange-200 hover:border-orange-400 transition-all duration-300 overflow-hidden"
-                        onClick={() => {
-                          setSelectedActivityData(activity);
-                          setIsActivityModalOpen(true);
-                        }}
-                      >
-                        <div className="aspect-[4/3] relative overflow-hidden">
-                          {activity.imageUrl ? (
-                            <img 
-                              src={activity.imageUrl}
-                              alt={activity.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center">
-                              <Calendar className="h-16 w-16 text-orange-600 opacity-70" />
-                            </div>
-                          )}
-                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300"></div>
-                          
-                          {/* Badge de categoría */}
-                          {activity.category && (
-                            <div className="absolute top-2 right-2">
-                              <Badge variant="secondary" className="text-xs bg-white/90 text-orange-700 border-orange-300">
-                                {activity.category}
-                              </Badge>
-                            </div>
-                          )}
-                        </div>
-                        <div className="p-3">
-                          <h4 className="font-semibold text-orange-800 text-sm line-clamp-2 mb-2">
-                            {activity.title}
-                          </h4>
-                          <div className="flex items-center text-xs text-gray-500">
-                            <Clock className="h-3 w-3 mr-1" />
-                            {formatDate(activity.startDate)}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 bg-gray-50 rounded-lg">
-                    <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                    <p className="text-gray-500 mb-2">No hay actividades programadas actualmente</p>
-                    <p className="text-sm text-gray-400">Próximamente se publicarán nuevos eventos</p>
-                  </div>
-                )}
-                
-                {/* Enlace para ver todas las actividades */}
-                {park.activities && park.activities.length > 0 && (
-                  <div className="text-center pt-4 border-t mt-4">
-                    <Link href="/activities">
-                      <Button variant="outline" className="border-orange-300 text-orange-700 hover:bg-orange-50">
-                        <Calendar className="h-4 w-4 mr-2" />
-                        Ver todas las actividades
-                      </Button>
-                    </Link>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+
 
             {/* Concesiones y Servicios */}
             <Card>
