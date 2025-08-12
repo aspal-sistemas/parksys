@@ -42,6 +42,7 @@ The application uses a client-server architecture with a modern full-stack.
 - **Module Order Reorganization**: Successfully reorganized park landing page content structure - moved Concessions module and Tree Species module to appear after Activities module. Final order: Gallery → Amenities → Activities → Tree Species → Concessions → Location/Contact.
 - **Park Collaborators Section Removal**: Completely removed the park collaborators section that was previously added after Concessions module. This included both the volunteers and instructors modules to streamline the park landing page content flow.
 - **Activities Layout Reversion and Evaluations Repositioning**: Reverted the activities section to its original full-width layout with 3-column grid. Relocated the Citizen Evaluations module from the sidebar to a new dedicated section positioned after Concessions with full-width (3/3) grid layout, providing better visual hierarchy and user flow organization.
+- **Event Request Module Integration**: Moved the "Realiza tu evento" module from the sidebar to the main content flow, positioning it alongside the Citizen Evaluations module in a 2-column grid layout (50/50 split). This creates better integration of event management functionality within the main park information flow.
 
 ## Previous Changes (January 2025)
 - **Architecture Refactor**: Implemented complete separation of organizational users from catalog entities, eliminating data duplication across employees, volunteers, instructors, and concessionaires tables.

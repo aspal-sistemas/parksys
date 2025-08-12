@@ -1010,13 +1010,53 @@ function ParkLandingPage() {
         </div>
       </div>
 
-      {/* Evaluaciones Ciudadanas - Nueva sección independiente */}
+      {/* Realiza tu evento y Evaluaciones Ciudadanas - Grid 2 columnas */}
       <div className="bg-white">
         <div className="max-w-7xl mx-auto px-4 py-8">
-          <div className="grid grid-cols-1 gap-8">
-            <div className="col-span-1">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            
+            {/* Realiza tu evento - Lado izquierdo */}
+            <div>
+              <Card className="bg-white border-2 border-green-500 h-full">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-green-800">
+                    <Calendar className="h-5 w-5" />
+                    ¡Realiza tu evento aquí!
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-green-700 mb-4">
+                    Organiza tu evento en este parque. Tenemos opciones para eventos de bajo y alto impacto.
+                  </p>
+                  <div className="space-y-3">
+                    <Link href="/admin/eventos-ambu/solicitud-bajo-impacto">
+                      <Button 
+                        variant="outline" 
+                        className="w-full bg-white hover:bg-green-50 text-green-700 border-green-300 hover:border-green-400"
+                      >
+                        <Calendar className="h-4 w-4 mr-2" />
+                        Solicitud de evento de bajo impacto
+                      </Button>
+                    </Link>
+                    <Link href="/admin/eventos-ambu/solicitud-alto-impacto">
+                      <Button 
+                        variant="outline" 
+                        className="w-full bg-white hover:bg-green-50 text-green-700 border-green-300 hover:border-green-400"
+                      >
+                        <Calendar className="h-4 w-4 mr-2" />
+                        Solicitud de evento de alto impacto
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Evaluaciones Ciudadanas - Lado derecho */}
+            <div>
               <ParkEvaluationsSectionSimple parkId={park.id} parkSlug={slug || ''} />
             </div>
+            
           </div>
         </div>
       </div>
@@ -1503,40 +1543,7 @@ function ParkLandingPage() {
               </CardContent>
             </Card>
 
-            {/* Realiza tu evento aquí */}
-            <Card className="bg-white border-2 border-green-500">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-green-800">
-                  <Calendar className="h-5 w-5" />
-                  ¡Realiza tu evento aquí!
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-green-700 mb-4">
-                  Organiza tu evento en este parque. Tenemos opciones para eventos de bajo y alto impacto.
-                </p>
-                <div className="space-y-3">
-                  <Link href="/admin/eventos-ambu/solicitud-bajo-impacto">
-                    <Button 
-                      variant="outline" 
-                      className="w-full bg-white hover:bg-green-50 text-green-700 border-green-300 hover:border-green-400"
-                    >
-                      <Calendar className="h-4 w-4 mr-2" />
-                      Solicitud de evento de bajo impacto
-                    </Button>
-                  </Link>
-                  <Link href="/admin/eventos-ambu/solicitud-alto-impacto">
-                    <Button 
-                      variant="outline" 
-                      className="w-full bg-white hover:bg-green-50 text-green-700 border-green-300 hover:border-green-400"
-                    >
-                      <Calendar className="h-4 w-4 mr-2" />
-                      Solicitud de evento de alto impacto
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
+
 
             {/* Instructores */}
             <Card>
