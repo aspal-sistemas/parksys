@@ -604,7 +604,7 @@ function ParkLandingPage() {
             </div>
 
             {/* Información General integrada continuamente en la galería */}
-            <div className="mt-12 pt-8 border-t border-gray-100">
+            <div className="mt-12">
               
               <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-8 border border-gray-100">
                 <p className="text-gray-700 leading-relaxed text-lg mb-8 text-center max-w-4xl mx-auto">
