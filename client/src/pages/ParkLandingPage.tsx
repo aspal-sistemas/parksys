@@ -807,6 +807,118 @@ function ParkLandingPage() {
         </div>
       </div>
 
+      {/* Concesiones y Servicios - Sección después de actividades */}
+      <div className="bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-xl">
+                <Store className="h-6 w-6 text-blue-600" />
+                Concesiones y Servicios
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {park.concessions && park.concessions.length > 0 ? (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {park.concessions.map((concession) => (
+                      <Link key={concession.id} href={`/concession/${concession.id}`}>
+                        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer hover:border-blue-300 group">
+                          {/* Imagen de la concesión */}
+                          <div className="relative h-48 overflow-hidden">
+                            {concession.primaryImage ? (
+                              <img 
+                                src={concession.primaryImage} 
+                                alt={concession.vendorName}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                                <Store className="h-16 w-16 text-white opacity-80" />
+                              </div>
+                            )}
+                            
+                            {/* Badge del tipo de concesión */}
+                            {concession.concessionType && (
+                              <div className="absolute top-3 right-3">
+                                <Badge variant="secondary" className="text-xs bg-white/95 text-blue-700 border-blue-300 font-medium">
+                                  {concession.concessionType}
+                                </Badge>
+                              </div>
+                            )}
+
+                            {/* Estado de la concesión */}
+                            <div className="absolute top-3 left-3">
+                              <Badge className="text-xs bg-green-600 text-white">
+                                Activa
+                              </Badge>
+                            </div>
+                          </div>
+
+                          {/* Contenido de la tarjeta */}
+                          <div className="p-5">
+                            <div className="flex items-center gap-2 mb-3">
+                              <Store className="h-5 w-5 text-blue-600" />
+                              <h3 className="font-bold text-gray-900 text-base">{concession.vendorName}</h3>
+                            </div>
+                            
+                            {concession.typeDescription && (
+                              <p className="text-gray-600 text-sm mb-3 line-clamp-2 leading-relaxed">{concession.typeDescription}</p>
+                            )}
+                            
+                            <div className="space-y-2">
+                              {concession.location && (
+                                <div className="flex items-center gap-2 text-gray-500 text-sm">
+                                  <MapPin className="h-4 w-4 flex-shrink-0" />
+                                  <span className="truncate">{concession.location}</span>
+                                </div>
+                              )}
+                              
+                              <div className="flex items-center gap-2 text-gray-500 text-sm">
+                                <Clock className="h-4 w-4 flex-shrink-0" />
+                                <span>Desde {format(new Date(concession.startDate), 'MMM yyyy', { locale: es })}</span>
+                              </div>
+
+                              {concession.vendorPhone && (
+                                <div className="flex items-center gap-2 text-blue-600 text-sm font-medium">
+                                  <Phone className="h-4 w-4 flex-shrink-0" />
+                                  <span>{concession.vendorPhone}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                  
+                  <div className="text-center pt-6 border-t">
+                    <Link href="/concessions">
+                      <Button variant="outline" className="border-blue-300 text-blue-700 hover:bg-blue-50">
+                        <Store className="h-4 w-4 mr-2" />
+                        Ver todas las concesiones ({park.concessions.length})
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-12 bg-white rounded-lg">
+                  <Store className="h-16 w-16 text-blue-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-600 mb-2">No hay concesiones activas</h3>
+                  <p className="text-gray-500 mb-4">Este parque no tiene concesiones comerciales disponibles actualmente</p>
+                  <Link href="/concessions">
+                    <Button variant="outline" className="border-blue-300 text-blue-700 hover:bg-blue-50">
+                      <Store className="h-4 w-4 mr-2" />
+                      Explorar todas las concesiones
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
       {/* Sección de Ubicación con Información de Contacto */}
       <div className="bg-white">
         <div className="max-w-7xl mx-auto px-4 py-8">
@@ -1006,95 +1118,7 @@ function ParkLandingPage() {
 
 
 
-            {/* Concesiones y Servicios */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Store className="h-5 w-5 text-blue-600" />
-                  Concesiones y Servicios
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {park.concessions && park.concessions.length > 0 ? (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {park.concessions.map((concession) => (
-                        <Link key={concession.id} href={`/concession/${concession.id}`}>
-                          <div className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer hover:border-blue-300 group">
-                            {/* Imagen de la concesión */}
-                            <div className="relative h-40 overflow-hidden">
-                              {concession.primaryImage ? (
-                                <img 
-                                  src={concession.primaryImage} 
-                                  alt={concession.vendorName}
-                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                                />
-                              ) : (
-                                <div className="w-full h-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-                                  <Store className="h-12 w-12 text-white opacity-80" />
-                                </div>
-                              )}
-                              
-                              {/* Badge del tipo de concesión */}
-                              {concession.concessionType && (
-                                <div className="absolute top-2 right-2">
-                                  <Badge variant="secondary" className="text-xs bg-white/90 text-blue-700 border-blue-300">
-                                    {concession.concessionType}
-                                  </Badge>
-                                </div>
-                              )}
-                            </div>
 
-                            {/* Contenido de la tarjeta */}
-                            <div className="p-4">
-                              <div className="flex items-center gap-2 mb-2">
-                                <Store className="h-4 w-4 text-blue-600" />
-                                <h3 className="font-semibold text-gray-900 text-sm">{concession.vendorName}</h3>
-                              </div>
-                              
-                              {concession.typeDescription && (
-                                <p className="text-gray-600 text-xs mb-2 line-clamp-2">{concession.typeDescription}</p>
-                              )}
-                              
-                              {concession.location && (
-                                <div className="flex items-center gap-1 text-gray-500 text-xs mb-2">
-                                  <MapPin className="h-3 w-3" />
-                                  <span className="truncate">{concession.location}</span>
-                                </div>
-                              )}
-                              
-                              <div className="flex items-center justify-between text-xs">
-                                <div className="flex items-center gap-1 text-gray-500">
-                                  <Clock className="h-3 w-3" />
-                                  <span>Desde {format(new Date(concession.startDate), 'MMM yyyy', { locale: es })}</span>
-                                </div>
-                                {concession.vendorPhone && (
-                                  <span className="text-blue-600 font-medium">{concession.vendorPhone}</span>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </Link>
-                      ))}
-                    </div>
-                    
-                    <div className="text-center pt-4 border-t">
-                      <Link href="/concessions">
-                        <Button variant="outline" className="border-blue-300 text-blue-700 hover:bg-blue-50">
-                          <Store className="h-4 w-4 mr-2" />
-                          Ver todas las concesiones
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center py-6">
-                    <Store className="h-8 w-8 text-blue-400 mx-auto mb-2" />
-                    <p className="text-blue-600 text-sm">No hay concesiones activas en este parque</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
 
 
 
