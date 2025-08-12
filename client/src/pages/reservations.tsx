@@ -28,7 +28,7 @@ import {
   Mail,
   X
 } from 'lucide-react';
-import heroImage from "@assets/download-7_1754927049169.jpg";
+const heroImage = "/download-background.jpg";
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
