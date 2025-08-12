@@ -1283,7 +1283,7 @@ const AdminSidebarComplete: React.FC = () => {
       </ScrollArea>
 
       {/* Footer con logo de ParkSys */}
-      <div className="p-2 border-t border-teal-600" style={{ backgroundColor: '#003D49' }}>
+      <div className="p-8 border-t border-teal-600" style={{ backgroundColor: '#003D49' }}>
         <div className="flex flex-col items-center justify-center gap-0">
           <img 
             src={parksysLogo} 
