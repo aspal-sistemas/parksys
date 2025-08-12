@@ -301,7 +301,7 @@ const InstructorsPage: React.FC = () => {
               <div className="bg-[#19633c] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Calendar className="h-10 w-10 text-white" />
               </div>
-              <div className="text-4xl md:text-5xl font-bold text-gray-900 mb-2">30</div>
+              <div className="text-4xl md:text-5xl font-bold text-gray-900 mb-2">30+</div>
               <div className="text-lg text-gray-600 font-medium">Sesiones Mensuales</div>
             </div>
             
