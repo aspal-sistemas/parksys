@@ -548,11 +548,8 @@ function ParkLandingPage() {
         <div className="bg-white border-b border-gray-200">
           <div className="max-w-7xl mx-auto px-4 py-12">
             <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                Galería de Imágenes
-              </h2>
-              <p className="text-gray-600">
-                Descubre {park.name} a través de {allImages.length} fotografías
+              <p className="text-xl font-bold text-gray-800">
+                Descubre el bosque, sus espacios y actividades
               </p>
             </div>
             
