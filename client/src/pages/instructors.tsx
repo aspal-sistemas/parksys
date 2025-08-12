@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Search, Filter, Grid, List, Star, Phone, Mail, Award, Clock, User, MessageSquare, Users, MapPin } from 'lucide-react';
 import PublicInstructorEvaluationForm from '@/components/PublicInstructorEvaluationForm';
 import PublicLayout from '@/components/PublicLayout';
-import AdSpace from '@/components/AdSpace';
+
 const heroImage = "/images/instructor-hero.jpg";
 
 // Tipo de datos para un instructor
@@ -200,19 +200,7 @@ const InstructorsPage: React.FC = () => {
   return (
     <PublicLayout>
       <div className="bg-gray-50">
-      {/* Header Ad Space - Oculto */}
-      {/*
-      <div className="w-full bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 py-2">
-          <AdSpace 
-            spaceId="12" 
-            position="header" 
-            pageType="instructors" 
-            className="w-full"
-          />
-        </div>
-      </div>
-      */}
+
 
       {/* Hero Section */}
       <div 
@@ -251,14 +239,7 @@ const InstructorsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Banner publicitario de ancho completo */}
-      <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] mt-8 mb-8">
-        <AdSpace 
-          spaceId={38}
-          pageType="instructors"
-          position="banner"
-        />
-      </div>
+
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-0 pb-2">
         {/* Filtros y Controles */}
@@ -519,15 +500,7 @@ const InstructorsPage: React.FC = () => {
         )}
           </div>
 
-          {/* Sidebar Publicitario */}
-          <div className="w-80 flex-shrink-0 hidden lg:block">
-            <div className="sticky top-4 space-y-6">
-              {/* Espacios publicitarios con diseño tipo tarjeta */}
-              <AdSpace spaceId="26" position="card" pageType="instructors" />
-              <AdSpace spaceId="27" position="card" pageType="instructors" />
-              <AdSpace spaceId="28" position="card" pageType="instructors" />
-            </div>
-          </div>
+
         </div>
 
         {/* Paginación */}
