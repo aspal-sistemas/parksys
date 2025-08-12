@@ -460,13 +460,11 @@ function ParkLandingPage() {
         )}
         <div className="absolute inset-0 bg-black bg-opacity-40"></div>
         
-        {/* Navigation Button - Top Left */}
+        {/* Navigation Link - Top Left */}
         <div className="absolute top-6 left-6 z-20">
-          <Link href="/parks">
-            <Button variant="outline" className="bg-white/90 hover:bg-white text-gray-900 border-white/20">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Volver a parques
-            </Button>
+          <Link href="/parks" className="flex items-center gap-2 text-white hover:text-white/80 transition-colors">
+            <ArrowLeft className="h-4 w-4" />
+            <span>Volver a parques</span>
           </Link>
         </div>
 
