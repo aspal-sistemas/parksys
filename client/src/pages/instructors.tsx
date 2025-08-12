@@ -7,11 +7,32 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Search, Filter, Grid, List, Star, Phone, Mail, Award, Clock, User, MessageSquare, Users, MapPin } from 'lucide-react';
+import { Search, Filter, Grid, List, Star, Phone, Mail, Award, Clock, User, MessageSquare, Users, MapPin, Trees, Calendar } from 'lucide-react';
 import PublicInstructorEvaluationForm from '@/components/PublicInstructorEvaluationForm';
 import PublicLayout from '@/components/PublicLayout';
+import AdSpace from '@/components/AdSpace';
 
 const heroImage = "/images/instructor-hero.jpg";
+
+// Imágenes de galería para instructores en parques
+const galleryImages = [
+  {
+    src: "/attached_assets/happy-volunteers-with-seedlings-and-garden-tools-2024-09-27-13-54-22-utc (1)_1754955545591.jpg",
+    alt: "Instructores trabajando con voluntarios en jardinería"
+  },
+  {
+    src: "/attached_assets/jardin-japones_1754950415873.jpg", 
+    alt: "Instructor guiando en el jardín japonés"
+  },
+  {
+    src: "/attached_assets/download-7_1754927049169.jpg",
+    alt: "Actividades grupales en parque"
+  },
+  {
+    src: "/attached_assets/People_23-02_1752941117659.jpg",
+    alt: "Instructores con participantes"
+  }
+];
 
 // Tipo de datos para un instructor
 interface Instructor {
@@ -66,8 +87,8 @@ const InstructorsPage: React.FC = () => {
 
   // Estados para filtros
   const [searchTerm, setSearchTerm] = useState('');
-  const [specialtyFilter, setSpecialtyFilter] = useState('');
-  const [experienceFilter, setExperienceFilter] = useState('');
+  const [specialtyFilter, setSpecialtyFilter] = useState('all');
+  const [experienceFilter, setExperienceFilter] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [selectedInstructor, setSelectedInstructor] = useState<Instructor | null>(null);
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
@@ -202,9 +223,9 @@ const InstructorsPage: React.FC = () => {
       <div className="bg-gray-50">
 
 
-      {/* Hero Section */}
-      <div 
-        className="relative text-white"
+      {/* Hero Section - Estilo Activities */}
+      <section 
+        className="relative py-24 px-4 text-center text-white"
         style={{
           backgroundImage: `url(${heroImage})`,
           backgroundSize: 'cover',
@@ -212,56 +233,97 @@ const InstructorsPage: React.FC = () => {
           backgroundRepeat: 'no-repeat'
         }}
       >
-        <div className="absolute inset-0 bg-black/50"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-          <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              Conoce a Nuestros <span className="text-yellow-300">Instructores</span>
-            </h1>
-            <p className="text-xl md:text-2xl text-emerald-100 max-w-3xl mx-auto">
-              Profesionales experimentados comprometidos con crear experiencias únicas en nuestros parques
-            </p>
-            <div className="mt-8 flex justify-center items-center space-x-8 text-emerald-100">
-              <div className="text-center">
-                <div className="text-3xl font-bold">{instructors.length}</div>
-                <div className="text-sm">Instructores</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold">{allSpecialties.size}</div>
-                <div className="text-sm">Especialidades</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold">4.8</div>
-                <div className="text-sm">Calificación Promedio</div>
-              </div>
+        <div className="absolute inset-0 bg-black/40"></div>
+        <div className="relative max-w-4xl mx-auto">
+          <div className="text-center mb-6">
+            <div className="flex items-center justify-center gap-3 mb-2">
+              <User className="h-10 w-10" />
+              <h1 className="font-guttery text-4xl md:text-5xl font-normal">
+                Conoce a
+              </h1>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold">
+              Nuestros Instructores
+            </h2>
+          </div>
+          <p className="text-xl text-green-100 mb-8 max-w-2xl mx-auto">
+            Profesionales experimentados comprometidos con crear experiencias únicas en nuestros parques.
+            Descubre su experiencia y especialidades.
+          </p>
+          <div className="flex items-center justify-center gap-4 text-green-100">
+            <div className="flex items-center gap-2">
+              <User className="h-5 w-5" />
+              <span>{instructors.length} instructores</span>
+            </div>
+            <div className="w-px h-6 bg-green-300"></div>
+            <div className="flex items-center gap-2">
+              <Award className="h-5 w-5" />
+              <span>{allSpecialties.size} especialidades</span>
+            </div>
+            <div className="w-px h-6 bg-green-300"></div>
+            <div className="flex items-center gap-2">
+              <Star className="h-5 w-5" />
+              <span>4.8 calificación</span>
             </div>
           </div>
         </div>
+      </section>
+
+      {/* Galería de fotos - Estilo Volunteers */}
+      <section className="py-12 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8">
+            <h3 className="text-2xl font-bold text-gray-900 mb-3">Nuestros Instructores en Acción</h3>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Descubre cómo nuestros instructores trabajan día a día creando experiencias memorables en los parques de Guadalajara
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {galleryImages.map((image, index) => (
+              <div key={index} className="group overflow-hidden rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
+                <img
+                  src={image.src}
+                  alt={image.alt}
+                  className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Banner publicitario - Estilo Volunteers */}
+      <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] mt-8 mb-8">
+        <AdSpace 
+          spaceId={37}
+          pageType="instructors"
+          position="banner"
+        />
       </div>
 
-
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-0 pb-2">
-        {/* Filtros y Controles */}
-        <div className="mb-6">
-          <div className="bg-white rounded-2xl shadow-sm border p-6">
+      {/* Panel de filtros y búsqueda - Estilo Volunteers */}
+      <section className="sticky top-0 z-10 border-b border-gray-200 shadow-sm" style={{backgroundColor: '#19633c'}}>
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          <div className="bg-white rounded-lg shadow-sm p-6">
             <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
               {/* Búsqueda */}
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <Input
-                  type="text"
-                  placeholder="Buscar instructores..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 border-gray-200 focus:border-primary focus:ring-primary"
-                />
+              <div className="flex-1 max-w-md">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-green-600" />
+                  <Input
+                    placeholder="Buscar instructores..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 border-gray-300 focus:border-green-500 focus:ring-green-500"
+                  />
+                </div>
               </div>
 
               {/* Filtros */}
-              <div className="flex flex-col sm:flex-row gap-4 items-center">
+              <div className="flex flex-col sm:flex-row gap-3 items-center">
                 <Select value={specialtyFilter} onValueChange={setSpecialtyFilter}>
-                  <SelectTrigger className="w-40">
+                  <SelectTrigger className="w-44 border-gray-300">
+                    <Award className="h-4 w-4 mr-2 text-green-600" />
                     <SelectValue placeholder="Especialidad" />
                   </SelectTrigger>
                   <SelectContent>
@@ -273,7 +335,8 @@ const InstructorsPage: React.FC = () => {
                 </Select>
 
                 <Select value={experienceFilter} onValueChange={setExperienceFilter}>
-                  <SelectTrigger className="w-40">
+                  <SelectTrigger className="w-40 border-gray-300">
+                    <Clock className="h-4 w-4 mr-2 text-green-600" />
                     <SelectValue placeholder="Experiencia" />
                   </SelectTrigger>
                   <SelectContent>
@@ -285,12 +348,12 @@ const InstructorsPage: React.FC = () => {
                 </Select>
 
                 {/* Toggle de vista */}
-                <div className="flex border rounded-lg bg-gray-50">
+                <div className="flex bg-gray-100 rounded-lg p-1">
                   <Button
                     variant={viewMode === 'grid' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => setViewMode('grid')}
-                    className="rounded-r-none"
+                    className={`h-8 px-3 ${viewMode === 'grid' ? 'bg-green-600 text-white hover:bg-green-700' : 'hover:bg-gray-200'}`}
                   >
                     <Grid className="h-4 w-4" />
                   </Button>
@@ -298,39 +361,44 @@ const InstructorsPage: React.FC = () => {
                     variant={viewMode === 'list' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => setViewMode('list')}
-                    className="rounded-l-none"
+                    className={`h-8 px-3 ${viewMode === 'list' ? 'bg-green-600 text-white hover:bg-green-700' : 'hover:bg-gray-200'}`}
                   >
                     <List className="h-4 w-4" />
                   </Button>
                 </div>
+
+                {/* Botón de limpiar filtros */}
+                {(searchTerm || specialtyFilter || experienceFilter) && (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setSearchTerm('');
+                      setSpecialtyFilter('');
+                      setExperienceFilter('');
+                    }}
+                    className="border-green-300 text-green-700 hover:bg-green-50"
+                  >
+                    <Filter className="h-4 w-4 mr-2" />
+                    Limpiar
+                  </Button>
+                )}
               </div>
             </div>
 
-            {/* Botón de limpiar filtros */}
-            {(searchTerm || specialtyFilter || experienceFilter) && (
-              <div className="mt-4 flex justify-center">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setSearchTerm('');
-                    setSpecialtyFilter('all');
-                    setExperienceFilter('all');
-                  }}
-                  className="text-primary border-primary hover:bg-primary hover:text-white"
-                >
-                  Limpiar Filtros
-                </Button>
-              </div>
-            )}
+            {/* Resultados encontrados */}
+            <div className="mt-4 text-center">
+              <p className="text-sm text-gray-600">
+                {filteredInstructors.length} instructor{filteredInstructors.length !== 1 ? 'es' : ''} encontrado{filteredInstructors.length !== 1 ? 's' : ''}
+                {searchTerm && (
+                  <span className="font-medium"> para "{searchTerm}"</span>
+                )}
+              </p>
+            </div>
           </div>
         </div>
+      </section>
 
-        {/* Resultados */}
-        <div className="mb-6 flex justify-between items-center">
-          <p className="text-gray-600">
-            Mostrando {startIndex + 1}-{Math.min(endIndex, filteredInstructors.length)} de {filteredInstructors.length} instructores
-          </p>
-        </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-2">
 
         {/* Layout con Sidebar Publicitario */}
         <div className="flex gap-6">
@@ -573,7 +641,24 @@ const InstructorsPage: React.FC = () => {
             </Button>
           </div>
         )}
-      </div>
+          </div>
+
+          {/* Sidebar Publicitario */}
+          <div className="hidden lg:block lg:w-80 space-y-4">
+            <AdSpace 
+              spaceId={24}
+              pageType="instructors"
+              position="sidebar"
+              className="sticky top-4"
+            />
+            <AdSpace 
+              spaceId={25}
+              pageType="instructors"
+              position="sidebar-secondary"
+              className="sticky top-80"
+            />
+          </div>
+        </div>
 
       {/* Dialog para ver perfil completo */}
       <Dialog open={profileDialogOpen} onOpenChange={setProfileDialogOpen}>
@@ -662,7 +747,52 @@ const InstructorsPage: React.FC = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Módulo "Need more info" - Estilo Volunteers */}
+      <section className="bg-gradient-to-r from-green-700 to-green-800 py-16 mt-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h3 className="text-3xl font-bold text-white mb-4">
+              ¿Necesitas Más Información?
+            </h3>
+            <p className="text-green-100 text-lg mb-8 max-w-2xl mx-auto">
+              Nuestro equipo está aquí para ayudarte. Contáctanos si tienes preguntas sobre nuestros instructores 
+              o necesitas asistencia para encontrar el profesional ideal para tu actividad.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <Button 
+                className="bg-white text-green-700 hover:bg-green-50 px-8 py-3 text-lg font-semibold"
+                asChild
+              >
+                <a href="/contacto">
+                  <MessageSquare className="h-5 w-5 mr-2" />
+                  Contáctanos
+                </a>
+              </Button>
+              <Button 
+                variant="outline"
+                className="border-white text-white hover:bg-white hover:text-green-700 px-8 py-3 text-lg font-semibold"
+                asChild
+              >
+                <a href="/activities">
+                  <Calendar className="h-5 w-5 mr-2" />
+                  Ver Actividades
+                </a>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* AdSpace final */}
+      <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] mt-12 mb-8">
+        <AdSpace 
+          spaceId={38}
+          pageType="instructors"
+          position="footer"
+        />
       </div>
+
     </PublicLayout>
   );
 };
