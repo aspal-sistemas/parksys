@@ -94,6 +94,7 @@ const InstructorsPage: React.FC = () => {
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   const [evaluationInstructor, setEvaluationInstructor] = useState<Instructor | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [showCount, setShowCount] = useState(3); // Inicialmente mostrar 3
   const itemsPerPage = 12;
   
   // Obtener datos de instructores de la ruta correcta para la página pública
@@ -167,16 +168,23 @@ const InstructorsPage: React.FC = () => {
     return matchesSearch && matchesSpecialty && matchesExperience;
   });
 
-  // Paginación
-  const totalPages = Math.ceil(filteredInstructors.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentInstructors = filteredInstructors.slice(startIndex, endIndex);
+  // Mostrar instructores progresivamente (3, 12, 21, etc.)
+  const currentInstructors = filteredInstructors.slice(0, showCount);
+  const hasMoreInstructors = filteredInstructors.length > showCount;
+  const remainingCount = Math.min(9, filteredInstructors.length - showCount);
 
-  // Reset página cuando cambian los filtros
+  // Reset showCount cuando cambian los filtros
   React.useEffect(() => {
-    setCurrentPage(1);
+    setShowCount(3);
   }, [searchTerm, specialtyFilter, experienceFilter]);
+
+  const handleShowMore = () => {
+    setShowCount(prev => prev + 9);
+  };
+
+  const handleShowLess = () => {
+    setShowCount(3);
+  };
 
   const openProfile = (instructor: Instructor) => {
     setSelectedInstructor(instructor);
@@ -620,53 +628,25 @@ const InstructorsPage: React.FC = () => {
 
         </div>
 
-        {/* Paginación */}
-        {totalPages > 1 && (
-          <div className="flex justify-center items-center space-x-2">
-            <Button
-              variant="outline"
-              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-              className="text-primary border-primary hover:bg-primary hover:text-white"
-            >
-              Anterior
-            </Button>
-            
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              let pageNum;
-              if (totalPages <= 5) {
-                pageNum = i + 1;
-              } else if (currentPage <= 3) {
-                pageNum = i + 1;
-              } else if (currentPage >= totalPages - 2) {
-                pageNum = totalPages - 4 + i;
-              } else {
-                pageNum = currentPage - 2 + i;
-              }
-              
-              return (
-                <Button
-                  key={pageNum}
-                  variant={currentPage === pageNum ? "default" : "outline"}
-                  onClick={() => setCurrentPage(pageNum)}
-                  className={currentPage === pageNum 
-                    ? "bg-primary hover:bg-primary-600" 
-                    : "text-primary border-primary hover:bg-primary hover:text-white"
-                  }
-                >
-                  {pageNum}
-                </Button>
-              );
-            })}
-            
-            <Button
-              variant="outline"
-              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-              disabled={currentPage === totalPages}
-              className="text-primary border-primary hover:bg-primary hover:text-white"
-            >
-              Siguiente
-            </Button>
+        {/* Botones Ver Más / Ver Menos */}
+        {filteredInstructors.length > 3 && (
+          <div className="text-center py-6">
+            {hasMoreInstructors ? (
+              <Button 
+                onClick={handleShowMore}
+                className="bg-green-600 hover:bg-green-700 text-white px-8 py-3"
+              >
+                Ver más ({remainingCount} instructor{remainingCount !== 1 ? 'es' : ''} restante{remainingCount !== 1 ? 's' : ''})
+              </Button>
+            ) : showCount > 3 && (
+              <Button 
+                onClick={handleShowLess}
+                variant="outline"
+                className="border-green-600 text-green-600 hover:bg-green-50 px-8 py-3"
+              >
+                Ver menos
+              </Button>
+            )}
           </div>
         )}
 
