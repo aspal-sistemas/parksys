@@ -1,374 +1,202 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Search, Filter, Grid, List, Star, Phone, Mail, Award, Clock, User, MessageSquare, Users, MapPin, Trees, Calendar } from 'lucide-react';
-import PublicInstructorEvaluationForm from '@/components/PublicInstructorEvaluationForm';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { 
+  Users, 
+  Search, 
+  Mail, 
+  Phone, 
+  Award,
+  Clock,
+  Star,
+  Grid,
+  List,
+  Eye
+} from 'lucide-react';
 import PublicLayout from '@/components/PublicLayout';
-import AdSpace from '@/components/AdSpace';
+import yogaHeroImage from "@assets/yoga 1_1754962456652.jpg";
 
-const heroImage = "/images/instructor-hero.jpg";
-
-// Imágenes de galería para instructores en parques
-const galleryImages = [
-  {
-    src: "/attached_assets/happy-volunteers-with-seedlings-and-garden-tools-2024-09-27-13-54-22-utc (1)_1754955545591.jpg",
-    alt: "Instructores trabajando con voluntarios en jardinería"
-  },
-  {
-    src: "/attached_assets/jardin-japones_1754950415873.jpg", 
-    alt: "Instructor guiando en el jardín japonés"
-  },
-  {
-    src: "/attached_assets/download-7_1754927049169.jpg",
-    alt: "Actividades grupales en parque"
-  },
-  {
-    src: "/attached_assets/People_23-02_1752941117659.jpg",
-    alt: "Instructores con participantes"
-  }
-];
-
-// Tipo de datos para un instructor
 interface Instructor {
   id: number;
   full_name: string;
   email: string;
-  phone?: string;
-  specialties?: string;
+  phone: string;
+  specialties: string;
   experience_years: number;
-  status: string;
-  profile_image_url?: string;
-  created_at?: string;
+  certifications: string | null;
+  availability: string | null;
+  status: 'active' | 'inactive' | 'pending';
+  created_at: string;
+  updated_at: string;
+  profile_image_url?: string | null;
   rating?: number;
 }
 
-const InstructorsPage: React.FC = () => {
-  // Helper function para procesar especialidades
-  const getSpecialtiesArray = (specialties: string | string[] | undefined) => {
-    if (!specialties) return [];
-    
-    // Si ya es un array, devolverlo
-    if (Array.isArray(specialties)) return specialties;
-    
-    // Si es un string, procesar diferentes formatos
-    if (typeof specialties === 'string') {
-      // Formato PostgreSQL array: {"Yoga","Danzas Ocultas"}
-      if (specialties.startsWith('{') && specialties.endsWith('}')) {
-        // Remover llaves y dividir por comas, luego limpiar comillas
-        const cleanedString = specialties.slice(1, -1); // Quitar { y }
-        return cleanedString
-          .split(',')
-          .map(s => s.trim().replace(/^"/, '').replace(/"$/, '')) // Quitar comillas
-          .filter(s => s.length > 0);
-      }
-      
-      // Intentar parsear como JSON array estándar
-      try {
-        const parsed = JSON.parse(specialties);
-        if (Array.isArray(parsed)) {
-          return parsed;
-        }
-      } catch (e) {
-        // Si falla el parsing JSON, usar split por comas
-      }
-      
-      // Formato separado por comas: "Yoga,Meditación,Bienestar"
-      return specialties.split(',').map(s => s.trim()).filter(s => s.length > 0);
-    }
-    
-    return [];
-  };
-
-  // Estados para filtros
+export default function InstructorsList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [specialtyFilter, setSpecialtyFilter] = useState('all');
   const [experienceFilter, setExperienceFilter] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [selectedInstructor, setSelectedInstructor] = useState<Instructor | null>(null);
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
-  const [evaluationInstructor, setEvaluationInstructor] = useState<Instructor | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 12;
-  
-  // Obtener datos de instructores de la ruta correcta para la página pública
-  const { data: apiResponse = [], isLoading } = useQuery<any>({
-    queryKey: ['/public-api/instructors/public'],
-  });
-  
-  // Verificar qué estructura de datos tenemos
-  let rawData: any[] = [];
-  
-  if (Array.isArray(apiResponse)) {
-    rawData = apiResponse;
-  } else if (apiResponse && 'data' in apiResponse) {
-    rawData = apiResponse.data || [];
-  } else if (apiResponse && typeof apiResponse === 'object') {
-    rawData = [apiResponse];
-  }
-  
-  // Eliminar duplicados usando Map con ID como clave
-  const instructorsMap = new Map<number, Instructor>();
-  
-  // Procesar solamente entradas válidas y adaptar formato de campos
-  rawData.forEach((data: any) => {
-    if (data && data.id && !instructorsMap.has(data.id)) {
-      const instructor: Instructor = {
-        id: data.id,
-        full_name: data.fullName || data.full_name || '',
-        email: data.email || '',
-        phone: data.phoneNumber || data.phone || '',
-        specialties: data.specialties || '',
-        experience_years: data.experience || data.experience_years || 0,
-        status: data.status || 'active',
-        profile_image_url: data.profileImageUrl || data.profile_image_url || null,
-        created_at: data.createdAt || data.created_at || '',
-        rating: data.rating || null
-      };
-      
-      instructorsMap.set(data.id, instructor);
+  const itemsPerPage = 9;
+
+  // Consulta para obtener instructores
+  const { data: instructorsResponse, isLoading } = useQuery({
+    queryKey: ['/api/instructors/public'],
+    retry: 1,
+    queryFn: async () => {
+      const response = await fetch('/api/instructors/public');
+      if (!response.ok) throw new Error('Error cargando instructores');
+      return response.json();
     }
   });
-  
-  // Convertir el Map a array
-  const instructors = Array.from(instructorsMap.values());
-  
-  // Extraer especialidades únicas para el filtro
-  const allSpecialties = new Set<string>();
-  instructors.forEach(instructor => {
-    if (instructor.specialties) {
-      const specialtiesArray = getSpecialtiesArray(instructor.specialties);
-      
-      specialtiesArray.forEach(specialty => {
-        const trimmed = typeof specialty === 'string' ? specialty.trim() : '';
-        if (trimmed) allSpecialties.add(trimmed);
-      });
-    }
-  });
-  
+
+  const instructors = Array.isArray(instructorsResponse) 
+    ? instructorsResponse.filter((i: Instructor) => i.status === 'active')
+    : [];
+
+  // Obtener todas las especialidades únicas
+  const allSpecialties = useMemo(() => {
+    const specialtiesSet = new Set<string>();
+    instructors.forEach((instructor: Instructor) => {
+      if (instructor.specialties) {
+        instructor.specialties.split(',').forEach((specialty: string) => {
+          specialtiesSet.add(specialty.trim());
+        });
+      }
+    });
+    return Array.from(specialtiesSet);
+  }, [instructors]);
+
+  // Función para obtener especialidades como array
+  const getSpecialtiesArray = (specialties: string): string[] => {
+    if (!specialties) return [];
+    return specialties.split(',').map(s => s.trim()).filter(s => s.length > 0);
+  };
+
   // Filtrar instructores
-  const filteredInstructors = instructors.filter(instructor => {
-    const matchesSearch = searchTerm === '' || 
-      instructor.full_name.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesSpecialty = specialtyFilter === '' || specialtyFilter === 'all' || 
-      (instructor.specialties && instructor.specialties.toLowerCase().includes(specialtyFilter.toLowerCase()));
-    
-    const matchesExperience = experienceFilter === '' || experienceFilter === 'all' || 
-      (experienceFilter === '1-3' && instructor.experience_years >= 1 && instructor.experience_years <= 3) ||
-      (experienceFilter === '4-7' && instructor.experience_years >= 4 && instructor.experience_years <= 7) ||
-      (experienceFilter === '8+' && instructor.experience_years >= 8);
-    
-    return matchesSearch && matchesSpecialty && matchesExperience;
-  });
+  const filteredInstructors = useMemo(() => {
+    return instructors.filter((instructor: Instructor) => {
+      const matchesSearch = !searchTerm || 
+        instructor.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (instructor.specialties && instructor.specialties.toLowerCase().includes(searchTerm.toLowerCase()));
+      
+      const matchesSpecialty = specialtyFilter === 'all' || 
+        (instructor.specialties && instructor.specialties.includes(specialtyFilter));
+      
+      const matchesExperience = experienceFilter === 'all' || 
+        (experienceFilter === '1-3' && instructor.experience_years >= 1 && instructor.experience_years <= 3) ||
+        (experienceFilter === '4-7' && instructor.experience_years >= 4 && instructor.experience_years <= 7) ||
+        (experienceFilter === '8+' && instructor.experience_years >= 8);
+
+      return matchesSearch && matchesSpecialty && matchesExperience;
+    });
+  }, [instructors, searchTerm, specialtyFilter, experienceFilter]);
 
   // Paginación
-  const totalPages = Math.ceil(filteredInstructors.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentInstructors = filteredInstructors.slice(startIndex, endIndex);
+  const currentInstructors = filteredInstructors.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
-  // Reset página cuando cambian los filtros
-  React.useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, specialtyFilter, experienceFilter]);
-
-  const openProfile = (instructor: Instructor) => {
-    setSelectedInstructor(instructor);
-    setProfileDialogOpen(true);
-  };
-
-  const openEvaluation = (instructor: Instructor) => {
-    setEvaluationInstructor(instructor);
-  };
-
-  const renderStars = (rating: number | null) => {
-    if (!rating) return null;
-    
+  // Función para renderizar estrellas
+  const renderStars = (rating: number) => {
     return (
-      <div className="flex items-center">
+      <div className="flex items-center gap-1">
         {[1, 2, 3, 4, 5].map((star) => (
           <Star
             key={star}
             className={`h-4 w-4 ${
-              star <= rating ? 'text-yellow-400 fill-current' : 'text-gray-300'
+              star <= rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
             }`}
           />
         ))}
-        <span className="ml-1 text-sm text-gray-600">({rating.toFixed(1)})</span>
+        <span className="text-sm text-gray-600 ml-1">({rating})</span>
       </div>
     );
   };
 
+  const handleViewProfile = (instructor: Instructor) => {
+    setSelectedInstructor(instructor);
+    setProfileDialogOpen(true);
+  };
+
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <PublicLayout>
+        <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-gray-600">Cargando instructores...</p>
+            <p className="text-gray-600 mt-4">Cargando instructores...</p>
           </div>
         </div>
-      </div>
+      </PublicLayout>
     );
   }
 
   return (
     <PublicLayout>
-      <div className="bg-gray-50">
-
-
-      {/* Hero Section - Estilo Activities */}
+      {/* 1. Sección Hero */}
       <section 
-        className="relative py-24 px-4 text-center text-white"
+        className="relative h-96 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: `url(${heroImage})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
+          backgroundImage: `linear-gradient(135deg, rgba(0, 165, 135, 0.9), rgba(25, 99, 60, 0.8)), url(${yogaHeroImage})`
         }}
       >
-        <div className="absolute inset-0 bg-black/40"></div>
-        <div className="relative max-w-4xl mx-auto">
-          <div className="text-center mb-6">
-            <div className="flex items-center justify-center gap-3 mb-2">
-              <User className="h-10 w-10" />
-              <h1 className="font-guttery text-4xl md:text-5xl font-normal">
-                Conoce a
-              </h1>
-            </div>
-            <h2 className="text-4xl md:text-5xl font-bold">
-              Nuestros Instructores
-            </h2>
-          </div>
-          <p className="text-xl text-green-100 mb-8 max-w-2xl mx-auto">
-            Profesionales experimentados comprometidos con crear experiencias únicas en nuestros parques.
-            Descubre su experiencia y especialidades.
-          </p>
-        </div>
-      </section>
-
-      {/* Instructores en Acción - Sección Completa */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          {/* Textos */}
-          <div className="mb-12">
-            <p className="text-gray-900 font-bold text-xl text-center max-w-2xl mx-auto mb-12">
-              Conoce la experiencia y dedicación de nuestros instructores profesionales en los parques de Guadalajara
+        <div className="absolute inset-0 bg-gradient-to-r from-[#00a587]/90 to-[#19633c]/80"></div>
+        <div className="relative max-w-7xl mx-auto px-4 h-full flex items-center">
+          <div className="text-white max-w-3xl">
+            <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
+              Nuestros <span className="text-yellow-300">Instructores</span>
+            </h1>
+            <p className="text-xl md:text-2xl mb-8 leading-relaxed">
+              Profesionales certificados comprometidos con el bienestar de nuestra comunidad
             </p>
           </div>
+        </div>
+      </section>
 
-          {/* Estadísticas */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16">
+      {/* 2. Sección de estadísticas */}
+      <section className="py-12 bg-white">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center">
-              <div className="bg-[#51a19f] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <User className="h-10 w-10 text-white" />
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{backgroundColor: '#51a19f'}}>
+                <Users className="h-8 w-8 text-white" />
               </div>
-              <div className="text-4xl md:text-5xl font-bold text-gray-900 mb-2">{instructors.length}+</div>
-              <div className="text-lg text-gray-600 font-medium">Instructores Certificados</div>
+              <h3 className="text-3xl font-bold text-gray-900">{instructors.length}+</h3>
+              <p className="text-gray-600">Instructores activos</p>
             </div>
-            
             <div className="text-center">
-              <div className="bg-[#51a19f] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Award className="h-10 w-10 text-white" />
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{backgroundColor: '#51a19f'}}>
+                <Award className="h-8 w-8 text-white" />
               </div>
-              <div className="text-4xl md:text-5xl font-bold text-gray-900 mb-2">{allSpecialties.size}</div>
-              <div className="text-lg text-gray-600 font-medium">Especialidades Disponibles</div>
+              <h3 className="text-3xl font-bold text-gray-900">{allSpecialties.length}+</h3>
+              <p className="text-gray-600">Especialidades diferentes</p>
             </div>
-            
             <div className="text-center">
-              <div className="bg-[#51a19f] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Calendar className="h-10 w-10 text-white" />
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{backgroundColor: '#51a19f'}}>
+                <Clock className="h-8 w-8 text-white" />
               </div>
-              <div className="text-4xl md:text-5xl font-bold text-gray-900 mb-2">30+</div>
-              <div className="text-lg text-gray-600 font-medium">Sesiones Mensuales</div>
-            </div>
-            
-            <div className="text-center">
-              <div className="bg-[#51a19f] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Star className="h-10 w-10 text-white" />
-              </div>
-              <div className="text-4xl md:text-5xl font-bold text-gray-900 mb-2">4.8</div>
-              <div className="text-lg text-gray-600 font-medium">Calificación Promedio</div>
-            </div>
-          </div>
-
-          {/* Galería */}
-          <div className="max-w-4xl mx-auto">
-            <div className="grid grid-cols-4 grid-rows-2 gap-2 h-64">
-              {/* Imagen principal - ocupa 2x2 - Clase de yoga masiva en el parque */}
-              <div className="col-span-2 row-span-2 relative cursor-pointer group">
-                <img 
-                  src="/attached_assets/yoga_1754962456656.jpg"
-                  alt="Instructor de yoga dirigiendo una clase masiva al aire libre en el parque"
-                  className="w-full h-full object-cover rounded-lg shadow-lg"
-                />
-                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
-              </div>
-              
-              {/* Imagen 1 - Sesión de entrenamiento grupal */}
-              <div className="relative cursor-pointer group">
-                <img 
-                  src="/attached_assets/yoga 1_1754962456652.jpg"
-                  alt="Instructor dirigiendo sesión de entrenamiento físico grupal al aire libre"
-                  className="w-full h-full object-cover rounded-lg shadow-md"
-                />
-                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
-              </div>
-              
-              {/* Imagen 2 - Actividad dinámica en grupo */}
-              <div className="relative cursor-pointer group">
-                <img 
-                  src="/attached_assets/yoga 2_1754962456653.jpg"
-                  alt="Instructor guiando actividad dinámica y divertida con participantes saltando"
-                  className="w-full h-full object-cover rounded-lg shadow-md"
-                />
-                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
-              </div>
-              
-              {/* Imagen 3 - Entrenamiento personalizado */}
-              <div className="relative cursor-pointer group">
-                <img 
-                  src="/attached_assets/yoga 3_1754962456654.jpg"
-                  alt="Instructora proporcionando entrenamiento personalizado en ejercicios funcionales"
-                  className="w-full h-full object-cover rounded-lg shadow-md"
-                />
-                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
-              </div>
-              
-              {/* Imagen 4 - Taller educativo al aire libre */}
-              <div className="relative cursor-pointer group">
-                <img 
-                  src="/attached_assets/yoga 4_1754962456655.jpg"
-                  alt="Instructores conduciendo taller educativo y de capacitación al aire libre"
-                  className="w-full h-full object-cover rounded-lg shadow-md"
-                />
-                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
-              </div>
+              <h3 className="text-3xl font-bold text-gray-900">30+</h3>
+              <p className="text-gray-600">Sesiones mensuales</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Banner publicitario - Estilo Volunteers */}
-      <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] mt-8 mb-8">
-        <AdSpace 
-          spaceId={37}
-          pageType="instructors"
-          position="banner"
-        />
-      </div>
-
-      {/* Panel de filtros y búsqueda */}
+      {/* 3. Sección de panel de filtros y búsqueda */}
       <section className="py-6 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4">
           <div className="rounded-lg p-6">
-            {/* Título del panel */}
             <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">
               Conoce a los instructores registrados
             </h3>
@@ -390,7 +218,7 @@ const InstructorsPage: React.FC = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todas las especialidades</SelectItem>
-                    {Array.from(allSpecialties).map((specialty) => (
+                    {allSpecialties.map((specialty) => (
                       <SelectItem key={specialty} value={specialty}>{specialty}</SelectItem>
                     ))}
                   </SelectContent>
@@ -426,7 +254,7 @@ const InstructorsPage: React.FC = () => {
                 </Button>
               </div>
             </div>
-
+            
             <p className="text-sm text-black">
               Mostrando {Math.min(currentPage * itemsPerPage, filteredInstructors.length)} de {filteredInstructors.length} instructores
             </p>
@@ -434,106 +262,71 @@ const InstructorsPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Sección de contenido */}
+      {/* 4. Sección de contenido */}
       <section className="py-12 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4">
-            {/* Vista Grid */}
-            {viewMode === 'grid' && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                {currentInstructors.map((instructor) => (
-              <Card key={instructor.id} className="group hover:shadow-lg transition-all duration-300 border-0 shadow-sm bg-white">
-                <CardHeader className="text-center pb-2">
-                  <Avatar className="h-20 w-20 mx-auto mb-4 ring-4 ring-primary/10">
-                    <AvatarImage 
-                      src={instructor.profile_image_url || undefined} 
-                      alt={instructor.full_name}
-                    />
-                    <AvatarFallback className="bg-gradient-to-br from-primary to-primary-600 text-white font-semibold text-lg">
-                      {instructor.full_name.split(' ').map(n => n[0]).join('')}
-                    </AvatarFallback>
-                  </Avatar>
-                  <CardTitle className="text-lg font-semibold text-gray-900">
-                    {instructor.full_name}
-                  </CardTitle>
-                  <CardDescription className="flex items-center justify-center gap-1 text-primary">
-                    <Award className="h-4 w-4" />
-                    {instructor.experience_years} años de experiencia
-                  </CardDescription>
-                </CardHeader>
-                
-                <CardContent className="pt-0">
-                  {/* Especialidades */}
-                  <div className="mb-4">
-                    <div className="flex flex-wrap gap-1 justify-center">
-                      {getSpecialtiesArray(instructor.specialties).slice(0, 2).map((specialty, index) => (
-                        <Badge key={index} variant="secondary" className="text-xs bg-primary/10 text-primary">
-                          {specialty}
-                        </Badge>
-                      ))}
-                      {getSpecialtiesArray(instructor.specialties).length > 2 && (
-                        <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-600">
-                          +{getSpecialtiesArray(instructor.specialties).length - 2}
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Rating */}
-                  <div className="flex justify-center mb-4">
-                    {renderStars(instructor.rating || 0)}
-                  </div>
-
-                  {/* Botones de acción */}
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => openProfile(instructor)}
-                      className="flex-1 text-primary border-primary hover:bg-primary hover:text-white"
-                    >
-                      <User className="h-4 w-4 mr-1" />
-                      Ver Perfil
-                    </Button>
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button
-                          size="sm"
-                          onClick={() => openEvaluation(instructor)}
-                          className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700"
-                        >
-                          <MessageSquare className="h-4 w-4 mr-1" />
-                          Evaluar
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
-                        <DialogHeader>
-                          <DialogTitle>Evaluar a {instructor.full_name}</DialogTitle>
-                          <DialogDescription>
-                            Comparte tu experiencia con este instructor
-                          </DialogDescription>
-                        </DialogHeader>
-                        <PublicInstructorEvaluationForm 
-                          instructorId={instructor.id} 
-                          instructorName={instructor.full_name}
+          {viewMode === 'grid' ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {currentInstructors.map((instructor) => (
+                <Card key={instructor.id} className="hover:shadow-lg transition-shadow">
+                  <CardContent className="p-6">
+                    <div className="text-center space-y-4">
+                      <Avatar className="h-20 w-20 mx-auto">
+                        <AvatarImage 
+                          src={instructor.profile_image_url || undefined} 
+                          alt={instructor.full_name}
                         />
-                      </DialogContent>
-                    </Dialog>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-
-        {/* Vista Lista */}
-        {viewMode === 'list' && (
-          <div className="space-y-4 mb-8">
-            {currentInstructors.map((instructor) => (
-              <Card key={instructor.id} className="hover:shadow-md transition-shadow duration-300">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <Avatar className="h-16 w-16 ring-4 ring-primary/10">
+                        <AvatarFallback className="bg-gradient-to-br from-primary to-primary-600 text-white font-semibold text-lg">
+                          {instructor.full_name.split(' ').map(n => n[0]).join('')}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <h3 className="font-semibold text-lg text-gray-900">{instructor.full_name}</h3>
+                        <p className="text-primary flex items-center justify-center gap-1">
+                          <Award className="h-4 w-4" />
+                          {instructor.experience_years} años de experiencia
+                        </p>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <div className="flex flex-wrap gap-1 justify-center">
+                          {getSpecialtiesArray(instructor.specialties).slice(0, 2).map((specialty, index) => (
+                            <Badge key={index} variant="secondary" className="text-xs">
+                              {specialty}
+                            </Badge>
+                          ))}
+                          {getSpecialtiesArray(instructor.specialties).length > 2 && (
+                            <Badge variant="outline" className="text-xs">
+                              +{getSpecialtiesArray(instructor.specialties).length - 2} más
+                            </Badge>
+                          )}
+                        </div>
+                        
+                        {instructor.rating && renderStars(instructor.rating)}
+                      </div>
+                      
+                      <div className="flex gap-2 justify-center pt-2">
+                        <Button 
+                          size="sm" 
+                          onClick={() => handleViewProfile(instructor)}
+                          className="bg-[#00a587] hover:bg-[#19633c]"
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          Ver Perfil
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {currentInstructors.map((instructor) => (
+                <Card key={instructor.id} className="hover:shadow-lg transition-shadow">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-6">
+                      <Avatar className="h-16 w-16">
                         <AvatarImage 
                           src={instructor.profile_image_url || undefined} 
                           alt={instructor.full_name}
@@ -542,138 +335,80 @@ const InstructorsPage: React.FC = () => {
                           {instructor.full_name.split(' ').map(n => n[0]).join('')}
                         </AvatarFallback>
                       </Avatar>
-                      
                       <div className="flex-1">
-                        <h3 className="text-xl font-semibold text-gray-900">{instructor.full_name}</h3>
-                        <div className="flex items-center gap-2 text-primary mb-2">
+                        <h3 className="font-semibold text-lg text-gray-900">{instructor.full_name}</h3>
+                        <p className="text-primary flex items-center gap-1 mb-2">
                           <Award className="h-4 w-4" />
-                          <span>{instructor.experience_years} años de experiencia</span>
-                        </div>
-                        <div className="flex flex-wrap gap-1 mb-2">
+                          {instructor.experience_years} años de experiencia
+                        </p>
+                        <div className="flex flex-wrap gap-1">
                           {getSpecialtiesArray(instructor.specialties).map((specialty, index) => (
-                            <Badge key={index} variant="secondary" className="bg-primary/10 text-primary">
+                            <Badge key={index} variant="secondary" className="text-xs">
                               {specialty}
                             </Badge>
                           ))}
                         </div>
-                        {renderStars(instructor.rating || 0)}
+                        {instructor.rating && (
+                          <div className="mt-2">{renderStars(instructor.rating)}</div>
+                        )}
                       </div>
-                    </div>
-
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        onClick={() => openProfile(instructor)}
-                        className="text-primary border-primary hover:bg-primary hover:text-white"
+                      <Button 
+                        onClick={() => handleViewProfile(instructor)}
+                        className="bg-[#00a587] hover:bg-[#19633c]"
                       >
-                        <User className="h-4 w-4 mr-2" />
+                        <Eye className="h-4 w-4 mr-2" />
                         Ver Perfil
                       </Button>
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button
-                            onClick={() => openEvaluation(instructor)}
-                            className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700"
-                          >
-                            <MessageSquare className="h-4 w-4 mr-2" />
-                            Evaluar
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
-                          <DialogHeader>
-                            <DialogTitle>Evaluar a {instructor.full_name}</DialogTitle>
-                            <DialogDescription>
-                              Comparte tu experiencia con este instructor
-                            </DialogDescription>
-                          </DialogHeader>
-                          <PublicInstructorEvaluationForm 
-                            instructorId={instructor.id} 
-                            instructorName={instructor.full_name}
-                          />
-                        </DialogContent>
-                      </Dialog>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-          </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
 
+          {/* Estado vacío */}
+          {filteredInstructors.length === 0 && (
+            <div className="text-center py-12">
+              <Users className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">No se encontraron instructores</h3>
+              <p className="text-gray-600 mb-4">
+                Intenta ajustar tus filtros o buscar con otros términos
+              </p>
+              <Button
+                onClick={() => {
+                  setSearchTerm('');
+                  setSpecialtyFilter('all');
+                  setExperienceFilter('all');
+                }}
+                className="bg-[#00a587] hover:bg-[#19633c]"
+              >
+                Limpiar Filtros
+              </Button>
+            </div>
+          )}
 
-        </div>
-
-        {/* Paginación */}
-        {totalPages > 1 && (
-          <div className="flex justify-center items-center space-x-2">
-            <Button
-              variant="outline"
-              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-              className="text-primary border-primary hover:bg-primary hover:text-white"
-            >
-              Anterior
-            </Button>
-            
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              let pageNum;
-              if (totalPages <= 5) {
-                pageNum = i + 1;
-              } else if (currentPage <= 3) {
-                pageNum = i + 1;
-              } else if (currentPage >= totalPages - 2) {
-                pageNum = totalPages - 4 + i;
-              } else {
-                pageNum = currentPage - 2 + i;
-              }
-              
-              return (
-                <Button
-                  key={pageNum}
-                  variant={currentPage === pageNum ? "default" : "outline"}
-                  onClick={() => setCurrentPage(pageNum)}
-                  className={currentPage === pageNum 
-                    ? "bg-primary hover:bg-primary-600" 
-                    : "text-primary border-primary hover:bg-primary hover:text-white"
-                  }
-                >
-                  {pageNum}
-                </Button>
-              );
-            })}
-            
-            <Button
-              variant="outline"
-              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-              disabled={currentPage === totalPages}
-              className="text-primary border-primary hover:bg-primary hover:text-white"
-            >
-              Siguiente
-            </Button>
-          </div>
-        )}
-
-        {/* Estado vacío */}
-        {filteredInstructors.length === 0 && (
-          <div className="text-center py-12">
-            <Users className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">No se encontraron instructores</h3>
-            <p className="text-gray-600 mb-4">
-              Intenta ajustar tus filtros o buscar con otros términos
-            </p>
-            <Button
-              onClick={() => {
-                setSearchTerm('');
-                setSpecialtyFilter('all');
-                setExperienceFilter('all');
-              }}
-              className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700"
-            >
-              Limpiar Filtros
-            </Button>
-          </div>
-        )}
+          {/* Paginación */}
+          {filteredInstructors.length > itemsPerPage && (
+            <div className="flex justify-center mt-8 gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+              >
+                Anterior
+              </Button>
+              <span className="flex items-center px-4 text-sm text-gray-700">
+                Página {currentPage} de {Math.ceil(filteredInstructors.length / itemsPerPage)}
+              </span>
+              <Button
+                variant="outline"
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(filteredInstructors.length / itemsPerPage)))}
+                disabled={currentPage >= Math.ceil(filteredInstructors.length / itemsPerPage)}
+              >
+                Siguiente
+              </Button>
+            </div>
+          )}
         </div>
       </section>
 
@@ -741,77 +476,26 @@ const InstructorsPage: React.FC = () => {
                   </div>
                 )}
 
-                {/* Estado */}
-                <div>
-                  <h4 className="font-semibold mb-2">Estado</h4>
-                  <Badge variant={selectedInstructor.status === 'active' ? 'default' : 'secondary'}>
-                    {selectedInstructor.status === 'active' ? 'Activo' : 'Inactivo'}
-                  </Badge>
-                </div>
+                {/* Certificaciones */}
+                {selectedInstructor.certifications && (
+                  <div>
+                    <h4 className="font-semibold mb-2">Certificaciones</h4>
+                    <p className="text-gray-700">{selectedInstructor.certifications}</p>
+                  </div>
+                )}
 
-                <div className="flex gap-4 pt-4">
-                  <Button 
-                    asChild 
-                    className="flex-1 bg-gradient-to-r from-primary to-primary-600"
-                  >
-                    <a href={`/instructor/${selectedInstructor.id}`} target="_blank" rel="noopener noreferrer">
-                      Ver Perfil Completo
-                    </a>
-                  </Button>
-                </div>
+                {/* Disponibilidad */}
+                {selectedInstructor.availability && (
+                  <div>
+                    <h4 className="font-semibold mb-2">Disponibilidad</h4>
+                    <p className="text-gray-700">{selectedInstructor.availability}</p>
+                  </div>
+                )}
               </div>
             </>
           )}
         </DialogContent>
       </Dialog>
-
-      {/* Módulo "Need more info" - Estilo Volunteers */}
-      <section className="bg-gradient-to-r from-green-700 to-green-800 py-16 mt-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h3 className="text-3xl font-bold text-white mb-4">
-              ¿Necesitas Más Información?
-            </h3>
-            <p className="text-green-100 text-lg mb-8 max-w-2xl mx-auto">
-              Nuestro equipo está aquí para ayudarte. Contáctanos si tienes preguntas sobre nuestros instructores 
-              o necesitas asistencia para encontrar el profesional ideal para tu actividad.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button 
-                className="bg-white text-green-700 hover:bg-green-50 px-8 py-3 text-lg font-semibold"
-                asChild
-              >
-                <a href="/contacto">
-                  <MessageSquare className="h-5 w-5 mr-2" />
-                  Contáctanos
-                </a>
-              </Button>
-              <Button 
-                variant="outline"
-                className="border-white text-white hover:bg-white hover:text-green-700 px-8 py-3 text-lg font-semibold"
-                asChild
-              >
-                <a href="/activities">
-                  <Calendar className="h-5 w-5 mr-2" />
-                  Ver Actividades
-                </a>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* AdSpace final */}
-      <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] mt-12 mb-8">
-        <AdSpace 
-          spaceId={38}
-          pageType="instructors"
-          position="footer"
-        />
-      </div>
-
     </PublicLayout>
   );
-};
-
-export default InstructorsPage;
+}
