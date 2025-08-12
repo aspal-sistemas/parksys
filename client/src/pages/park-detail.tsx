@@ -364,16 +364,6 @@ const ParkDetail: React.FC = () => {
               </div>
             </div>
             
-            {/* Espacio publicitario lateral */}
-            <div className="mb-6">
-              <AdSpace 
-                spaceId={2} 
-                position="card" 
-                pageType="parks" 
-                className="w-full"
-              />
-            </div>
-            
             {/* Quick actions */}
             <ParkQuickActions 
               parkId={Number(id)}
