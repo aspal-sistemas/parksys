@@ -317,51 +317,51 @@ const InstructorsPage: React.FC = () => {
           {/* Galería */}
           <div className="max-w-4xl mx-auto">
             <div className="grid grid-cols-4 grid-rows-2 gap-2 h-64">
-              {/* Imagen principal - ocupa 2x2 - Gran grupo trabajando */}
+              {/* Imagen principal - ocupa 2x2 - Clase de yoga masiva en el parque */}
               <div className="col-span-2 row-span-2 relative cursor-pointer group">
                 <img 
-                  src="/attached_assets/happy-volunteers-with-seedlings-and-garden-tools-2024-09-27-13-54-22-utc (1)_1754955545591.jpg"
-                  alt="Instructores profesionales guiando actividades grupales en parque"
+                  src="/attached_assets/yoga_1754962456656.jpg"
+                  alt="Instructor de yoga dirigiendo una clase masiva al aire libre en el parque"
                   className="w-full h-full object-cover rounded-lg shadow-lg"
                 />
                 <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
               </div>
               
-              {/* Imagen 1 - Jardín japonés con instructor */}
+              {/* Imagen 1 - Sesión de entrenamiento grupal */}
               <div className="relative cursor-pointer group">
                 <img 
-                  src="/attached_assets/jardin-japones_1754950415873.jpg"
-                  alt="Instructor especializado guiando en el jardín japonés"
+                  src="/attached_assets/yoga 1_1754962456652.jpg"
+                  alt="Instructor dirigiendo sesión de entrenamiento físico grupal al aire libre"
                   className="w-full h-full object-cover rounded-lg shadow-md"
                 />
                 <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
               </div>
               
-              {/* Imagen 2 - Actividades deportivas */}
+              {/* Imagen 2 - Actividad dinámica en grupo */}
               <div className="relative cursor-pointer group">
                 <img 
-                  src="/attached_assets/download-7_1754927049169.jpg"
-                  alt="Instructor dirigiendo actividades deportivas y recreativas"
+                  src="/attached_assets/yoga 2_1754962456653.jpg"
+                  alt="Instructor guiando actividad dinámica y divertida con participantes saltando"
                   className="w-full h-full object-cover rounded-lg shadow-md"
                 />
                 <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
               </div>
               
-              {/* Imagen 3 - Instructor con participantes */}
+              {/* Imagen 3 - Entrenamiento personalizado */}
               <div className="relative cursor-pointer group">
                 <img 
-                  src="/attached_assets/People_23-02_1752941117659.jpg"
-                  alt="Instructor profesional interactuando con participantes de diferentes edades"
+                  src="/attached_assets/yoga 3_1754962456654.jpg"
+                  alt="Instructora proporcionando entrenamiento personalizado en ejercicios funcionales"
                   className="w-full h-full object-cover rounded-lg shadow-md"
                 />
                 <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
               </div>
               
-              {/* Imagen 4 - Sesión de yoga/meditación */}
+              {/* Imagen 4 - Taller educativo al aire libre */}
               <div className="relative cursor-pointer group">
                 <img 
-                  src="/attached_assets/ImageTransformer_1754950326017.webp"
-                  alt="Instructor de yoga guiando sesión de meditación al aire libre"
+                  src="/attached_assets/yoga 4_1754962456655.jpg"
+                  alt="Instructores conduciendo taller educativo y de capacitación al aire libre"
                   className="w-full h-full object-cover rounded-lg shadow-md"
                 />
                 <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
