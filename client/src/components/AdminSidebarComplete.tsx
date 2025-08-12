@@ -5,7 +5,7 @@ import UserProfileImage from '@/components/UserProfileImage';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { useTranslation } from 'react-i18next';
 import { SidebarSearch } from './SidebarSearch';
-import parksysLogo from '@assets/Recurso 5Parksys (1)_1755013567923.png';
+const parksysLogo = "/parksys-logo.png";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';

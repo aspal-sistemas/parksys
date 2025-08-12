@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AdSpace from '@/components/AdSpace';
 import PublicLayout from '@/components/PublicLayout';
-import heroImage from '@assets/ImageTransformer_1754921197180.webp';
+const heroImage = "/image-transformer.webp";
 
 interface Event {
   id: number;
