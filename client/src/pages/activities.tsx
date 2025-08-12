@@ -488,7 +488,7 @@ function ActivitiesPage() {
   const [filterCategory, setFilterCategory] = useState('all');
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [showAllActivities, setShowAllActivities] = useState(false);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [displayedActivities, setDisplayedActivities] = useState(6); // Para paginación de grid
 
   // Obtener todas las actividades con imágenes
@@ -608,32 +608,6 @@ function ActivitiesPage() {
               </div>
               
               <div className="flex items-center gap-3">
-                {/* Botones de vista */}
-                <div className="flex items-center gap-1 bg-white/90 rounded-lg p-1 border">
-                  <Button
-                    variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => {
-                      setViewMode('grid');
-                      setDisplayedActivities(6); // Reset pagination
-                    }}
-                    className={viewMode === 'grid' ? 'bg-green-600 text-white' : 'text-gray-600 hover:bg-gray-100'}
-                  >
-                    <Grid3X3 className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant={viewMode === 'list' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => {
-                      setViewMode('list');
-                      setShowAllActivities(false); // Reset list view
-                    }}
-                    className={viewMode === 'list' ? 'bg-green-600 text-white' : 'text-gray-600 hover:bg-gray-100'}
-                  >
-                    <List className="h-4 w-4" />
-                  </Button>
-                </div>
-
                 <Select value={filterPark} onValueChange={setFilterPark}>
                   <SelectTrigger className="w-48 bg-white/90 text-gray-800">
                     <Filter className="h-4 w-4 mr-2 text-green-600" />
@@ -662,6 +636,32 @@ function ActivitiesPage() {
                     ))}
                   </SelectContent>
                 </Select>
+
+                {/* Botones de vista - mismo diseño que Events.tsx */}
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant={viewMode === 'grid' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => {
+                      setViewMode('grid');
+                      setDisplayedActivities(6); // Reset pagination
+                    }}
+                    className="bg-[#00a587] hover:bg-[#067f5f] text-white"
+                  >
+                    <Grid3X3 className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === 'list' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => {
+                      setViewMode('list');
+                      setShowAllActivities(false); // Reset list view
+                    }}
+                    className="bg-[#00a587] hover:bg-[#067f5f] text-white"
+                  >
+                    <List className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
