@@ -2133,11 +2133,11 @@ function ParkLandingPage() {
                 {park.volunteers && park.volunteers.length > 0 ? (
                   <div className="space-y-3">
                     {park.volunteers.slice(0, 3).map((volunteer) => (
-                      <div key={instructor.id} className="flex items-start gap-3 p-4 bg-white rounded-lg border border-purple-200">
-                        {instructor.profileImageUrl ? (
+                      <div key={volunteer.id} className="flex items-start gap-3 p-4 bg-white rounded-lg border border-purple-200">
+                        {volunteer.profileImageUrl ? (
                           <img 
-                            src={instructor.profileImageUrl} 
-                            alt={instructor.fullName}
+                            src={volunteer.profileImageUrl} 
+                            alt={volunteer.fullName}
                             className="w-12 h-12 rounded-full object-cover flex-shrink-0"
                           />
                         ) : (
@@ -2148,14 +2148,14 @@ function ParkLandingPage() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between">
                             <div className="flex-1 min-w-0">
-                              <h4 className="font-semibold text-purple-900 text-sm line-clamp-2">{instructor.fullName}</h4>
-                              {instructor.specialties && (
+                              <h4 className="font-semibold text-purple-900 text-sm line-clamp-2">{volunteer.fullName}</h4>
+                              {volunteer.specialties && (
                                 <div className="mt-2">
                                   <div className="flex flex-wrap gap-1">
                                     {(() => {
                                       // Clean PostgreSQL array format
                                       let specialtiesList: string[] = [];
-                                      const specialties = instructor.specialties;
+                                      const specialties = volunteer.specialties;
                                       
                                       if (specialties.startsWith('{') && specialties.endsWith('}')) {
                                         // PostgreSQL array format
