@@ -605,12 +605,6 @@ function ParkLandingPage() {
 
             {/* Información General integrada continuamente en la galería */}
             <div className="mt-12 pt-8 border-t border-gray-100">
-              <div className="text-center mb-8">
-                <h3 className="text-xl font-bold text-gray-800 flex items-center justify-center gap-2">
-                  <Globe className="h-6 w-6 text-green-600" />
-                  Información General
-                </h3>
-              </div>
               
               <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-8 border border-gray-100">
                 <p className="text-gray-700 leading-relaxed text-lg mb-8 text-center max-w-4xl mx-auto">

@@ -1284,7 +1284,7 @@ const AdminSidebarComplete: React.FC = () => {
 
       {/* Footer con logo de ParkSys */}
       <div className="p-8 border-t border-teal-600" style={{ backgroundColor: '#003D49' }}>
-        <div className="flex flex-col items-center justify-center gap-0">
+        <div className="flex flex-col items-center justify-center gap-4">
           <img 
             src={parksysLogo} 
             alt="ParkSys - Sistema de parques" 
