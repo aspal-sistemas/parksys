@@ -445,39 +445,8 @@ function ParkLandingPage() {
   return (
     <PublicLayout>
       <div className="min-h-screen bg-gray-50">
-      {/* Header Navigation */}
-      <div className="bg-white shadow-sm border-b sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <Link href="/parks">
-            <Button variant="ghost" className="mb-2">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Volver a parques
-            </Button>
-          </Link>
-          <div className="flex items-center gap-3">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">{park.name}</h1>
-              <p className="text-sm text-gray-600 mt-1">Parque Certificado con el</p>
-            </div>
-            {/* Green Flag Award Logo - Solo para parques certificados */}
-            {shouldShowGreenFlag(park.id) && (
-              <img 
-                src={greenFlagLogo} 
-                alt="Green Flag Award" 
-                className="h-20 w-30 object-contain bg-white rounded-md p-2 shadow-lg border-2 border-green-500"
-                title="Green Flag Award - Parque Certificado"
-              />
-            )}
-          </div>
-          <p className="text-gray-600 flex items-center mt-2">
-            <MapPin className="h-4 w-4 mr-1" />
-            {park.municipality?.name || 'Guadalajara'}, {park.municipality?.state || 'Jalisco'}
-          </p>
-        </div>
-      </div>
-
-      {/* Hero Image Section */}
-      <div className="relative h-96 overflow-hidden">
+      {/* Hero Image Section con Header Navigation Superpuesto */}
+      <div className="relative h-[600px] overflow-hidden">
         {mainImage ? (
           <img 
             src={mainImage} 
@@ -490,21 +459,68 @@ function ParkLandingPage() {
           </div>
         )}
         <div className="absolute inset-0 bg-black bg-opacity-40"></div>
-        <div className="absolute bottom-0 left-0 right-0 p-8">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex flex-wrap gap-3 mb-4">
-              <Badge className="bg-white/20 text-white border-white/30">
+        
+        {/* Navigation Button - Top Left */}
+        <div className="absolute top-6 left-6 z-20">
+          <Link href="/parks">
+            <Button variant="outline" className="bg-white/90 hover:bg-white text-gray-900 border-white/20">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Volver a parques
+            </Button>
+          </Link>
+        </div>
+
+        {/* Main Header Info - Center */}
+        <div className="absolute inset-0 flex items-center justify-center z-10">
+          <div className="max-w-7xl mx-auto px-4 text-center">
+            <div className="flex flex-col items-center gap-6">
+              {/* Park Name and Certification */}
+              <div className="text-center">
+                <h1 className="text-5xl md:text-6xl font-bold text-white mb-3 drop-shadow-lg">
+                  {park.name}
+                </h1>
+                <p className="text-xl text-white/90 mb-4">
+                  Parque Certificado con el
+                </p>
+                
+                {/* Green Flag Award Logo - Solo para parques certificados */}
+                {shouldShowGreenFlag(park.id) && (
+                  <div className="flex justify-center">
+                    <img 
+                      src={greenFlagLogo} 
+                      alt="Green Flag Award" 
+                      className="h-24 w-36 object-contain bg-white/95 rounded-lg p-3 shadow-2xl border-2 border-green-500"
+                      title="Green Flag Award - Parque Certificado"
+                    />
+                  </div>
+                )}
+              </div>
+              
+              {/* Location */}
+              <div className="flex items-center gap-2 text-white/90 text-lg">
+                <MapPin className="h-5 w-5" />
+                <span>{park.municipality?.name || 'Guadalajara'}, {park.municipality?.state || 'Jalisco'}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Badges */}
+        <div className="absolute bottom-8 left-0 right-0 z-10">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex flex-wrap justify-center gap-4">
+              <Badge className="bg-white/20 text-white border-white/30 text-lg py-2 px-4">
                 {getParkTypeLabel(park.parkType || 'urbano')}
               </Badge>
               {park.area && (
-                <Badge className="bg-white/20 text-white border-white/30">
+                <Badge className="bg-white/20 text-white border-white/30 text-lg py-2 px-4">
                   {Number(park.area) >= 10000 
                     ? `${(Number(park.area) / 10000).toFixed(1)} hectáreas` 
                     : `${park.area} m²`}
                 </Badge>
               )}
               {park.foundationYear && (
-                <Badge className="bg-white/20 text-white border-white/30">
+                <Badge className="bg-white/20 text-white border-white/30 text-lg py-2 px-4">
                   Est. {park.foundationYear}
                 </Badge>
               )}
