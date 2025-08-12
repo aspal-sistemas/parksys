@@ -41,7 +41,7 @@ import TreePhotoViewer from '@/components/TreePhotoViewer';
 import PublicInstructorEvaluationForm from '@/components/PublicInstructorEvaluationForm';
 import ParkEvaluationsSectionSimple from '@/components/ParkEvaluationsSectionSimple';
 import PublicLayout from '@/components/PublicLayout';
-import AdSpace from '@/components/AdSpace';
+
 const greenFlagLogo = "/images/green-flag-logo.jpg";
 
 function ParkLandingPage() {
