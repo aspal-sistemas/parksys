@@ -167,8 +167,7 @@ function SpaceCard({ space, viewMode }: { space: ReservableSpace; viewMode: 'gri
             <div className="ml-4 flex flex-col gap-2">
               <Button 
                 size="sm" 
-                variant="outline" 
-                className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                className="bg-green-600 hover:bg-green-700 text-white"
                 onClick={() => window.open(`/space/${space.id}`, '_blank')}
               >
                 Ver detalle
@@ -272,7 +271,7 @@ function SpaceCard({ space, viewMode }: { space: ReservableSpace; viewMode: 'gri
         </div>
         
         <Button 
-          className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white" 
+          className="w-full mt-4 bg-green-600 hover:bg-green-700 text-white" 
           size="sm"
           onClick={() => window.open(`/space/${space.id}`, '_blank')}
         >
