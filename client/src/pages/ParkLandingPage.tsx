@@ -658,28 +658,71 @@ function ParkLandingPage() {
 
 
 
-      {/* Sección de Ubicación con Mapa */}
+      {/* Sección de Ubicación con Información de Contacto */}
       <div className="bg-white">
         <div className="max-w-7xl mx-auto px-4 py-8">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl">
                 <MapPin className="h-6 w-6 text-blue-600" />
-                Ubicación y Cómo Llegar
+                Ubicación y Contacto
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-1 space-y-4">
-                  <div>
-                    <p className="text-sm text-gray-500">Dirección</p>
-                    <p className="font-medium">{park.address || 'No especificada'}</p>
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                {/* Información de Contacto - 1/4 */}
+                <div className="lg:col-span-1 space-y-6">
+                  {/* Información de Ubicación */}
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-sm text-gray-500">Dirección</p>
+                      <p className="font-medium">{park.address || 'No especificada'}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Municipio</p>
+                      <p className="font-medium">{park.municipality?.name}, {park.municipality?.state}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Municipio</p>
-                    <p className="font-medium">{park.municipality?.name}, {park.municipality?.state}</p>
-                  </div>
+
+                  {/* Información de Contacto */}
+                  {(park.administrator || park.contactPhone || park.contactEmail) && (
+                    <div className="border-t border-gray-200 pt-4">
+                      <h4 className="font-semibold mb-3 text-gray-900">Información de Contacto</h4>
+                      <div className="space-y-3">
+                        {park.administrator && (
+                          <div className="flex items-center">
+                            <User className="h-4 w-4 mr-3 text-gray-500" />
+                            <div>
+                              <p className="text-sm text-gray-500">Administrador</p>
+                              <p className="font-medium">{park.administrator}</p>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {park.contactPhone && (
+                          <div className="flex items-center">
+                            <Phone className="h-4 w-4 mr-3 text-gray-500" />
+                            <div>
+                              <p className="text-sm text-gray-500">Teléfono</p>
+                              <p className="font-medium">{park.contactPhone}</p>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {park.contactEmail && (
+                          <div className="flex items-center">
+                            <Mail className="h-4 w-4 mr-3 text-gray-500" />
+                            <div>
+                              <p className="text-sm text-gray-500">Email</p>
+                              <p className="font-medium">{park.contactEmail}</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                   
+                  {/* Botones de Acción */}
                   <div className="flex flex-col gap-2">
                     <Button 
                       variant="outline" 
@@ -709,8 +752,8 @@ function ParkLandingPage() {
                   </div>
                 </div>
                 
-                {/* Mapa más grande */}
-                <div className="lg:col-span-2">
+                {/* Mapa - 3/4 */}
+                <div className="lg:col-span-3">
                   <div className="rounded-lg overflow-hidden h-64 bg-gray-200 border">
                     <iframe
                       title={`Mapa de ${park.name}`}
