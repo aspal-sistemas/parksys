@@ -365,7 +365,7 @@ const InstructorsPage: React.FC = () => {
       </div>
 
       {/* Panel de filtros y búsqueda - Estilo Volunteers */}
-      <section className="sticky top-0 z-10 border-b border-gray-200 shadow-sm" style={{backgroundColor: '#19633c'}}>
+      <section className="sticky top-0 z-10 border-b border-gray-200 shadow-sm bg-white">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="bg-white rounded-lg shadow-sm p-6">
             <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
