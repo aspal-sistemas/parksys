@@ -39,6 +39,7 @@ The application uses a client-server architecture with a modern full-stack.
 - **Maintenance Module Routing**: Established proper route structure with `/admin/configuracion-seguridad/maintenance/backup`, `/admin/configuracion-seguridad/maintenance/performance`, and `/admin/configuracion-seguridad/maintenance/updates` prioritizing the Configuration & Security section over legacy `/admin/settings` modules.
 - **Admin Navigation Optimization**: Eliminated duplicate user management routes - removed `/admin/configuracion-seguridad/access/assignments` to avoid functionality duplication with `/admin/configuracion-seguridad/access/users`, which remains as the single comprehensive user management interface.
 - **Park Detail AdSpace Cleanup**: Removed all advertising spaces (AdSpace 2, 30, and 33) from the park landing page (ParkLandingPage.tsx) to provide a cleaner user experience focused on park information without commercial distractions.
+- **Module Order Reorganization**: Successfully reorganized park landing page content structure - moved Concessions module and Tree Species module to appear after Activities module. Final order: Gallery → Amenities → Activities → Tree Species → Concessions → Location/Contact.
 
 ## Previous Changes (January 2025)
 - **Architecture Refactor**: Implemented complete separation of organizational users from catalog entities, eliminating data duplication across employees, volunteers, instructors, and concessionaires tables.
