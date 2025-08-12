@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
-import { Map, ArrowRight, MapPin, Trees, Users, Calendar, Sparkles, TrendingUp, Zap, Leaf, Shield, Heart, BookOpen, GraduationCap, Target, Award } from 'lucide-react';
+import { Map, ArrowRight, MapPin, Trees, Users, Calendar, Sparkles, TrendingUp, Zap, Leaf, Shield, Heart, BookOpen, GraduationCap, Target, Award, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import ParkCard from '@/components/ParkCard';
 import AdSpace from '@/components/AdSpace';
 import { ExtendedPark } from '@shared/schema';
-import logoImage from '@assets/logo ambu_1754602816490.png';
+const logoImage = "/images/logo-ambu.png";
 
 const Home: React.FC = () => {
   // Estado para forzar actualización de anuncios estáticos
   const [forceUpdateKey, setForceUpdateKey] = useState(Date.now());
+  
+  // Estado para el índice del carousel
+  const [currentIndex, setCurrentIndex] = useState(0);
   
   // Escuchar cambios en localStorage para actualizar anuncios
   useEffect(() => {
@@ -46,6 +49,11 @@ const Home: React.FC = () => {
     queryKey: ['/api/sponsors'],
   });
   
+  // Fetch eventos para la sección de eventos
+  const { data: eventsResponse = [], isLoading: eventsLoading } = useQuery<any[]>({
+    queryKey: ['/api/events'],
+  });
+  
   const allParks = parksResponse || [];
   
   // Filtrar parques sin nombre o marcados como eliminados
@@ -53,91 +61,119 @@ const Home: React.FC = () => {
     park.name.trim() !== '' && !park.isDeleted
   );
   
+  // Obtener eventos destacados (máximo 3 para la página de inicio)
+  const featuredEvents = (eventsResponse || [])
+    .filter((event: any) => event.featuredImageUrl) // Solo eventos con imagen
+    .slice(0, 3); // Limitar a 3 eventos
+  
+  // Función para formatear fechas
+  const formatEventDate = (startDate: string, endDate: string, startTime?: string) => {
+    const start = new Date(startDate);
+    const options: Intl.DateTimeFormatOptions = { 
+      day: 'numeric', 
+      month: 'long' 
+    };
+    
+    if (startTime) {
+      return `${start.toLocaleDateString('es-ES', options)} a las ${startTime}`;
+    }
+    return start.toLocaleDateString('es-ES', options);
+  };
+  
+  // Funciones de navegación del carousel
+  const nextSlide = () => {
+    setCurrentIndex((prev) => 
+      prev === featuredParks.length - 1 ? 0 : prev + 1
+    );
+  };
+
+  const prevSlide = () => {
+    setCurrentIndex((prev) => 
+      prev === 0 ? featuredParks.length - 1 : prev - 1
+    );
+  };
+
+  const goToSlide = (index: number) => {
+    setCurrentIndex(index);
+  };
+
+  // Auto-avanzar carousel cada 5 segundos
+  useEffect(() => {
+    if (featuredParks.length > 1) {
+      const interval = setInterval(nextSlide, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [featuredParks.length]);
+
+  // Función para generar resumen del parque
+  const generateParkSummary = (park: ExtendedPark) => {
+    const activitiesCount = park.activities?.length || 0;
+    const amenitiesCount = park.amenities?.length || 0;
+    const area = park.area ? `${park.area} m²` : 'No especificada';
+    const parkType = park.parkType || 'Parque urbano';
+    
+    return {
+      activitiesCount,
+      amenitiesCount,
+      area,
+      parkType
+    };
+  };
+  
   return (
     <main className="flex-1">
       {/* 🌟 HERO SECTION - Inspirado en bosquesamg.mx */}
-      <section className="relative min-h-screen bg-white overflow-hidden">
+      <section className="relative min-h-screen bg-black overflow-hidden">
         {/* Imagen de fondo */}
         <div className="absolute inset-0">
           <div 
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
             style={{
-              backgroundImage: "url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80')"
+              backgroundImage: "url('/images/hero-background.jpg')"
             }}
           ></div>
-          {/* Overlay con gradiente */}
-          <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-transparent"></div>
+          {/* Overlay */}
+          <div className="absolute inset-0 bg-black/40"></div>
         </div>
         
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-screen flex items-center">
           <div className="max-w-3xl">
-            {/* Badge superior */}
-            <div className="inline-flex items-center gap-2 bg-emerald-600/90 backdrop-blur-sm rounded-full px-4 py-2 mb-6">
-              <Trees className="h-4 w-4 text-white" />
-              <span className="text-sm font-medium text-white">Agencia Metropolitana de Bosques Urbanos</span>
-            </div>
-            
             {/* Título principal */}
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
-              Transformando
-              <span className="block text-emerald-400">espacios verdes</span>
-              <span className="block text-white">para la comunidad</span>
+              Agencia Metropolitana
+              <span className="block">de Bosques Urbanos</span>
             </h1>
             
             {/* Subtítulo */}
-            <p className="text-xl md:text-2xl text-gray-200 mb-8 leading-relaxed max-w-2xl">
-              Descubre, participa y disfruta de los parques y bosques urbanos de la 
-              Zona Metropolitana de Guadalajara. Espacios verdes que mejoran la calidad de vida.
+            <p className="text-2xl md:text-3xl text-gray-200 mb-8 leading-relaxed max-w-2xl">
+              Trabajamos por un futuro más verde,<br />
+              árbol por árbol.
             </p>
             
+            {/* Badge */}
+            <div className="inline-flex items-center bg-black/55 text-white px-8 py-4 rounded-lg text-lg font-semibold mb-6 border border-white/30">
+              <MapPin className="mr-3 h-5 w-5" />
+              Zona Metropolitana de Guadalajara
+            </div>
+
             {/* Botones CTA */}
-            <div className="flex flex-col sm:flex-row gap-4 mb-12">
+            <div className="flex flex-col gap-4 mb-12 items-start">
               <Link href="/parks">
-                <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-8 py-4 text-lg rounded-lg transition-all duration-300 hover:scale-105 shadow-xl">
+                <Button size="lg" className="bg-[#aaaf4f] hover:bg-[#9ca047] text-white font-semibold px-8 py-4 text-lg rounded-lg transition-all duration-300 hover:scale-105 shadow-xl">
                   <Map className="mr-3 h-5 w-5" />
-                  Explorar Parques
+                  Nuestros parques
                 </Button>
               </Link>
               <Link href="/activities">
-                <Button size="lg" className="bg-white/20 border-2 border-white/50 text-white hover:bg-white hover:text-gray-900 font-semibold px-8 py-4 text-lg rounded-lg transition-all duration-300 backdrop-blur-md shadow-lg">
+                <Button size="lg" className="bg-white border-2 border-white text-[#aaaf4f] hover:bg-gray-50 hover:text-[#9ca047] font-semibold px-8 py-4 text-lg rounded-lg transition-all duration-300 hover:scale-105 shadow-lg">
                   <Calendar className="mr-3 h-5 w-5" />
-                  Ver Actividades
+                  Actividades
                 </Button>
               </Link>
             </div>
             
-            {/* 🎯 PUBLICIDAD PILOTO - Hero Banner */}
-            <div className="mb-8 relative z-20">
-              <AdSpace 
-                spaceId={10} 
-                position="hero" 
-                pageType="homepage" 
-                className="rounded-lg shadow-xl border-2 border-white/20 backdrop-blur-sm max-w-2xl"
-              />
-            </div>
 
-          </div>
-          
-          {/* Contenido derecho - Stats cards flotantes */}
-          <div className="hidden lg:block absolute right-8 top-1/2 transform -translate-y-1/2 space-y-4">
-            {[
-              { number: featuredParks.length.toString(), label: "Parques", icon: Trees },
-              { number: "9", label: "Municipios", icon: MapPin },
-              { number: "25+", label: "Actividades", icon: Calendar },
-              { number: "5K+", label: "Visitantes", icon: Users }
-            ].map((stat, index) => (
-              <div key={index} className="bg-white/90 backdrop-blur-sm rounded-xl p-4 min-w-[140px] shadow-xl border border-white/20">
-                <div className="flex items-center gap-3">
-                  <div className="bg-emerald-100 rounded-lg p-2">
-                    <stat.icon className="h-5 w-5 text-emerald-600" />
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-gray-900">{stat.number}</div>
-                    <div className="text-sm text-gray-600">{stat.label}</div>
-                  </div>
-                </div>
-              </div>
-            ))}
+
           </div>
         </div>
         
@@ -149,152 +185,196 @@ const Home: React.FC = () => {
         </div>
       </section>
       
-      {/* 🏛️ AGENCIA DE BOSQUES URBANOS SECTION */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-              Agencia Metropolitana de Bosques Urbanos
-            </h2>
-            <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
-              Nuestro modelo de gestión está dividido en <span className="font-semibold text-emerald-600">4 ejes principales</span> 
-              que garantizan el desarrollo sustentable y la conservación de nuestros espacios verdes urbanos.
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {/* Eje 1: Gestión y Mantenimiento */}
-            <Card className="group hover:shadow-2xl transition-all duration-300 hover:scale-105 border-2 hover:border-emerald-200">
-              <CardContent className="p-8 text-center h-full flex flex-col">
-                <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-                  <Trees className="h-10 w-10 text-white" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-4">Gestión y Mantenimiento</h3>
-                <p className="text-gray-600 leading-relaxed flex-grow">
-                  Administración integral de parques urbanos, mantenimiento preventivo y correctivo de áreas verdes, 
-                  infraestructura y equipamiento urbano.
-                </p>
-                <div className="mt-6 pt-4 border-t border-gray-100">
-                  <span className="text-sm font-medium text-emerald-600">Eje Principal 1</span>
-                </div>
-              </CardContent>
-            </Card>
 
-            {/* Eje 2: Educación Ambiental */}
-            <Card className="group hover:shadow-2xl transition-all duration-300 hover:scale-105 border-2 hover:border-blue-200">
-              <CardContent className="p-8 text-center h-full flex flex-col">
-                <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-                  <Users className="h-10 w-10 text-white" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-4">Educación Ambiental</h3>
-                <p className="text-gray-600 leading-relaxed flex-grow">
-                  Programas educativos, talleres de concienciación ambiental, formación ciudadana 
-                  y promoción de la cultura verde en la comunidad.
-                </p>
-                <div className="mt-6 pt-4 border-t border-gray-100">
-                  <span className="text-sm font-medium text-blue-600">Eje Principal 2</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Eje 3: Participación Ciudadana */}
-            <Card className="group hover:shadow-2xl transition-all duration-300 hover:scale-105 border-2 hover:border-purple-200">
-              <CardContent className="p-8 text-center h-full flex flex-col">
-                <div className="bg-gradient-to-br from-purple-500 to-pink-600 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-                  <Calendar className="h-10 w-10 text-white" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-4">Participación Ciudadana</h3>
-                <p className="text-gray-600 leading-relaxed flex-grow">
-                  Fomento de la participación activa de la comunidad, programas de voluntariado, 
-                  eventos comunitarios y actividades recreativas.
-                </p>
-                <div className="mt-6 pt-4 border-t border-gray-100">
-                  <span className="text-sm font-medium text-purple-600">Eje Principal 3</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Eje 4: Desarrollo Sustentable */}
-            <Card className="group hover:shadow-2xl transition-all duration-300 hover:scale-105 border-2 hover:border-amber-200">
-              <CardContent className="p-8 text-center h-full flex flex-col">
-                <div className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-                  <TrendingUp className="h-10 w-10 text-white" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-4">Desarrollo Sustentable</h3>
-                <p className="text-gray-600 leading-relaxed flex-grow">
-                  Innovación en tecnologías verdes, proyectos de sustentabilidad, 
-                  gestión eficiente de recursos y desarrollo urbano sostenible.
-                </p>
-                <div className="mt-6 pt-4 border-t border-gray-100">
-                  <span className="text-sm font-medium text-amber-600">Eje Principal 4</span>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-      
       {/* 🎯 FEATURED PARKS SECTION RENOVADO */}
       <section className="py-24 bg-gradient-to-b from-gray-50 to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-6xl font-bold text-gray-900 mb-8">
-              <span className="text-emerald-600">Bosques Urbanos</span>
+              <span style={{ fontFamily: 'Guttery Regular, Georgia, Times, serif', color: '#51a19f', fontWeight: '300' }}>Nuestros</span><br />
+              <span style={{ color: '#19633c' }}>Bosques Urbanos</span>
             </h2>
-            <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
-              La Agencia Metropolitana de Bosques Urbanos es un organismo público 
-              descentralizado, dedicado a la administración pública de parques y bosques 
-              urbanos del área metropolitana de Guadalajara.
+            <p className="text-2xl font-bold text-gray-600 max-w-4xl mx-auto leading-relaxed">
+              espacios para respirar, convivir y disfrutar
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-            {isLoading ? (
-              // Loading skeletons mejorados
-              Array(3).fill(0).map((_, idx) => (
-                <Card key={idx} className="animate-pulse rounded-3xl overflow-hidden shadow-lg">
-                  <div className="h-64 bg-gradient-to-br from-gray-200 to-gray-300"></div>
-                  <CardContent className="p-6">
-                    <div className="h-6 bg-gray-200 rounded-lg w-3/4 mb-3"></div>
-                    <div className="h-4 bg-gray-200 rounded-lg w-1/2 mb-4"></div>
-                    <div className="flex gap-2 mb-4">
-                      <div className="h-8 bg-gray-200 rounded-full w-20"></div>
-                      <div className="h-8 bg-gray-200 rounded-full w-20"></div>
+          {/* Carousel de pantalla completa */}
+          <div className="relative mb-12 h-[500px] w-screen left-1/2 transform -translate-x-1/2">
+            <div className="flex items-center h-full w-full overflow-hidden">
+              {isLoading ? (
+                // Loading skeleton
+                <div className="flex w-full h-full items-center justify-center">
+                  <div className="w-[70vw] h-full">
+                    <Card className="animate-pulse rounded-3xl overflow-hidden shadow-xl h-full w-full">
+                      <div className="h-full bg-gradient-to-br from-gray-200 to-gray-300"></div>
+                    </Card>
+                  </div>
+                </div>
+              ) : featuredParks.length > 0 ? (
+                <div className="flex items-center h-full w-full">
+                  {/* Carousel container con vista de 3 tarjetas */}
+                  <div className="flex items-center justify-center h-full w-full px-8">
+                    {/* Tarjeta anterior (parcial izquierda) */}
+                    {featuredParks.length > 1 && (
+                      <div className="w-[15vw] h-[90%] opacity-70 scale-95 mr-4">
+                        <div className="relative h-full w-full rounded-2xl overflow-hidden shadow-lg">
+                          <div 
+                            className="absolute inset-0 bg-cover bg-center"
+                            style={{
+                              backgroundImage: `url(${featuredParks[(currentIndex - 1 + featuredParks.length) % featuredParks.length]?.primaryImage || featuredParks[(currentIndex - 1 + featuredParks.length) % featuredParks.length]?.mainImageUrl || 'https://images.unsplash.com/photo-1519331379826-f10be5486c6f?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80'})`
+                            }}
+                          />
+                          <div className="absolute inset-0 bg-black/40" />
+                          <div className="absolute inset-0 flex items-end p-4">
+                            <h3 className="text-white font-semibold text-lg truncate">
+                              {featuredParks[(currentIndex - 1 + featuredParks.length) % featuredParks.length]?.name}
+                            </h3>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Tarjeta central (principal) */}
+                    <div className="w-[70vw] h-full scale-105 z-20 mx-2">
+                      <div className="relative h-full w-full rounded-3xl overflow-hidden shadow-2xl group">
+                        {/* Imagen de fondo */}
+                        <div 
+                          className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+                          style={{
+                            backgroundImage: `url(${featuredParks[currentIndex]?.primaryImage || featuredParks[currentIndex]?.mainImageUrl || 'https://images.unsplash.com/photo-1519331379826-f10be5486c6f?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80'})`
+                          }}
+                        />
+                        
+                        {/* Overlay degradado */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                        
+                        {/* Green Flag Award */}
+                        {(featuredParks[currentIndex]?.id === 5 || featuredParks[currentIndex]?.id === 18 || featuredParks[currentIndex]?.id === 4) && (
+                          <div className="absolute top-6 right-6 z-30">
+                            <img 
+                              src="/images/green-flag-award.png" 
+                              alt="Green Flag Award" 
+                              className="h-20 w-28 object-contain bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-lg"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                              }}
+                            />
+                          </div>
+                        )}
+                        
+                        {/* Contenido principal */}
+                        <div className="absolute inset-0 flex flex-col justify-end p-8 lg:p-12 text-white">
+                          <div className="max-w-4xl">
+                            <h2 className="text-2xl lg:text-3xl font-bold text-white mb-4 leading-tight">
+                              {featuredParks[currentIndex]?.name}
+                            </h2>
+                            
+                            {/* Resumen del parque */}
+                            <div className="bg-black/40 backdrop-blur-sm rounded-xl p-3 mb-4 inline-block">
+                              {(() => {
+                                const summary = generateParkSummary(featuredParks[currentIndex]);
+                                return (
+                                  <div className="flex flex-col space-y-1 text-white">
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-sm font-semibold">Actividades:</span>
+                                      <span className="text-base font-bold ml-4">{summary.activitiesCount}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-sm font-semibold">Amenidades:</span>
+                                      <span className="text-base font-bold ml-4">{summary.amenitiesCount}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-sm font-semibold">Superficie:</span>
+                                      <span className="text-sm font-bold ml-4">{summary.area}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-sm font-semibold">Tipo:</span>
+                                      <span className="text-sm font-bold ml-4">{summary.parkType}</span>
+                                    </div>
+                                  </div>
+                                );
+                              })()}
+                            </div>
+                            
+                            <Link href={`/parque/${featuredParks[currentIndex]?.name.toLowerCase().replace(/\s+/g, '-')}-${featuredParks[currentIndex]?.id}`}>
+                              <Button className="bg-primary-600 hover:bg-primary-700 text-white px-8 py-3 rounded-full text-lg font-semibold transition-all duration-300 hover:scale-105 shadow-2xl">
+                                Conoce más
+                                <ArrowRight className="ml-3 h-5 w-5" />
+                              </Button>
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <div className="h-12 bg-gray-200 rounded-xl"></div>
-                  </CardContent>
-                </Card>
-              ))
-            ) : featuredParks.length > 0 ? (
-              featuredParks.slice(0, 3).map(park => (
-                <div key={park.id} className="group">
-                  <Card className="border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105 rounded-3xl overflow-hidden bg-white">
-                    <ParkCard park={park} />
-                  </Card>
+
+                    {/* Tarjeta siguiente (parcial derecha) */}
+                    {featuredParks.length > 1 && (
+                      <div className="w-[15vw] h-[90%] opacity-70 scale-95 ml-4">
+                        <div className="relative h-full w-full rounded-2xl overflow-hidden shadow-lg">
+                          <div 
+                            className="absolute inset-0 bg-cover bg-center"
+                            style={{
+                              backgroundImage: `url(${featuredParks[(currentIndex + 1) % featuredParks.length]?.primaryImage || featuredParks[(currentIndex + 1) % featuredParks.length]?.mainImageUrl || 'https://images.unsplash.com/photo-1519331379826-f10be5486c6f?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80'})`
+                            }}
+                          />
+                          <div className="absolute inset-0 bg-black/40" />
+                          <div className="absolute inset-0 flex items-end p-4">
+                            <h3 className="text-white font-semibold text-lg truncate">
+                              {featuredParks[(currentIndex + 1) % featuredParks.length]?.name}
+                            </h3>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              ))
-            ) : (
-              <div className="col-span-3 text-center py-16">
-                <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Trees className="h-12 w-12 text-gray-400" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <Trees className="h-12 w-12 text-gray-400" />
+                    </div>
+                    <p className="text-xl text-gray-500 mb-4">No hay parques disponibles en este momento</p>
+                    <p className="text-gray-400">Pronto estarán disponibles más espacios verdes</p>
+                  </div>
                 </div>
-                <p className="text-xl text-gray-500 mb-4">No hay parques disponibles en este momento</p>
-                <p className="text-gray-400">Pronto estarán disponibles más espacios verdes</p>
-              </div>
+              )}
+            </div>
+            
+            {/* Controles de navegación */}
+            {featuredParks.length > 1 && (
+              <>
+                {/* Flecha izquierda */}
+                <button
+                  onClick={prevSlide}
+                  className="absolute left-8 top-1/2 transform -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 p-4 rounded-full shadow-xl transition-all duration-300 hover:scale-110 z-40"
+                >
+                  <ChevronLeft className="h-7 w-7" />
+                </button>
+                
+                {/* Flecha derecha */}
+                <button
+                  onClick={nextSlide}
+                  className="absolute right-8 top-1/2 transform -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 p-4 rounded-full shadow-xl transition-all duration-300 hover:scale-110 z-40"
+                >
+                  <ChevronRight className="h-7 w-7" />
+                </button>
+              </>
             )}
           </div>
           
           <div className="text-center mb-12">
             <Link href="/parks">
-              <Button size="lg" className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold px-10 py-4 text-lg rounded-2xl transition-all duration-300 hover:scale-105 hover:shadow-xl">
-                Ver Todos los Parques 
+              <Button size="lg" className="bg-[#19633c] hover:bg-[#145530] text-white font-bold px-10 py-4 text-lg rounded-2xl transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                Encuentra tu parque favorito
                 <ArrowRight className="h-5 w-5 ml-2" />
               </Button>
             </Link>
           </div>
           
           {/* Banner publicitario */}
-          <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] my-8">
+          <div className="w-full my-12">
             <AdSpace 
               spaceId={14} 
               position="banner" 
@@ -304,160 +384,269 @@ const Home: React.FC = () => {
           </div>
         </div>
       </section>
+      
+      {/* EVENTOS SECTION */}
+      <section className="py-24" style={{ backgroundColor: '#19633c' }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-6xl font-bold mb-8">
+              <span style={{ fontFamily: 'Guttery Regular, Georgia, Times, serif', color: '#ffffff', fontWeight: '300' }}>Disfruta los</span><br />
+              <span style={{ color: '#bcd256' }}>Magníficos Eventos</span>
+            </h2>
+            <p className="text-2xl font-bold text-white max-w-4xl mx-auto leading-relaxed">
+              Entérate de todas las actividades recreativas y culturales.
+            </p>
+          </div>
+
+          {/* Grid de eventos destacados */}
+          {eventsLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="bg-white rounded-2xl overflow-hidden shadow-xl h-[500px] flex flex-col animate-pulse">
+                  <div className="h-2/3 bg-gray-200"></div>
+                  <div className="h-1/3 p-6">
+                    <div className="h-6 bg-gray-200 rounded mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : featuredEvents.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+              {featuredEvents.map((event: any, index: number) => {
+                // Colores dinámicos basados en el tipo de evento
+                const eventColors = [
+                  { bg: 'bg-orange-100/90', icon: 'text-orange-600', text: 'text-orange-600' },
+                  { bg: 'bg-green-100/90', icon: 'text-green-600', text: 'text-green-600' },
+                  { bg: 'bg-purple-100/90', icon: 'text-purple-600', text: 'text-purple-600' }
+                ];
+                const colors = eventColors[index % eventColors.length];
+                
+                // Enlaces específicos para cada tarjeta de evento
+                const eventLinks = ['/event/5', '/event/4', '/event/2'];
+                const eventLink = eventLinks[index] || `/events/${event.id}`;
+                
+                return (
+                  <Link key={event.id} href={eventLink}>
+                    <div className="bg-white rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 h-[500px] flex flex-col cursor-pointer">
+                      <div className="h-2/3 relative overflow-hidden">
+                        <img 
+                          src={event.featuredImageUrl}
+                          alt={event.title}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className={`absolute top-4 left-4 w-12 h-12 ${colors.bg} backdrop-blur-sm rounded-xl flex items-center justify-center`}>
+                          <Calendar className={`h-6 w-6 ${colors.icon}`} />
+                        </div>
+                      </div>
+                      <div className="h-1/3 p-6 flex flex-col justify-between">
+                        <div>
+                          <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2">{event.title}</h3>
+                          <p className="text-gray-600 text-sm mb-3 line-clamp-2">{event.description}</p>
+                        </div>
+                        <div className={`flex items-center text-sm ${colors.text} font-semibold`}>
+                          <Calendar className="h-4 w-4 mr-2" />
+                          {formatEventDate(event.startDate, event.endDate, event.startTime)}
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center text-white py-12">
+              <Calendar className="h-16 w-16 mx-auto mb-4 opacity-50" />
+              <p className="text-xl">Próximamente nuevos eventos</p>
+              <p className="text-lg opacity-75">Mantente atento a nuestras próximas actividades</p>
+            </div>
+          )}
+
+          {/* Botón para ver todos los eventos si hay eventos disponibles */}
+          {featuredEvents.length > 0 && (
+            <div className="text-center">
+              <Link href="/events">
+                <Button size="lg" className="bg-[#bcd256] hover:bg-[#a8bd4a] text-[#19633c] font-bold px-10 py-4 text-lg rounded-2xl transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                  Ver todos los eventos
+                  <ArrowRight className="h-5 w-5 ml-2" />
+                </Button>
+              </Link>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* 🏛️ AGENCIA DE BOSQUES URBANOS SECTION */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-bold mb-8">
+              <span style={{ fontFamily: 'Guttery Regular, Georgia, Times, serif', color: '#51a19f', fontWeight: '300' }}>Conoce la</span><br />
+              <span style={{ color: '#19633c' }}>Agencia Metropolitana<br />de Bosques Urbanos</span>
+            </h2>
+            <p className="text-xl font-bold text-gray-700 max-w-4xl mx-auto leading-relaxed">
+              Somos un organismo público descentralizado que gestiona y conserva los parques del Área<br />
+              Metropolitana de Guadalajara con el objetivo de garantizar el derecho humano a un ambiente sano.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-5 gap-8">
+            {/* Columna 2/5 - Texto descriptivo */}
+            <div className="col-span-2 flex items-center">
+              <div className="text-left">
+                <h3 className="leading-tight">
+                  <span style={{ fontFamily: 'Guttery Regular, Georgia, Times, serif', color: '#51a19f', fontSize: '3rem', fontWeight: '300' }}>Nuestro</span><br />
+                  <span style={{ color: '#51a19f', fontSize: '2.25rem', fontWeight: '400' }}>modelo de gestión</span><br />
+                  <span style={{ color: '#19633c', fontSize: '1.5rem', fontWeight: '700' }}>se compone de 4 ejes principales</span>
+                </h3>
+              </div>
+            </div>
+
+            {/* Columna 3/5 - Tarjetas horizontales */}
+            <div className="col-span-3">
+              <div className="grid grid-cols-2 gap-4">
+                
+                {/* Eje 1: Gestión y Mantenimiento */}
+                <Card className="group hover:shadow-xl transition-all duration-300 hover:scale-102">
+                  <CardContent className="p-6 flex items-center gap-4">
+                    <div className="rounded-full w-16 h-16 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform" style={{ backgroundColor: '#51a19f' }}>
+                      <Trees className="h-8 w-8 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-gray-900">Gestión y Mantenimiento</h3>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Eje 2: Educación Ambiental */}
+                <Card className="group hover:shadow-xl transition-all duration-300 hover:scale-102">
+                  <CardContent className="p-6 flex items-center gap-4">
+                    <div className="rounded-full w-16 h-16 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform" style={{ backgroundColor: '#51a19f' }}>
+                      <Users className="h-8 w-8 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-gray-900">Educación Ambiental</h3>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Eje 3: Participación Ciudadana */}
+                <Card className="group hover:shadow-xl transition-all duration-300 hover:scale-102">
+                  <CardContent className="p-6 flex items-center gap-4">
+                    <div className="rounded-full w-16 h-16 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform" style={{ backgroundColor: '#51a19f' }}>
+                      <Calendar className="h-8 w-8 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-gray-900">Participación Ciudadana</h3>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Eje 4: Desarrollo Sustentable */}
+                <Card className="group hover:shadow-xl transition-all duration-300 hover:scale-102">
+                  <CardContent className="p-6 flex items-center gap-4">
+                    <div className="rounded-full w-16 h-16 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform" style={{ backgroundColor: '#51a19f' }}>
+                      <TrendingUp className="h-8 w-8 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-gray-900">Desarrollo Sustentable</h3>
+                    </div>
+                  </CardContent>
+                </Card>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* CENTRO METROPOLITANO DE CONSERVACIÓN DE VIDA SILVESTRE URBANO */}
-      <section className="py-24 bg-gradient-to-b from-emerald-50 to-teal-50">
+      <section className="py-24" style={{ backgroundColor: '#19633c' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-16">
-            {/* Contenido */}
-            <div className="space-y-8">
-              <div>
-                <div className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-100 to-teal-100 rounded-full px-6 py-3 mb-6 border border-emerald-200">
-                  <Leaf className="h-5 w-5 text-emerald-600" />
-                  <span className="text-sm font-semibold text-emerald-800">🦎 Vida Silvestre</span>
-                </div>
-                <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-                  Centro Metropolitano de 
-                  <span className="block text-emerald-600">Conservación de Vida Silvestre Urbano</span>
-                </h2>
-                <p className="text-xl text-gray-600 leading-relaxed mb-8">
-                  Dedicado a la protección, rehabilitación y conservación de especies nativas en el área metropolitana. 
-                  Trabajamos en la preservación de la biodiversidad urbana y la educación ambiental para las futuras generaciones.
-                </p>
-              </div>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow">
-                  <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mb-4">
-                    <Shield className="h-6 w-6 text-emerald-600" />
-                  </div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">Rescate de Fauna</h3>
-                  <p className="text-gray-600">Atención especializada para animales silvestres heridos o en situación de riesgo</p>
-                </div>
-                
-                <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow">
-                  <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mb-4">
-                    <Heart className="h-6 w-6 text-emerald-600" />
-                  </div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">Rehabilitación</h3>
-                  <p className="text-gray-600">Programas integrales de recuperación y reintegración al hábitat natural</p>
+          <div className="grid grid-cols-7 gap-8">
+            {/* Columna 5/7 - Imagen (lado izquierdo) */}
+            <div className="col-span-5 flex items-center">
+              <div className="relative w-full">
+                <div className="aspect-[5/3] bg-gradient-to-br from-emerald-200 to-teal-200 rounded-3xl overflow-hidden shadow-2xl">
+                  <img 
+                    src="/attached_assets/CMC2_1754778732652.png"
+                    alt="Centro de Conservación de Vida Silvestre - Guacamayas"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
               </div>
-              
-              <Button size="lg" className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold px-8 py-3 rounded-xl transition-all duration-300 hover:scale-105">
-                Conoce Más Sobre Conservación
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
             </div>
-            
-            {/* Imagen */}
-            <div className="relative">
-              <div className="aspect-[4/3] bg-gradient-to-br from-emerald-200 to-teal-200 rounded-3xl overflow-hidden shadow-2xl">
-                <img 
-                  src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                  alt="Centro de Conservación de Vida Silvestre"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="absolute -bottom-6 -left-6 w-24 h-24 bg-gradient-to-br from-amber-400 to-orange-500 rounded-3xl flex items-center justify-center shadow-xl">
-                <Sparkles className="h-12 w-12 text-white" />
+
+            {/* Columna 2/7 - Texto (lado derecho) */}
+            <div className="col-span-2 flex items-center">
+              <div className="text-right">
+                <h2 className="leading-tight mb-6">
+                  <span style={{ fontFamily: 'Guttery Regular, Georgia, Times, serif', color: '#aaaf4f', fontSize: '3rem', fontWeight: '300' }}>Comprometidos</span><br />
+                  <span style={{ color: '#aaaf4f', fontSize: '2.5rem', fontWeight: '400' }}>con la naturaleza</span>
+                </h2>
+                <p className="text-xl text-green-100 leading-relaxed mb-6 font-bold">
+                  Tenemos programas de educación<br />
+                  y protección de la flora y fauna
+                </p>
+                
+                <Button size="lg" className="bg-white hover:bg-gray-50 text-gray-900 font-bold px-6 py-3 rounded-xl transition-all duration-300 hover:scale-105 border border-gray-200 shadow-md">
+                  Ver más
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* EDUCACIÓN AMBIENTAL */}
-      <section className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-16">
-            {/* Imagen - Lado izquierdo */}
-            <div className="relative order-2 lg:order-1">
-              <div className="aspect-[4/3] bg-gradient-to-br from-blue-200 to-indigo-200 rounded-3xl overflow-hidden shadow-2xl">
-                <img 
-                  src="https://images.unsplash.com/photo-1509062522246-3755977927d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                  alt="Educación Ambiental"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="absolute -top-6 -right-6 w-24 h-24 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-3xl flex items-center justify-center shadow-xl">
-                <BookOpen className="h-12 w-12 text-white" />
-              </div>
-            </div>
-            
-            {/* Contenido - Lado derecho */}
-            <div className="space-y-8 order-1 lg:order-2">
-              <div>
-                <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-full px-6 py-3 mb-6 border border-blue-200">
-                  <GraduationCap className="h-5 w-5 text-blue-600" />
-                  <span className="text-sm font-semibold text-blue-800">📚 Aprendizaje</span>
-                </div>
-                <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-                  <span className="text-blue-600">Educación</span>
-                  <span className="block">Ambiental</span>
-                </h2>
-                <p className="text-xl text-gray-600 leading-relaxed mb-8">
-                  Formamos ciudadanos conscientes del medio ambiente a través de programas educativos innovadores. 
-                  Nuestros talleres, cursos y actividades promueven la cultura ambiental en todas las edades.
-                </p>
-              </div>
-              
-              <div className="space-y-4">
-                <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
-                    <Users className="h-4 w-4 text-blue-600" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-900 mb-1">Talleres Comunitarios</h3>
-                    <p className="text-gray-600">Actividades participativas para todas las edades enfocadas en sustentabilidad</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
-                    <Zap className="h-4 w-4 text-blue-600" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-900 mb-1">Programas Escolares</h3>
-                    <p className="text-gray-600">Currículum ambiental integrado para instituciones educativas</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
-                    <Target className="h-4 w-4 text-blue-600" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-900 mb-1">Capacitación Empresarial</h3>
-                    <p className="text-gray-600">Programas especializados para organizaciones comprometidas con el medio ambiente</p>
-                  </div>
-                </div>
-              </div>
-              
-              <Button size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold px-8 py-3 rounded-xl transition-all duration-300 hover:scale-105">
-                Explora Programas Educativos
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
+
 
       {/* PATROCINADORES */}
       <section className="py-24 bg-gradient-to-b from-gray-50 to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-100 to-pink-100 rounded-full px-6 py-3 mb-8 border border-purple-200">
-              <Award className="h-5 w-5 text-purple-600" />
-              <span className="text-sm font-semibold text-purple-800">🤝 Alianzas Estratégicas</span>
+          {/* Call to action para patrocinadores - MOVIDO ARRIBA */}
+          <div className="text-right mb-16">
+            <div 
+              className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-3xl p-16 shadow-xl mb-16 relative overflow-hidden min-h-[400px] flex flex-col justify-center items-end"
+              style={{
+                backgroundImage: `url('/attached_assets/excited-family-volunteers-celebrating-their-garbag-2025-08-03-03-10-39-utc_1754779889027.jpg')`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat'
+              }}
+            >
+              {/* Overlay negro con 50% opacidad */}
+              <div className="absolute inset-0 bg-black opacity-50 rounded-3xl"></div>
+              
+              {/* Contenido con z-index para estar sobre el overlay */}
+              <div className="relative z-10">
+                <h3 className="text-4xl font-bold text-white mb-4 text-right">¿Quieres colaborar con nosotros?</h3>
+                <p className="text-white mb-6 text-xl font-medium text-right">
+                  Únete a nuestras alianzas estratégicas y contribuye al desarrollo sostenible de la zona metropolitana
+                </p>
+                <div className="flex gap-4 justify-end">
+                  <Button size="lg" className="bg-white hover:bg-gray-50 font-bold px-8 py-3 rounded-xl transition-all duration-300 hover:scale-105 shadow-lg" style={{ color: '#51a19f' }}>
+                    Ser Voluntario
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                  <Button size="lg" className="bg-white hover:bg-gray-50 font-bold px-8 py-3 rounded-xl transition-all duration-300 hover:scale-105 shadow-lg" style={{ color: '#51a19f' }}>
+                    Servicio Social
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </div>
+              </div>
             </div>
-            <h2 className="text-4xl md:text-6xl font-bold text-gray-900 mb-8">
-              Nuestros 
-              <span className="text-purple-600">Patrocinadores</span>
+          </div>
+
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-6xl mb-8">
+              <span style={{ color: '#51a19f', fontFamily: 'Guttery Regular, serif', fontWeight: '300' }}>Gracias a nuestros</span>
+              <br />
+              <span style={{ color: '#19633c' }} className="font-bold">Patrocinadores</span>
             </h2>
-            <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
-              Gracias al apoyo de organizaciones comprometidas con el medio ambiente, 
-              podemos continuar desarrollando proyectos que transforman nuestra ciudad en un espacio más verde y sostenible.
+            <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed font-bold">
+              Bosques para Siempre es un programa que funciona como eje rector para la construcción y seguimiento en las alianzas, donativos y/o patrocinios.
             </p>
           </div>
           
@@ -488,7 +677,7 @@ const Home: React.FC = () => {
                         }
                       }}
                     >
-                      <div className="text-center">
+                      <div className="text-center flex items-center justify-center h-full">
                         <div className="group-hover:scale-105 transition-transform duration-300">
                           <img 
                             src={sponsor.logo} 
@@ -518,19 +707,14 @@ const Home: React.FC = () => {
             )}
           </div>
           
-          {/* Call to action para patrocinadores */}
+          {/* Botón CTA para ser patrocinador */}
           <div className="text-center mt-16">
-            <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-3xl p-8 shadow-xl">
-              <h3 className="text-2xl font-bold text-white mb-4">¿Quieres ser parte del cambio?</h3>
-              <p className="text-purple-100 mb-6 text-lg">
-                Únete a nuestras alianzas estratégicas y contribuye al desarrollo sostenible de la zona metropolitana
-              </p>
-              <Button size="lg" className="bg-white text-purple-600 hover:bg-gray-50 font-bold px-8 py-3 rounded-xl transition-all duration-300 hover:scale-105">
-                Convertirse en Patrocinador
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </div>
+            <Button size="lg" className="bg-white hover:bg-gray-50 font-bold px-8 py-3 rounded-xl transition-all duration-300 hover:scale-105 shadow-lg" style={{ color: '#51a19f' }}>
+              ¿Quieres ser patrocinador?
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
           </div>
+
         </div>
       </section>
 

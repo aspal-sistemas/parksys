@@ -6,7 +6,7 @@ import { MapPin, Clock, Star } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import AmenityIcon from './AmenityIcon';
-import greenFlagLogo from '@assets/PHOTO-2025-07-01-12-36-16_1751396336894.jpg';
+const greenFlagLogo = "/images/green-flag-logo.jpg";
 
 interface ExtendedParksListProps {
   parks: ExtendedPark[];

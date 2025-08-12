@@ -1463,19 +1463,109 @@ export async function getAmenitiesDirectly() {
 
 // Métodos adicionales implementados en la clase DatabaseStorage
 DatabaseStorage.prototype.getParkDocuments = async function(parkId: number): Promise<any[]> {
-  return []; // Retorna array vacío temporalmente
+  try {
+    console.log(`📋 STORAGE: Consultando documentos para parque ${parkId}`);
+    const result = await pool.query(`
+      SELECT 
+        id,
+        park_id as "parkId",
+        title,
+        file_url as "fileUrl",
+        file_size as "fileSize",
+        file_type as "fileType",
+        description,
+        uploaded_by_id as "uploadedById",
+        created_at as "createdAt",
+        updated_at as "updatedAt"
+      FROM documents 
+      WHERE park_id = $1
+      ORDER BY created_at DESC
+    `, [parkId]);
+    
+    console.log(`📋 STORAGE: Documentos encontrados para parque ${parkId}: ${result.rows.length}`);
+    return result.rows;
+  } catch (error) {
+    console.error(`❌ STORAGE: Error consultando documentos del parque ${parkId}:`, error);
+    return [];
+  }
 };
 
 DatabaseStorage.prototype.createDocument = async function(documentData: any): Promise<any> {
-  return { id: Date.now(), ...documentData };
+  try {
+    console.log(`📝 STORAGE: Creando documento:`, documentData);
+    const result = await pool.query(`
+      INSERT INTO documents (
+        park_id, title, file_url, file_type, description, uploaded_by_id, created_at, updated_at
+      ) VALUES (
+        $1, $2, $3, $4, $5, $6, NOW(), NOW()
+      ) RETURNING 
+        id,
+        park_id as "parkId",
+        title,
+        file_url as "fileUrl",
+        file_size as "fileSize",
+        file_type as "fileType",
+        description,
+        uploaded_by_id as "uploadedById",
+        created_at as "createdAt",
+        updated_at as "updatedAt"
+    `, [
+      documentData.parkId,
+      documentData.title,
+      documentData.fileUrl,
+      documentData.fileType,
+      documentData.description || '',
+      documentData.uploadedById || null
+    ]);
+    
+    const document = result.rows[0];
+    console.log(`✅ STORAGE: Documento creado con ID ${document.id}`);
+    return document;
+  } catch (error) {
+    console.error(`❌ STORAGE: Error creando documento:`, error);
+    throw error;
+  }
 };
 
 DatabaseStorage.prototype.getDocument = async function(id: number): Promise<any> {
-  return null;
+  try {
+    console.log(`📋 STORAGE: Consultando documento con ID ${id}`);
+    const result = await pool.query(`
+      SELECT 
+        id,
+        park_id as "parkId",
+        title,
+        file_url as "fileUrl",
+        file_size as "fileSize",
+        file_type as "fileType",
+        description,
+        uploaded_by_id as "uploadedById",
+        created_at as "createdAt",
+        updated_at as "updatedAt"
+      FROM documents 
+      WHERE id = $1
+    `, [id]);
+    
+    const document = result.rows[0] || null;
+    console.log(`📋 STORAGE: Documento ${id} ${document ? 'encontrado' : 'no encontrado'}`);
+    return document;
+  } catch (error) {
+    console.error(`❌ STORAGE: Error consultando documento ${id}:`, error);
+    return null;
+  }
 };
 
 DatabaseStorage.prototype.deleteDocument = async function(id: number): Promise<boolean> {
-  return true;
+  try {
+    console.log(`🗑️ STORAGE: Eliminando documento con ID ${id}`);
+    const result = await pool.query('DELETE FROM documents WHERE id = $1', [id]);
+    const deleted = (result.rowCount || 0) > 0;
+    console.log(`🗑️ STORAGE: Documento ${id} ${deleted ? 'eliminado' : 'no encontrado'}, filas afectadas: ${result.rowCount}`);
+    return deleted;
+  } catch (error) {
+    console.error(`❌ STORAGE: Error eliminando documento ${id}:`, error);
+    return false;
+  }
 };
 
 DatabaseStorage.prototype.getAllDocuments = async function(): Promise<any[]> {

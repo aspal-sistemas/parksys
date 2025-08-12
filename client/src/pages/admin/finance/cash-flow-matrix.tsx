@@ -413,39 +413,46 @@ export default function CashFlowMatrix() {
   return (
     <AdminLayout>
       <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <div className="flex items-center gap-2">
-              <BarChart3 className="w-8 h-8 text-gray-900" />
-              <h1 className="text-3xl font-bold text-gray-900">Matriz de Flujo de Efectivo</h1>
+        <Card className="bg-gray-50">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <BarChart3 className="w-8 h-8 text-black" />
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900">
+                    Matriz de Flujo de Efectivo
+                  </h1>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Seguimiento financiero mensual con datos reales de ingresos y gastos
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex gap-4">
+                <Button 
+                  onClick={() => setShowProjections(!showProjections)} 
+                  variant={showProjections ? "default" : "outline"}
+                >
+                  <Calculator className="h-4 w-4 mr-2" />
+                  {showProjections ? 'Ocultar' : 'Mostrar'} Proyecciones
+                </Button>
+                {showProjections && (
+                  <Button 
+                    onClick={() => setShowCustomGrowthPanel(!showCustomGrowthPanel)}
+                    variant={showCustomGrowthPanel ? "default" : "outline"}
+                  >
+                    <Settings className="h-4 w-4 mr-2" />
+                    {showCustomGrowthPanel ? 'Ocultar' : 'Configurar'} Factores
+                  </Button>
+                )}
+                <Button onClick={handleRefresh} disabled={isRefreshing} variant="outline">
+                  <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+                  Actualizar
+                </Button>
+              </div>
             </div>
-            <p className="text-gray-600 mt-2">
-              Seguimiento financiero mensual con datos reales de ingresos y gastos
-            </p>
-          </div>
-          <div className="flex gap-4">
-            <Button 
-              onClick={() => setShowProjections(!showProjections)} 
-              variant={showProjections ? "default" : "outline"}
-            >
-              <Calculator className="h-4 w-4 mr-2" />
-              {showProjections ? 'Ocultar' : 'Mostrar'} Proyecciones
-            </Button>
-            {showProjections && (
-              <Button 
-                onClick={() => setShowCustomGrowthPanel(!showCustomGrowthPanel)}
-                variant={showCustomGrowthPanel ? "default" : "outline"}
-              >
-                <Settings className="h-4 w-4 mr-2" />
-                {showCustomGrowthPanel ? 'Ocultar' : 'Configurar'} Factores
-              </Button>
-            )}
-            <Button onClick={handleRefresh} disabled={isRefreshing} variant="outline">
-              <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-              Actualizar
-            </Button>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
         {/* Controles de filtros y acciones */}
         <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-6">

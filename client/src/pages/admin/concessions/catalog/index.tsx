@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "wouter";
+import { apiRequest } from "@/lib/queryClient";
 import { Helmet } from "react-helmet";
 import AdminLayout from "@/components/AdminLayout";
 import { 
@@ -133,13 +134,10 @@ export default function ConcessionsCatalog() {
   // Mutaciones
   const createMutation = useMutation({
     mutationFn: async (data: ConcessionTypeForm) => {
-      const response = await fetch('/api/concession-types', {
+      return await apiRequest('/api/concession-types', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        data
       });
-      if (!response.ok) throw new Error('Error al crear el tipo de concesión');
-      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/concession-types'] });
@@ -161,13 +159,11 @@ export default function ConcessionsCatalog() {
 
   const updateMutation = useMutation({
     mutationFn: async (data: ConcessionTypeForm & { id: number }) => {
-      const response = await fetch(`/api/concession-types/${data.id}`, {
+      const { id, ...updateData } = data;
+      return await apiRequest(`/api/concession-types/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        data: updateData
       });
-      if (!response.ok) throw new Error('Error al actualizar el tipo de concesión');
-      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/concession-types'] });

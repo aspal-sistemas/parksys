@@ -7,9 +7,9 @@ import ParksList from '@/components/ParksList';
 import ParkDetail from '@/components/ParkDetail';
 import ExtendedParksList from '@/components/ExtendedParksList';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, MapPin, Trees, Users, Search } from 'lucide-react';
-import heroImage from '@assets/group-of-tourists-walking-through-natural-reserve-2024-05-27-02-02-13-utc_1752940583323.jpg';
-import logoImage from '@assets/logo ambu_1754602816490.png';
+import { ChevronLeft, ChevronRight, MapPin, Trees, Users, Search, Compass, Phone, Mail } from 'lucide-react';
+const heroImage = "/images/parks-hero.jpg";
+const logoImage = "/images/logo-ambu.png";
 import AdSpaceIntelligent from '@/components/AdSpaceIntelligent';
 const Parks: React.FC = () => {
   const [filters, setFilters] = useState<{
@@ -131,21 +131,34 @@ const Parks: React.FC = () => {
         <div className="absolute inset-0 bg-black/40"></div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              Explora Nuestros <span className="text-yellow-300">Parques</span>
+            <h1 className="text-4xl md:text-5xl mb-6">
+              <div className="flex items-center justify-center gap-3 mb-2">
+                <Compass className="h-12 w-12 md:h-10 md:w-10 text-white" />
+                <span className="font-guttery font-thin text-white">
+                  Explora
+                </span>
+              </div>
+              <div className="font-bold text-white">
+                Nuestros Parques y Bosques
+              </div>
             </h1>
-            <p className="text-xl md:text-2xl text-green-100 max-w-3xl mx-auto">
+            <p className="text-xl text-green-100 max-w-2xl mx-auto">
               Descubre espacios verdes únicos en la Zona Metropolitana de Guadalajara para toda la familia
             </p>
-            <div className="mt-8 flex justify-center items-center space-x-8 text-green-100">
-              <div className="text-center">
-                <div className="text-3xl font-bold">{totalParks}</div>
-                <div className="text-sm">Parques Disponibles</div>
+            <div className="flex items-center justify-center gap-4 text-green-100">
+              <div className="flex items-center gap-2">
+                <Trees className="h-5 w-5" />
+                <span>{totalParks} parques</span>
               </div>
-
-              <div className="text-center">
-                <div className="text-3xl font-bold">{averageAmenities}</div>
-                <div className="text-sm">Amenidades Promedio</div>
+              <div className="w-px h-6 bg-green-300"></div>
+              <div className="flex items-center gap-2">
+                <MapPin className="h-5 w-5" />
+                <span>{uniqueTypes} tipos</span>
+              </div>
+              <div className="w-px h-6 bg-green-300"></div>
+              <div className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                <span>{averageAmenities} amenidades prom.</span>
               </div>
             </div>
           </div>
@@ -240,6 +253,52 @@ const Parks: React.FC = () => {
           onClose={() => setModalOpen(false)}
         />
       )}
+
+      {/* Sección de Contacto */}
+      <section className="bg-gray-50 py-12">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">¿Necesitas más información?</h2>
+            <p className="text-lg text-gray-600">Nuestro equipo está aquí para ayudarte</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{backgroundColor: '#51a19f'}}>
+                <Phone className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Teléfono</h3>
+              <p className="text-gray-600 mb-2">(33) 1234-5678</p>
+              <p className="text-sm text-gray-500">Lun-Vie 8:00-16:00</p>
+            </div>
+            
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{backgroundColor: '#51a19f'}}>
+                <Mail className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Correo</h3>
+              <p className="text-gray-600 mb-2">parques@guadalajara.gob.mx</p>
+              <p className="text-sm text-gray-500">Respuesta en 24 horas</p>
+            </div>
+            
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{backgroundColor: '#51a19f'}}>
+                <MapPin className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Ubicación</h3>
+              <p className="text-gray-600 mb-2">Av. Hidalgo 400, Centro</p>
+              <p className="text-sm text-gray-500">Guadalajara, Jalisco</p>
+            </div>
+          </div>
+          
+          <div className="text-center">
+            <Button size="lg" className="bg-green-600 hover:bg-green-700 px-8 py-3">
+              <Mail className="h-5 w-5 mr-2" />
+              Enviar mensaje
+            </Button>
+          </div>
+        </div>
+      </section>
       </main>
 
       {/* Footer institucional */}

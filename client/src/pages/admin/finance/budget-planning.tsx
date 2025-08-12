@@ -271,20 +271,23 @@ export default function BudgetPlanningPage() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-      {/* Header con título, subtítulo y controles */}
-      <div className="space-y-4">
-        {/* Título y subtítulo */}
-        <div className="flex items-center gap-2">
-          <Target className="w-8 h-8 text-gray-900" />
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Planificación Presupuestaria</h1>
-            <p className="text-sm text-gray-600 mt-1">Define las proyecciones mensuales por categoría de ingresos y gastos</p>
-          </div>
-        </div>
-        
-        {/* Controles de acción */}
-        <div className="flex items-center justify-end">
-          <div className="flex items-center gap-3">
+        {/* Header */}
+        <Card className="bg-gray-50">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Target className="w-8 h-8 text-black" />
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900">
+                    Planificación Presupuestaria
+                  </h1>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Define las proyecciones mensuales por categoría de ingresos y gastos
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3">
           <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
             <DialogTrigger asChild>
               <Button variant="outline" className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100">
@@ -379,9 +382,10 @@ export default function BudgetPlanningPage() {
             <Save className="h-4 w-4 mr-2" />
             {saveMutation.isPending ? 'Guardando...' : 'Guardar Presupuesto'}
           </Button>
-          </div>
-        </div>
-      </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
       {/* Resumen de totales */}
       {budgetData && (

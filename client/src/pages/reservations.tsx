@@ -23,9 +23,12 @@ import {
   Trophy,
   Utensils,
   Coffee,
-  CheckCircle
+  CheckCircle,
+  Phone,
+  Mail,
+  X
 } from 'lucide-react';
-import heroImage from '@assets/group-of-tourists-walking-through-natural-reserve-2024-05-27-02-02-13-utc_1751508792698.jpg';
+import heroImage from "@assets/download-7_1754927049169.jpg";
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -165,8 +168,7 @@ function SpaceCard({ space, viewMode }: { space: ReservableSpace; viewMode: 'gri
             <div className="ml-4 flex flex-col gap-2">
               <Button 
                 size="sm" 
-                variant="outline" 
-                className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                className="bg-green-600 hover:bg-green-700 text-white"
                 onClick={() => window.open(`/space/${space.id}`, '_blank')}
               >
                 Ver detalle
@@ -192,7 +194,7 @@ function SpaceCard({ space, viewMode }: { space: ReservableSpace; viewMode: 'gri
             <img 
               src={primaryImage} 
               alt={space.name}
-              className="w-full h-full object-contain bg-gray-100 transition-transform duration-300 group-hover:scale-105"
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-black/20"></div>
           </>
@@ -270,7 +272,7 @@ function SpaceCard({ space, viewMode }: { space: ReservableSpace; viewMode: 'gri
         </div>
         
         <Button 
-          className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white" 
+          className="w-full mt-4 bg-green-600 hover:bg-green-700 text-white" 
           size="sm"
           onClick={() => window.open(`/space/${space.id}`, '_blank')}
         >
@@ -287,8 +289,15 @@ function ReservationsPage() {
   const [filterPark, setFilterPark] = useState('all');
   const [filterSpaceType, setFilterSpaceType] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [currentPage, setCurrentPage] = useState(1);
-  const spacesPerPage = 9;
+  const [showAll, setShowAll] = useState(false);
+
+  // Función para resetear filtros
+  const resetFilters = () => {
+    setSearchQuery('');
+    setFilterPark('all');
+    setFilterSpaceType('all');
+  };
+
 
   // Obtener todos los espacios reservables
   const { data: spacesData = [], isLoading } = useQuery<ReservableSpace[]>({
@@ -319,11 +328,20 @@ function ReservationsPage() {
     });
   }, [spacesData, searchQuery, filterPark, filterSpaceType]);
 
-  const totalSpaces = filteredSpaces.length;
-  const totalPages = Math.ceil(totalSpaces / spacesPerPage);
-  const startIndex = (currentPage - 1) * spacesPerPage;
-  const endIndex = startIndex + spacesPerPage;
-  const currentSpaces = filteredSpaces.slice(startIndex, endIndex);
+  // Espacios a mostrar según el estado showAll
+  const displayedSpaces = useMemo(() => {
+    const hasFilters = searchQuery !== '' || filterPark !== 'all' || filterSpaceType !== 'all';
+    
+    // Si hay filtros activos, mostrar todos los resultados
+    if (hasFilters) {
+      return filteredSpaces;
+    }
+    
+    // Si no hay filtros, mostrar según showAll
+    return showAll ? filteredSpaces : filteredSpaces.slice(0, 3);
+  }, [filteredSpaces, showAll, searchQuery, filterPark, filterSpaceType]);
+
+
 
   const uniqueSpaceTypes = Array.from(new Set(spacesData.map(space => space.spaceType).filter(Boolean)));
 
@@ -340,7 +358,7 @@ function ReservationsPage() {
 
   return (
     <PublicLayout>
-      <div className="bg-gradient-to-br from-blue-50 to-green-50">
+      <div className="bg-gray-50">
       {/* Hero Section */}
       <section 
         className="relative py-24 px-4 text-center text-white"
@@ -353,17 +371,22 @@ function ReservationsPage() {
       >
         <div className="absolute inset-0 bg-black/40"></div>
         <div className="relative max-w-4xl mx-auto">
-          <div className="flex items-center justify-center gap-4 mb-6">
-            <Building className="h-12 w-12" />
-            <h1 className="text-4xl md:text-5xl font-bold">
-              Reserva de Espacios
-            </h1>
+          <div className="mb-6">
+            <div className="flex items-center justify-center gap-4 mb-2">
+              <Building className="h-10 w-10" />
+              <h1 className="text-4xl md:text-5xl font-light" style={{fontFamily: 'Guttery, sans-serif'}}>
+                Reserva
+              </h1>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold">
+              Espacios para Eventos
+            </h2>
           </div>
-          <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+          <p className="text-xl text-green-100 mb-8 max-w-2xl mx-auto">
             Reserva espacios únicos en los parques de Guadalajara para tus eventos, 
             celebraciones y actividades especiales.
           </p>
-          <div className="flex items-center justify-center gap-4 text-blue-100">
+          <div className="flex items-center justify-center gap-4 text-green-100">
             <div className="flex items-center gap-2">
               <MapPin className="h-5 w-5" />
               <span>Múltiples ubicaciones</span>
@@ -380,21 +403,14 @@ function ReservationsPage() {
         </div>
       </section>
 
-      {/* Publicidad superior */}
-      <section className="py-4 bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4">
-          <AdSpace spaceId={1} position="banner" pageType="parks" />
-        </div>
-      </section>
-
       {/* Filtros y búsqueda */}
-      <section className="py-8 bg-white">
-        <div className="max-w-7xl mx-auto px-4">
+      <section className="py-16" style={{backgroundColor: '#19633c'}}>
+        <div className="max-w-7xl mx-auto px-8">
           <div className="flex flex-col lg:flex-row gap-6">
             {/* Búsqueda */}
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                <Search className="absolute left-3 top-3 h-5 w-5 text-green-600" />
                 <Input
                   placeholder="Buscar por nombre de espacio o descripción..."
                   value={searchQuery}
@@ -434,20 +450,20 @@ function ReservationsPage() {
                 </SelectContent>
               </Select>
 
-              <div className="flex border rounded-lg bg-gray-50">
+              <div className="flex gap-2">
                 <Button
-                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                  variant={viewMode === 'grid' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setViewMode('grid')}
-                  className="h-12"
+                  className="bg-white/90 hover:bg-white text-gray-700"
                 >
                   <Grid className="h-4 w-4" />
                 </Button>
                 <Button
-                  variant={viewMode === 'list' ? 'default' : 'ghost'}
+                  variant={viewMode === 'list' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setViewMode('list')}
-                  className="h-12"
+                  className="bg-white/90 hover:bg-white text-gray-700"
                 >
                   <List className="h-4 w-4" />
                 </Button>
@@ -455,14 +471,20 @@ function ReservationsPage() {
             </div>
           </div>
 
-          {/* Estadísticas */}
-          <div className="mt-6 flex items-center justify-between text-sm text-gray-600">
-            <span>
-              Mostrando {startIndex + 1}-{Math.min(endIndex, totalSpaces)} de {totalSpaces} espacios
-            </span>
-            <span>
-              Página {currentPage} de {totalPages}
-            </span>
+          {/* Fila inferior con información de resultados y botón limpiar filtros */}
+          <div className="mt-4 flex items-center justify-between">
+            <div className="text-sm text-white">
+              Mostrando {filteredSpaces.length} de {spacesData.length} espacios
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={resetFilters}
+              className="bg-white text-gray-900 border-white hover:bg-gray-100"
+            >
+              <X className="w-4 h-4 mr-2" />
+              Limpiar filtros
+            </Button>
           </div>
         </div>
       </section>
@@ -470,7 +492,7 @@ function ReservationsPage() {
       {/* Lista/Grid de espacios */}
       <section className="py-8">
         <div className="max-w-7xl mx-auto px-4">
-          {currentSpaces.length === 0 ? (
+          {filteredSpaces.length === 0 ? (
             <div className="text-center py-16">
               <Building className="h-16 w-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
@@ -480,11 +502,7 @@ function ReservationsPage() {
                 No hay espacios que coincidan con los filtros seleccionados.
               </p>
               <Button
-                onClick={() => {
-                  setSearchQuery('');
-                  setFilterPark('all');
-                  setFilterSpaceType('all');
-                }}
+                onClick={resetFilters}
                 variant="outline"
               >
                 Limpiar filtros
@@ -496,7 +514,7 @@ function ReservationsPage() {
                 ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" 
                 : "space-y-4"
               }>
-                {currentSpaces.map((space) => (
+                {displayedSpaces.map((space) => (
                   <SpaceCard 
                     key={space.id} 
                     space={space} 
@@ -505,39 +523,81 @@ function ReservationsPage() {
                 ))}
               </div>
 
-              {/* Paginación */}
-              {totalPages > 1 && (
-                <div className="flex justify-center items-center gap-2 mt-12">
-                  <Button
-                    variant="outline"
-                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                    disabled={currentPage === 1}
+              {/* Botón Ver más - solo se muestra si no hay filtros activos y hay más de 3 espacios */}
+              {!showAll && filteredSpaces.length > 3 && 
+               searchQuery === '' && filterPark === 'all' && filterSpaceType === 'all' && (
+                <div className="text-center mt-8">
+                  <Button 
+                    onClick={() => setShowAll(true)}
+                    className="bg-green-600 hover:bg-green-700 text-white px-8 py-3"
+                    size="lg"
                   >
-                    Anterior
+                    Ver más espacios ({filteredSpaces.length - 3} restantes)
                   </Button>
-                  
-                  {Array.from({ length: totalPages }, (_, i) => (
-                    <Button
-                      key={i + 1}
-                      variant={currentPage === i + 1 ? 'default' : 'outline'}
-                      onClick={() => setCurrentPage(i + 1)}
-                      className="w-10"
-                    >
-                      {i + 1}
-                    </Button>
-                  ))}
-                  
-                  <Button
+                </div>
+              )}
+
+              {/* Botón Ver menos - solo se muestra si showAll está activo y no hay filtros */}
+              {showAll && searchQuery === '' && filterPark === 'all' && filterSpaceType === 'all' && (
+                <div className="text-center mt-8">
+                  <Button 
+                    onClick={() => setShowAll(false)}
                     variant="outline"
-                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                    disabled={currentPage === totalPages}
+                    className="border-green-600 text-green-600 hover:bg-green-50 px-8 py-3"
+                    size="lg"
                   >
-                    Siguiente
+                    Ver menos
                   </Button>
                 </div>
               )}
             </>
           )}
+        </div>
+      </section>
+
+      {/* Sección de información de contacto */}
+      <section className="bg-gray-50 py-12">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">¿Necesitas más información?</h2>
+            <p className="text-lg text-gray-600">Nuestro equipo está aquí para ayudarte con tu reservación</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{backgroundColor: '#51a19f'}}>
+                <Phone className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Teléfono</h3>
+              <p className="text-gray-600 mb-2">(33) 1234-5678</p>
+              <p className="text-sm text-gray-500">Lun-Vie 8:00-16:00</p>
+            </div>
+            
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{backgroundColor: '#51a19f'}}>
+                <Mail className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Correo</h3>
+              <p className="text-gray-600 mb-2">reservas@parques.gdl.gob.mx</p>
+              <p className="text-sm text-gray-500">Respuesta en 24 horas</p>
+            </div>
+            
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{backgroundColor: '#51a19f'}}>
+                <MapPin className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Ubicación</h3>
+              <p className="text-gray-600 mb-2">Av. Hidalgo 400, Centro</p>
+              <p className="text-sm text-gray-500">Guadalajara, Jalisco</p>
+            </div>
+          </div>
+          
+          <div className="text-center">
+            <Button size="lg" className="bg-green-600 hover:bg-green-700 px-8 py-3">
+              <Mail className="h-5 w-5 mr-2" />
+              Enviar mensaje
+            </Button>
+          </div>
         </div>
       </section>
 

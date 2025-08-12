@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Separator } from '@/components/ui/separator';
 import { 
   Trees, 
   Search, 
@@ -19,11 +20,14 @@ import {
   Sun,
   Clock,
   TreePine,
-  Info
+  Info,
+  Phone,
+  Mail,
+  MapPin
 } from 'lucide-react';
 import PublicLayout from '@/components/PublicLayout';
 import { Link, useLocation } from 'wouter';
-import parkImage from '@assets/park-with-lake-and-stone-bridge-old-european-town-2024-12-04-10-14-36-utc_1752941385588.jpg';
+const parkImage = "/images/park-lake-bridge.jpg";
 import AdSpace from '@/components/AdSpace';
 
 interface TreeSpecies {
@@ -259,7 +263,7 @@ export default function TreeSpecies() {
   const [parkFilter, setParkFilter] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const itemsPerPage = 9;
 
   // Consulta para obtener todas las especies de árboles
   const { data: treeSpeciesResponse, isLoading } = useQuery<{data: TreeSpecies[], pagination: any}>({
@@ -334,7 +338,7 @@ export default function TreeSpecies() {
     return (
       <PublicLayout>
         <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-12">
-          <div className="max-w-7xl mx-auto px-4">
+          <div className="max-w-6xl mx-auto px-4">
             <div className="text-center mb-12">
               <div className="h-8 bg-gray-200 rounded w-96 mx-auto mb-4 animate-pulse"></div>
               <div className="h-4 bg-gray-200 rounded w-64 mx-auto animate-pulse"></div>
@@ -364,9 +368,10 @@ export default function TreeSpecies() {
   return (
     <PublicLayout>
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
-        {/* Header Ad Space */}
+        {/* Header Ad Space - Oculto */}
+        {/* 
         <div className="w-full bg-white border-b">
-          <div className="max-w-7xl mx-auto px-4 py-2">
+          <div className="max-w-6xl mx-auto px-4 py-2">
             <AdSpace 
               spaceId="4" 
               position="header" 
@@ -375,6 +380,7 @@ export default function TreeSpecies() {
             />
           </div>
         </div>
+        */}
 
         {/* Hero Section con imagen */}
         <div className="relative h-96 overflow-hidden">
@@ -386,159 +392,132 @@ export default function TreeSpecies() {
           <div className="absolute inset-0 bg-black bg-opacity-40"></div>
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center text-white">
-              <h1 className="text-4xl md:text-6xl font-bold mb-4">
-                Especies Arbóreas
-              </h1>
-              <p className="text-lg md:text-xl max-w-2xl mx-auto px-4">
-                Descubre la diversidad de árboles en nuestros parques urbanos de Guadalajara
+              <div className="text-center mb-6">
+                <div className="flex items-center justify-center gap-3 mb-2">
+                  <Leaf className="h-8 w-8 md:h-10 md:w-10 text-white" />
+                  <h1 className="font-guttery text-3xl md:text-4xl font-thin">Descubre</h1>
+                </div>
+                <h2 className="text-4xl md:text-5xl font-bold">
+                  Especies Arbóreas
+                </h2>
+              </div>
+              <p className="text-lg md:text-xl text-green-100 mb-8 max-w-2xl mx-auto px-4">
+                La diversidad de árboles en nuestros parques urbanos de Guadalajara
               </p>
+              <div className="flex items-center justify-center gap-4 text-green-100 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <TreePine className="h-5 w-5" />
+                  <span>{Array.isArray(treeSpecies) ? treeSpecies.length : 0} especies</span>
+                </div>
+                <Separator orientation="vertical" className="h-6 bg-green-300" />
+                <div className="flex items-center gap-2">
+                  <Globe className="h-5 w-5" />
+                  <span>{Array.isArray(treeSpecies) ? treeSpecies.filter(s => s.origin === 'Nativo').length : 0} nativas</span>
+                </div>
+                <Separator orientation="vertical" className="h-6 bg-green-300" />
+                <div className="flex items-center gap-2">
+                  <Award className="h-5 w-5" />
+                  <span>{Array.isArray(treeSpecies) ? treeSpecies.filter(s => s.isEndangered).length : 0} en peligro</span>
+                </div>
+                <Separator orientation="vertical" className="h-6 bg-green-300" />
+                <div className="flex items-center gap-2">
+                  <Filter className="h-5 w-5" />
+                  <span>{filteredSpecies.length} filtradas</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
         
-        {/* Filtros - Movidos pegados al hero */}
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
-              <div className="flex-1 max-w-md">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    placeholder="Buscar especies..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
+        {/* Sección de Filtros */}
+        <section className="sticky top-0 z-10 border-b border-gray-200 shadow-sm mb-6" style={{backgroundColor: '#19633c'}}>
+          <div className="max-w-6xl mx-auto px-4 py-8">
+            <div className="rounded-lg shadow-sm p-6" style={{backgroundColor: '#19633c'}}>
+              <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
+                <div className="flex-1 max-w-md">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="Buscar especies..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
                 </div>
-              </div>
-              
-              <div className="flex gap-3">
-                <Select value={parkFilter} onValueChange={setParkFilter}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue placeholder="Parque" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos los parques</SelectItem>
-                    {parks.map((park: any) => (
-                      <SelectItem key={park.id} value={park.id.toString()}>
-                        {park.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
                 
-                <Select value={originFilter} onValueChange={setOriginFilter}>
-                  <SelectTrigger className="w-40">
-                    <SelectValue placeholder="Origen" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos los orígenes</SelectItem>
-                    <SelectItem value="Nativo">Nativo</SelectItem>
-                    <SelectItem value="Introducido">Introducido</SelectItem>
-                    <SelectItem value="Naturalizado">Naturalizado</SelectItem>
-                  </SelectContent>
-                </Select>
-                
-                <Select value={growthRateFilter} onValueChange={setGrowthRateFilter}>
-                  <SelectTrigger className="w-40">
-                    <SelectValue placeholder="Crecimiento" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos los ritmos</SelectItem>
-                    <SelectItem value="Lento">Lento</SelectItem>
-                    <SelectItem value="Medio">Medio</SelectItem>
-                    <SelectItem value="Rápido">Rápido</SelectItem>
-                  </SelectContent>
-                </Select>
-                
-                <div className="flex border border-gray-300 rounded-md">
-                  <Button
-                    variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('grid')}
-                    className="rounded-r-none"
-                  >
-                    <Grid className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant={viewMode === 'list' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('list')}
-                    className="rounded-l-none"
-                  >
-                    <List className="h-4 w-4" />
-                  </Button>
+                <div className="flex gap-3">
+                  <Select value={parkFilter} onValueChange={setParkFilter}>
+                    <SelectTrigger className="w-48">
+                      <SelectValue placeholder="Parque" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos los parques</SelectItem>
+                      {parks.map((park: any) => (
+                        <SelectItem key={park.id} value={park.id.toString()}>
+                          {park.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  
+                  <Select value={originFilter} onValueChange={setOriginFilter}>
+                    <SelectTrigger className="w-40">
+                      <SelectValue placeholder="Origen" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos los orígenes</SelectItem>
+                      <SelectItem value="Nativo">Nativo</SelectItem>
+                      <SelectItem value="Introducido">Introducido</SelectItem>
+                      <SelectItem value="Naturalizado">Naturalizado</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  <Select value={growthRateFilter} onValueChange={setGrowthRateFilter}>
+                    <SelectTrigger className="w-40">
+                      <SelectValue placeholder="Crecimiento" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos los ritmos</SelectItem>
+                      <SelectItem value="Lento">Lento</SelectItem>
+                      <SelectItem value="Medio">Medio</SelectItem>
+                      <SelectItem value="Rápido">Rápido</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant={viewMode === 'grid' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setViewMode('grid')}
+                      className="bg-[#00a587] hover:bg-[#067f5f] text-white"
+                    >
+                      <Grid className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant={viewMode === 'list' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setViewMode('list')}
+                      className="bg-[#00a587] hover:bg-[#067f5f] text-white"
+                    >
+                      <List className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* Banner Publicitario de Ancho Completo */}
-        <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] mb-8">
-          <AdSpace spaceId="36" position="banner" pageType="tree-species" />
-        </div>
-
-        <div className="max-w-7xl mx-auto px-4">
-          {/* Estadísticas */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-2xl font-bold text-green-600">
-                  {Array.isArray(treeSpecies) ? treeSpecies.length : 0}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-600">Especies registradas</p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-2xl font-bold text-blue-600">
-                  {Array.isArray(treeSpecies) ? treeSpecies.filter(s => s.origin === 'Nativo').length : 0}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-600">Especies nativas</p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-2xl font-bold text-red-600">
-                  {Array.isArray(treeSpecies) ? treeSpecies.filter(s => s.isEndangered).length : 0}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-600">En peligro</p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-2xl font-bold text-purple-600">
-                  {filteredSpecies.length}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-600">Resultados filtrados</p>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Layout principal con sidebar */}
-          <div className="flex gap-8">
-            {/* Contenido principal */}
-            <div className="flex-1">
-              {/* Resultados */}
-              {filteredSpecies.length > 0 ? (
-                <>
-                  <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-6'}>
-                    {paginatedSpecies.map((species) => (
-                      <TreeSpeciesCard key={species.id} species={species} viewMode={viewMode} />
-                    ))}
-                  </div>
+        <div className="max-w-6xl mx-auto px-4 pt-8">
+          {/* Resultados - Grid expandido sin sidebar */}
+          {filteredSpecies.length > 0 ? (
+            <>
+              <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-6'}>
+                {paginatedSpecies.map((species) => (
+                  <TreeSpeciesCard key={species.id} species={species} viewMode={viewMode} />
+                ))}
+              </div>
               
               {/* Información de paginación */}
               <div className="flex items-center justify-between mt-8 mb-12">
@@ -608,19 +587,58 @@ export default function TreeSpecies() {
               </p>
             </div>
           )}
-            </div>
-            
-            {/* Sidebar publicitario */}
-            <div className="w-80 space-y-6 sticky top-4 self-start">
-              <AdSpace 
-                spaceId="5" 
-                position="sidebar" 
-                pageType="tree-species" 
-                className="w-full"
-              />
-            </div>
+          
+          {/* Banner Publicitario */}
+          <div className="mt-12 mb-8">
+            <AdSpace spaceId="36" position="banner" pageType="tree-species" />
           </div>
         </div>
+
+        {/* Sección de Contacto */}
+        <section className="bg-gray-50 py-12">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">¿Necesitas más información?</h2>
+              <p className="text-lg text-gray-600">Nuestro equipo está aquí para ayudarte</p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{backgroundColor: '#51a19f'}}>
+                  <Phone className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Teléfono</h3>
+                <p className="text-gray-600 mb-2">(33) 1234-5678</p>
+                <p className="text-sm text-gray-500">Lun-Vie 8:00-16:00</p>
+              </div>
+              
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{backgroundColor: '#51a19f'}}>
+                  <Mail className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Correo</h3>
+                <p className="text-gray-600 mb-2">arbolado@parques.gdl.gob.mx</p>
+                <p className="text-sm text-gray-500">Respuesta en 24 horas</p>
+              </div>
+              
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{backgroundColor: '#51a19f'}}>
+                  <MapPin className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Ubicación</h3>
+                <p className="text-gray-600 mb-2">Av. Hidalgo 400, Centro</p>
+                <p className="text-sm text-gray-500">Guadalajara, Jalisco</p>
+              </div>
+            </div>
+            
+            <div className="text-center">
+              <Button size="lg" className="bg-green-600 hover:bg-green-700 px-8 py-3">
+                <Mail className="h-5 w-5 mr-2" />
+                Enviar mensaje
+              </Button>
+            </div>
+          </div>
+        </section>
       </div>
     </PublicLayout>
   );

@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import PublicLayout from '@/components/PublicLayout';
 import AdSpace from '@/components/AdSpace';
-import volunteerHeroImage from '@assets/happy-volunteer-couple-planting-trees-together-by-2025-01-16-13-28-02-utc_1752941777071.jpg';
+const volunteerHeroImage = "/images/volunteer-hero.jpg";
 
 interface Volunteer {
   id: number;
@@ -48,13 +48,11 @@ export default function VolunteersList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [parkFilter, setParkFilter] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 12;
+  const [cardsToShow, setCardsToShow] = useState(3); // Inicialmente mostrar 3 cards
 
   // Consulta para obtener todos los voluntarios con información del parque
   const { data: volunteersResponse, isLoading, error } = useQuery({
     queryKey: ['/api/volunteers/public'],
-    suspense: false,
     retry: 1,
     queryFn: async () => {
       const response = await fetch('/api/volunteers/public');
@@ -71,7 +69,6 @@ export default function VolunteersList() {
   // Consulta para obtener lista de parques para el filtro
   const { data: parksResponse } = useQuery({
     queryKey: ['/api/parks'],
-    suspense: false,
     retry: 1,
     queryFn: async () => {
       const response = await fetch('/api/parks');
@@ -101,15 +98,18 @@ export default function VolunteersList() {
     return matchesSearch && matchesPark && volunteer.status === 'active';
   });
 
-  // Paginación
-  const totalPages = Math.ceil(filteredVolunteers.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentVolunteers = filteredVolunteers.slice(startIndex, endIndex);
+  // Lógica de "Ver más"
+  const currentVolunteers = filteredVolunteers.slice(0, cardsToShow);
+  const hasMore = cardsToShow < filteredVolunteers.length;
 
-  // Resetear página cuando cambian los filtros
+  // Función para mostrar más voluntarios
+  const showMore = () => {
+    setCardsToShow(prev => prev + 9); // Agregar 9 más cada vez
+  };
+
+  // Resetear cantidad cuando cambian los filtros
   useEffect(() => {
-    setCurrentPage(1);
+    setCardsToShow(3); // Volver a mostrar solo 3 inicialmente
   }, [searchTerm, parkFilter]);
 
   const formatDate = (dateString: string) => {
@@ -123,6 +123,48 @@ export default function VolunteersList() {
   const getInitials = (name: string) => {
     if (!name) return 'V';
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
+  };
+
+  // Función para traducir áreas de interés al español
+  const translateInterestArea = (area: string) => {
+    const translations: { [key: string]: string } = {
+      'nature': 'Naturaleza',
+      'naturaleza': 'Naturaleza',
+      'events': 'Eventos',
+      'eventos': 'Eventos', 
+      'education': 'Educación',
+      'educacion': 'Educación',
+      'maintenance': 'Mantenimiento',
+      'mantenimiento': 'Mantenimiento',
+      'sports': 'Deportes',
+      'deportes': 'Deportes',
+      'cultural': 'Cultural',
+      'culture': 'Cultural'
+    };
+    
+    const cleaned = area.toLowerCase().trim();
+    return translations[cleaned] || area.charAt(0).toUpperCase() + area.slice(1).toLowerCase();
+  };
+
+  // Función para asignar colores a las etiquetas
+  const getBadgeColor = (area: string) => {
+    const colorMap: { [key: string]: string } = {
+      'nature': 'bg-green-100 text-green-800 hover:bg-green-200',
+      'naturaleza': 'bg-green-100 text-green-800 hover:bg-green-200',
+      'events': 'bg-purple-100 text-purple-800 hover:bg-purple-200',
+      'eventos': 'bg-purple-100 text-purple-800 hover:bg-purple-200',
+      'education': 'bg-blue-100 text-blue-800 hover:bg-blue-200',
+      'educacion': 'bg-blue-100 text-blue-800 hover:bg-blue-200',
+      'maintenance': 'bg-orange-100 text-orange-800 hover:bg-orange-200',
+      'mantenimiento': 'bg-orange-100 text-orange-800 hover:bg-orange-200',
+      'sports': 'bg-red-100 text-red-800 hover:bg-red-200',
+      'deportes': 'bg-red-100 text-red-800 hover:bg-red-200',
+      'cultural': 'bg-pink-100 text-pink-800 hover:bg-pink-200',
+      'culture': 'bg-pink-100 text-pink-800 hover:bg-pink-200'
+    };
+    
+    const cleaned = area.toLowerCase().trim();
+    return colorMap[cleaned] || 'bg-gray-100 text-gray-800 hover:bg-gray-200';
   };
 
   if (isLoading) {
@@ -156,137 +198,234 @@ export default function VolunteersList() {
 
   return (
     <PublicLayout>
-      <div className="min-h-screen bg-gray-50">
-      {/* Header Hero con imagen de fondo */}
-      <div 
-        className="relative py-24 text-white"
-        style={{
-          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)), url(${volunteerHeroImage})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
-        }}
-      >
-        <div className="container mx-auto px-4">
-          <div className="text-center">
-            <Users className="h-16 w-16 mx-auto mb-4 drop-shadow-lg" />
-            <h1 className="text-5xl font-bold mb-6 drop-shadow-lg">Nuestros Voluntarios</h1>
-            <p className="text-xl max-w-2xl mx-auto drop-shadow-md leading-relaxed">
-              Conoce a las personas comprometidas que dedican su tiempo y esfuerzo para hacer de nuestros parques lugares mejores para todos.
-            </p>
-            <div className="mt-8">
-              <Button 
-                className="bg-[#00a587] hover:bg-[#067f5f] text-white px-8 py-3 text-lg font-semibold shadow-lg"
-                size="lg"
-                onClick={() => navigate('/volunteers/register')}
-              >
-                Únete como Voluntario
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Estadísticas */}
-      <div className="py-8 bg-white border-b">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-green-600">{filteredVolunteers.length}</div>
-              <div className="text-gray-600">Voluntarios Activos</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600">
-                {parks.length}
-              </div>
-              <div className="text-gray-600">Parques con Voluntarios</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-purple-600">
-                {filteredVolunteers.filter(v => v.preferredParkId).length}
-              </div>
-              <div className="text-gray-600">Con Parque Asignado</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Filtros */}
-      <div className="py-6 bg-white border-b">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-            <div className="flex flex-col md:flex-row gap-4 flex-1">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Buscar por nombre, actividades o parque..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <Select value={parkFilter} onValueChange={setParkFilter}>
-                <SelectTrigger className="w-full md:w-48">
-                  <SelectValue placeholder="Filtrar por parque" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos los parques</SelectItem>
-                  {parks.map((park: any) => (
-                    <SelectItem key={park.id} value={park.id.toString()}>
-                      {park.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant={viewMode === 'grid' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setViewMode('grid')}
-              >
-                Tarjetas
-              </Button>
-              <Button
-                variant={viewMode === 'list' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setViewMode('list')}
-              >
-                Lista
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Banner publicitario de ancho completo */}
-      <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] mb-8">
-        <AdSpace 
-          spaceId={37}
-          pageType="volunteers"
-          position="banner"
+      <div className="bg-gray-50">
+      {/* 1. Hero Section */}
+      <div className="relative h-96 overflow-hidden">
+        <img 
+          src={volunteerHeroImage} 
+          alt="Voluntarios en parques de Guadalajara" 
+          className="w-full h-full object-cover"
         />
+        <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center text-white max-w-4xl mx-auto px-4">
+            <div className="text-center mb-6">
+              <div className="flex items-center justify-center gap-3 mb-2">
+                <Users className="h-10 w-10" />
+                <h1 className="font-guttery text-4xl md:text-5xl font-normal">
+                  Conoce a
+                </h1>
+              </div>
+              <h2 className="text-4xl md:text-5xl font-bold">
+                Nuestros Voluntarios
+              </h2>
+            </div>
+            <p className="text-xl text-green-100 mb-8 max-w-2xl mx-auto">
+              Personas comprometidas que dedican su tiempo y esfuerzo para hacer de nuestros parques lugares mejores para todos
+            </p>
+          </div>
+        </div>
       </div>
 
-      {/* Lista de voluntarios con sidebar */}
-      <div className="py-2">
-        <div className="container mx-auto px-4">
-          <div className="flex gap-8 items-start">
-            {/* Contenido principal */}
-            <div className="flex-1">
-              {/* Información de paginación */}
-              <div className="mb-6 text-sm text-gray-600 text-center">
-                Mostrando {startIndex + 1} a {Math.min(endIndex, filteredVolunteers.length)} de {filteredVolunteers.length} voluntarios
-              </div>
+      {/* 2. Voluntarios en Acción - Sección Completa */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          {/* Textos */}
+          <div className="mb-12">
+            <p className="text-gray-900 font-bold text-xl text-center max-w-2xl mx-auto mb-12">
+              Conoce el impacto real de nuestros voluntarios en los parques de Guadalajara
+            </p>
+          </div>
 
-              {viewMode === 'grid' ? (
+          {/* Estadísticas */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16">
+            <div className="text-center">
+              <div className="bg-[#a19f1f] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Users className="h-10 w-10 text-white" />
+              </div>
+              <div className="text-4xl md:text-5xl font-bold text-gray-900 mb-2">{filteredVolunteers.length}+</div>
+              <div className="text-lg text-gray-600 font-medium">Voluntarios Activos</div>
+            </div>
+            
+            <div className="text-center">
+              <div className="bg-[#a19f1f] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <MapPin className="h-10 w-10 text-white" />
+              </div>
+              <div className="text-4xl md:text-5xl font-bold text-gray-900 mb-2">{parks.length}</div>
+              <div className="text-lg text-gray-600 font-medium">Parques Atendidos</div>
+            </div>
+            
+            <div className="text-center">
+              <div className="bg-[#a19f1f] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Award className="h-10 w-10 text-white" />
+              </div>
+              <div className="text-4xl md:text-5xl font-bold text-gray-900 mb-2">150+</div>
+              <div className="text-lg text-gray-600 font-medium">Horas Mensuales</div>
+            </div>
+            
+            <div className="text-center">
+              <div className="bg-[#a19f1f] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Heart className="h-10 w-10 text-white" />
+              </div>
+              <div className="text-4xl md:text-5xl font-bold text-gray-900 mb-2">25+</div>
+              <div className="text-lg text-gray-600 font-medium">Proyectos Completados</div>
+            </div>
+          </div>
+
+          {/* Galería */}
+          <div className="max-w-4xl mx-auto">
+            <div className="grid grid-cols-4 grid-rows-2 gap-2 h-64">
+              {/* Imagen principal - ocupa 2x2 - Gran grupo de voluntarios */}
+              <div className="col-span-2 row-span-2 relative cursor-pointer group">
+                <img 
+                  src="/volunteer-3.webp"
+                  alt="Gran grupo de voluntarios celebrando en parque natural"
+                  className="w-full h-full object-cover rounded-lg shadow-lg"
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
+              </div>
+              
+              {/* Imagen 1 - Educación ambiental con niños */}
+              <div className="relative cursor-pointer group">
+                <img 
+                  src="/volunteer-1.png"
+                  alt="Voluntarios educando niños sobre medio ambiente en parque"
+                  className="w-full h-full object-cover rounded-lg shadow-md"
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
+              </div>
+              
+              {/* Imagen 2 - Actividades deportivas */}
+              <div className="relative cursor-pointer group">
+                <img 
+                  src="/volunteer-2.png"
+                  alt="Voluntarios organizando actividades deportivas para niños"
+                  className="w-full h-full object-cover rounded-lg shadow-md"
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
+              </div>
+              
+              {/* Imagen 3 - Jardín japonés */}
+              <div className="relative cursor-pointer group">
+                <img 
+                  src="/volunteer-4.jpg"
+                  alt="Voluntarios cuidando jardín japonés en parque de Guadalajara"
+                  className="w-full h-full object-cover rounded-lg shadow-md"
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
+              </div>
+              
+              {/* Imagen 4 - Voluntarios trabajando en jardín tradicional */}
+              <div className="relative cursor-pointer group">
+                <img 
+                  src="/volunteer-garden.jpg"
+                  alt="Voluntarios felices con plantas y herramientas de jardinería trabajando en el parque"
+                  className="w-full h-full object-cover rounded-lg shadow-md"
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 4. Sección Motivacional con CTA */}
+      <section className="py-20 bg-gradient-to-br from-[#51a19f] to-[#00a587]">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <div className="mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+              ¡Sé Parte del Cambio!
+            </h2>
+          </div>
+
+          {/* Call to Action */}
+          <div className="text-center">
+            <Button 
+              className="bg-white text-[#00a587] hover:bg-gray-100 px-12 py-4 text-xl font-bold shadow-2xl transform hover:scale-105 transition-all duration-300"
+              size="lg"
+              onClick={() => navigate('/volunteers/register')}
+            >
+              <Heart className="mr-3 h-6 w-6" />
+              Únete como Voluntario
+            </Button>
+            <p className="text-green-100 mt-4 text-lg">
+              Tu pasión por el medio ambiente puede transformar nuestra ciudad
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* 4. Sección de panel de filtros y búsqueda */}
+      <section className="py-6 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="rounded-lg p-6">
+            {/* Título del panel */}
+            <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">
+              Conoce a los voluntarios registrados
+            </h3>
+            <div className="flex flex-col lg:flex-row gap-4 items-center justify-between mb-4">
+              <div className="flex flex-col sm:flex-row gap-4 flex-1">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    placeholder="Buscar por nombre, actividades o parque..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 bg-white"
+                  />
+                </div>
+                
+                <Select value={parkFilter} onValueChange={setParkFilter}>
+                  <SelectTrigger className="w-full sm:w-48 bg-white">
+                    <SelectValue placeholder="Filtrar por parque" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los parques</SelectItem>
+                    {parks.map((park: any) => (
+                      <SelectItem key={park.id} value={park.id.toString()}>
+                        {park.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="flex gap-2">
+                <Button
+                  variant={viewMode === 'grid' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewMode('grid')}
+                >
+                  Tarjetas
+                </Button>
+                <Button
+                  variant={viewMode === 'list' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewMode('list')}
+                >
+                  Lista
+                </Button>
+              </div>
+            </div>
+            
+            <p className="text-sm text-black">
+              Mostrando {Math.min(cardsToShow, filteredVolunteers.length)} de {filteredVolunteers.length} voluntarios
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* 5. Sección de contenido */}
+      <section className="py-12 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4">
+          {viewMode === 'grid' ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {currentVolunteers.map((volunteer) => (
                     <Card key={volunteer.id} className="hover:shadow-lg transition-shadow">
                       <CardContent className="p-6">
                         <div className="text-center space-y-4">
                           {/* Fotografía del voluntario */}
-                          <div className="w-24 h-24 mx-auto bg-green-100 rounded-full flex items-center justify-center overflow-hidden">
+                          <div className="w-24 h-24 mx-auto rounded-full flex items-center justify-center overflow-hidden" style={{backgroundColor: '#51a19f'}}>
                             {volunteer.profileImageUrl ? (
                               <img 
                                 src={volunteer.profileImageUrl} 
@@ -294,7 +433,7 @@ export default function VolunteersList() {
                                 className="w-24 h-24 rounded-full object-cover"
                               />
                             ) : (
-                              <span className="text-green-600 font-semibold text-xl">
+                              <span className="text-white font-semibold text-xl">
                                 {getInitials(volunteer.fullName)}
                               </span>
                             )}
@@ -324,14 +463,14 @@ export default function VolunteersList() {
                             <div className="flex flex-wrap justify-center gap-1">
                               {volunteer.interestAreas && Array.isArray(volunteer.interestAreas) ? (
                                 volunteer.interestAreas.map((activity, index) => (
-                                  <Badge key={index} variant="secondary" className="text-xs">
-                                    {activity}
+                                  <Badge key={index} className={`text-xs ${getBadgeColor(activity)} border-0`}>
+                                    {translateInterestArea(activity)}
                                   </Badge>
                                 ))
                               ) : volunteer.interestAreas && typeof volunteer.interestAreas === 'string' ? (
                                 volunteer.interestAreas.split(',').map((activity, index) => (
-                                  <Badge key={index} variant="secondary" className="text-xs">
-                                    {activity.trim()}
+                                  <Badge key={index} className={`text-xs ${getBadgeColor(activity)} border-0`}>
+                                    {translateInterestArea(activity.trim())}
                                   </Badge>
                                 ))
                               ) : (
@@ -351,7 +490,7 @@ export default function VolunteersList() {
                   <CardContent className="p-6">
                     <div className="flex items-start space-x-6">
                       {/* Fotografía del voluntario */}
-                      <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center overflow-hidden">
+                      <div className="w-16 h-16 rounded-full flex items-center justify-center overflow-hidden" style={{backgroundColor: '#51a19f'}}>
                         {volunteer.profileImageUrl ? (
                           <img 
                             src={volunteer.profileImageUrl} 
@@ -359,7 +498,7 @@ export default function VolunteersList() {
                             className="w-16 h-16 rounded-full object-cover"
                           />
                         ) : (
-                          <span className="text-green-600 font-semibold text-lg">
+                          <span className="text-white font-semibold text-lg">
                             {getInitials(volunteer.fullName)}
                           </span>
                         )}
@@ -391,14 +530,14 @@ export default function VolunteersList() {
                           <div className="flex flex-wrap gap-1 mt-1">
                             {volunteer.interestAreas && Array.isArray(volunteer.interestAreas) ? (
                               volunteer.interestAreas.map((activity, index) => (
-                                <Badge key={index} variant="secondary" className="text-xs">
-                                  {activity}
+                                <Badge key={index} className={`text-xs ${getBadgeColor(activity)} border-0`}>
+                                  {translateInterestArea(activity)}
                                 </Badge>
                               ))
                             ) : volunteer.interestAreas && typeof volunteer.interestAreas === 'string' ? (
                               volunteer.interestAreas.split(',').map((activity, index) => (
-                                <Badge key={index} variant="secondary" className="text-xs">
-                                  {activity.trim()}
+                                <Badge key={index} className={`text-xs ${getBadgeColor(activity)} border-0`}>
+                                  {translateInterestArea(activity.trim())}
                                 </Badge>
                               ))
                             ) : (
@@ -422,84 +561,76 @@ export default function VolunteersList() {
                 </div>
               )}
 
-              {/* Paginación */}
-              {totalPages > 1 && (
-                <div className="flex justify-center items-center space-x-2 mt-8">
+              {/* Botón Ver más */}
+              {hasMore && (
+                <div className="flex justify-center mt-8">
                   <Button
-                    variant="outline"
-                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    disabled={currentPage === 1}
-                    className="text-primary border-primary hover:bg-primary hover:text-white"
+                    onClick={showMore}
+                    className="bg-[#51a19f] text-white hover:bg-[#458a88] px-8 py-3 text-lg font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
                   >
-                    Anterior
-                  </Button>
-                  
-                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    let pageNum;
-                    if (totalPages <= 5) {
-                      pageNum = i + 1;
-                    } else if (currentPage <= 3) {
-                      pageNum = i + 1;
-                    } else if (currentPage >= totalPages - 2) {
-                      pageNum = totalPages - 4 + i;
-                    } else {
-                      pageNum = currentPage - 2 + i;
-                    }
-                    
-                    return (
-                      <Button
-                        key={pageNum}
-                        variant={currentPage === pageNum ? "default" : "outline"}
-                        onClick={() => setCurrentPage(pageNum)}
-                        className={currentPage === pageNum ? "bg-primary text-white" : "text-primary border-primary hover:bg-primary hover:text-white"}
-                      >
-                        {pageNum}
-                      </Button>
-                    );
-                  })}
-                  
-                  <Button
-                    variant="outline"
-                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                    disabled={currentPage === totalPages}
-                    className="text-primary border-primary hover:bg-primary hover:text-white"
-                  >
-                    Siguiente
+                    Ver más voluntarios
                   </Button>
                 </div>
               )}
-            </div>
+        </div>
+      </section>
 
-            {/* Sidebar Publicitario */}
-            <div className="w-80 flex-shrink-0 hidden lg:block">
-              <div className="sticky top-4 space-y-6 mt-12">
-                {/* Espacios publicitarios con diseño tipo tarjeta */}
-                <AdSpace spaceId="20" position="card" pageType="volunteers" />
-                <AdSpace spaceId="21" position="card" pageType="volunteers" />
-                <AdSpace spaceId="22" position="card" pageType="volunteers" />
+      {/* 5. Banner publicitario */}
+      <section className="py-8 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4">
+          <AdSpace 
+            spaceId="37"
+            pageType="volunteers"
+            position="banner"
+          />
+        </div>
+      </section>
+
+      {/* 6. Sección de Contacto - Necesitas más información */}
+      <section className="bg-gray-50 py-12">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">¿Necesitas más información?</h2>
+            <p className="text-lg text-gray-600">Nuestro equipo está aquí para ayudarte con el programa de voluntarios</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{backgroundColor: '#51a19f'}}>
+                <Phone className="h-8 w-8 text-white" />
               </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Teléfono</h3>
+              <p className="text-gray-600 mb-2">(33) 1234-5678</p>
+              <p className="text-sm text-gray-500">Lun-Vie 8:00-16:00</p>
+            </div>
+            
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{backgroundColor: '#51a19f'}}>
+                <Mail className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Correo</h3>
+              <p className="text-gray-600 mb-2">voluntarios@parques.gdl.gob.mx</p>
+              <p className="text-sm text-gray-500">Respuesta en 24 horas</p>
+            </div>
+            
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{backgroundColor: '#51a19f'}}>
+                <MapPin className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Ubicación</h3>
+              <p className="text-gray-600 mb-2">Av. Hidalgo 400, Centro</p>
+              <p className="text-sm text-gray-500">Guadalajara, Jalisco</p>
             </div>
           </div>
+          
+          <div className="text-center">
+            <Button size="lg" className="bg-green-600 hover:bg-green-700 px-8 py-3">
+              <Mail className="h-5 w-5 mr-2" />
+              Enviar mensaje
+            </Button>
+          </div>
         </div>
-      </div>
-
-      {/* Call to Action */}
-      <div className="bg-green-600 text-white py-12">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-4">¿Quieres ser voluntario?</h2>
-          <p className="text-xl text-green-100 mb-8 max-w-2xl mx-auto">
-            Únete a nuestro equipo de voluntarios y ayuda a hacer la diferencia en tu comunidad.
-          </p>
-          <Button 
-            size="lg" 
-            variant="secondary" 
-            className="bg-white text-green-600 hover:bg-gray-100"
-            onClick={() => navigate('/volunteers/register')}
-          >
-            Registrarse como Voluntario
-          </Button>
-        </div>
-      </div>
+      </section>
       </div>
     </PublicLayout>
   );

@@ -148,12 +148,41 @@ export class SimpleStorage {
   async removeAmenityFromPark(parkId: number, amenityId: number): Promise<boolean> { return false; }
   async isAmenityInUse(amenityId: number): Promise<boolean> { return false; }
   async deleteAmenity(amenityId: number): Promise<boolean> { return false; }
-  async getParkImages(parkId: number): Promise<any[]> { return []; }
+  async getParkImages(parkId: number): Promise<any[]> {
+    try {
+      const result = await pool.query(`
+        SELECT id, park_id as "parkId", image_url as "imageUrl", is_primary as "isPrimary", caption, created_at as "createdAt"
+        FROM park_images
+        WHERE park_id = $1
+        ORDER BY is_primary DESC, id ASC
+      `, [parkId]);
+      console.log(`🖼️ SIMPLE STORAGE: Encontradas ${result.rows.length} imágenes para parque ${parkId}`);
+      return result.rows || [];
+    } catch (error) {
+      console.error("Error al obtener imágenes del parque desde simple-storage:", error);
+      return [];
+    }
+  }
   async createParkImage(imageData: any): Promise<any> { return null; }
   async updateParkImage(id: number, data: any): Promise<any> { return null; }
   async deleteParkImage(id: number): Promise<boolean> { return false; }
-  async getParkDocuments(parkId: number): Promise<any[]> { return []; }
-  async createDocument(documentData: any): Promise<any> { return null; }
+  async getParkDocuments(parkId: number): Promise<any[]> {
+    try {
+      return await db.select().from(documents).where(eq(documents.parkId, parkId));
+    } catch (error) {
+      console.error("Error fetching park documents:", error);
+      return [];
+    }
+  }
+  async createDocument(documentData: any): Promise<any> {
+    try {
+      const result = await db.insert(documents).values(documentData).returning();
+      return result[0] || null;
+    } catch (error) {
+      console.error("Error creating document:", error);
+      throw error;
+    }
+  }
   async getDocument(id: number): Promise<any> { return null; }
   async deleteDocument(id: number): Promise<boolean> { return false; }
   async getAllDocuments(): Promise<any[]> { return []; }

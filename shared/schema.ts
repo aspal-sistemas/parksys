@@ -506,7 +506,9 @@ export const documents = pgTable("documents", {
   title: text("title").notNull(),
   fileUrl: text("file_url").notNull(),
   fileType: text("file_type").notNull(),
+  fileSize: integer("file_size"),
   description: text("description"),
+  // referenceUrl: text("reference_url"), // URL opcional de referencia - Column doesn't exist in DB
   uploadedById: integer("uploaded_by_id"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow()
@@ -753,6 +755,7 @@ export const DEFAULT_AMENITIES = [
 export type ExtendedPark = typeof parks.$inferSelect & {
   municipality?: typeof municipalities.$inferSelect;
   amenities?: typeof amenities.$inferSelect[];
+  activities?: typeof activities.$inferSelect[];
   images?: typeof parkImages.$inferSelect[];
   primaryImage?: string | null;
   mainImageUrl?: string | null;
@@ -792,7 +795,8 @@ export const insertDocumentSchema = createInsertSchema(documents).omit({
   createdAt: true,
   updatedAt: true
 }).extend({
-  fileType: z.string().optional() // Hacer fileType opcional para URLs externas
+  fileType: z.string().min(1, "File type is required"), // Requerir fileType
+  uploadedById: z.number().optional() // Hacer uploadedById opcional
 });
 
 export type ActivityCategory = typeof activityCategories.$inferSelect;
@@ -1466,6 +1470,95 @@ export const insertTreeSchema = createInsertSchema(trees).omit({
 export const insertTreeMaintenanceSchema = createInsertSchema(treeMaintenances).omit({ 
   id: true,
   created_at: true
+});
+
+// ========== MÓDULO DE FAUNA ==========
+
+// Enum para categorías de fauna
+export const faunaCategoryEnum = pgEnum("fauna_category", [
+  "aves",
+  "mamiferos", 
+  "insectos",
+  "vida_acuatica"
+]);
+
+// Enum para estado de conservación
+export const conservationStatusEnum = pgEnum("conservation_status", [
+  "estable",
+  "vulnerable",
+  "en_peligro",
+  "en_peligro_critico",
+  "extinto_local"
+]);
+
+// Tabla de especies de fauna
+export const faunaSpecies = pgTable("fauna_species", {
+  id: serial("id").primaryKey(),
+  commonName: text("common_name").notNull(),
+  scientificName: text("scientific_name").notNull(),
+  family: text("family"),
+  category: faunaCategoryEnum("category").notNull(),
+  habitat: text("habitat"),
+  description: text("description"),
+  behavior: text("behavior"),
+  diet: text("diet"),
+  reproductionPeriod: text("reproduction_period"),
+  conservationStatus: conservationStatusEnum("conservation_status").default("estable"),
+  sizeCm: decimal("size_cm", { precision: 8, scale: 2 }), // tamaño en centímetros
+  weightGrams: decimal("weight_grams", { precision: 10, scale: 2 }), // peso en gramos
+  lifespan: integer("lifespan"), // años aproximados
+  isNocturnal: boolean("is_nocturnal").default(false),
+  isMigratory: boolean("is_migratory").default(false),
+  isEndangered: boolean("is_endangered").default(false),
+  imageUrl: text("image_url"),
+  photoUrl: text("photo_url"),
+  photoCaption: text("photo_caption"),
+  ecologicalImportance: text("ecological_importance"),
+  threats: text("threats"),
+  protectionMeasures: text("protection_measures"),
+  observationTips: text("observation_tips"),
+  bestObservationTime: text("best_observation_time"),
+  commonLocations: text("common_locations").array().default([]), // ubicaciones comunes en los parques
+  iconColor: text("icon_color").default("#16a085"),
+  iconType: text("icon_type").default("system"),
+  customIconUrl: text("custom_icon_url"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export type FaunaSpecies = typeof faunaSpecies.$inferSelect;
+export type InsertFaunaSpecies = typeof faunaSpecies.$inferInsert;
+
+// Schema más simple y permisivo para fauna
+export const insertFaunaSpeciesSchema = z.object({
+  commonName: z.string().min(1, 'El nombre común es requerido'),
+  scientificName: z.string().min(1, 'El nombre científico es requerido'),
+  family: z.string().min(1, 'La familia es requerida'),
+  category: z.enum(['aves', 'mamiferos', 'insectos', 'vida_acuatica']),
+  habitat: z.string().optional(),
+  description: z.string().optional(),
+  behavior: z.string().optional(),
+  diet: z.string().optional(),
+  reproductionPeriod: z.string().optional(),
+  conservationStatus: z.enum(['estable', 'vulnerable', 'en_peligro', 'en_peligro_critico', 'extinto_local']).default('estable'),
+  sizeCm: z.string().optional(),
+  weightGrams: z.string().optional(),
+  lifespan: z.number().optional(),
+  isNocturnal: z.boolean().default(false),
+  isMigratory: z.boolean().default(false),
+  isEndangered: z.boolean().default(false),
+  imageUrl: z.string().optional(),
+  photoUrl: z.string().optional(),
+  photoCaption: z.string().optional(),
+  ecologicalImportance: z.string().optional(),
+  threats: z.string().optional(),
+  protectionMeasures: z.string().optional(),
+  observationTips: z.string().optional(),
+  bestObservationTime: z.string().optional(),
+  commonLocations: z.array(z.string()).default([]),
+  iconColor: z.string().default('#16a085'),
+  iconType: z.string().default('system'),
+  customIconUrl: z.string().optional()
 });
 
 // Tipos

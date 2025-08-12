@@ -263,14 +263,12 @@ export function registerMultimediaRoutes(app: any, apiRouter: Router, isAuthenti
           id, 
           park_id as "parkId", 
           title, 
-          file_path as "filePath",
           file_url as "fileUrl",
           file_size as "fileSize",
           file_type as "fileType",
           description,
-          category,
           created_at as "createdAt"
-        FROM park_documents 
+        FROM documents 
         WHERE park_id = $1 
         ORDER BY created_at DESC
       `;
@@ -369,32 +367,51 @@ export function registerMultimediaRoutes(app: any, apiRouter: Router, isAuthenti
   apiRouter.delete('/park-documents/:id', isAuthenticated, async (req: Request, res: Response) => {
     try {
       const documentId = parseInt(req.params.id);
+      console.log(`🗑️ DELETE /park-documents/${documentId} - Iniciando eliminación`);
+      console.log('🔍 Usuario autenticado:', { id: req.user?.id, role: req.user?.role });
       
-      // Obtener información del documento antes de eliminar
-      const docResult = await db.execute(
-        'SELECT file_path FROM park_documents WHERE id = $1',
+      // Buscar en la tabla 'documents' que es la que usa el frontend
+      const docResult = await pool.query(
+        'SELECT file_url FROM documents WHERE id = $1',
         [documentId]
       );
       
-      if (docResult.length === 0) {
-        return res.status(404).json({ error: 'Documento no encontrado' });
+      if (docResult.rows.length === 0) {
+        console.log(`❌ Documento ${documentId} no encontrado en tabla documents`);
+        // Return success even if document doesn't exist (idempotent operation)
+        return res.status(200).json({ 
+          success: true, 
+          message: 'Documento ya eliminado o no existe',
+          documentId 
+        });
       }
       
-      const filePath = docResult[0].file_path;
+      const fileUrl = docResult.rows[0].file_url;
+      console.log(`📄 Documento encontrado con URL: ${fileUrl}`);
       
-      // Eliminar archivo físico si existe
-      if (filePath && fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
+      // Solo eliminar archivo físico si es un archivo local (no URL externa)
+      if (fileUrl && fileUrl.startsWith('/uploads/')) {
+        const filePath = `public${fileUrl}`;
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+          console.log(`🗑️ Archivo físico eliminado: ${filePath}`);
+        }
+      } else {
+        console.log(`📋 Documento es una URL externa, no se elimina archivo físico: ${fileUrl}`);
       }
       
-      // Eliminar registro de base de datos
-      await db.execute('DELETE FROM park_documents WHERE id = $1', [documentId]);
+      // Eliminar registro de base de datos de la tabla 'documents'
+      await pool.query('DELETE FROM documents WHERE id = $1', [documentId]);
       
-      console.log(`Documento ${documentId} eliminado exitosamente`);
-      res.status(204).send();
+      console.log(`✅ Documento ${documentId} eliminado exitosamente de tabla documents`);
+      res.status(200).json({ 
+        success: true, 
+        message: 'Documento eliminado correctamente',
+        documentId 
+      });
       
     } catch (error) {
-      console.error('Error eliminando documento:', error);
+      console.error('❌ Error eliminando documento:', error);
       res.status(500).json({ error: 'Error al eliminar el documento' });
     }
   });

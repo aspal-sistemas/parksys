@@ -92,7 +92,7 @@ const validateSpaceMapping = (mapping: Partial<SpaceMapping>): string[] => {
 // ====================================
 
 // GET /api/advertising-management/space-mappings - Obtener todos los mapeos
-router.get('/space-mappings', async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const { pageType, position, active } = req.query;
     
@@ -172,7 +172,7 @@ router.get('/space-mappings', async (req, res) => {
 });
 
 // POST /api/advertising-management/space-mappings - Crear nuevo mapeo
-router.post('/space-mappings', async (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const mapping: Partial<SpaceMapping> = req.body;
     
@@ -266,7 +266,7 @@ router.post('/space-mappings', async (req, res) => {
 });
 
 // PUT /api/advertising-management/space-mappings/:id - Actualizar mapeo
-router.put('/space-mappings/:id', async (req, res) => {
+router.put('/:id', async (req, res) => {
   try {
     const mappingId = parseInt(req.params.id);
     const updates: Partial<SpaceMapping> = req.body;
@@ -393,7 +393,7 @@ router.put('/space-mappings/:id', async (req, res) => {
 });
 
 // DELETE /api/advertising-management/space-mappings/:id - Eliminar mapeo
-router.delete('/space-mappings/:id', async (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
     const mappingId = parseInt(req.params.id);
     
@@ -499,7 +499,7 @@ router.get('/space-mapping', async (req, res) => {
 });
 
 // POST /api/advertising-management/space-mappings/auto-populate - Auto-poblar mapeos faltantes
-router.post('/space-mappings/auto-populate', async (req, res) => {
+router.post('/auto-populate', async (req, res) => {
   try {
     // Obtener espacios sin mapeo
     const orphanedSpaces = await pool.query(`

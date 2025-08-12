@@ -67,7 +67,66 @@ export default function InstructorCard({ instructor, showActions = true, compact
   const renderSpecialties = (specialties?: string) => {
     if (!specialties) return null;
     
-    const specialtiesList = specialties.split(',').map(s => s.trim());
+    let specialtiesList: string[] = [];
+    
+    try {
+      // Intentar parsear como JSON/array PostgreSQL si tiene formato de array
+      if (specialties.startsWith('{') && specialties.endsWith('}')) {
+        // Es un array PostgreSQL, limpiar y parsear
+        const arrayContent = specialties.slice(1, -1);
+        
+        // Manejo especial para arrays PostgreSQL con comillas dobles escapadas
+        // Patrón común: {"Danza","Ballet","Danza folclórica"} o {""Danza"",""Ballet""}
+        specialtiesList = arrayContent
+          .split(',')
+          .map(s => {
+            let cleaned = s.trim();
+            
+            // Limpieza completa paso a paso para PostgreSQL
+            // 1. Remover comillas dobles del inicio y final (cualquier cantidad)
+            cleaned = cleaned.replace(/^"+/, '').replace(/"+$/, '');
+            
+            // 2. Remover comillas simples del inicio y final  
+            cleaned = cleaned.replace(/^'+/, '').replace(/'+$/, '');
+            
+            // 3. Remover corchetes del inicio y final
+            cleaned = cleaned.replace(/^\[+/, '').replace(/\]+$/, '');
+            
+            // 4. Limpieza de espacios
+            cleaned = cleaned.trim();
+            
+            return cleaned;
+          })
+          .filter(s => s.length > 0);
+      } else if (specialties.startsWith('[') && specialties.endsWith(']')) {
+        // Es un array JSON
+        specialtiesList = JSON.parse(specialties);
+      } else {
+        // Es una cadena separada por comas simple
+        specialtiesList = specialties.split(',').map(s => s.trim());
+      }
+    } catch (error) {
+      // Si falla el parsing, usar split por comas como fallback con limpieza agresiva
+      specialtiesList = specialties.split(',')
+        .map(s => {
+          let cleaned = s.trim();
+          // Aplicar todas las limpiezas posibles para casos de error
+          cleaned = cleaned.replace(/^["'\[\]]+/, '').replace(/["'\[\]]+$/, '');
+          return cleaned.trim();
+        })
+        .filter(s => s.length > 0);
+    }
+    
+    // Aplicar una limpieza final para asegurar que no queden caracteres no deseados
+    specialtiesList = specialtiesList
+      .map(s => {
+        let cleaned = s.trim();
+        // Limpieza final: remover cualquier carácter de puntuación al inicio/final
+        cleaned = cleaned.replace(/^["'\[\]{}]+/, '').replace(/["'\[\]{}]+$/, '');
+        return cleaned.trim();
+      })
+      .filter(s => s && s.length > 0);
+    
     if (specialtiesList.length <= 2 || compact) {
       return specialtiesList.map((specialty, index) => (
         <Badge key={index} variant="outline" className="mr-1 mb-1">{specialty}</Badge>

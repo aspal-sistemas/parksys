@@ -5,6 +5,7 @@ import UserProfileImage from '@/components/UserProfileImage';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { useTranslation } from 'react-i18next';
 import { SidebarSearch } from './SidebarSearch';
+import parksysLogo from '@assets/Recurso 5Parksys (1)_1755013567923.png';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -96,7 +97,8 @@ import {
   Grid,
   History,
   Download,
-  Upload
+  Upload,
+  Bird
 } from 'lucide-react';
 
 interface NavItemProps {
@@ -303,6 +305,7 @@ const AdminSidebarComplete: React.FC = () => {
     if (location.startsWith('/admin/visitors')) return 'visitantes';
     if (location.startsWith('/admin/parks')) return 'parques';
     if (location.startsWith('/admin/trees')) return 'arbolado';
+    if (location.startsWith('/admin/fauna')) return 'fauna';
     if (location.startsWith('/admin/organizador') || location.startsWith('/admin/activities') || location.startsWith('/admin/instructors')) return 'actividades';
     if (location.startsWith('/admin/events') || location.startsWith('/admin/eventos-ambu')) return 'eventos';
     if (location.startsWith('/admin/space-reservations')) return 'reservas';
@@ -356,6 +359,7 @@ const AdminSidebarComplete: React.FC = () => {
     if (location.startsWith('/admin/visitors') || 
         location.startsWith('/admin/parks') || 
         location.startsWith('/admin/trees') || 
+        location.startsWith('/admin/fauna') || 
         location.startsWith('/admin/organizador') || 
         location.startsWith('/admin/activities') || 
         location.startsWith('/admin/instructors') || 
@@ -387,10 +391,7 @@ const AdminSidebarComplete: React.FC = () => {
     }
     
     // Otros módulos
-    if (location.startsWith('/admin/users') || location.startsWith('/admin/permissions') || location.startsWith('/admin/settings')) return ['system'];
     if (location.startsWith('/admin/hr')) return ['hr'];
-    if (location.startsWith('/admin/security') || location.startsWith('/admin/roles') || location.startsWith('/admin/role-assignments')) return ['security'];
-    if (location.startsWith('/admin/configuracion-seguridad/maintenance')) return ['security'];
     if (location.startsWith('/admin/documents') || location.startsWith('/admin/comments')) return ['system'];
     return []; // Sin módulos abiertos por defecto
   };
@@ -540,6 +541,23 @@ const AdminSidebarComplete: React.FC = () => {
                 active={location.startsWith('/admin/trees/maintenance')}
               >
                 {t('navigation.maintenance')}
+              </NavItem>
+            </CollapsibleSubmenu>
+
+            {/* FAUNA */}
+            <CollapsibleSubmenu
+              id="fauna"
+              title="Fauna"
+              icon={<Heart className="h-4 w-4" />}
+              isExpanded={expandedSubmenus.includes('fauna')}
+              onToggle={toggleSubmenu}
+            >
+              <NavItem 
+                href="/admin/fauna/species" 
+                icon={<Heart className="h-4 w-4" />}
+                active={location.startsWith('/admin/fauna/species')}
+              >
+                Especies
               </NavItem>
             </CollapsibleSubmenu>
 
@@ -1261,60 +1279,16 @@ const AdminSidebarComplete: React.FC = () => {
             </CollapsibleSubmenu>
           </ModuleNav>
 
-          {/* 8. CONFIGURACIÓN - COLOR: #61B1A0 */}
-          <ModuleNav 
-            title={t('navigation.settings')} 
-            icon={<Settings className="h-5 w-5" />}
-            value="system"
-          >
-            <NavItem 
-              href="/admin/settings" 
-              icon={<Settings className="h-5 w-5" />}
-              active={location === '/admin/settings'}
-            >
-              {t('navigation.settings')}
-            </NavItem>
-            <NavItem 
-              href="/admin/users" 
-              icon={<UserCheck className="h-5 w-5" />}
-              active={location === '/admin/users'}
-            >
-              {t('navigation.users')}
-            </NavItem>
-            <NavItem 
-              href="/admin/permissions" 
-              icon={<Shield className="h-5 w-5" />}
-              active={location === '/admin/permissions'}
-            >
-              {t('navigation.permissions')}
-            </NavItem>
-            <NavItem 
-              href="/admin/users/notifications" 
-              icon={<Bell className="h-5 w-5" />}
-              active={location === '/admin/users/notifications'}
-            >
-              Notificaciones
-            </NavItem>
-          </ModuleNav>
-
-
-
-
-
-
-
-
-
         </Accordion>
       </ScrollArea>
 
       {/* Footer con logo de ParkSys */}
-      <div className="p-4 border-t border-teal-600" style={{ backgroundColor: '#003D49' }}>
-        <div className="flex flex-col items-center justify-center gap-0">
+      <div className="p-8 border-t border-teal-600" style={{ backgroundColor: '#003D49' }}>
+        <div className="flex flex-col items-center justify-center gap-4">
           <img 
-            src="/attached_assets/iScreen Shoter - Acrobat - 250806102921_1754500660875.png" 
+            src={parksysLogo} 
             alt="ParkSys - Sistema de parques" 
-            className="h-18 w-auto opacity-80 hover:opacity-100 transition-opacity"
+            className="h-15 w-auto opacity-80 hover:opacity-100 transition-opacity"
           />
           <a 
             href="https://parquesdemexico.org/"

@@ -7,11 +7,32 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Search, Filter, Grid, List, Star, Phone, Mail, Award, Clock, User, MessageSquare, Users, MapPin } from 'lucide-react';
+import { Search, Filter, Grid, List, Star, Phone, Mail, Award, Clock, User, MessageSquare, Users, MapPin, Trees, Calendar } from 'lucide-react';
 import PublicInstructorEvaluationForm from '@/components/PublicInstructorEvaluationForm';
 import PublicLayout from '@/components/PublicLayout';
 import AdSpace from '@/components/AdSpace';
-import heroImage from '@assets/cropped-shot-of-handsome-young-rugby-coach-standin-2025-04-06-09-42-40-utc_1752941593303.jpg';
+
+const heroImage = "/images/instructor-hero.jpg";
+
+// Imágenes de galería para instructores en parques
+const galleryImages = [
+  {
+    src: "/attached_assets/happy-volunteers-with-seedlings-and-garden-tools-2024-09-27-13-54-22-utc (1)_1754955545591.jpg",
+    alt: "Instructores trabajando con voluntarios en jardinería"
+  },
+  {
+    src: "/attached_assets/jardin-japones_1754950415873.jpg", 
+    alt: "Instructor guiando en el jardín japonés"
+  },
+  {
+    src: "/attached_assets/download-7_1754927049169.jpg",
+    alt: "Actividades grupales en parque"
+  },
+  {
+    src: "/attached_assets/People_23-02_1752941117659.jpg",
+    alt: "Instructores con participantes"
+  }
+];
 
 // Tipo de datos para un instructor
 interface Instructor {
@@ -66,13 +87,14 @@ const InstructorsPage: React.FC = () => {
 
   // Estados para filtros
   const [searchTerm, setSearchTerm] = useState('');
-  const [specialtyFilter, setSpecialtyFilter] = useState('');
-  const [experienceFilter, setExperienceFilter] = useState('');
+  const [specialtyFilter, setSpecialtyFilter] = useState('all');
+  const [experienceFilter, setExperienceFilter] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [selectedInstructor, setSelectedInstructor] = useState<Instructor | null>(null);
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   const [evaluationInstructor, setEvaluationInstructor] = useState<Instructor | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [showCount, setShowCount] = useState(3); // Inicialmente mostrar 3
   const itemsPerPage = 12;
   
   // Obtener datos de instructores de la ruta correcta para la página pública
@@ -146,16 +168,23 @@ const InstructorsPage: React.FC = () => {
     return matchesSearch && matchesSpecialty && matchesExperience;
   });
 
-  // Paginación
-  const totalPages = Math.ceil(filteredInstructors.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentInstructors = filteredInstructors.slice(startIndex, endIndex);
+  // Mostrar instructores progresivamente (3, 12, 21, etc.)
+  const currentInstructors = filteredInstructors.slice(0, showCount);
+  const hasMoreInstructors = filteredInstructors.length > showCount;
+  const remainingCount = Math.min(9, filteredInstructors.length - showCount);
 
-  // Reset página cuando cambian los filtros
+  // Reset showCount cuando cambian los filtros
   React.useEffect(() => {
-    setCurrentPage(1);
+    setShowCount(3);
   }, [searchTerm, specialtyFilter, experienceFilter]);
+
+  const handleShowMore = () => {
+    setShowCount(prev => prev + 9);
+  };
+
+  const handleShowLess = () => {
+    setShowCount(3);
+  };
 
   const openProfile = (instructor: Instructor) => {
     setSelectedInstructor(instructor);
@@ -200,21 +229,11 @@ const InstructorsPage: React.FC = () => {
   return (
     <PublicLayout>
       <div className="bg-gray-50">
-      {/* Header Ad Space */}
-      <div className="w-full bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 py-2">
-          <AdSpace 
-            spaceId="12" 
-            position="header" 
-            pageType="instructors" 
-            className="w-full"
-          />
-        </div>
-      </div>
 
-      {/* Hero Section */}
-      <div 
-        className="relative text-white"
+
+      {/* Hero Section - Estilo Activities */}
+      <section 
+        className="relative py-24 px-4 text-center text-white"
         style={{
           backgroundImage: `url(${heroImage})`,
           backgroundSize: 'cover',
@@ -222,63 +241,152 @@ const InstructorsPage: React.FC = () => {
           backgroundRepeat: 'no-repeat'
         }}
       >
-        <div className="absolute inset-0 bg-black/50"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-          <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              Conoce a Nuestros <span className="text-yellow-300">Instructores</span>
-            </h1>
-            <p className="text-xl md:text-2xl text-emerald-100 max-w-3xl mx-auto">
-              Profesionales experimentados comprometidos con crear experiencias únicas en nuestros parques
+        <div className="absolute inset-0 bg-black/40"></div>
+        <div className="relative max-w-4xl mx-auto">
+          <div className="text-center mb-6">
+            <div className="flex items-center justify-center gap-3 mb-2">
+              <User className="h-10 w-10" />
+              <h1 className="font-guttery text-4xl md:text-5xl font-normal">
+                Conoce a
+              </h1>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold">
+              Nuestros Instructores
+            </h2>
+          </div>
+          <p className="text-xl text-green-100 mb-8 max-w-2xl mx-auto">
+            Profesionales experimentados comprometidos con crear experiencias únicas en nuestros parques.
+            Descubre su experiencia y especialidades.
+          </p>
+        </div>
+      </section>
+
+      {/* Instructores en Acción - Sección Completa */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          {/* Textos */}
+          <div className="mb-12">
+            <p className="text-gray-900 font-bold text-xl text-center max-w-2xl mx-auto mb-12">
+              Conoce la experiencia y dedicación de nuestros instructores profesionales en los parques de Guadalajara
             </p>
-            <div className="mt-8 flex justify-center items-center space-x-8 text-emerald-100">
-              <div className="text-center">
-                <div className="text-3xl font-bold">{instructors.length}</div>
-                <div className="text-sm">Instructores</div>
+          </div>
+
+          {/* Estadísticas */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16">
+            <div className="text-center">
+              <div className="bg-[#51a19f] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <User className="h-10 w-10 text-white" />
               </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold">{allSpecialties.size}</div>
-                <div className="text-sm">Especialidades</div>
+              <div className="text-4xl md:text-5xl font-bold text-gray-900 mb-2">{instructors.length}+</div>
+              <div className="text-lg text-gray-600 font-medium">Instructores Certificados</div>
+            </div>
+            
+            <div className="text-center">
+              <div className="bg-[#51a19f] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Award className="h-10 w-10 text-white" />
               </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold">4.8</div>
-                <div className="text-sm">Calificación Promedio</div>
+              <div className="text-4xl md:text-5xl font-bold text-gray-900 mb-2">{allSpecialties.size}</div>
+              <div className="text-lg text-gray-600 font-medium">Especialidades Disponibles</div>
+            </div>
+            
+            <div className="text-center">
+              <div className="bg-[#51a19f] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Calendar className="h-10 w-10 text-white" />
+              </div>
+              <div className="text-4xl md:text-5xl font-bold text-gray-900 mb-2">30+</div>
+              <div className="text-lg text-gray-600 font-medium">Sesiones Mensuales</div>
+            </div>
+            
+            <div className="text-center">
+              <div className="bg-[#51a19f] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Star className="h-10 w-10 text-white" />
+              </div>
+              <div className="text-4xl md:text-5xl font-bold text-gray-900 mb-2">4.8</div>
+              <div className="text-lg text-gray-600 font-medium">Calificación Promedio</div>
+            </div>
+          </div>
+
+          {/* Galería */}
+          <div className="max-w-4xl mx-auto">
+            <div className="grid grid-cols-4 grid-rows-2 gap-2 h-64">
+              {/* Imagen principal - ocupa 2x2 - Clase de yoga masiva en el parque */}
+              <div className="col-span-2 row-span-2 relative cursor-pointer group">
+                <img 
+                  src="/attached_assets/yoga_1754962456656.jpg"
+                  alt="Instructor de yoga dirigiendo una clase masiva al aire libre en el parque"
+                  className="w-full h-full object-cover rounded-lg shadow-lg"
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
+              </div>
+              
+              {/* Imagen 1 - Sesión de entrenamiento grupal */}
+              <div className="relative cursor-pointer group">
+                <img 
+                  src="/attached_assets/yoga 1_1754962456652.jpg"
+                  alt="Instructor dirigiendo sesión de entrenamiento físico grupal al aire libre"
+                  className="w-full h-full object-cover rounded-lg shadow-md"
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
+              </div>
+              
+              {/* Imagen 2 - Actividad dinámica en grupo */}
+              <div className="relative cursor-pointer group">
+                <img 
+                  src="/attached_assets/yoga 2_1754962456653.jpg"
+                  alt="Instructor guiando actividad dinámica y divertida con participantes saltando"
+                  className="w-full h-full object-cover rounded-lg shadow-md"
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
+              </div>
+              
+              {/* Imagen 3 - Entrenamiento personalizado */}
+              <div className="relative cursor-pointer group">
+                <img 
+                  src="/attached_assets/yoga 3_1754962456654.jpg"
+                  alt="Instructora proporcionando entrenamiento personalizado en ejercicios funcionales"
+                  className="w-full h-full object-cover rounded-lg shadow-md"
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
+              </div>
+              
+              {/* Imagen 4 - Taller educativo al aire libre */}
+              <div className="relative cursor-pointer group">
+                <img 
+                  src="/attached_assets/yoga 4_1754962456655.jpg"
+                  alt="Instructores conduciendo taller educativo y de capacitación al aire libre"
+                  className="w-full h-full object-cover rounded-lg shadow-md"
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Banner publicitario de ancho completo */}
-      <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] mt-8 mb-8">
-        <AdSpace 
-          spaceId={38}
-          pageType="instructors"
-          position="banner"
-        />
-      </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-0 pb-2">
-        {/* Filtros y Controles */}
-        <div className="mb-6">
-          <div className="bg-white rounded-2xl shadow-sm border p-6">
+
+      {/* Panel de filtros y búsqueda - Estilo Volunteers */}
+      <section className="sticky top-0 z-10 border-b border-gray-200 shadow-sm bg-white">
+        <div className="max-w-7xl mx-auto px-4 py-6">
             <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
               {/* Búsqueda */}
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <Input
-                  type="text"
-                  placeholder="Buscar instructores..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 border-gray-200 focus:border-primary focus:ring-primary"
-                />
+              <div className="flex-1 max-w-md">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-green-600" />
+                  <Input
+                    placeholder="Buscar instructores..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 border-gray-300 focus:border-green-500 focus:ring-green-500"
+                  />
+                </div>
               </div>
 
               {/* Filtros */}
-              <div className="flex flex-col sm:flex-row gap-4 items-center">
+              <div className="flex flex-col sm:flex-row gap-3 items-center">
                 <Select value={specialtyFilter} onValueChange={setSpecialtyFilter}>
-                  <SelectTrigger className="w-40">
+                  <SelectTrigger className="w-44 border-gray-300">
+                    <Award className="h-4 w-4 mr-2 text-green-600" />
                     <SelectValue placeholder="Especialidad" />
                   </SelectTrigger>
                   <SelectContent>
@@ -290,7 +398,8 @@ const InstructorsPage: React.FC = () => {
                 </Select>
 
                 <Select value={experienceFilter} onValueChange={setExperienceFilter}>
-                  <SelectTrigger className="w-40">
+                  <SelectTrigger className="w-40 border-gray-300">
+                    <Clock className="h-4 w-4 mr-2 text-green-600" />
                     <SelectValue placeholder="Experiencia" />
                   </SelectTrigger>
                   <SelectContent>
@@ -302,12 +411,12 @@ const InstructorsPage: React.FC = () => {
                 </Select>
 
                 {/* Toggle de vista */}
-                <div className="flex border rounded-lg bg-gray-50">
+                <div className="flex bg-gray-100 rounded-lg p-1">
                   <Button
                     variant={viewMode === 'grid' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => setViewMode('grid')}
-                    className="rounded-r-none"
+                    className={`h-8 px-3 ${viewMode === 'grid' ? 'bg-green-600 text-white hover:bg-green-700' : 'hover:bg-gray-200'}`}
                   >
                     <Grid className="h-4 w-4" />
                   </Button>
@@ -315,44 +424,35 @@ const InstructorsPage: React.FC = () => {
                     variant={viewMode === 'list' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => setViewMode('list')}
-                    className="rounded-l-none"
+                    className={`h-8 px-3 ${viewMode === 'list' ? 'bg-green-600 text-white hover:bg-green-700' : 'hover:bg-gray-200'}`}
                   >
                     <List className="h-4 w-4" />
                   </Button>
                 </div>
+
+                {/* Botón de limpiar filtros */}
+                {(searchTerm || specialtyFilter || experienceFilter) && (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setSearchTerm('');
+                      setSpecialtyFilter('');
+                      setExperienceFilter('');
+                    }}
+                    className="border-green-300 text-green-700 hover:bg-green-50"
+                  >
+                    <Filter className="h-4 w-4 mr-2" />
+                    Limpiar
+                  </Button>
+                )}
               </div>
             </div>
 
-            {/* Botón de limpiar filtros */}
-            {(searchTerm || specialtyFilter || experienceFilter) && (
-              <div className="mt-4 flex justify-center">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setSearchTerm('');
-                    setSpecialtyFilter('all');
-                    setExperienceFilter('all');
-                  }}
-                  className="text-primary border-primary hover:bg-primary hover:text-white"
-                >
-                  Limpiar Filtros
-                </Button>
-              </div>
-            )}
-          </div>
-        </div>
 
-        {/* Resultados */}
-        <div className="mb-6 flex justify-between items-center">
-          <p className="text-gray-600">
-            Mostrando {startIndex + 1}-{Math.min(endIndex, filteredInstructors.length)} de {filteredInstructors.length} instructores
-          </p>
         </div>
+      </section>
 
-        {/* Layout con Sidebar Publicitario */}
-        <div className="flex gap-6">
-          {/* Contenido Principal */}
-          <div className="flex-1 min-w-0">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-2">
             {/* Vista Grid */}
             {viewMode === 'grid' && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
@@ -517,64 +617,28 @@ const InstructorsPage: React.FC = () => {
         )}
           </div>
 
-          {/* Sidebar Publicitario */}
-          <div className="w-80 flex-shrink-0 hidden lg:block">
-            <div className="sticky top-4 space-y-6">
-              {/* Espacios publicitarios con diseño tipo tarjeta */}
-              <AdSpace spaceId="26" position="card" pageType="instructors" />
-              <AdSpace spaceId="27" position="card" pageType="instructors" />
-              <AdSpace spaceId="28" position="card" pageType="instructors" />
-            </div>
-          </div>
+
         </div>
 
-        {/* Paginación */}
-        {totalPages > 1 && (
-          <div className="flex justify-center items-center space-x-2">
-            <Button
-              variant="outline"
-              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-              className="text-primary border-primary hover:bg-primary hover:text-white"
-            >
-              Anterior
-            </Button>
-            
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              let pageNum;
-              if (totalPages <= 5) {
-                pageNum = i + 1;
-              } else if (currentPage <= 3) {
-                pageNum = i + 1;
-              } else if (currentPage >= totalPages - 2) {
-                pageNum = totalPages - 4 + i;
-              } else {
-                pageNum = currentPage - 2 + i;
-              }
-              
-              return (
-                <Button
-                  key={pageNum}
-                  variant={currentPage === pageNum ? "default" : "outline"}
-                  onClick={() => setCurrentPage(pageNum)}
-                  className={currentPage === pageNum 
-                    ? "bg-primary hover:bg-primary-600" 
-                    : "text-primary border-primary hover:bg-primary hover:text-white"
-                  }
-                >
-                  {pageNum}
-                </Button>
-              );
-            })}
-            
-            <Button
-              variant="outline"
-              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-              disabled={currentPage === totalPages}
-              className="text-primary border-primary hover:bg-primary hover:text-white"
-            >
-              Siguiente
-            </Button>
+        {/* Botones Ver Más / Ver Menos */}
+        {filteredInstructors.length > 3 && (
+          <div className="text-center py-6">
+            {hasMoreInstructors ? (
+              <Button 
+                onClick={handleShowMore}
+                className="bg-green-600 hover:bg-green-700 text-white px-8 py-3"
+              >
+                Ver más ({remainingCount} instructor{remainingCount !== 1 ? 'es' : ''} restante{remainingCount !== 1 ? 's' : ''})
+              </Button>
+            ) : showCount > 3 && (
+              <Button 
+                onClick={handleShowLess}
+                variant="outline"
+                className="border-green-600 text-green-600 hover:bg-green-50 px-8 py-3"
+              >
+                Ver menos
+              </Button>
+            )}
           </div>
         )}
 
@@ -598,7 +662,6 @@ const InstructorsPage: React.FC = () => {
             </Button>
           </div>
         )}
-      </div>
 
       {/* Dialog para ver perfil completo */}
       <Dialog open={profileDialogOpen} onOpenChange={setProfileDialogOpen}>
@@ -687,7 +750,64 @@ const InstructorsPage: React.FC = () => {
           )}
         </DialogContent>
       </Dialog>
+
+
+
+      {/* AdSpace 37 - Ajustado al ancho del grid */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 mb-8">
+        <AdSpace 
+          spaceId={37}
+          pageType="instructors"
+          position="banner"
+        />
       </div>
+
+      {/* Sección de Contacto */}
+      <section className="bg-gray-50 py-12">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">¿Necesitas más información?</h2>
+            <p className="text-lg text-gray-600">Nuestro equipo está aquí para ayudarte con consultas sobre instructores</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{backgroundColor: '#51a19f'}}>
+                <Phone className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Teléfono</h3>
+              <p className="text-gray-600 mb-2">(33) 1234-5678</p>
+              <p className="text-sm text-gray-500">Lun-Vie 8:00-16:00</p>
+            </div>
+            
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{backgroundColor: '#51a19f'}}>
+                <Mail className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Correo</h3>
+              <p className="text-gray-600 mb-2">instructores@parques.gdl.gob.mx</p>
+              <p className="text-sm text-gray-500">Respuesta en 24 horas</p>
+            </div>
+            
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{backgroundColor: '#51a19f'}}>
+                <MapPin className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Ubicación</h3>
+              <p className="text-gray-600 mb-2">Av. Hidalgo 400, Centro</p>
+              <p className="text-sm text-gray-500">Guadalajara, Jalisco</p>
+            </div>
+          </div>
+          
+          <div className="text-center">
+            <Button size="lg" className="bg-green-600 hover:bg-green-700 px-8 py-3">
+              <Mail className="h-5 w-5 mr-2" />
+              Enviar mensaje
+            </Button>
+          </div>
+        </div>
+      </section>
+
     </PublicLayout>
   );
 };

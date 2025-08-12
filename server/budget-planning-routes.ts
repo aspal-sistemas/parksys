@@ -165,7 +165,7 @@ export function registerBudgetPlanningRoutes(app: any, apiRouter: Router, isAuth
       console.error('Error al guardar presupuesto:', error);
       res.status(500).json({ 
         error: 'Error interno del servidor',
-        message: error.message || 'No se pudo guardar la matriz presupuestaria'
+        message: (error as Error).message || 'No se pudo guardar la matriz presupuestaria'
       });
     }
   });
@@ -173,7 +173,7 @@ export function registerBudgetPlanningRoutes(app: any, apiRouter: Router, isAuth
   // Importar proyecciones desde CSV (simplificado)
   apiRouter.post('/budget-projections/import-csv', isAuthenticated, async (req: Request, res: Response) => {
     try {
-      const { year, csvData } = req.body;
+      const { year, csvData }: { year: number; csvData: any[] } = req.body;
       
       console.log(`=== IMPORTANDO CSV PARA ${year} ===`);
       console.log(`Filas CSV: ${csvData.length}`);

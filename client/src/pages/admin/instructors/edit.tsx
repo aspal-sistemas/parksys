@@ -82,11 +82,24 @@ export default function EditInstructorPage() {
   const { data: parks = [] } = useQuery({
     queryKey: ['/api/parks'],
   });
+  
+  // Debug: Log parks data
+  useEffect(() => {
+    console.log('🔍 DEBUG: Parks data:', parks);
+    console.log('🔍 DEBUG: Parks count:', parks?.length || 0);
+    if (parks && parks.length > 0) {
+      console.log('🔍 DEBUG: Primera park:', parks[0]);
+    }
+  }, [parks]);
 
   // Cargar datos del instructor en el formulario
   useEffect(() => {
     if (instructor && typeof instructor === 'object') {
       const instructorData = instructor as any;
+      
+      // Debug: Log instructor data
+      console.log('🔍 DEBUG: Datos del instructor cargados:', instructorData);
+      console.log('🔍 DEBUG: preferredParkId:', instructorData.preferredParkId, typeof instructorData.preferredParkId);
       
       // Procesar especialidades
       let processedSpecialties: string[] = [];
@@ -113,7 +126,7 @@ export default function EditInstructorPage() {
         }
       }
 
-      setFormData({
+      const newFormData = {
         firstName: instructorData.firstName || '',
         lastName: instructorData.lastName || '',
         email: instructorData.email || '',
@@ -128,7 +141,12 @@ export default function EditInstructorPage() {
         experience: instructorData.experience || '',
         profileImageFile: null,
         curriculumFile: null,
-      });
+      };
+      
+      console.log('🔍 DEBUG: Form data preparada:', newFormData);
+      console.log('🔍 DEBUG: preferredParkId en form data:', newFormData.preferredParkId, typeof newFormData.preferredParkId);
+      
+      setFormData(newFormData);
 
       // Cargar imagen de perfil existente
       if (instructorData.profileImageUrl) {

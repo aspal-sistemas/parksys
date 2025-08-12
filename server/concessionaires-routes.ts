@@ -11,33 +11,23 @@ import * as schema from "../shared/schema";
  * @param isAuthenticated Middleware de autenticación
  */
 export function registerConcessionairesRoutes(app: any, apiRouter: Router, isAuthenticated: any) {
-  // Obtener todos los concesionarios desde concessionaire_profiles (catálogo independiente)
+  // Obtener todos los concesionarios desde concessionaires (catálogo principal)
   apiRouter.get("/concessionaires", async (req: Request, res: Response) => {
     try {
-      console.log("🏪 Obteniendo concesionarios desde concessionaire_profiles...");
-      const concessionaires = await db.select().from(schema.concessionaireProfiles);
+      console.log("🏪 Obteniendo concesionarios desde concessionaires...");
       
-      // Formatear la respuesta para que coincida con lo que espera el frontend
-      const formattedConcessionaires = concessionaires.map(concessionaire => ({
-        id: concessionaire.id,
-        name: concessionaire.businessName || concessionaire.contactPerson || `RFC: ${concessionaire.rfc}`,
-        type: concessionaire.type || 'persona_fisica',
-        rfc: concessionaire.rfc || '',
-        tax_address: concessionaire.taxAddress || '',
-        legal_representative: concessionaire.legalRepresentative || '',
-        business_name: concessionaire.businessName || '',
-        contact_person: concessionaire.contactPerson || '',
-        email: concessionaire.email || '',
-        phone: concessionaire.phone || '',
-        status: concessionaire.status || 'pendiente',
-        registration_date: concessionaire.registrationDate,
-        notes: concessionaire.notes || '',
-        created_at: concessionaire.createdAt,
-        updated_at: concessionaire.updatedAt
-      }));
+      // Usar consulta SQL directa para evitar problemas de esquema
+      const result = await db.execute(`
+        SELECT id, name, type, rfc, tax_address, legal_representative, 
+               phone, email, registration_date, status, notes, created_at, updated_at
+        FROM concessionaires
+        ORDER BY created_at DESC
+      `);
       
-      console.log(`✅ Concesionarios encontrados: ${formattedConcessionaires.length}`);
-      res.json(formattedConcessionaires);
+      const concessionaires = result.rows || [];
+      
+      console.log(`✅ Concesionarios encontrados: ${concessionaires.length}`);
+      res.json(concessionaires);
     } catch (error) {
       console.error("Error al obtener concesionarios:", error);
       res.status(500).json({ message: "Error al obtener los concesionarios" });

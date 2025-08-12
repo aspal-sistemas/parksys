@@ -153,8 +153,8 @@ const AdAdvertisements = () => {
     gcTime: 30 * 1000,
   });
 
-  // Extract the data array from the response
-  const advertisements = advertisementsResponse?.data || [];
+  // Extract the data array from the response - API returns array directly
+  const advertisements = advertisementsResponse || [];
 
   // Fetch campaigns
   const { data: campaignsResponse } = useQuery({
@@ -162,8 +162,8 @@ const AdAdvertisements = () => {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Extract the data array from the response
-  const campaigns = campaignsResponse?.data || [];
+  // Extract the data array from the response - API returns array directly
+  const campaigns = campaignsResponse || [];
 
   // Detectar cambios específicos en anuncio 13
   useEffect(() => {

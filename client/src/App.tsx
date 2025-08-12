@@ -105,6 +105,11 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/Events')))}
           </Suspense>
         </Route>
+        <Route path="/event/:id">
+          <Suspense fallback={<div className="p-8 text-center">Cargando evento...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/event-detail')))}
+          </Suspense>
+        </Route>
         <Route path="/activity/:id">
           <Suspense fallback={<div className="p-8 text-center">Cargando detalle de actividad...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/activity-detail')))}
@@ -159,6 +164,11 @@ function Router() {
         <Route path="/fauna">
           <Suspense fallback={<div className="p-8 text-center">Cargando fauna...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/Fauna')))}
+          </Suspense>
+        </Route>
+        <Route path="/fauna/:id">
+          <Suspense fallback={<div className="p-8 text-center">Cargando detalle de especie...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/FaunaDetail')))}
           </Suspense>
         </Route>
         <Route path="/parque/:slug/evaluar">
@@ -903,6 +913,13 @@ function Router() {
         <Route path="/admin/trees/catalog/:id/edit">
           <Suspense fallback={<div className="p-8 text-center">Cargando formulario de edición de especie arbórea...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/admin/trees/catalog/[id]/edit/index')))}
+          </Suspense>
+        </Route>
+        
+        {/* Rutas de Fauna */}
+        <Route path="/admin/fauna/species">
+          <Suspense fallback={<div className="p-8 text-center">Cargando gestión de fauna...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/fauna/species')))}
           </Suspense>
         </Route>
         <Route path="/admin/trees/dashboard">

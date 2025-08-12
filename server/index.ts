@@ -20,6 +20,7 @@ import { registerInstructorInvitationRoutes } from "./instructorInvitationRoutes
 import { registerInstructorApplicationRoutes } from "./instructorApplicationRoutes";
 import { registerAuditRoutes } from "./audit-routes";
 import { ObjectStorageService } from "./objectStorage";
+import faunaRoutes from "./faunaRoutes";
 
 const app = express();
 
@@ -234,6 +235,9 @@ app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // Servir archivos de espacios desde uploads/spaces
 app.use('/uploads/spaces', express.static(path.join(process.cwd(), 'uploads/spaces')));
+
+// Servir archivos de documentos desde uploads/documents
+app.use('/uploads/documents', express.static(path.join(process.cwd(), 'uploads/documents')));
 
 // Endpoint para servir archivos de Object Storage
 app.get('/objects/uploads/:objectId', async (req: Request, res: Response) => {
@@ -750,6 +754,9 @@ app.use('/api/volunteer-fields', volunteerFieldRouter);
 // Registrar la ruta especializada para habilidades de voluntarios
 app.use('/api', skillsRouter);
 
+// Registrar las rutas de fauna
+app.use('/api/fauna', faunaRoutes);
+
 // Registrar las rutas de conteo de visitantes
 app.use('/api', visitorCountRoutes);
 
@@ -943,14 +950,12 @@ app.get("/api/parks/:parkId/documents", async (req: Request, res: Response) => {
         id, 
         park_id as "parkId", 
         title, 
-        file_path as "filePath",
         file_url as "fileUrl",
         file_size as "fileSize",
         file_type as "fileType",
         description,
-        category,
         created_at as "createdAt"
-      FROM park_documents 
+      FROM documents 
       WHERE park_id = $1 
       ORDER BY created_at DESC
     `;

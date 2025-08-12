@@ -237,26 +237,22 @@ export default function ParkMultimediaManager({ parkId }: ParkMultimediaManagerP
 
   // Mutaciones para documentos
   const uploadDocumentMutation = useMutation({
-    mutationFn: async (data: FormData | { title: string; description: string; category: string; fileUrl: string }) => {
-      if (data instanceof FormData) {
-        const response = await fetch(`/api/parks/${parkId}/documents`, {
-          method: 'POST',
-          headers: {
-            'Authorization': 'Bearer direct-token-1750522117022',
-            'X-User-Id': '1',
-            'X-User-Role': 'super_admin'
-          },
-          body: data
-        });
-        if (!response.ok) throw new Error('Error subiendo documento');
-        return response.json();
-      } else {
-        const response = await apiRequest(`/api/parks/${parkId}/documents`, {
-          method: 'POST',
-          data
-        });
-        return response.json();
+    mutationFn: async (data: FormData) => {
+      const response = await fetch(`/api/parks/${parkId}/documents`, {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer direct-token-1750522117022',
+          'X-User-Id': '1',
+          'X-User-Role': 'super_admin'
+        },
+        body: data
+      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Error uploading document:', errorText);
+        throw new Error('Error subiendo documento');
       }
+      return response.json();
     },
     onSuccess: () => {
       toast({
@@ -279,20 +275,31 @@ export default function ParkMultimediaManager({ parkId }: ParkMultimediaManagerP
 
   const deleteDocumentMutation = useMutation({
     mutationFn: async (documentId: number) => {
+      console.log(`🌐 [API REQUEST] DELETE /api/park-documents/${documentId}`);
       const response = await apiRequest(`/api/park-documents/${documentId}`, {
         method: 'DELETE'
       });
       return response;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast({
         title: "Documento eliminado",
-        description: "El documento se ha eliminado correctamente.",
+        description: data?.message || "El documento se ha eliminado correctamente.",
       });
+      // Invalidate all related queries to ensure fresh data
       queryClient.invalidateQueries({ queryKey: [`/api/parks/${parkId}/documents`] });
       queryClient.invalidateQueries({ queryKey: [`/api/parks/${parkId}`] });
+      queryClient.invalidateQueries({ queryKey: ['/api/parks'] });
+      
+      // Force refetch documents immediately
+      queryClient.refetchQueries({ queryKey: [`/api/parks/${parkId}/documents`] });
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error('❌ Error en eliminación:', error);
+      // Even if there's an error, try to refresh the data in case it was actually deleted
+      queryClient.invalidateQueries({ queryKey: [`/api/parks/${parkId}/documents`] });
+      queryClient.refetchQueries({ queryKey: [`/api/parks/${parkId}/documents`] });
+      
       toast({
         title: "Error",
         description: "No se pudo eliminar el documento.",
@@ -319,21 +326,35 @@ export default function ParkMultimediaManager({ parkId }: ParkMultimediaManagerP
   };
 
   const handleDocumentSubmit = () => {
-    if (newDocumentFile) {
-      const formData = new FormData();
-      formData.append('document', newDocumentFile);
-      formData.append('title', newDocumentTitle);
-      formData.append('description', newDocumentDescription);
-      formData.append('category', newDocumentCategory);
-      uploadDocumentMutation.mutate(formData);
-    } else if (newDocumentUrl) {
-      uploadDocumentMutation.mutate({
-        title: newDocumentTitle,
-        description: newDocumentDescription,
-        category: newDocumentCategory,
-        fileUrl: newDocumentUrl
+    // Validar que se haya proporcionado un título
+    if (!newDocumentTitle.trim()) {
+      toast({
+        title: "Error",
+        description: "El título del documento es requerido.",
+        variant: "destructive",
       });
+      return;
     }
+
+    // Priorizar archivo sobre URL - el archivo es obligatorio
+    if (!newDocumentFile) {
+      toast({
+        title: "Error", 
+        description: "Debe seleccionar un archivo para subir.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('document', newDocumentFile);
+    formData.append('title', newDocumentTitle);
+    formData.append('description', newDocumentDescription);
+    formData.append('category', newDocumentCategory);
+    
+    // URL field removed - not supported in current database schema
+    
+    uploadDocumentMutation.mutate(formData);
   };
 
   const formatFileSize = (bytes: number) => {
@@ -538,30 +559,30 @@ export default function ParkMultimediaManager({ parkId }: ParkMultimediaManagerP
                     />
                   </div>
                   <div>
-                    <label className="text-sm font-medium mb-2 block">Subir archivo</label>
+                    <label className="text-sm font-medium mb-2 block">Archivo del Documento *</label>
                     <Input
                       type="file"
-                      accept=".pdf,.doc,.docx,.txt"
+                      accept=".pdf,.doc,.docx,.txt,.xls,.xlsx,.ppt,.pptx"
                       onChange={(e) => {
                         const file = e.target.files?.[0];
-                        if (file) {
-                          setNewDocumentFile(file);
-                          setNewDocumentUrl('');
-                        }
+                        setNewDocumentFile(file || null);
                       }}
+                      required
                     />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Formatos permitidos: PDF, DOC, DOCX, TXT, XLS, XLSX, PPT, PPTX (máx. 10MB)
+                    </p>
                   </div>
-                  <div className="text-center text-sm text-gray-500">- O -</div>
                   <div>
-                    <label className="text-sm font-medium mb-2 block">URL del documento</label>
+                    <label className="text-sm font-medium mb-2 block">URL de Referencia (opcional)</label>
                     <Input
                       value={newDocumentUrl}
-                      onChange={(e) => {
-                        setNewDocumentUrl(e.target.value);
-                        if (e.target.value) setNewDocumentFile(null);
-                      }}
-                      placeholder="https://ejemplo.com/documento.pdf"
+                      onChange={(e) => setNewDocumentUrl(e.target.value)}
+                      placeholder="https://ejemplo.com/documento-original.pdf"
                     />
+                    <p className="text-xs text-gray-500 mt-1">
+                      URL opcional para referenciar el documento original o fuente
+                    </p>
                   </div>
                   <div>
                     <label className="text-sm font-medium mb-2 block">Categoría</label>
@@ -590,7 +611,7 @@ export default function ParkMultimediaManager({ parkId }: ParkMultimediaManagerP
                 <DialogFooter>
                   <Button 
                     onClick={handleDocumentSubmit}
-                    disabled={(!newDocumentFile && !newDocumentUrl) || !newDocumentTitle.trim() || uploadDocumentMutation.isPending}
+                    disabled={!newDocumentFile || !newDocumentTitle.trim() || uploadDocumentMutation.isPending}
                   >
                     {uploadDocumentMutation.isPending ? 'Subiendo...' : 'Agregar Documento'}
                   </Button>

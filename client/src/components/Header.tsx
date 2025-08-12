@@ -5,7 +5,6 @@ import {
   X,
   ChevronDown,
   LogIn,
-  LogOut,
   HelpCircle,
   FolderOpen,
   Wrench,
@@ -21,8 +20,16 @@ import { HelpCenter } from "@/components/HelpCenter";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import UserProfileImage from "@/components/UserProfileImage";
 import { useAuth } from "@/hooks/useAuth";
-import logoImage from "@assets/logo ambu_1754602816490.png";
-import agencyLogo from "@assets/logo ambu_1754602816490.png";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+const logoImage = "/images/logo-ambu.png";
+const agencyLogo = "/images/logo-ambu.png";
 
 const Header: React.FC = () => {
   const [location] = useLocation();
@@ -386,7 +393,7 @@ const Header: React.FC = () => {
                     <div className="flex flex-col items-center">
                       <button className="w-9 h-9 flex items-center justify-center rounded-full hover:opacity-80 transition-colors">
                         <Megaphone className="h-5 w-5 text-gray-700" />
-                        <ChevronDown className="h-3 w-3 text-gray-500" />
+                        <ChevronDown className="h-3 w-3 text-gray-700" />
                       </button>
                     </div>
 
@@ -437,70 +444,73 @@ const Header: React.FC = () => {
 
               {isAdmin && user ? (
                 <div className="flex items-center gap-2">
+                  {/* Botón de ayuda */}
                   <HelpCenter>
                     <Button
                       variant="outline"
                       size="sm"
                       className="w-9 h-9 p-0 rounded-lg border"
-                      style={{
-                        backgroundColor: "#D2EAEA",
-                        borderColor: "#003D49",
-                      }}
+                      style={{ backgroundColor: "#D2EAEA", borderColor: "#003D49" }}
+                      title="Centro de ayuda"
                     >
-                      <HelpCircle className="h-4 w-4" />
+                      <HelpCircle className="h-6 w-8 text-gray-700" />
                     </Button>
                   </HelpCenter>
-                  <LanguageSelector />
-                  
+
                   {/* Botón para acceder a la página pública */}
                   <Link href="/">
                     <Button
                       variant="outline"
                       size="sm"
                       className="w-9 h-9 p-0 rounded-lg border"
-                      style={{
-                        backgroundColor: "#D2EAEA",
-                        borderColor: "#003D49",
-                      }}
+                      style={{ backgroundColor: "#D2EAEA", borderColor: "#003D49" }}
                       title="Ver página pública"
                     >
-                      <Home className="h-4 w-4" />
+                      <Home className="h-6 w-8 text-gray-700" />
                     </Button>
                   </Link>
-                  
-                  <div className="flex items-center gap-2">
-                    <UserProfileImage
-                      userId={(user as any)?.id || 0}
-                      role={(user as any)?.role || "user"}
-                      name={
-                        (user as any)?.fullName ||
-                        (user as any)?.username ||
-                        "Usuario"
-                      }
-                      size="sm"
-                    />
-                    <div className="flex flex-col">
-                      <span className="text-sm font-medium text-gray-800">
-                        {(user as any)?.firstName && (user as any)?.lastName
-                          ? `${(user as any).firstName} ${(user as any).lastName}`
-                          : (user as any)?.fullName ||
-                            (user as any)?.username ||
-                            "Usuario"}
-                      </span>
-                      <span className="text-xs text-gray-600">
-                        {(user as any)?.role || "usuario"}
-                      </span>
-                    </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleLogout}
-                    className="text-gray-600 hover:text-gray-800 hover:bg-gray-100 w-8 h-8 p-0"
-                    title="Cerrar Sesión"
-                  >
-                    <LogOut className="h-4 w-4" />
-                  </Button>
+
+                  {/* Dropdown del usuario */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger className="flex items-center gap-2 focus:outline-none">
+                      <UserProfileImage
+                        userId={(user as any)?.id || 0}
+                        role={(user as any)?.role || "user"}
+                        name={(user as any)?.fullName || (user as any)?.username || "Usuario"}
+                        size="sm"
+                      />
+                      <div className="flex flex-col text-left">
+                        <span className="text-sm font-medium text-gray-800">
+                          {(user as any)?.firstName && (user as any)?.lastName
+                            ? `${(user as any).firstName} ${(user as any).lastName}`
+                            : (user as any)?.fullName || (user as any)?.username || "Usuario"}
+                        </span>
+                        <span className="text-xs text-gray-600">
+                          {(user as any)?.role || "usuario"}
+                        </span>
+                      </div>
+                    </DropdownMenuTrigger>
+
+                    <DropdownMenuContent align="end" className="w-56">
+                      <DropdownMenuLabel>Mi cuenta</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link href="/admin/settings/profile">Perfil</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/admin/user-activity">Actividad</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/admin/users/notifications">Notificaciones</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem>
+                        <LanguageSelector />
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={handleLogout}>Cerrar sesión</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               ) : (
                 <Link href="/admin/login">

@@ -153,7 +153,12 @@ export default function EditVolunteerPage() {
   const { data: volunteerData, isLoading: isLoadingVolunteer } = useQuery({
     queryKey: ['/api/volunteers', volunteerId],
     queryFn: async () => {
-      const response = await fetch(`/api/volunteers/${volunteerId}`);
+      const response = await fetch(`/api/volunteers/${volunteerId}`, {
+        headers: {
+          'Authorization': 'Bearer direct-token',
+          'Content-Type': 'application/json'
+        }
+      });
       if (!response.ok) throw new Error('Error al obtener datos del voluntario');
       return response.json();
     },
@@ -161,46 +166,109 @@ export default function EditVolunteerPage() {
   });
 
   // Obtener parques para el selector
-  const { data: parksResponse } = useQuery<{data: any[], pagination: any}>({
+  const { data: parksResponse, isLoading: isLoadingParks, error: parksError } = useQuery({
     queryKey: ['/api/parks'],
+    queryFn: async () => {
+      const response = await fetch('/api/parks', {
+        headers: {
+          'Authorization': 'Bearer direct-token',
+          'Content-Type': 'application/json'
+        }
+      });
+      if (!response.ok) throw new Error('Error al obtener parques');
+      return response.json();
+    }
   });
   
-  const parks = parksResponse?.data || [];
+  // Los parques vienen directamente como array, no dentro de un objeto 'data'
+  const parks = Array.isArray(parksResponse) ? parksResponse : (parksResponse?.data || []);
+  
+  // Debug logging para parques
+  useEffect(() => {
+    console.log('Parques procesados:', { 
+      parksResponse, 
+      parks, 
+      parksCount: parks.length,
+      isLoadingParks, 
+      parksError: parksError?.message 
+    });
+  }, [parksResponse, parks, isLoadingParks, parksError]);
 
   // Llenar el formulario cuando se cargan los datos
   useEffect(() => {
     if (volunteerData) {
+      console.log('Datos del voluntario recibidos:', volunteerData);
+      
       // Si el voluntario tiene una imagen de perfil, mostrarla
       const imageUrl = volunteerData.profileImageUrl || volunteerData.profile_image_url;
       if (imageUrl) {
         setUploadedImageUrl(imageUrl);
       }
       
+      // Obtener firstName y lastName - usar los campos separados si están disponibles, 
+      // sino separar el nombre completo
+      let firstName = volunteerData.firstName || '';
+      let lastName = volunteerData.lastName || '';
+      
+      // Si no tenemos firstName y lastName separados, usar full_name
+      if (!firstName && !lastName && volunteerData.full_name) {
+        const fullName = volunteerData.full_name;
+        const nameParts = fullName.split(' ');
+        firstName = nameParts[0] || '';
+        lastName = nameParts.slice(1).join(' ') || '';
+      }
+      
+      console.log('Nombres procesados:', { firstName, lastName, full_name: volunteerData.full_name });
+      console.log('PreferredParkId actual:', volunteerData.preferredParkId, 'tipo:', typeof volunteerData.preferredParkId);
+      console.log('Áreas de interés del voluntario:', {
+        interestNature: volunteerData.interestNature,
+        interestEvents: volunteerData.interestEvents,
+        interestEducation: volunteerData.interestEducation,
+        interestMaintenance: volunteerData.interestMaintenance,
+        interestSports: volunteerData.interestSports,
+        interestCultural: volunteerData.interestCultural
+      });
+      
+      // Parsear áreas de interés si están en JSON
+      let interestAreas = [];
+      try {
+        if (volunteerData.interest_areas) {
+          if (typeof volunteerData.interest_areas === 'string') {
+            interestAreas = JSON.parse(volunteerData.interest_areas);
+          } else if (Array.isArray(volunteerData.interest_areas)) {
+            interestAreas = volunteerData.interest_areas;
+          }
+        }
+      } catch (e) {
+        console.error('Error parsing interest areas:', e);
+        interestAreas = [];
+      }
+      
       form.reset({
-        firstName: volunteerData.firstName || '',
-        lastName: volunteerData.lastName || '',
+        firstName: firstName,
+        lastName: lastName,
         email: volunteerData.email || '',
         phone: volunteerData.phone || '',
         gender: volunteerData.gender || 'no_especificar',
-        birthDate: volunteerData.birthDate || '',
+        birthDate: volunteerData.birth_date || '',
         address: volunteerData.address || '',
         emergencyContactName: volunteerData.emergencyContactName || volunteerData.emergency_contact || '',
         emergencyContactPhone: volunteerData.emergencyContactPhone || volunteerData.emergency_phone || '',
-        preferredParkId: volunteerData.preferredParkId?.toString() || volunteerData.preferred_park_id?.toString() || '',
+        preferredParkId: volunteerData.preferredParkId || volunteerData.preferred_park_id?.toString() || '',
         volunteerExperience: volunteerData.volunteerExperience || volunteerData.previous_experience || '',
         skills: volunteerData.skills || '',
-        availability: volunteerData.availability || 'flexible',
-        interestNature: volunteerData.interestNature || false,
-        interestEvents: volunteerData.interestEvents || false,
-        interestEducation: volunteerData.interestEducation || false,
-        interestMaintenance: volunteerData.interestMaintenance || false,
-        interestSports: volunteerData.interestSports || false,
-        interestCultural: volunteerData.interestCultural || false,
-        legalConsent: volunteerData.legalConsent || true,
-        ageConsent: volunteerData.ageConsent || true,
-        conductConsent: volunteerData.conductConsent || true,
-        municipalityId: volunteerData.municipalityId || 2,
-        profileImage: volunteerData.profileImageUrl || volunteerData.profile_image_url || null,
+        availability: volunteerData.available_hours || 'flexible',
+        interestNature: volunteerData.interestNature || interestAreas.includes('naturaleza') || interestAreas.includes('nature') || false,
+        interestEvents: volunteerData.interestEvents || interestAreas.includes('eventos') || interestAreas.includes('events') || false,
+        interestEducation: volunteerData.interestEducation || interestAreas.includes('educacion') || interestAreas.includes('education') || false,
+        interestMaintenance: volunteerData.interestMaintenance || interestAreas.includes('mantenimiento') || interestAreas.includes('maintenance') || false,
+        interestSports: volunteerData.interestSports || interestAreas.includes('deportes') || interestAreas.includes('sports') || false,
+        interestCultural: volunteerData.interestCultural || interestAreas.includes('cultural') || interestAreas.includes('culture') || false,
+        legalConsent: volunteerData.legal_consent !== false,
+        ageConsent: true,
+        conductConsent: true,
+        municipalityId: 2,
+        profileImage: volunteerData.profile_image_url || null,
       });
     }
   }, [volunteerData, form]);
@@ -539,16 +607,28 @@ export default function EditVolunteerPage() {
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Seleccione un parque" />
+                            <SelectValue placeholder={
+                              isLoadingParks 
+                                ? "Cargando parques..." 
+                                : parksError 
+                                  ? "Error al cargar parques" 
+                                  : "Seleccione un parque"
+                            } />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="none">Sin preferencia</SelectItem>
-                          {parks && parks.map((park: any) => (
-                            <SelectItem key={park.id} value={park.id.toString()}>
-                              {park.name}
-                            </SelectItem>
-                          ))}
+                          {parks && parks.length > 0 ? (
+                            parks.map((park: any) => (
+                              <SelectItem key={park.id} value={park.id.toString()}>
+                                {park.name}
+                              </SelectItem>
+                            ))
+                          ) : isLoadingParks ? (
+                            <SelectItem value="loading" disabled>Cargando parques...</SelectItem>
+                          ) : (
+                            <SelectItem value="no_parks" disabled>No hay parques disponibles</SelectItem>
+                          )}
                         </SelectContent>
                       </Select>
                       <FormMessage />

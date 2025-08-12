@@ -20,6 +20,7 @@ import { registerInstructorRoutes } from "./instructor-routes";
 import { registerPublicRoutes } from "./publicRoutes";
 import { registerAssetRoutes } from "./asset_routes";
 import { registerAssetImageRoutes } from "./asset-image-routes";
+import { registerAssetCategoriesRoutes } from "./asset-categories-routes";
 import activityImageRouter from "./activity-image-routes";
 import { registerMaintenanceRoutes } from "./maintenance_routes_fixed";
 import { registerAssetAssignmentRoutes } from "./asset_assignment_routes";
@@ -37,14 +38,16 @@ import directRouter from "./directRoutes";
 import { registerConcessionRoutes } from "./concession-routes";
 import { registerConcessionContractsRoutes } from "./concession-contracts-routes";
 import { registerUsersConcessionairesRoutes } from "./users-concessionaires-routes";
-import { registerConcessionairesRoutes } from "./concessionaires-routes";
+import { registerConcessionairesSimpleRoutes } from "./concessionaires-simple";
 import { registerConcessionLocationsRoutes } from "./concession-locations-routes";
 import { registerConcessionPaymentsRoutes } from "./concession-payments-routes";
 import { registerConcessionEvaluationRoutes } from "./concession-evaluations-routes";
 import { registerActiveConcessionRoutes } from "./active-concessions-routes";
 import { registerFinanceRoutes } from "./finance-routes";
 import { registerBudgetRoutes } from "./budget-routes";
+import { registerBudgetPlanningRoutes } from "./budget-planning-routes";
 import { registerFinanceUpdateRoutes } from "./finance-update-routes";
+import { registerAccountingRoutes } from "./accounting-routes";
 import { 
   uploadParkFile, 
   handleMulterErrors, 
@@ -83,6 +86,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Configure multer for file uploads
   const upload = multer({ storage: multer.memoryStorage() });
+  
+  // Configure multer specifically for document uploads
+  const documentUpload = multer({
+    storage: multer.diskStorage({
+      destination: function (req, file, cb) {
+        cb(null, 'uploads/documents/');
+      },
+      filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const extension = file.originalname.split('.').pop();
+        cb(null, `doc-${uniqueSuffix}.${extension}`);
+      }
+    }),
+    fileFilter: (req, file, cb) => {
+      const allowedTypes = [
+        'application/pdf',
+        'application/msword', 
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 
+        'application/vnd.ms-powerpoint',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        'text/plain'
+      ];
+      if (allowedTypes.includes(file.mimetype)) {
+        cb(null, true);
+      } else {
+        cb(new Error('Formato de archivo no válido. Solo se permiten PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX y TXT'));
+      }
+    },
+    limits: {
+      fileSize: 10 * 1024 * 1024 // 10MB
+    }
+  });
   
   // Configure multer specifically for icon uploads with disk storage
   const iconUpload = multer({
@@ -222,6 +259,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   registerAssetImageRoutes(app, apiRouter, isAuthenticated);
   
+  // Registramos las rutas de categorías de activos
+  registerAssetCategoriesRoutes(app, apiRouter);
+  
   // Registramos las rutas del módulo de actividades
   registerActivityRoutes(app, apiRouter, isAuthenticated, hasParkAccess);
   
@@ -342,7 +382,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Registramos las rutas del módulo financiero
   registerFinanceRoutes(app, apiRouter, isAuthenticated);
   registerBudgetRoutes(app, apiRouter, isAuthenticated);
+  registerBudgetPlanningRoutes(app, apiRouter, isAuthenticated);
   registerFinanceUpdateRoutes(app, apiRouter);
+  console.log('Rutas del módulo financiero registradas correctamente');
+  
+  // Registramos las rutas del módulo de contabilidad
+  registerAccountingRoutes(app, apiRouter, isAuthenticated);
+  console.log('🧮 Rutas del módulo de contabilidad registradas correctamente');
   
   // Registramos las rutas del módulo de publicidad
   apiRouter.use('/advertising', advertisingRoutes);
@@ -447,7 +493,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerConcessionRoutes(app, apiRouter, isAuthenticated);
   registerConcessionContractsRoutes(app, apiRouter, isAuthenticated);
   registerUsersConcessionairesRoutes(app, apiRouter, isAuthenticated);
-  registerConcessionairesRoutes(app, apiRouter, isAuthenticated);
+  registerConcessionairesSimpleRoutes(app, apiRouter, isAuthenticated);
   registerConcessionLocationsRoutes(app, apiRouter, isAuthenticated);
   registerConcessionPaymentsRoutes(app, apiRouter, isAuthenticated);
   registerConcessionEvaluationRoutes(app, apiRouter, isAuthenticated);
@@ -1107,8 +1153,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('Paso 4: Consultando documentos del parque...');
       const documentsResult = await pool.query(`
         SELECT id, title, file_url as "fileUrl", file_type as "fileType", 
-               description, category, created_at as "createdAt"
-        FROM park_documents
+               description, file_size as "fileSize", created_at as "createdAt"
+        FROM documents
         WHERE park_id = $1
         ORDER BY created_at DESC
       `, [parkId]);
@@ -1174,7 +1220,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         LEFT JOIN concession_types ct ON ac.concession_type_id = ct.id
         LEFT JOIN concessionaires con ON ac.concessionaire_id = con.id
         LEFT JOIN active_concession_images aci ON ac.id = aci.concession_id AND aci.is_primary = true
-        WHERE ac.park_id = $1 AND (ac.status = 'active' OR ac.status IS NULL OR ac.status = '')
+        WHERE ac.park_id = $1 AND (ac.status = 'activa' OR ac.status = 'active' OR ac.status IS NULL OR ac.status = '')
         ORDER BY ac.start_date DESC
         LIMIT 3
       `, [parkId]);
@@ -2264,6 +2310,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get all parks
+  apiRouter.get("/parks", async (req: Request, res: Response) => {
+    try {
+      const result = await pool.query(`
+        SELECT id, name, address, description, area, hours, contact_phone, contact_email
+        FROM parks 
+        ORDER BY name ASC
+      `);
+      
+      res.json({
+        status: 'success',
+        data: result.rows,
+        count: result.rows.length
+      });
+    } catch (error) {
+      console.error('Error al obtener parques:', error);
+      res.status(500).json({
+        status: 'error',
+        message: 'Error al obtener parques'
+      });
+    }
+  });
+
   // Add an amenity to a park (admin/municipality only)
   app.post("/api/parks/:id/amenities", async (req: Request, res: Response) => {
     try {
@@ -2948,23 +3017,142 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Add a document to a park (admin/municipality only)
-  apiRouter.post("/parks/:id/documents", isAuthenticated, hasParkAccess, async (req: Request, res: Response) => {
+  // Add a document to a park (admin/municipality only) - Use fields middleware para manejar FormData con o sin archivo
+  apiRouter.post("/parks/:id/documents", isAuthenticated, hasParkAccess, documentUpload.single('document'), async (req: Request, res: Response) => {
     try {
       const parkId = Number(req.params.id);
-      const documentData = { ...req.body, parkId };
+      console.log(`🔍 POST /parks/${parkId}/documents - DETAILED DEBUG:`);
+      console.log(`  - Request body:`, req.body);
+      console.log(`  - Request file:`, req.file);
+      console.log(`  - Content-Type:`, req.headers['content-type']);
+      console.log(`  - All headers:`, Object.keys(req.headers));
+      console.log(`  - Body keys:`, Object.keys(req.body || {}));
+      console.log(`  - File exists:`, !!req.file);
       
-      const data = insertDocumentSchema.parse(documentData);
+      let documentData;
+      
+      if (req.file) {
+        // Archivo subido (obligatorio)
+        documentData = {
+          parkId,
+          title: req.body.title,
+          description: req.body.description || '',
+          fileUrl: `/uploads/documents/${req.file.filename}`,
+          fileType: req.file.mimetype,
+          fileSize: req.file.size,
+          // referenceUrl removed - column doesn't exist in database
+        };
+        console.log(`📎 Archivo subido:`, req.file);
+      } else {
+        // Sin archivo - verificar si es un problema del FormData
+        console.log(`❌ NO HAY ARCHIVO - Debugging:`);
+        console.log(`  - req.body:`, req.body);
+        console.log(`  - req.body.title:`, req.body.title);
+        console.log(`  - req.body.description:`, req.body.description);
+        console.log(`  - Content-Type:`, req.headers['content-type']);
+        
+        return res.status(400).json({ 
+          message: "Es obligatorio subir un archivo. No se permiten solo URLs.",
+          error: "MISSING_FILE",
+          debug: {
+            bodyKeys: Object.keys(req.body || {}),
+            bodyValues: req.body,
+            hasFile: !!req.file,
+            contentType: req.headers['content-type']
+          }
+        });
+      }
+      
+      console.log(`🔍 Parsed document data:`, documentData);
+      
+      // Validar campos requeridos manualmente antes del schema
+      if (!documentData.title || !documentData.fileUrl || !documentData.fileType) {
+        return res.status(400).json({ 
+          message: "Campos requeridos faltantes: title, fileUrl, fileType",
+          missing: {
+            title: !documentData.title,
+            fileUrl: !documentData.fileUrl,
+            fileType: !documentData.fileType
+          },
+          received: documentData
+        });
+      }
+      
+      // Crear la estructura de datos correcta para el storage
+      const data = {
+        parkId: documentData.parkId,
+        title: documentData.title,
+        fileUrl: documentData.fileUrl,
+        fileType: documentData.fileType,
+        fileSize: documentData.fileSize || null,
+        description: documentData.description || '',
+        uploadedById: req.user?.id || null,
+        // referenceUrl removed - column doesn't exist in database
+      };
       const result = await storage.createDocument(data);
       
       res.status(201).json(result);
     } catch (error) {
       if (error instanceof ZodError) {
         const validationError = fromZodError(error);
-        return res.status(400).json({ message: validationError.message });
+        console.error(`❌ Validation error for POST /parks/${req.params.id}/documents:`, validationError.message);
+        return res.status(400).json({ 
+          message: validationError.message,
+          details: error.errors 
+        });
       }
-      console.error(error);
+      console.error(`❌ Server error for POST /parks/${req.params.id}/documents:`, error);
       res.status(500).json({ message: "Error adding document to park" });
+    }
+  });
+
+  // Eliminar documento de parque (producción)
+  apiRouter.delete("/park-documents/:documentId", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const documentId = Number(req.params.documentId);
+      console.log(`🗑️ DELETE /park-documents/${documentId} - Iniciando eliminación`);
+      console.log(`🔍 Usuario autenticado:`, { id: req.user.id, role: req.user.role });
+      
+      // Verificamos que el documento existe y obtenemos su parkId
+      const document = await storage.getDocument(documentId);
+      if (!document) {
+        console.log(`❌ Documento ${documentId} no encontrado`);
+        return res.status(404).json({ message: "Document not found" });
+      }
+      
+      console.log(`📋 Documento encontrado:`, { id: document.id, parkId: document.parkId, title: document.title });
+      
+      // Verificamos que el usuario tenga acceso al parque del documento
+      if (req.user.role !== 'super_admin') {
+        const park = await storage.getPark(document.parkId);
+        if (!park) {
+          console.log(`❌ Parque ${document.parkId} no encontrado`);
+          return res.status(404).json({ message: "Park not found" });
+        }
+        
+        console.log(`🏛️ Verificando permisos: usuario municipio ${req.user.municipalityId}, parque municipio ${park.municipalityId}`);
+        
+        if (park.municipalityId !== req.user.municipalityId) {
+          console.log(`❌ Sin permisos para eliminar documento del parque ${document.parkId}`);
+          return res.status(403).json({ 
+            message: "No tiene permisos para administrar documentos de este parque" 
+          });
+        }
+      }
+      
+      console.log(`✅ Permisos verificados, procediendo a eliminar documento ${documentId}`);
+      const result = await storage.deleteDocument(documentId);
+      
+      if (!result) {
+        console.log(`❌ No se pudo eliminar el documento ${documentId}`);
+        return res.status(404).json({ message: "Document not found" });
+      }
+      
+      console.log(`✅ Documento ${documentId} eliminado exitosamente`);
+      res.status(204).send();
+    } catch (error) {
+      console.error(`❌ Error eliminando documento ${req.params.documentId}:`, error);
+      res.status(500).json({ message: "Error removing document from park" });
     }
   });
 

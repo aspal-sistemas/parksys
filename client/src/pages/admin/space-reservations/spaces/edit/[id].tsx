@@ -122,11 +122,14 @@ export default function EditSpacePage() {
 
   const updateSpaceMutation = useMutation({
     mutationFn: async (data: EditSpaceFormData) => {
-      const response = await apiRequest("PUT", `/api/reservable-spaces/${id}`, {
-        ...data,
-        parkId: parseInt(data.parkId),
+      const response = await apiRequest(`/api/reservable-spaces/${id}`, {
+        method: "PUT",
+        data: {
+          ...data,
+          parkId: parseInt(data.parkId),
+        }
       });
-      return response.json();
+      return response;
     },
     onSuccess: () => {
       toast({

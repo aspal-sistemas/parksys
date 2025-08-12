@@ -11,7 +11,7 @@ import { storage } from "./storage";
  */
 export function registerConcessionaireRoutes(app: any, apiRouter: Router, isAuthenticated: any) {
   // Obtener todos los concesionarios
-  apiRouter.get("/concessionaires", async (_req: Request, res: Response) => {
+  apiRouter.get("/concessionaires", isAuthenticated, async (_req: Request, res: Response) => {
     try {
       const concessionaires = await db.query.concessionaires.findMany({
         orderBy: (concessionaires, { desc }) => [desc(concessionaires.createdAt)],
@@ -25,7 +25,7 @@ export function registerConcessionaireRoutes(app: any, apiRouter: Router, isAuth
   });
 
   // Obtener un concesionario por ID
-  apiRouter.get("/concessionaires/:id", async (req: Request, res: Response) => {
+  apiRouter.get("/concessionaires/:id", isAuthenticated, async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       

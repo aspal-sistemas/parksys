@@ -54,9 +54,11 @@ export default function ConcessionDetail() {
   const { id } = useParams();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  const { data: concessionResponse, isLoading, error } = useQuery({
+  const { data: concessionResponse, isLoading, error, refetch } = useQuery({
     queryKey: [`/api/active-concessions/${id}`],
     enabled: !!id,
+    refetchInterval: 30000, // Refresca cada 30 segundos
+    refetchIntervalInBackground: false,
   });
 
   const concession = (concessionResponse as any)?.data;
@@ -184,13 +186,19 @@ export default function ConcessionDetail() {
       {/* Galería de fotos */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
+          <div className="mb-4">
+            <h2 className="text-xl font-semibold text-gray-900">Galería de Imágenes</h2>
+          </div>
+          
+
+          
           <div className="grid grid-cols-4 grid-rows-2 gap-2 h-64">
             {/* Imagen principal - ocupa 2x2 */}
             <div className="col-span-2 row-span-2 relative cursor-pointer" onClick={() => setSelectedImage(concession.image_url)}>
               <img 
                 src={concession.image_url || '/api/placeholder/400/400'} 
                 alt={`${concession.name} - Imagen principal`}
-                className="w-full h-full object-contain rounded-lg shadow-lg"
+                className="w-full h-full object-cover rounded-lg shadow-lg"
               />
               <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
             </div>
@@ -204,7 +212,7 @@ export default function ConcessionDetail() {
                   <img 
                     src={image.image_url} 
                     alt={`${concession.name} - Imagen ${index + 2}`}
-                    className="w-full h-full object-contain rounded-lg shadow-md"
+                    className="w-full h-full object-cover rounded-lg shadow-md"
                   />
                   <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 transition-all duration-300 rounded-lg" />
                 </div>
