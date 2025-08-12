@@ -5,6 +5,7 @@ import UserProfileImage from '@/components/UserProfileImage';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { useTranslation } from 'react-i18next';
 import { SidebarSearch } from './SidebarSearch';
+import parksysLogo from '@assets/Recurso 5Parksys (1)_1755013567923.png';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -1285,7 +1286,7 @@ const AdminSidebarComplete: React.FC = () => {
       <div className="p-4 border-t border-teal-600" style={{ backgroundColor: '#003D49' }}>
         <div className="flex flex-col items-center justify-center gap-0">
           <img 
-            src="/images/sidebar-logo.png" 
+            src={parksysLogo} 
             alt="ParkSys - Sistema de parques" 
             className="h-18 w-auto opacity-80 hover:opacity-100 transition-opacity"
           />
