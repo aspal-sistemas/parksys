@@ -809,6 +809,221 @@ function ParkLandingPage() {
         </div>
       </div>
 
+      {/* Instructores y Voluntarios - Nueva sección 2/2 */}
+      <div className="bg-white">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            
+            {/* Instructores - Columna izquierda */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5 text-purple-600" />
+                  Instructores
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {park.instructors && park.instructors.length > 0 ? (
+                  <div className="space-y-3">
+                    {park.instructors.slice(0, 3).map((instructor) => (
+                      <div key={instructor.id} className="flex items-start gap-3 p-4 bg-white rounded-lg border border-purple-200">
+                        {instructor.profileImageUrl ? (
+                          <img 
+                            src={instructor.profileImageUrl} 
+                            alt={instructor.fullName}
+                            className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 bg-purple-200 rounded-full flex items-center justify-center flex-shrink-0">
+                            <Users className="h-6 w-6 text-purple-600" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-semibold text-purple-900 text-sm line-clamp-2">{instructor.fullName}</h4>
+                              {instructor.specialties && (
+                                <div className="mt-2">
+                                  <div className="flex flex-wrap gap-1">
+                                    {(() => {
+                                      let specialtiesList: string[] = [];
+                                      const specialties = instructor.specialties;
+                                      
+                                      if (specialties.startsWith('{') && specialties.endsWith('}')) {
+                                        const arrayContent = specialties.slice(1, -1);
+                                        specialtiesList = arrayContent
+                                          .split(',')
+                                          .map(s => {
+                                            let cleaned = s.trim();
+                                            cleaned = cleaned.replace(/^"+/, '').replace(/"+$/, '');
+                                            cleaned = cleaned.replace(/^'+/, '').replace(/'+$/, '');
+                                            cleaned = cleaned.replace(/^\[+/, '').replace(/\]+$/, '');
+                                            return cleaned;
+                                          })
+                                          .filter(s => s && s !== 'null' && s !== '');
+                                      } else {
+                                        try {
+                                          const parsed = JSON.parse(specialties);
+                                          if (Array.isArray(parsed)) {
+                                            specialtiesList = parsed.filter(s => s && s !== 'null');
+                                          }
+                                        } catch {
+                                          specialtiesList = [specialties];
+                                        }
+                                      }
+                                      
+                                      return specialtiesList.slice(0, 2).map((specialty, index) => (
+                                        <Badge 
+                                          key={index} 
+                                          variant="outline" 
+                                          className="text-xs bg-purple-50 text-purple-700 border-purple-200"
+                                        >
+                                          {specialty}
+                                        </Badge>
+                                      ));
+                                    })()}
+                                  </div>
+                                </div>
+                              )}
+                              {instructor.email && (
+                                <div className="flex items-center mt-2 text-xs text-purple-600">
+                                  <Mail className="h-3 w-3 mr-1" />
+                                  <span className="truncate">{instructor.email}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 bg-gray-50 rounded-lg">
+                    <Users className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                    <p className="text-gray-500">No hay instructores asignados</p>
+                  </div>
+                )}
+
+                {park.instructors && park.instructors.length > 3 && (
+                  <div className="text-center pt-4 mt-4 border-t">
+                    <Link href="/instructors">
+                      <Button variant="outline" className="border-purple-300 text-purple-700 hover:bg-purple-50 text-sm">
+                        <Users className="h-4 w-4 mr-2" />
+                        Ver todos los instructores ({park.instructors.length})
+                      </Button>
+                    </Link>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Voluntarios - Columna derecha */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Heart className="h-5 w-5 text-pink-600" />
+                  Voluntarios Activos
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {park.volunteers && park.volunteers.length > 0 ? (
+                  <div className="space-y-3">
+                    {park.volunteers.slice(0, 3).map((volunteer) => (
+                      <div key={volunteer.id} className="flex items-start gap-3 p-4 bg-white rounded-lg border border-pink-200">
+                        {volunteer.profileImageUrl ? (
+                          <img 
+                            src={volunteer.profileImageUrl} 
+                            alt={volunteer.fullName}
+                            className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 bg-pink-200 rounded-full flex items-center justify-center flex-shrink-0">
+                            <Heart className="h-6 w-6 text-pink-600" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-semibold text-pink-900 text-sm line-clamp-2">{volunteer.fullName}</h4>
+                              {volunteer.interests && (
+                                <div className="mt-2">
+                                  <div className="flex flex-wrap gap-1">
+                                    {(() => {
+                                      let interestsList: string[] = [];
+                                      const interests = volunteer.interests;
+                                      
+                                      if (interests.startsWith('{') && interests.endsWith('}')) {
+                                        const arrayContent = interests.slice(1, -1);
+                                        interestsList = arrayContent
+                                          .split(',')
+                                          .map(s => {
+                                            let cleaned = s.trim();
+                                            cleaned = cleaned.replace(/^"+/, '').replace(/"+$/, '');
+                                            cleaned = cleaned.replace(/^'+/, '').replace(/'+$/, '');
+                                            cleaned = cleaned.replace(/^\[+/, '').replace(/\]+$/, '');
+                                            return cleaned;
+                                          })
+                                          .filter(s => s && s !== 'null' && s !== '');
+                                      } else {
+                                        try {
+                                          const parsed = JSON.parse(interests);
+                                          if (Array.isArray(parsed)) {
+                                            interestsList = parsed.filter(s => s && s !== 'null');
+                                          }
+                                        } catch {
+                                          interestsList = [interests];
+                                        }
+                                      }
+                                      
+                                      return interestsList.slice(0, 2).map((interest, index) => (
+                                        <Badge 
+                                          key={index} 
+                                          variant="outline" 
+                                          className="text-xs bg-pink-50 text-pink-700 border-pink-200"
+                                        >
+                                          {interest}
+                                        </Badge>
+                                      ));
+                                    })()}
+                                  </div>
+                                </div>
+                              )}
+                              {volunteer.email && (
+                                <div className="flex items-center mt-2 text-xs text-pink-600">
+                                  <Mail className="h-3 w-3 mr-1" />
+                                  <span className="truncate">{volunteer.email}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 bg-gray-50 rounded-lg">
+                    <Heart className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                    <p className="text-gray-500">No hay voluntarios activos</p>
+                  </div>
+                )}
+
+                {park.volunteers && park.volunteers.length > 3 && (
+                  <div className="text-center pt-4 mt-4 border-t">
+                    <Link href="/volunteers">
+                      <Button variant="outline" className="border-pink-300 text-pink-700 hover:bg-pink-50 text-sm">
+                        <Heart className="h-4 w-4 mr-2" />
+                        Ver todos los voluntarios ({park.volunteers.length})
+                      </Button>
+                    </Link>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+          </div>
+        </div>
+      </div>
+
       {/* Especies Arbóreas - Sección después de actividades */}
       <div className="bg-green-50/50">
         <div className="max-w-7xl mx-auto px-4 py-8">
@@ -1906,18 +2121,18 @@ function ParkLandingPage() {
               </CardContent>
             </Card>
 
-            {/* Instructores */}
+            {/* Voluntarios Activos */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-purple-600" />
-                  Instructores
+                  <Heart className="h-5 w-5 text-pink-600" />
+                  Voluntarios Activos
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {park.instructors && park.instructors.length > 0 ? (
+                {park.volunteers && park.volunteers.length > 0 ? (
                   <div className="space-y-3">
-                    {park.instructors.slice(0, 3).map((instructor) => (
+                    {park.volunteers.slice(0, 3).map((volunteer) => (
                       <div key={instructor.id} className="flex items-start gap-3 p-4 bg-white rounded-lg border border-purple-200">
                         {instructor.profileImageUrl ? (
                           <img 
