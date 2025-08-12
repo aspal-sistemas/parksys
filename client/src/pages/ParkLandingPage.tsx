@@ -606,84 +606,114 @@ function ParkLandingPage() {
         </div>
       )}
 
-      {/* Sección de 2 Módulos - Información | Ubicación */}
+      {/* Información General - Full Width debajo de la Galería */}
       <div className="bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 py-3">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            
-            {/* Información General - 2/3 */}
-            <div className="lg:col-span-2">
-              <Card className="h-full">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-xl">
-                    <Globe className="h-6 w-6 text-green-600" />
-                    Información General
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-700 leading-relaxed text-lg mb-6">
-                    {park.description || 'Espacio verde público destinado al esparcimiento y recreación de la comunidad.'}
-                  </p>
-                  
-                  {/* Basic Details Grid */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-                    <div className="text-center p-4 bg-gray-50 rounded-lg">
-                      <Globe className="h-6 w-6 mx-auto mb-2 text-blue-600" />
-                      <p className="text-sm text-gray-500">Tipo</p>
-                      <p className="font-semibold">{getParkTypeLabel(park.parkType || 'urbano')}</p>
-                    </div>
-                    
-                    {park.area && (
-                      <div className="text-center p-4 bg-gray-50 rounded-lg">
-                        <Trees className="h-6 w-6 mx-auto mb-2 text-green-600" />
-                        <p className="text-sm text-gray-500">Superficie</p>
-                        <p className="font-semibold">
-                          {Number(park.area) >= 10000 
-                            ? `${(Number(park.area) / 10000).toFixed(1)} ha` 
-                            : `${park.area} m²`}
-                        </p>
-                      </div>
-                    )}
-                    
-                    {park.foundationYear && (
-                      <div className="text-center p-4 bg-gray-50 rounded-lg">
-                        <Calendar className="h-6 w-6 mx-auto mb-2 text-purple-600" />
-                        <p className="text-sm text-gray-500">Fundado</p>
-                        <p className="font-semibold">{park.foundationYear}</p>
-                      </div>
-                    )}
-                    
-                    <div className="text-center p-4 bg-gray-50 rounded-lg">
-                      <Clock className="h-6 w-6 mx-auto mb-2 text-orange-600" />
-                      <p className="text-sm text-gray-500">Horario</p>
-                      <p className="font-semibold">7:00 - 19:30</p>
-                    </div>
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-xl">
+                <Globe className="h-6 w-6 text-green-600" />
+                Información General
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-700 leading-relaxed text-lg mb-6">
+                {park.description || 'Espacio verde público destinado al esparcimiento y recreación de la comunidad.'}
+              </p>
+              
+              {/* Basic Details Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                <div className="text-center p-4 bg-white rounded-lg border">
+                  <Globe className="h-6 w-6 mx-auto mb-2 text-blue-600" />
+                  <p className="text-sm text-gray-500">Tipo</p>
+                  <p className="font-semibold">{getParkTypeLabel(park.parkType || 'urbano')}</p>
+                </div>
+                
+                {park.area && (
+                  <div className="text-center p-4 bg-white rounded-lg border">
+                    <Trees className="h-6 w-6 mx-auto mb-2 text-green-600" />
+                    <p className="text-sm text-gray-500">Superficie</p>
+                    <p className="font-semibold">
+                      {Number(park.area) >= 10000 
+                        ? `${(Number(park.area) / 10000).toFixed(1)} ha` 
+                        : `${park.area} m²`}
+                    </p>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
+                )}
+                
+                {park.foundationYear && (
+                  <div className="text-center p-4 bg-white rounded-lg border">
+                    <Calendar className="h-6 w-6 mx-auto mb-2 text-purple-600" />
+                    <p className="text-sm text-gray-500">Fundado</p>
+                    <p className="font-semibold">{park.foundationYear}</p>
+                  </div>
+                )}
+                
+                <div className="text-center p-4 bg-white rounded-lg border">
+                  <Clock className="h-6 w-6 mx-auto mb-2 text-orange-600" />
+                  <p className="text-sm text-gray-500">Horario</p>
+                  <p className="font-semibold">7:00 - 19:30</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
 
-            {/* Ubicación con Mapa - 1/3 */}
-            <div className="lg:col-span-1">
-              <Card className="h-full">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <MapPin className="h-5 w-5 text-blue-600" />
-                    Ubicación
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
+      {/* Sección de Ubicación con Mapa */}
+      <div className="bg-white">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-xl">
+                <MapPin className="h-6 w-6 text-blue-600" />
+                Ubicación y Cómo Llegar
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-1 space-y-4">
                   <div>
                     <p className="text-sm text-gray-500">Dirección</p>
-                    <p className="font-medium text-sm">{park.address || 'No especificada'}</p>
+                    <p className="font-medium">{park.address || 'No especificada'}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Municipio</p>
-                    <p className="font-medium text-sm">{park.municipality?.name}, {park.municipality?.state}</p>
+                    <p className="font-medium">{park.municipality?.name}, {park.municipality?.state}</p>
                   </div>
                   
-                  {/* Mapa compacto */}
-                  <div className="rounded-lg overflow-hidden h-32 bg-gray-200">
+                  <div className="flex flex-col gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full"
+                      onClick={() => {
+                        const coords = `${park.latitude},${park.longitude}`;
+                        const destination = encodeURIComponent(`${park.name}, ${park.address}`);
+                        window.open(`https://www.google.com/maps/dir/?api=1&destination=${destination}&destination_place_id=${coords}`, '_blank');
+                      }}
+                    >
+                      <MapPin className="h-4 w-4 mr-2" />
+                      Cómo llegar
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full"
+                      onClick={() => {
+                        const coords = `${park.latitude},${park.longitude}`;
+                        window.open(`https://www.google.com/maps/@${coords},17z`, '_blank');
+                      }}
+                    >
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Ver en Maps
+                    </Button>
+                  </div>
+                </div>
+                
+                {/* Mapa más grande */}
+                <div className="lg:col-span-2">
+                  <div className="rounded-lg overflow-hidden h-64 bg-gray-200 border">
                     <iframe
                       title={`Mapa de ${park.name}`}
                       className="w-full h-full"
@@ -691,39 +721,10 @@ function ParkLandingPage() {
                       allowFullScreen
                     ></iframe>
                   </div>
-                  
-                  <div className="flex flex-col gap-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="w-full text-xs"
-                      onClick={() => {
-                        const coords = `${park.latitude},${park.longitude}`;
-                        const destination = encodeURIComponent(`${park.name}, ${park.address}`);
-                        window.open(`https://www.google.com/maps/dir/?api=1&destination=${destination}&destination_place_id=${coords}`, '_blank');
-                      }}
-                    >
-                      <MapPin className="h-3 w-3 mr-1" />
-                      Cómo llegar
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="w-full text-xs"
-                      onClick={() => {
-                        const coords = `${park.latitude},${park.longitude}`;
-                        window.open(`https://www.google.com/maps/@${coords},17z`, '_blank');
-                      }}
-                    >
-                      <ExternalLink className="h-3 w-3 mr-1" />
-                      Ver en Maps
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-          </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
 
