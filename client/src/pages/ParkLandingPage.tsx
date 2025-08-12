@@ -905,16 +905,16 @@ function ParkLandingPage() {
                   </div>
                 )}
 
-                {park.instructors && park.instructors.length > 3 && (
-                  <div className="text-center pt-4 mt-4 border-t">
-                    <Link href="/instructors">
-                      <Button variant="outline" className="border-purple-300 text-purple-700 hover:bg-purple-50 text-sm">
-                        <Users className="h-4 w-4 mr-2" />
-                        Ver todos los instructores ({park.instructors.length})
-                      </Button>
-                    </Link>
-                  </div>
-                )}
+                {/* Enlace a página de instructores */}
+                <div className="mt-6 text-center">
+                  <Link 
+                    href="/instructors"
+                    className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white font-medium rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all duration-300 shadow-md hover:shadow-lg"
+                  >
+                    <Users className="mr-2 h-5 w-5" />
+                    Conoce a nuestros instructores
+                  </Link>
+                </div>
               </CardContent>
             </Card>
 
