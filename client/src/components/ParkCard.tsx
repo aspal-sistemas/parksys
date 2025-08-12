@@ -4,7 +4,7 @@ import { ExtendedPark } from '@shared/schema';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { FileImage } from 'lucide-react';
+import { FileImage, Calendar, Clock } from 'lucide-react';
 import AmenityIcon from '@/components/ui/amenity-icon';
 const greenFlagLogo = "/images/green-flag-logo.jpg";
 
@@ -107,11 +107,42 @@ const ParkCard: React.FC<ParkCardProps> = ({ park, onClick }) => {
             </div>
           )}
           
-          {/* Nombre del parque - Siempre visible en la parte inferior */}
-          <div className="absolute bottom-0 left-0 right-0 p-4">
-            <h3 className="text-white font-semibold text-lg drop-shadow-lg">
+          {/* Información del parque - Siempre visible en la parte inferior */}
+          <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
+            <h3 className="text-white font-semibold text-lg drop-shadow-lg mb-2">
               {park.name}
             </h3>
+            
+            {/* Actividades disponibles - mostramos las primeras 3 */}
+            {park.activities && park.activities.length > 0 && (
+              <div className="flex flex-wrap gap-1 mb-1">
+                {park.activities.slice(0, 3).map((activity, index) => (
+                  <Badge 
+                    key={activity.id} 
+                    variant="secondary" 
+                    className="text-xs bg-white/20 backdrop-blur-sm text-white border-white/30 hover:bg-white/30"
+                  >
+                    <Calendar className="h-3 w-3 mr-1" />
+                    {activity.title}
+                  </Badge>
+                ))}
+                {park.activities.length > 3 && (
+                  <Badge 
+                    variant="secondary" 
+                    className="text-xs bg-white/20 backdrop-blur-sm text-white border-white/30"
+                  >
+                    +{park.activities.length - 3} más
+                  </Badge>
+                )}
+              </div>
+            )}
+            
+            {/* Mensaje cuando no hay actividades */}
+            {(!park.activities || park.activities.length === 0) && (
+              <p className="text-white/70 text-sm drop-shadow-lg">
+                Sin actividades programadas
+              </p>
+            )}
           </div>
         </div>
       </div>

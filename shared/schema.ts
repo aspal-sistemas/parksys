@@ -755,6 +755,7 @@ export const DEFAULT_AMENITIES = [
 export type ExtendedPark = typeof parks.$inferSelect & {
   municipality?: typeof municipalities.$inferSelect;
   amenities?: typeof amenities.$inferSelect[];
+  activities?: typeof activities.$inferSelect[];
   images?: typeof parkImages.$inferSelect[];
   primaryImage?: string | null;
   mainImageUrl?: string | null;

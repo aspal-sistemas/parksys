@@ -172,7 +172,48 @@ export async function getParksDirectly(filters?: any) {
         console.error(`Error al obtener amenidades para parque ${park.id}:`, err);
       }
 
-      // Agregar el parque con su imagen y amenidades al array
+      // Obtener actividades del parque
+      let activities = [];
+      try {
+        // Verificar si la tabla activities existe
+        const activitiesTableExists = await pool.query(`
+          SELECT EXISTS (
+            SELECT FROM information_schema.tables 
+            WHERE table_name = 'activities'
+          ) as exists
+        `);
+        
+        if (activitiesTableExists.rows[0].exists) {
+          // Consultamos las actividades relacionadas con este parque
+          const activitiesQuery = `
+            SELECT 
+              a.id, 
+              a.title, 
+              a.description, 
+              a.start_date as "startDate",
+              a.end_date as "endDate",
+              a.start_time as "startTime",
+              a.end_time as "endTime",
+              a.instructor_id as "instructorId",
+              a.capacity as "maxParticipants",
+              a.price,
+              a.category_id as "categoryId",
+              a.registration_enabled as "registrationEnabled",
+              a.category,
+              a.location
+            FROM activities a
+            WHERE a.park_id = $1 
+            ORDER BY a.start_date ASC
+          `;
+          
+          const activitiesResult = await pool.query(activitiesQuery, [park.id]);
+          activities = activitiesResult.rows || [];
+        }
+      } catch (err) {
+        console.error(`Error al obtener actividades para parque ${park.id}:`, err);
+      }
+
+      // Agregar el parque con su imagen, amenidades y actividades al array
       parksWithImages.push({
         ...park,
         createdAt: new Date(),
@@ -182,7 +223,8 @@ export async function getParksDirectly(filters?: any) {
         closingHours: null,
         mainImageUrl: primaryImage,
         primaryImage: primaryImage,  // Este campo es el que usa ParkCard
-        amenities: amenities        // Añadimos las amenidades
+        amenities: amenities,       // Añadimos las amenidades
+        activities: activities      // Añadimos las actividades
       });
     }
     
