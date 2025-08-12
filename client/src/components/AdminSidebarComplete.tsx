@@ -1290,7 +1290,6 @@ const AdminSidebarComplete: React.FC = () => {
             alt="ParkSys - Sistema de parques" 
             className="h-15 w-auto opacity-80 hover:opacity-100 transition-opacity"
           />
-          <div className="flex flex-col items-center justify-center gap-4">  
           <a 
             href="https://parquesdemexico.org/"
             target="_blank"
