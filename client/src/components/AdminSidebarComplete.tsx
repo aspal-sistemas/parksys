@@ -5,7 +5,7 @@ import UserProfileImage from '@/components/UserProfileImage';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { useTranslation } from 'react-i18next';
 import { SidebarSearch } from './SidebarSearch';
-import parksysLogo from '@assets/Recurso 5Parksys (1)_1755013567923.png';
+import parksysLogo from '@assets/Recurso 5Parksys (2)-01_1755013927372.png';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -1288,7 +1288,7 @@ const AdminSidebarComplete: React.FC = () => {
           <img 
             src={parksysLogo} 
             alt="ParkSys - Sistema de parques" 
-            className="h-18 w-auto opacity-80 hover:opacity-100 transition-opacity"
+            className="h-auto w-15 opacity-80 hover:opacity-100 transition-opacity"
           />
           <a 
             href="https://parquesdemexico.org/"
