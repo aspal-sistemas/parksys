@@ -1019,14 +1019,7 @@ function ParkLandingPage() {
               </CardContent>
             </Card>
 
-            {/* Publicidad Sidebar - Diseño Tipo Tarjeta */}
-            <div className="sticky top-4">
-              <AdSpace 
-                spaceId="2"
-                position="card"
-                pageType="parks"
-              />
-            </div>
+
 
             {/* Estadísticas de Árboles */}
             {park.treeStats && park.treeStats.total > 0 && (
@@ -1663,27 +1656,12 @@ function ParkLandingPage() {
               </CardContent>
             </Card>
 
-            {/* Nuevo espacio publicitario - Donde estaba la galería */}
-            <div className="sticky top-4">
-              <AdSpace 
-                spaceId="30"
-                position="card"
-                pageType="park-landing"
-              />
-            </div>
+
           </div>
         </div>
       </div>
 
-      {/* Banner publicitario después de Galería - Fuera del grid para ancho completo */}
-      <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] my-8">
-        <AdSpace 
-          spaceId="33" 
-          position="banner" 
-          pageType="park-landing" 
-          className="w-full"
-        />
-      </div>
+
 
       {/* Image Modal */}
       {isImageModalOpen && selectedImage && (
