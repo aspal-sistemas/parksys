@@ -608,7 +608,7 @@ function ParkLandingPage() {
 
       {/* Sección de 2 Módulos - Información | Ubicación */}
       <div className="bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 py-12">
+        <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
             {/* Información General - 2/3 */}
@@ -728,7 +728,7 @@ function ParkLandingPage() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-4">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
           {/* Content Column */}
