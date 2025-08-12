@@ -441,9 +441,11 @@ export default function Employees() {
 
         {/* Main content */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="list">Lista de Empleados</TabsTrigger>
             <TabsTrigger value="directory">Directorio</TabsTrigger>
+            <TabsTrigger value="orgchart-general">Organigrama General</TabsTrigger>
+            <TabsTrigger value="orgchart-areas">Organigrama por Áreas</TabsTrigger>
           </TabsList>
 
           <TabsContent value="list" className="space-y-4">
@@ -639,6 +641,178 @@ export default function Employees() {
                       </Card>
                     );
                   })}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="orgchart-general" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Organigrama General</CardTitle>
+                <CardDescription>
+                  Vista jerárquica de toda la organización
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  {/* Director General */}
+                  <div className="text-center">
+                    <div className="inline-block">
+                      <Card className="w-64 border-2 border-blue-200 bg-blue-50">
+                        <CardContent className="p-4">
+                          <div className="text-center">
+                            <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-800 rounded-full flex items-center justify-center text-white font-bold text-lg mx-auto mb-3">
+                              DG
+                            </div>
+                            <h3 className="font-bold text-lg text-blue-900">Dirección General</h3>
+                            <p className="text-sm text-blue-700">Nivel Ejecutivo</p>
+                            <Badge className="mt-2 bg-blue-600">
+                              {employees.filter(emp => emp.department === 'Dirección General').length} empleados
+                            </Badge>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+
+                  {/* Línea conectora */}
+                  <div className="flex justify-center">
+                    <div className="w-0.5 h-8 bg-gray-300"></div>
+                  </div>
+
+                  {/* Coordinaciones */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {departmentsList.filter(dept => dept.hierarchy === 3).map((dept) => {
+                      const deptEmployees = employees.filter(emp => emp.department === dept.name);
+                      const colors = {
+                        'Coordinación de Administración': { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-900', badge: 'bg-green-600' },
+                        'Coordinación de Recursos Humanos': { bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-900', badge: 'bg-purple-600' },
+                        'Coordinación de Mantenimiento': { bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-900', badge: 'bg-orange-600' },
+                        'Coordinación de Seguridad': { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-900', badge: 'bg-red-600' }
+                      };
+                      const color = colors[dept.name] || colors['Coordinación de Administración'];
+                      
+                      return (
+                        <Card key={dept.name} className={`border-2 ${color.border} ${color.bg}`}>
+                          <CardContent className="p-4">
+                            <div className="text-center">
+                              <div className={`w-12 h-12 bg-gradient-to-br from-gray-600 to-gray-800 rounded-full flex items-center justify-center text-white font-bold mx-auto mb-3`}>
+                                {dept.name.split(' ')[1]?.substring(0, 2) || 'CO'}
+                              </div>
+                              <h4 className={`font-semibold ${color.text}`}>{dept.name}</h4>
+                              <p className="text-sm text-gray-600">Nivel {dept.hierarchy}</p>
+                              <Badge className={`mt-2 ${color.badge}`}>
+                                {deptEmployees.length} empleados
+                              </Badge>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="orgchart-areas" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Organigrama por Áreas</CardTitle>
+                <CardDescription>
+                  Vista detallada por departamentos con empleados
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-8">
+                  {/* Dirección General */}
+                  <div className="space-y-4">
+                    <div className="text-center">
+                      <Card className="inline-block border-2 border-blue-200 bg-blue-50">
+                        <CardContent className="p-6">
+                          <div className="text-center">
+                            <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-blue-800 rounded-full flex items-center justify-center text-white font-bold text-xl mx-auto mb-4">
+                              DG
+                            </div>
+                            <h2 className="font-bold text-xl text-blue-900 mb-2">Dirección General</h2>
+                            {employees.filter(emp => emp.department === 'Dirección General').map((employee) => (
+                              <div key={employee.id} className="text-center">
+                                <p className="font-semibold text-blue-800">{employee.fullName}</p>
+                                <p className="text-sm text-blue-600">{employee.position}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+
+                  {/* Coordinaciones con empleados */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {departmentsList.filter(dept => dept.hierarchy === 3).map((dept) => {
+                      const deptEmployees = employees.filter(emp => emp.department === dept.name);
+                      const colors = {
+                        'Coordinación de Administración': { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-900', header: 'bg-green-600' },
+                        'Coordinación de Recursos Humanos': { bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-900', header: 'bg-purple-600' },
+                        'Coordinación de Mantenimiento': { bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-900', header: 'bg-orange-600' },
+                        'Coordinación de Seguridad': { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-900', header: 'bg-red-600' }
+                      };
+                      const color = colors[dept.name] || colors['Coordinación de Administración'];
+                      
+                      return (
+                        <Card key={dept.name} className={`border-2 ${color.border} ${color.bg}`}>
+                          <CardHeader className={`${color.header} text-white`}>
+                            <div className="flex items-center gap-3">
+                              <div className="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center text-white font-bold">
+                                {dept.name.split(' ')[1]?.substring(0, 2) || 'CO'}
+                              </div>
+                              <div>
+                                <CardTitle className="text-white">{dept.name}</CardTitle>
+                                <CardDescription className="text-white text-opacity-90">
+                                  {deptEmployees.length} empleados
+                                </CardDescription>
+                              </div>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="p-4">
+                            <div className="space-y-3">
+                              {deptEmployees.map((employee) => (
+                                <div key={employee.id} className="flex items-center gap-3 p-3 bg-white rounded-lg border">
+                                  <div className="w-10 h-10 bg-gradient-to-br from-gray-600 to-gray-800 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                                    {employee.fullName.split(' ').map(n => n[0]).join('').substring(0, 2)}
+                                  </div>
+                                  <div className="flex-1">
+                                    <p className="font-semibold text-gray-900">{employee.fullName}</p>
+                                    <p className="text-sm text-gray-600">{employee.position}</p>
+                                    <div className="flex items-center gap-2 mt-1">
+                                      <Badge variant={employee.status === 'active' ? 'default' : employee.status === 'vacation' ? 'secondary' : 'destructive'} className="text-xs">
+                                        {employee.status === 'active' ? 'Activo' : employee.status === 'vacation' ? 'Vacaciones' : 'Inactivo'}
+                                      </Badge>
+                                    </div>
+                                  </div>
+                                  <Button 
+                                    size="sm" 
+                                    variant="ghost" 
+                                    onClick={() => handleViewEmployee(employee)}
+                                    className="h-8 w-8 p-0"
+                                  >
+                                    <Eye className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              ))}
+                              
+                              {deptEmployees.length === 0 && (
+                                <div className="text-center py-6 text-gray-500">
+                                  No hay empleados asignados a este departamento
+                                </div>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
                 </div>
               </CardContent>
             </Card>
