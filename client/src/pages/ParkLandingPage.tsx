@@ -658,6 +658,53 @@ function ParkLandingPage() {
 
 
 
+      {/* Amenidades del Parque - Sección completa */}
+      <div className="bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-xl">
+                <Trees className="h-6 w-6 text-green-600" />
+                Amenidades del Parque
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {park.amenities && park.amenities.length > 0 ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                  {park.amenities.map((amenity) => (
+                    <div key={amenity.id} className="flex flex-col items-center p-4 bg-white rounded-lg border text-center hover:shadow-md transition-all duration-300">
+                      <div className="w-16 h-16 flex items-center justify-center mb-3">
+                        {amenity.iconType === 'custom' && amenity.customIconUrl ? (
+                          <img 
+                            src={amenity.customIconUrl} 
+                            alt={amenity.name}
+                            className="w-16 h-16 object-contain"
+                            onError={(e) => {
+                              console.error('Error cargando icono:', amenity.customIconUrl);
+                              e.currentTarget.style.display = 'none';
+                            }}
+                          />
+                        ) : (
+                          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                            <Trees className="h-8 w-8 text-green-600" />
+                          </div>
+                        )}
+                      </div>
+                      <span className="text-sm font-medium text-center">{amenity.name}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Trees className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-500">No hay amenidades registradas para este parque.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
       {/* Sección de Ubicación con Información de Contacto */}
       <div className="bg-white">
         <div className="max-w-7xl mx-auto px-4 py-8">
