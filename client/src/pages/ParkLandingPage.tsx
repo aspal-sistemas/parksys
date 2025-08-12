@@ -670,10 +670,10 @@ function ParkLandingPage() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                {/* Información de Contacto - 1/4 */}
-                <div className="lg:col-span-1 space-y-6">
+                {/* Mapa y Información de Ubicación - 3/4 */}
+                <div className="lg:col-span-3 space-y-6">
                   {/* Información de Ubicación */}
-                  <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
                       <p className="text-sm text-gray-500">Dirección</p>
                       <p className="font-medium">{park.address || 'No especificada'}</p>
@@ -684,9 +684,50 @@ function ParkLandingPage() {
                     </div>
                   </div>
 
-                  {/* Información de Contacto */}
+                  {/* Mapa */}
+                  <div className="rounded-lg overflow-hidden h-64 bg-gray-200 border">
+                    <iframe
+                      title={`Mapa de ${park.name}`}
+                      className="w-full h-full"
+                      src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''}&q=${park.latitude},${park.longitude}`}
+                      allowFullScreen
+                    ></iframe>
+                  </div>
+
+                  {/* Botones de Acción */}
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1"
+                      onClick={() => {
+                        const coords = `${park.latitude},${park.longitude}`;
+                        const destination = encodeURIComponent(`${park.name}, ${park.address}`);
+                        window.open(`https://www.google.com/maps/dir/?api=1&destination=${destination}&destination_place_id=${coords}`, '_blank');
+                      }}
+                    >
+                      <MapPin className="h-4 w-4 mr-2" />
+                      Cómo llegar
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1"
+                      onClick={() => {
+                        const coords = `${park.latitude},${park.longitude}`;
+                        window.open(`https://www.google.com/maps/@${coords},17z`, '_blank');
+                      }}
+                    >
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Ver en Maps
+                    </Button>
+                  </div>
+                </div>
+                
+                {/* Información de Contacto - 1/4 */}
+                <div className="lg:col-span-1">
                   {(park.administrator || park.contactPhone || park.contactEmail) && (
-                    <div className="border-t border-gray-200 pt-4">
+                    <div className="bg-gray-50 rounded-lg p-4">
                       <h4 className="font-semibold mb-3 text-gray-900">Información de Contacto</h4>
                       <div className="space-y-3">
                         {park.administrator && (
@@ -721,47 +762,6 @@ function ParkLandingPage() {
                       </div>
                     </div>
                   )}
-                  
-                  {/* Botones de Acción */}
-                  <div className="flex flex-col gap-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="w-full"
-                      onClick={() => {
-                        const coords = `${park.latitude},${park.longitude}`;
-                        const destination = encodeURIComponent(`${park.name}, ${park.address}`);
-                        window.open(`https://www.google.com/maps/dir/?api=1&destination=${destination}&destination_place_id=${coords}`, '_blank');
-                      }}
-                    >
-                      <MapPin className="h-4 w-4 mr-2" />
-                      Cómo llegar
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="w-full"
-                      onClick={() => {
-                        const coords = `${park.latitude},${park.longitude}`;
-                        window.open(`https://www.google.com/maps/@${coords},17z`, '_blank');
-                      }}
-                    >
-                      <ExternalLink className="h-4 w-4 mr-2" />
-                      Ver en Maps
-                    </Button>
-                  </div>
-                </div>
-                
-                {/* Mapa - 3/4 */}
-                <div className="lg:col-span-3">
-                  <div className="rounded-lg overflow-hidden h-64 bg-gray-200 border">
-                    <iframe
-                      title={`Mapa de ${park.name}`}
-                      className="w-full h-full"
-                      src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''}&q=${park.latitude},${park.longitude}`}
-                      allowFullScreen
-                    ></iframe>
-                  </div>
                 </div>
               </div>
             </CardContent>
@@ -1079,47 +1079,7 @@ function ParkLandingPage() {
           <div className="space-y-6">
             
             {/* Contacto */}
-            {(park.administrator || park.contactPhone || park.contactEmail) && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <User className="h-5 w-5 text-blue-600" />
-                    Información de Contacto
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {park.administrator && (
-                    <div className="flex items-center">
-                      <User className="h-4 w-4 mr-3 text-gray-500" />
-                      <div>
-                        <p className="text-sm text-gray-500">Administrador</p>
-                        <p className="font-medium">{park.administrator}</p>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {park.contactPhone && (
-                    <div className="flex items-center">
-                      <Phone className="h-4 w-4 mr-3 text-gray-500" />
-                      <div>
-                        <p className="text-sm text-gray-500">Teléfono</p>
-                        <p className="font-medium">{park.contactPhone}</p>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {park.contactEmail && (
-                    <div className="flex items-center">
-                      <Mail className="h-4 w-4 mr-3 text-gray-500" />
-                      <div>
-                        <p className="text-sm text-gray-500">Email</p>
-                        <p className="font-medium">{park.contactEmail}</p>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
+
 
 
 
