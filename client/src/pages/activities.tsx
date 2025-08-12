@@ -701,16 +701,6 @@ function ActivitiesPage() {
         </div>
       </section>
 
-      {/* Ad Space - ID 6 */}
-      <section className="max-w-7xl mx-auto px-4 py-6">
-        <AdSpace 
-          spaceId="6" 
-          position="banner" 
-          pageType="activities" 
-          className=""
-        />
-      </section>
-
       {/* Conoce nuestros instructores */}
       <section className="max-w-7xl mx-auto px-4 py-8">
         <div className="rounded-2xl p-8" style={{backgroundColor: '#51a19f'}}>
@@ -738,6 +728,16 @@ function ActivitiesPage() {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* Ad Space - ID 6 */}
+      <section className="max-w-7xl mx-auto px-4 py-6">
+        <AdSpace 
+          spaceId="6" 
+          position="banner" 
+          pageType="activities" 
+          className=""
+        />
       </section>
 
       {/* Sección de Contacto */}
