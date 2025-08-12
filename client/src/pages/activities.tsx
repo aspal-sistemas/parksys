@@ -22,7 +22,9 @@ import {
   Phone,
   Mail,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Grid3X3,
+  List
 } from 'lucide-react';
 const heroImage = "/images/recorrido-nocturno-colomos-1024x683_1754846133930.jpg";
 import { Badge } from '@/components/ui/badge';
@@ -486,6 +488,8 @@ function ActivitiesPage() {
   const [filterCategory, setFilterCategory] = useState('all');
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [showAllActivities, setShowAllActivities] = useState(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
+  const [displayedActivities, setDisplayedActivities] = useState(6); // Para paginación de grid
 
   // Obtener todas las actividades con imágenes
   const { data: activitiesData = [], isLoading } = useQuery<ActivityData[]>({
@@ -515,6 +519,12 @@ function ActivitiesPage() {
       return true;
     });
   }, [activitiesData, searchQuery, filterPark, filterCategory]);
+
+  // Effect para resetear paginación cuando los filtros cambien
+  React.useEffect(() => {
+    setDisplayedActivities(6);
+    setShowAllActivities(false);
+  }, [searchQuery, filterPark, filterCategory]);
 
   // Determinar si hay filtros activos
   const hasActiveFilters = searchQuery || filterPark !== 'all' || filterCategory !== 'all';
@@ -598,6 +608,32 @@ function ActivitiesPage() {
               </div>
               
               <div className="flex items-center gap-3">
+                {/* Botones de vista */}
+                <div className="flex items-center gap-1 bg-white/90 rounded-lg p-1 border">
+                  <Button
+                    variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => {
+                      setViewMode('grid');
+                      setDisplayedActivities(6); // Reset pagination
+                    }}
+                    className={viewMode === 'grid' ? 'bg-green-600 text-white' : 'text-gray-600 hover:bg-gray-100'}
+                  >
+                    <Grid3X3 className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === 'list' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => {
+                      setViewMode('list');
+                      setShowAllActivities(false); // Reset list view
+                    }}
+                    className={viewMode === 'list' ? 'bg-green-600 text-white' : 'text-gray-600 hover:bg-gray-100'}
+                  >
+                    <List className="h-4 w-4" />
+                  </Button>
+                </div>
+
                 <Select value={filterPark} onValueChange={setFilterPark}>
                   <SelectTrigger className="w-48 bg-white/90 text-gray-800">
                     <Filter className="h-4 w-4 mr-2 text-green-600" />
@@ -626,8 +662,6 @@ function ActivitiesPage() {
                     ))}
                   </SelectContent>
                 </Select>
-
-
               </div>
             </div>
           </div>
@@ -637,7 +671,7 @@ function ActivitiesPage() {
       {/* Actividades */}
       <section className="max-w-7xl mx-auto px-4 py-8">
         <div>
-          {currentActivities.length === 0 ? (
+{currentActivities.length === 0 ? (
             <div className="text-center py-16">
               <Activity className="h-16 w-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-700 mb-2">No se encontraron actividades</h3>
@@ -653,15 +687,29 @@ function ActivitiesPage() {
                 Limpiar filtros
               </Button>
             </div>
-          ) : hasActiveFilters ? (
-            /* Cuadrícula completa cuando hay filtros activos */
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {currentActivities.map((activity) => (
-                <ActivityCard key={activity.id} activity={activity} viewMode="grid" />
-              ))}
+          ) : viewMode === 'grid' ? (
+            /* Vista en Grid (Cards) */
+            <div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {currentActivities.slice(0, displayedActivities).map((activity) => (
+                  <ActivityCard key={activity.id} activity={activity} viewMode="grid" />
+                ))}
+              </div>
+              
+              {/* Botón Ver más para grid */}
+              {displayedActivities < currentActivities.length && (
+                <div className="text-center pt-8">
+                  <Button 
+                    onClick={() => setDisplayedActivities(prev => prev + 9)}
+                    className="bg-green-600 hover:bg-green-700 text-white px-8 py-3"
+                  >
+                    Ver más ({Math.min(9, currentActivities.length - displayedActivities)} actividades más)
+                  </Button>
+                </div>
+              )}
             </div>
           ) : (
-            /* Tarjetas horizontales - mostrar 5 inicialmente */
+            /* Vista en Lista (tarjetas horizontales) */
             <div className="space-y-4">
               {(showAllActivities ? currentActivities : currentActivities.slice(0, 5)).map((activity, index) => (
                 <HorizontalActivityCard 
@@ -672,7 +720,7 @@ function ActivitiesPage() {
                 />
               ))}
               
-              {/* Botón Ver más */}
+              {/* Botón Ver más para lista */}
               {!showAllActivities && currentActivities.length > 5 && (
                 <div className="text-center pt-6">
                   <Button 
@@ -684,7 +732,7 @@ function ActivitiesPage() {
                 </div>
               )}
               
-              {/* Botón Ver menos */}
+              {/* Botón Ver menos para lista */}
               {showAllActivities && (
                 <div className="text-center pt-6">
                   <Button 
