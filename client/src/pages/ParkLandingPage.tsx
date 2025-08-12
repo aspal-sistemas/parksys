@@ -496,11 +496,16 @@ function ParkLandingPage() {
                 )}
               </div>
               
-              {/* Location */}
-              <div className="flex items-center gap-2 text-white/90 text-lg">
-                <MapPin className="h-5 w-5" />
-                <span>{park.municipality?.name || 'Guadalajara'}, {park.municipality?.state || 'Jalisco'}</span>
-              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Location - Above Statistics */}
+        <div className="absolute bottom-20 left-0 right-0 z-10">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex items-center justify-center gap-2 text-white/90 text-lg mb-4">
+              <MapPin className="h-5 w-5" />
+              <span>{park.municipality?.name || 'Guadalajara'}, {park.municipality?.state || 'Jalisco'}</span>
             </div>
           </div>
         </div>
