@@ -1756,10 +1756,10 @@ function ParkLandingPage() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-2">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 gap-8">
           
-          {/* Content Column */}
-          <div className="lg:col-span-2 space-y-8">{/* Continúa con otras secciones */}
+          {/* Content Column - Now Full Width */}
+          <div className="space-y-8">{/* Continúa con otras secciones */}
 
 
 
@@ -1773,548 +1773,13 @@ function ParkLandingPage() {
 
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            
-            {/* Contacto */}
-
-
-
-
-            {/* Estadísticas de Árboles */}
-            {park.treeStats && park.treeStats.total > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Trees className="h-5 w-5 text-green-600" />
-                    Arbolado Urbano
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center mb-4">
-                    <div className="text-3xl font-bold text-green-600">{park.treeStats.total}</div>
-                    <p className="text-sm text-gray-600">Árboles registrados</p>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Buen estado</span>
-                      <span className="font-medium text-green-600">{park.treeStats.good}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span>Estado regular</span>
-                      <span className="font-medium text-yellow-600">{park.treeStats.regular}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span>Mal estado</span>
-                      <span className="font-medium text-red-600">{park.treeStats.bad}</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Acciones Rápidas */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Acciones</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Dialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button className="w-full" variant="default">
-                      <Share2 className="h-4 w-4 mr-2" />
-                      Compartir este parque
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Compartir {park?.name}</DialogTitle>
-                      <DialogDescription>
-                        Comparte este parque con tus amigos y familiares
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <p className="text-sm text-gray-600">
-                        URL del parque: {window.location.href}
-                      </p>
-                      <Button onClick={handleSharePark} className="w-full">
-                        {navigator.share ? 'Compartir' : 'Copiar enlace'}
-                      </Button>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-
-                <Dialog open={isReportDialogOpen} onOpenChange={setIsReportDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" className="w-full">
-                      <AlertCircle className="h-4 w-4 mr-2" />
-                      Reportar un problema
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-md">
-                    <DialogHeader>
-                      <DialogTitle>Reportar un problema</DialogTitle>
-                      <DialogDescription>
-                        Cuéntanos qué problema has encontrado en {park?.name}
-                      </DialogDescription>
-                    </DialogHeader>
-                    <form onSubmit={handleReportSubmit} className="space-y-4">
-                      <div>
-                        <Label htmlFor="report-name">Nombre completo</Label>
-                        <Input
-                          id="report-name"
-                          value={reportForm.name}
-                          onChange={(e) => setReportForm({...reportForm, name: e.target.value})}
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="report-email">Correo electrónico</Label>
-                        <Input
-                          id="report-email"
-                          type="email"
-                          value={reportForm.email}
-                          onChange={(e) => setReportForm({...reportForm, email: e.target.value})}
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="report-phone">Teléfono (opcional)</Label>
-                        <Input
-                          id="report-phone"
-                          value={reportForm.phone}
-                          onChange={(e) => setReportForm({...reportForm, phone: e.target.value})}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="issue-type">Tipo de problema</Label>
-                        <Select value={reportForm.issueType} onValueChange={(value) => setReportForm({...reportForm, issueType: value})}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecciona el tipo de problema" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="infraestructura">Infraestructura dañada</SelectItem>
-                            <SelectItem value="limpieza">Problema de limpieza</SelectItem>
-                            <SelectItem value="seguridad">Seguridad</SelectItem>
-                            <SelectItem value="iluminacion">Iluminación</SelectItem>
-                            <SelectItem value="vandalismo">Vandalismo</SelectItem>
-                            <SelectItem value="otro">Otro</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label htmlFor="urgency">Urgencia</Label>
-                        <Select value={reportForm.urgency} onValueChange={(value) => setReportForm({...reportForm, urgency: value})}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="baja">Baja</SelectItem>
-                            <SelectItem value="media">Media</SelectItem>
-                            <SelectItem value="alta">Alta</SelectItem>
-                            <SelectItem value="urgente">Urgente</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label htmlFor="description">Descripción del problema</Label>
-                        <Textarea
-                          id="description"
-                          value={reportForm.description}
-                          onChange={(e) => setReportForm({...reportForm, description: e.target.value})}
-                          placeholder="Describe detalladamente el problema..."
-                          required
-                        />
-                      </div>
-                      <div className="flex gap-2">
-                        <Button type="button" variant="outline" onClick={() => setIsReportDialogOpen(false)} className="flex-1">
-                          Cancelar
-                        </Button>
-                        <Button type="submit" className="flex-1">
-                          Enviar reporte
-                        </Button>
-                      </div>
-                    </form>
-                  </DialogContent>
-                </Dialog>
-
-                <Dialog open={isSuggestionDialogOpen} onOpenChange={setIsSuggestionDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" className="w-full">
-                      <MessageSquare className="h-4 w-4 mr-2" />
-                      Sugerir mejoras
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-md">
-                    <DialogHeader>
-                      <DialogTitle>Sugerir mejoras</DialogTitle>
-                      <DialogDescription>
-                        Comparte tus ideas para mejorar {park?.name}
-                      </DialogDescription>
-                    </DialogHeader>
-                    <form onSubmit={handleSuggestionSubmit} className="space-y-4">
-                      <div>
-                        <Label htmlFor="suggestion-name">Nombre completo</Label>
-                        <Input
-                          id="suggestion-name"
-                          value={suggestionForm.name}
-                          onChange={(e) => setSuggestionForm({...suggestionForm, name: e.target.value})}
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="suggestion-email">Correo electrónico</Label>
-                        <Input
-                          id="suggestion-email"
-                          type="email"
-                          value={suggestionForm.email}
-                          onChange={(e) => setSuggestionForm({...suggestionForm, email: e.target.value})}
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="suggestion-category">Categoría</Label>
-                        <Select value={suggestionForm.category} onValueChange={(value) => setSuggestionForm({...suggestionForm, category: value})}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecciona una categoría" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="amenidades">Nuevas amenidades</SelectItem>
-                            <SelectItem value="actividades">Actividades y eventos</SelectItem>
-                            <SelectItem value="accesibilidad">Accesibilidad</SelectItem>
-                            <SelectItem value="paisajismo">Paisajismo y jardinería</SelectItem>
-                            <SelectItem value="deportes">Instalaciones deportivas</SelectItem>
-                            <SelectItem value="general">General</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label htmlFor="suggestion-text">Tu sugerencia</Label>
-                        <Textarea
-                          id="suggestion-text"
-                          value={suggestionForm.suggestion}
-                          onChange={(e) => setSuggestionForm({...suggestionForm, suggestion: e.target.value})}
-                          placeholder="Describe tu idea para mejorar este parque..."
-                          required
-                        />
-                      </div>
-                      <div className="flex gap-2">
-                        <Button type="button" variant="outline" onClick={() => setIsSuggestionDialogOpen(false)} className="flex-1">
-                          Cancelar
-                        </Button>
-                        <Button type="submit" className="flex-1">
-                          Enviar sugerencia
-                        </Button>
-                      </div>
-                    </form>
-                  </DialogContent>
-                </Dialog>
-
-                <Dialog open={isEventDialogOpen} onOpenChange={setIsEventDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" className="w-full">
-                      <Calendar className="h-4 w-4 mr-2" />
-                      Proponer evento
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
-                    <DialogHeader>
-                      <DialogTitle>Proponer un evento</DialogTitle>
-                      <DialogDescription>
-                        Propón un evento para realizarse en {park?.name}
-                      </DialogDescription>
-                    </DialogHeader>
-                    <form onSubmit={handleEventSubmit} className="space-y-4">
-                      <div>
-                        <Label htmlFor="event-name">Nombre completo</Label>
-                        <Input
-                          id="event-name"
-                          value={eventForm.name}
-                          onChange={(e) => setEventForm({...eventForm, name: e.target.value})}
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="event-email">Correo electrónico</Label>
-                        <Input
-                          id="event-email"
-                          type="email"
-                          value={eventForm.email}
-                          onChange={(e) => setEventForm({...eventForm, email: e.target.value})}
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="event-phone">Teléfono</Label>
-                        <Input
-                          id="event-phone"
-                          value={eventForm.phone}
-                          onChange={(e) => setEventForm({...eventForm, phone: e.target.value})}
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="event-event-name">Nombre del evento</Label>
-                        <Input
-                          id="event-event-name"
-                          value={eventForm.eventName}
-                          onChange={(e) => setEventForm({...eventForm, eventName: e.target.value})}
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="event-type">Tipo de evento</Label>
-                        <Select value={eventForm.eventType} onValueChange={(value) => setEventForm({...eventForm, eventType: value})}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecciona el tipo de evento" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="cultural">Cultural</SelectItem>
-                            <SelectItem value="deportivo">Deportivo</SelectItem>
-                            <SelectItem value="social">Social</SelectItem>
-                            <SelectItem value="educativo">Educativo</SelectItem>
-                            <SelectItem value="benefico">Benéfico</SelectItem>
-                            <SelectItem value="empresarial">Empresarial</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label htmlFor="expected-attendees">Asistentes esperados</Label>
-                        <Input
-                          id="expected-attendees"
-                          type="number"
-                          value={eventForm.expectedAttendees}
-                          onChange={(e) => setEventForm({...eventForm, expectedAttendees: e.target.value})}
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="event-date">Fecha propuesta</Label>
-                        <Input
-                          id="event-date"
-                          type="date"
-                          value={eventForm.eventDate}
-                          onChange={(e) => setEventForm({...eventForm, eventDate: e.target.value})}
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="event-description">Descripción del evento</Label>
-                        <Textarea
-                          id="event-description"
-                          value={eventForm.description}
-                          onChange={(e) => setEventForm({...eventForm, description: e.target.value})}
-                          placeholder="Describe tu evento..."
-                          required
-                        />
-                      </div>
-                      <div className="flex gap-2">
-                        <Button type="button" variant="outline" onClick={() => setIsEventDialogOpen(false)} className="flex-1">
-                          Cancelar
-                        </Button>
-                        <Button type="submit" className="flex-1">
-                          Enviar propuesta
-                        </Button>
-                      </div>
-                    </form>
-                  </DialogContent>
-                </Dialog>
-              </CardContent>
-            </Card>
-
-            {/* Voluntarios Activos */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Heart className="h-5 w-5 text-pink-600" />
-                  Voluntarios Activos
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {park.volunteers && park.volunteers.length > 0 ? (
-                  <div className="space-y-3">
-                    {park.volunteers.slice(0, 3).map((volunteer) => (
-                      <div key={volunteer.id} className="flex items-start gap-3 p-4 bg-white rounded-lg border border-purple-200">
-                        {volunteer.profileImageUrl ? (
-                          <img 
-                            src={volunteer.profileImageUrl} 
-                            alt={volunteer.fullName}
-                            className="w-12 h-12 rounded-full object-cover flex-shrink-0"
-                          />
-                        ) : (
-                          <div className="w-12 h-12 bg-purple-200 rounded-full flex items-center justify-center flex-shrink-0">
-                            <Users className="h-6 w-6 text-purple-600" />
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1 min-w-0">
-                              <h4 className="font-semibold text-purple-900 text-sm line-clamp-2">{volunteer.fullName}</h4>
-                              {volunteer.specialties && (
-                                <div className="mt-2">
-                                  <div className="flex flex-wrap gap-1">
-                                    {(() => {
-                                      // Clean PostgreSQL array format
-                                      let specialtiesList: string[] = [];
-                                      const specialties = volunteer.specialties;
-                                      
-                                      if (specialties.startsWith('{') && specialties.endsWith('}')) {
-                                        // PostgreSQL array format
-                                        const arrayContent = specialties.slice(1, -1);
-                                        specialtiesList = arrayContent
-                                          .split(',')
-                                          .map(s => {
-                                            let cleaned = s.trim();
-                                            // Remove quotes and brackets
-                                            cleaned = cleaned.replace(/^"+/, '').replace(/"+$/, '');
-                                            cleaned = cleaned.replace(/^'+/, '').replace(/'+$/, '');
-                                            cleaned = cleaned.replace(/^\[+/, '').replace(/\]+$/, '');
-                                            return cleaned.trim();
-                                          })
-                                          .filter(s => s.length > 0);
-                                      } else {
-                                        // Simple comma-separated format
-                                        specialtiesList = specialties.split(',').map(s => s.trim());
-                                      }
-                                      
-                                      return specialtiesList.slice(0, 2).map((specialty: string, index: number) => (
-                                        <Badge key={index} variant="outline" className="text-xs border-purple-300 text-purple-700">
-                                          {specialty}
-                                        </Badge>
-                                      ));
-                                    })()}
-                                  </div>
-                                </div>
-                              )}
-                              {volunteer.experienceYears && (
-                                <p className="text-purple-600 text-xs mt-1">
-                                  {volunteer.experienceYears} años de experiencia
-                                </p>
-                              )}
-                              {volunteer.averageRating && (
-                                <div className="flex items-center gap-1 mt-1">
-                                  <div className="flex">
-                                    {[1, 2, 3, 4, 5].map((star) => (
-                                      <span 
-                                        key={star} 
-                                        className={`text-xs ${star <= Math.floor(volunteer.averageRating) ? 'text-yellow-400' : 'text-gray-300'}`}
-                                      >
-                                        ★
-                                      </span>
-                                    ))}
-                                  </div>
-                                  <span className="text-xs text-purple-600">
-                                    {volunteer.averageRating}/5
-                                  </span>
-                                </div>
-                              )}
-                              
-                              {/* Botones de acciones */}
-                              <div className="mt-3 space-y-2">
-                                <div className="flex gap-2">
-                                  <Link href={`/volunteer/${volunteer.id}`}>
-                                    <Button 
-                                      size="sm" 
-                                      variant="outline"
-                                      className="text-xs border-purple-300 text-purple-700 hover:bg-purple-50 w-full"
-                                    >
-                                      <User className="h-3 w-3 mr-1" />
-                                      Ver perfil
-                                    </Button>
-                                  </Link>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                    
-                    {/* Enlace a página de instructores */}
-                    <div className="mt-6 text-center">
-                      <Link 
-                        href="/instructors"
-                        className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#00a587] to-[#067f5f] text-white font-medium rounded-lg hover:from-[#067f5f] hover:to-[#00a587] transition-all duration-300 shadow-md hover:shadow-lg"
-                      >
-                        <Users className="mr-2 h-5 w-5" />
-                        Conoce a nuestro equipo
-                      </Link>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center py-6">
-                    <Users className="h-8 w-8 text-purple-400 mx-auto mb-2" />
-                    <p className="text-purple-600 text-sm">No hay instructores asignados a este parque</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Voluntarios Activos */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Heart className="h-5 w-5 text-green-600" />
-                  Voluntarios Activos
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {park.volunteers && park.volunteers.length > 0 ? (
-                  <div className="space-y-3">
-                    {park.volunteers.slice(0, 3).map((volunteer) => (
-                      <div key={volunteer.id} className="flex items-start gap-3 p-3 bg-green-50 rounded-lg border">
-                        {volunteer.profileImageUrl ? (
-                          <img 
-                            src={volunteer.profileImageUrl} 
-                            alt={volunteer.fullName}
-                            className="w-10 h-10 rounded-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-10 h-10 bg-green-200 rounded-full flex items-center justify-center">
-                            <Heart className="h-5 w-5 text-green-600" />
-                          </div>
-                        )}
-                        <div className="flex-1">
-                          <h4 className="font-medium text-green-900 text-sm">{volunteer.fullName}</h4>
-                          {volunteer.skills && (
-                            <p className="text-green-700 text-xs mt-1">{volunteer.skills}</p>
-                          )}
-                          {volunteer.interestAreas && (
-                            <p className="text-green-600 text-xs mt-1">{volunteer.interestAreas}</p>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                    
-                    <div className="text-center pt-4 border-t">
-                      <Link href="/volunteers">
-                        <Button variant="outline" className="border-green-300 text-green-700 hover:bg-green-50">
-                          <Heart className="h-4 w-4 mr-2" />
-                          Ver todos los voluntarios
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center py-6">
-                    <Heart className="h-8 w-8 text-green-400 mx-auto mb-2" />
-                    <p className="text-green-600 text-sm mb-1">¡Únete como voluntario!</p>
-                    <p className="text-green-500 text-xs">Ayuda a cuidar este espacio verde</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
 
 
 
 
 
-
-          </div>
         </div>
       </div>
-
-
 
       {/* Image Modal */}
       {isImageModalOpen && selectedImage && (
@@ -2369,227 +1834,74 @@ function ParkLandingPage() {
             
             {/* Species Technical Information Panel */}
             {selectedSpeciesData && (
-              <div className="w-80 bg-white/95 backdrop-blur-sm p-6 overflow-y-auto max-h-full">
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-xl font-bold text-green-800 mb-2">
-                      {selectedSpeciesData.commonName}
-                    </h3>
-                    <p className="text-lg text-green-600 italic">
-                      {selectedSpeciesData.scientificName}
-                    </p>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <div className="flex flex-wrap gap-2">
-                      <Badge variant="outline" className="border-green-300 text-green-700">
-                        {selectedSpeciesData.family}
-                      </Badge>
-                      <Badge 
-                        variant={selectedSpeciesData.origin === 'Nativo' ? 'default' : 'secondary'}
-                      >
-                        {selectedSpeciesData.origin}
-                      </Badge>
-                      {selectedSpeciesData.isEndangered && (
-                        <Badge variant="destructive">
-                          Amenazada
-                        </Badge>
-                      )}
-                    </div>
-                    
-                    {selectedSpeciesData.status && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">Estado:</span>
-                        <Badge 
-                          className={
-                            selectedSpeciesData.status === 'establecido' ? 'bg-green-100 text-green-800' :
-                            selectedSpeciesData.status === 'en_desarrollo' ? 'bg-blue-100 text-blue-800' :
-                            'bg-yellow-100 text-yellow-800'
-                          }
-                        >
-                          {selectedSpeciesData.status === 'establecido' ? 'Establecido' :
-                           selectedSpeciesData.status === 'en_desarrollo' ? 'En Desarrollo' :
-                           'Planificado'}
-                        </Badge>
-                      </div>
-                    )}
-                    
-                    {(selectedSpeciesData.currentQuantity > 0 || selectedSpeciesData.recommendedQuantity > 0) && (
-                      <div className="space-y-2">
-                        {selectedSpeciesData.currentQuantity > 0 && (
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600">Plantados:</span>
-                            <span className="font-medium text-green-700">{selectedSpeciesData.currentQuantity}</span>
-                          </div>
-                        )}
-                        {selectedSpeciesData.recommendedQuantity > 0 && (
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600">Meta:</span>
-                            <span className="font-medium text-blue-700">{selectedSpeciesData.recommendedQuantity}</span>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                    
-                    {selectedSpeciesData.plantingZone && (
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">Zona de plantación:</span>
-                        <span className="font-medium">{selectedSpeciesData.plantingZone}</span>
-                      </div>
-                    )}
-                    
-                    {selectedSpeciesData.photoCaption && (
-                      <div className="mt-4 p-3 bg-green-50 rounded-lg">
-                        <p className="text-sm text-green-800">{selectedSpeciesData.photoCaption}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            {/* Image counter */}
-            {allImages.length > 1 && !selectedSpeciesData && (
-              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white bg-black/60 px-3 py-1 rounded-full text-sm">
-                {allImages.findIndex(img => img.imageUrl === selectedImage) + 1} de {allImages.length}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Modal de Actividad Expandida */}
-      {isActivityModalOpen && selectedActivityData && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setIsActivityModalOpen(false)}>
-          <div className="relative max-w-5xl max-h-[90vh] w-full mx-4 bg-white rounded-lg overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="flex h-full">
-              {/* Imagen principal */}
-              <div className="flex-1 relative">
-                {selectedActivityData.imageUrl ? (
-                  <img 
-                    src={selectedActivityData.imageUrl}
-                    alt={selectedActivityData.title}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center">
-                    <Calendar className="h-32 w-32 text-orange-600 opacity-70" />
-                  </div>
-                )}
+              <div className="w-80 bg-white p-6 ml-4 overflow-y-auto max-h-full rounded-lg shadow-xl">
+                <h3 className="text-lg font-semibold text-green-800 mb-4">{selectedSpeciesData.commonName}</h3>
+                <p className="text-sm text-gray-600 italic mb-3">{selectedSpeciesData.scientificName}</p>
                 
-                {/* Botón cerrar */}
-                <button
-                  onClick={() => setIsActivityModalOpen(false)}
-                  className="absolute top-4 right-4 bg-black/60 text-white rounded-full p-2 hover:bg-black/80 transition-all"
-                >
-                  ✕
-                </button>
-              </div>
-              
-              {/* Panel de información */}
-              <div className="w-80 bg-white p-6 overflow-y-auto">
-                <div className="space-y-4">
+                <div className="space-y-3 text-sm">
                   <div>
-                    <h2 className="text-xl font-bold text-orange-800 mb-2">{selectedActivityData.title}</h2>
-                    {selectedActivityData.category && (
-                      <Badge className="bg-orange-100 text-orange-800 border-orange-300">
-                        {selectedActivityData.category}
-                      </Badge>
-                    )}
+                    <span className="font-medium text-gray-700">Familia:</span>
+                    <span className="ml-2 text-gray-600">{selectedSpeciesData.family}</span>
                   </div>
-                  
-                  {selectedActivityData.description && (
-                    <div>
-                      <h3 className="font-medium text-gray-900 mb-1">Descripción</h3>
-                      <p className="text-sm text-gray-700">{selectedActivityData.description}</p>
-                    </div>
-                  )}
-                  
-                  <div className="space-y-3">
-                    {selectedActivityData.startDate && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">Fecha:</span>
-                        <span className="font-medium text-orange-700">{formatDate(selectedActivityData.startDate)}</span>
-                      </div>
-                    )}
-                    
-                    {selectedActivityData.startTime && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">Hora:</span>
-                        <span className="font-medium">{selectedActivityData.startTime}</span>
-                      </div>
-                    )}
-                    
-                    {selectedActivityData.location && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">Ubicación:</span>
-                        <span className="font-medium">{selectedActivityData.location}</span>
-                      </div>
-                    )}
-                    
-                    {selectedActivityData.capacity && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">Capacidad:</span>
-                        <span className="font-medium">{selectedActivityData.capacity} personas</span>
-                      </div>
-                    )}
-                    
-                    {selectedActivityData.duration && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">Duración:</span>
-                        <span className="font-medium">{selectedActivityData.duration} minutos</span>
-                      </div>
-                    )}
-                    
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Precio:</span>
-                      {selectedActivityData.price && Number(selectedActivityData.price) > 0 ? (
-                        <Badge variant="outline" className="text-yellow-700 border-yellow-300">
-                          ${Number(selectedActivityData.price).toFixed(2)} MXN
-                        </Badge>
-                      ) : (
-                        <Badge className="bg-green-100 text-green-700 border-green-300">
-                          Gratuita
-                        </Badge>
-                      )}
-                    </div>
+                  <div>
+                    <span className="font-medium text-gray-700">Tipo:</span>
+                    <span className="ml-2 text-gray-600">{selectedSpeciesData.type}</span>
                   </div>
-                  
-                  {selectedActivityData.requirements && (
-                    <div>
-                      <h3 className="font-medium text-gray-900 mb-1">Requisitos</h3>
-                      <p className="text-sm text-gray-700">{selectedActivityData.requirements}</p>
-                    </div>
-                  )}
-                  
-                  {selectedActivityData.materials && (
-                    <div>
-                      <h3 className="font-medium text-gray-900 mb-1">Materiales incluidos</h3>
-                      <p className="text-sm text-gray-700">{selectedActivityData.materials}</p>
-                    </div>
-                  )}
-                  
-                  {selectedActivityData.instructorName && (
-                    <div>
-                      <h3 className="font-medium text-gray-900 mb-1">Instructor</h3>
-                      <p className="text-sm text-gray-700">{selectedActivityData.instructorName}</p>
-                    </div>
-                  )}
-                  
-                  <div className="pt-4 border-t">
-                    <Button className="w-full bg-orange-600 hover:bg-orange-700 text-white">
-                      <Calendar className="h-4 w-4 mr-2" />
-                      Inscribirse a la actividad
-                    </Button>
+                  <div>
+                    <span className="font-medium text-gray-700">Altura máxima:</span>
+                    <span className="ml-2 text-gray-600">{selectedSpeciesData.maxHeight}m</span>
                   </div>
+                  <div>
+                    <span className="font-medium text-gray-700">Diámetro de copa:</span>
+                    <span className="ml-2 text-gray-600">{selectedSpeciesData.crownDiameter}m</span>
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-700">Floración:</span>
+                    <span className="ml-2 text-gray-600">{selectedSpeciesData.floweringSeason}</span>
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-700">Fructificación:</span>
+                    <span className="ml-2 text-gray-600">{selectedSpeciesData.fruitingSeason}</span>
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-700">Origen:</span>
+                    <span className="ml-2 text-gray-600">{selectedSpeciesData.origin}</span>
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-700">Distribución:</span>
+                    <span className="ml-2 text-gray-600">{selectedSpeciesData.distribution}</span>
+                  </div>
+                  {selectedSpeciesData.habitat && (
+                    <div>
+                      <span className="font-medium text-gray-700">Hábitat:</span>
+                      <span className="ml-2 text-gray-600">{selectedSpeciesData.habitat}</span>
+                    </div>
+                  )}
+                  {selectedSpeciesData.conservationStatus && (
+                    <div>
+                      <span className="font-medium text-gray-700">Estado de conservación:</span>
+                      <span className="ml-2 text-gray-600">{selectedSpeciesData.conservationStatus}</span>
+                    </div>
+                  )}
+                  {selectedSpeciesData.uses && (
+                    <div>
+                      <span className="font-medium text-gray-700">Usos:</span>
+                      <span className="ml-2 text-gray-600">{selectedSpeciesData.uses}</span>
+                    </div>
+                  )}
+                  {selectedSpeciesData.observations && (
+                    <div>
+                      <span className="font-medium text-gray-700">Observaciones:</span>
+                      <p className="mt-1 text-gray-600">{selectedSpeciesData.observations}</p>
+                    </div>
+                  )}
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       )}
-      </div>
-    </PublicLayout>
+    </div>
   );
 }
 
