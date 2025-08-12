@@ -713,27 +713,27 @@ function ActivitiesPage() {
 
       {/* Conoce nuestros instructores */}
       <section className="max-w-7xl mx-auto px-4 py-8">
-        <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl p-8 border border-green-100">
+        <div className="rounded-2xl p-8" style={{backgroundColor: '#51a19f'}}>
           <div className="text-center">
             <div className="flex items-center justify-center gap-3 mb-4">
-              <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{backgroundColor: '#51a19f'}}>
+              <div className="w-12 h-12 rounded-full flex items-center justify-center bg-white/20">
                 <User className="h-6 w-6 text-white" />
               </div>
-              <h2 className="text-3xl font-bold text-gray-900">Conoce nuestros instructores</h2>
+              <h2 className="text-3xl font-bold text-white">Conoce nuestros instructores</h2>
             </div>
-            <p className="text-lg text-gray-600 mb-6 max-w-2xl mx-auto">
+            <p className="text-lg text-white/90 mb-6 max-w-2xl mx-auto">
               Descubre a los profesionales capacitados que imparten nuestras actividades. 
               Cada instructor cuenta con experiencia y certificaciones para brindarte la mejor experiencia.
             </p>
             <Button 
               onClick={() => window.open('/instructors', '_blank')}
-              className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 text-lg rounded-lg transition-all duration-300 hover:shadow-lg"
+              className="bg-white text-gray-800 hover:bg-gray-100 px-8 py-3 text-lg rounded-lg transition-all duration-300 hover:shadow-lg"
             >
               <User className="h-5 w-5 mr-2" />
               Ver todos los instructores
               <ExternalLink className="h-4 w-4 ml-2" />
             </Button>
-            <div className="mt-4 text-sm text-gray-500">
+            <div className="mt-4 text-sm text-white/80">
               Más de 15+ instructores especializados disponibles
             </div>
           </div>
