@@ -448,15 +448,7 @@ const InstructorsPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Resultados encontrados */}
-            <div className="mt-4 text-center">
-              <p className="text-sm text-gray-600">
-                {filteredInstructors.length} instructor{filteredInstructors.length !== 1 ? 'es' : ''} encontrado{filteredInstructors.length !== 1 ? 's' : ''}
-                {searchTerm && (
-                  <span className="font-medium"> para "{searchTerm}"</span>
-                )}
-              </p>
-            </div>
+
         </div>
       </section>
 
