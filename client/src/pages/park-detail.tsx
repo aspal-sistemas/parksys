@@ -457,15 +457,7 @@ const ParkDetail: React.FC = () => {
         </DialogContent>
       </Dialog>
       
-      {/* AdSpace ANPR México al final de la página */}
-      <div className="container mx-auto px-4 py-6">
-        <AdSpace 
-          spaceId="33" 
-          position="banner" 
-          pageType="park-landing" 
-          className="w-full"
-        />
-      </div>
+
     </div>
   );
 };
