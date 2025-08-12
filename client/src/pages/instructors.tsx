@@ -779,41 +779,7 @@ const InstructorsPage: React.FC = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Módulo "Need more info" - Estilo Volunteers */}
-      <section className="bg-gradient-to-r from-green-700 to-green-800 py-16 mt-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h3 className="text-3xl font-bold text-white mb-4">
-              ¿Necesitas Más Información?
-            </h3>
-            <p className="text-green-100 text-lg mb-8 max-w-2xl mx-auto">
-              Nuestro equipo está aquí para ayudarte. Contáctanos si tienes preguntas sobre nuestros instructores 
-              o necesitas asistencia para encontrar el profesional ideal para tu actividad.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button 
-                className="bg-white text-green-700 hover:bg-green-50 px-8 py-3 text-lg font-semibold"
-                asChild
-              >
-                <a href="/contacto">
-                  <MessageSquare className="h-5 w-5 mr-2" />
-                  Contáctanos
-                </a>
-              </Button>
-              <Button 
-                variant="outline"
-                className="border-white text-white hover:bg-white hover:text-green-700 px-8 py-3 text-lg font-semibold"
-                asChild
-              >
-                <a href="/activities">
-                  <Calendar className="h-5 w-5 mr-2" />
-                  Ver Actividades
-                </a>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
+
 
       {/* AdSpace 37 - Ajustado al ancho del grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 mb-8">
