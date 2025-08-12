@@ -386,7 +386,7 @@ const Events: React.FC = () => {
               {/* Título a la izquierda */}
               <div className="text-white">
                 <h3 className="text-2xl font-bold mb-1 drop-shadow-lg">Parks for Life</h3>
-                <p className="text-green-200 text-sm drop-shadow-md">Todo para tus actividades al aire libre</p>
+                <p className="text-green-200 text-sm drop-shadow-md">Green Spaces Alliance</p>
               </div>
               
               {/* Logo a la derecha */}
