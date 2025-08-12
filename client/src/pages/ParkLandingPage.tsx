@@ -543,7 +543,7 @@ function ParkLandingPage() {
         </div>
       </div>
 
-      {/* Galería de Imágenes - Full Width Section debajo del Hero */}
+      {/* Galería de Imágenes con Información Integrada - Full Width Section debajo del Hero */}
       {additionalImages.length > 0 && (
         <div className="bg-white border-b border-gray-200">
           <div className="max-w-7xl mx-auto px-4 py-12">
@@ -602,63 +602,70 @@ function ParkLandingPage() {
                 </div>
               )}
             </div>
+
+            {/* Información General integrada continuamente en la galería */}
+            <div className="mt-12 pt-8 border-t border-gray-100">
+              <div className="text-center mb-8">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center justify-center gap-2">
+                  <Globe className="h-6 w-6 text-green-600" />
+                  Información General
+                </h3>
+              </div>
+              
+              <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-8 border border-gray-100">
+                <p className="text-gray-700 leading-relaxed text-lg mb-8 text-center max-w-4xl mx-auto">
+                  {park.description || 'Espacio verde público destinado al esparcimiento y recreación de la comunidad.'}
+                </p>
+                
+                {/* Stats Cards Grid - estilo similar a volunteers */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="bg-white rounded-xl p-6 text-center shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300">
+                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <Globe className="h-6 w-6 text-blue-600" />
+                    </div>
+                    <p className="text-sm text-gray-500 mb-1">Tipo</p>
+                    <p className="font-bold text-gray-900">{getParkTypeLabel(park.parkType || 'urbano')}</p>
+                  </div>
+                  
+                  {park.area && (
+                    <div className="bg-white rounded-xl p-6 text-center shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300">
+                      <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <Trees className="h-6 w-6 text-green-600" />
+                      </div>
+                      <p className="text-sm text-gray-500 mb-1">Superficie</p>
+                      <p className="font-bold text-gray-900">
+                        {Number(park.area) >= 10000 
+                          ? `${(Number(park.area) / 10000).toFixed(1)} ha` 
+                          : `${park.area} m²`}
+                      </p>
+                    </div>
+                  )}
+                  
+                  {park.foundationYear && (
+                    <div className="bg-white rounded-xl p-6 text-center shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300">
+                      <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <Calendar className="h-6 w-6 text-purple-600" />
+                      </div>
+                      <p className="text-sm text-gray-500 mb-1">Fundado</p>
+                      <p className="font-bold text-gray-900">{park.foundationYear}</p>
+                    </div>
+                  )}
+                  
+                  <div className="bg-white rounded-xl p-6 text-center shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300">
+                    <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <Clock className="h-6 w-6 text-orange-600" />
+                    </div>
+                    <p className="text-sm text-gray-500 mb-1">Horario</p>
+                    <p className="font-bold text-gray-900">7:00 - 19:30</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Información General - Full Width debajo de la Galería */}
-      <div className="bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xl">
-                <Globe className="h-6 w-6 text-green-600" />
-                Información General
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-700 leading-relaxed text-lg mb-6">
-                {park.description || 'Espacio verde público destinado al esparcimiento y recreación de la comunidad.'}
-              </p>
-              
-              {/* Basic Details Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-                <div className="text-center p-4 bg-white rounded-lg border">
-                  <Globe className="h-6 w-6 mx-auto mb-2 text-blue-600" />
-                  <p className="text-sm text-gray-500">Tipo</p>
-                  <p className="font-semibold">{getParkTypeLabel(park.parkType || 'urbano')}</p>
-                </div>
-                
-                {park.area && (
-                  <div className="text-center p-4 bg-white rounded-lg border">
-                    <Trees className="h-6 w-6 mx-auto mb-2 text-green-600" />
-                    <p className="text-sm text-gray-500">Superficie</p>
-                    <p className="font-semibold">
-                      {Number(park.area) >= 10000 
-                        ? `${(Number(park.area) / 10000).toFixed(1)} ha` 
-                        : `${park.area} m²`}
-                    </p>
-                  </div>
-                )}
-                
-                {park.foundationYear && (
-                  <div className="text-center p-4 bg-white rounded-lg border">
-                    <Calendar className="h-6 w-6 mx-auto mb-2 text-purple-600" />
-                    <p className="text-sm text-gray-500">Fundado</p>
-                    <p className="font-semibold">{park.foundationYear}</p>
-                  </div>
-                )}
-                
-                <div className="text-center p-4 bg-white rounded-lg border">
-                  <Clock className="h-6 w-6 mx-auto mb-2 text-orange-600" />
-                  <p className="text-sm text-gray-500">Horario</p>
-                  <p className="font-semibold">7:00 - 19:30</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+
 
       {/* Sección de Ubicación con Mapa */}
       <div className="bg-white">
