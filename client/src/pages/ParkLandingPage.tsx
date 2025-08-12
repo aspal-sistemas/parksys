@@ -543,15 +543,11 @@ function ParkLandingPage() {
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
-          {/* Content Column */}
-          <div className="lg:col-span-2 space-y-8">
-            
-            {/* Galería de Imágenes - Movida desde abajo para estar antes de Información General */}
-            {additionalImages.length > 0 && (
+      {/* Main Content - New Layout Structure */}
+      <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
+        
+        {/* Sección 1: Galería de imágenes (4/4) */}
+        {additionalImages.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-xl">
