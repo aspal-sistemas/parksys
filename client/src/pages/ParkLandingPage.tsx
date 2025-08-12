@@ -50,6 +50,7 @@ function ParkLandingPage() {
   const { slug } = useParams<{ slug: string }>();
   const { toast } = useToast();
   const [selectedInstructor, setSelectedInstructor] = React.useState<any>(null);
+  const [selectedVolunteer, setSelectedVolunteer] = React.useState<any>(null);
   const [selectedImage, setSelectedImage] = React.useState<string | null>(null);
   const [isImageModalOpen, setIsImageModalOpen] = React.useState(false);
   const [selectedSpeciesData, setSelectedSpeciesData] = React.useState<any>(null);
@@ -2185,25 +2186,25 @@ function ParkLandingPage() {
                                   </div>
                                 </div>
                               )}
-                              {instructor.experienceYears && (
+                              {volunteer.experienceYears && (
                                 <p className="text-purple-600 text-xs mt-1">
-                                  {instructor.experienceYears} años de experiencia
+                                  {volunteer.experienceYears} años de experiencia
                                 </p>
                               )}
-                              {instructor.averageRating && (
+                              {volunteer.averageRating && (
                                 <div className="flex items-center gap-1 mt-1">
                                   <div className="flex">
                                     {[1, 2, 3, 4, 5].map((star) => (
                                       <span 
                                         key={star} 
-                                        className={`text-xs ${star <= Math.floor(instructor.averageRating) ? 'text-yellow-400' : 'text-gray-300'}`}
+                                        className={`text-xs ${star <= Math.floor(volunteer.averageRating) ? 'text-yellow-400' : 'text-gray-300'}`}
                                       >
                                         ★
                                       </span>
                                     ))}
                                   </div>
                                   <span className="text-xs text-purple-600">
-                                    {instructor.averageRating}/5
+                                    {volunteer.averageRating}/5
                                   </span>
                                 </div>
                               )}
@@ -2211,47 +2212,16 @@ function ParkLandingPage() {
                               {/* Botones de acciones */}
                               <div className="mt-3 space-y-2">
                                 <div className="flex gap-2">
-                                  <Link href={`/instructor/${instructor.id}`}>
+                                  <Link href={`/volunteer/${volunteer.id}`}>
                                     <Button 
                                       size="sm" 
                                       variant="outline"
-                                      className="text-xs border-purple-300 text-purple-700 hover:bg-purple-50 flex-1"
+                                      className="text-xs border-purple-300 text-purple-700 hover:bg-purple-50 w-full"
                                     >
                                       <User className="h-3 w-3 mr-1" />
                                       Ver perfil
                                     </Button>
                                   </Link>
-                                  <Dialog>
-                                    <DialogTrigger asChild>
-                                      <Button 
-                                        size="sm" 
-                                        variant="outline"
-                                        className="text-xs border-green-300 text-green-700 hover:bg-green-50 flex-1"
-                                        onClick={() => setSelectedInstructor(instructor)}
-                                      >
-                                        <MessageSquare className="h-3 w-3 mr-1" />
-                                        Evaluar
-                                      </Button>
-                                    </DialogTrigger>
-                                    <DialogContent 
-                                      className="max-w-2xl max-h-[90vh] overflow-y-auto"
-                                      aria-describedby="evaluation-description"
-                                    >
-                                      <DialogHeader>
-                                        <DialogTitle>Evaluar Instructor</DialogTitle>
-                                        <DialogDescription id="evaluation-description">
-                                          Comparte tu experiencia con {instructor.fullName} para ayudar a otros visitantes.
-                                        </DialogDescription>
-                                      </DialogHeader>
-                                      <PublicInstructorEvaluationForm
-                                        instructorId={instructor.id}
-                                        instructorName={instructor.fullName}
-                                        onSuccess={() => {
-                                          // El dialog se cerrará automáticamente por el estado del formulario
-                                        }}
-                                      />
-                                    </DialogContent>
-                                  </Dialog>
                                 </div>
                               </div>
                             </div>
