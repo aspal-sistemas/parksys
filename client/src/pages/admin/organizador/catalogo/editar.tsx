@@ -85,7 +85,7 @@ const activitySchema = z.object({
   specialNeeds: z.array(z.string()).optional(),
   
   // Campo para seleccionar al instructor por su ID e información adicional
-  instructorId: z.any().optional(),
+  instructorId: z.coerce.number().optional().nullable(),
   instructorName: z.string().optional(),
   instructorContact: z.string().optional(),
   
@@ -96,26 +96,54 @@ const activitySchema = z.object({
   requiresApproval: z.boolean().default(false), // Cambiado a false para que sea opcional por defecto
 });
 
-// Función para formatear la fecha correctamente para la API
+// Función para formatear la fecha correctamente para la API (sin zona horaria)
 function formatearFechaParaAPI(fecha: string): string {
-  const fechaObj = new Date(fecha);
-  return format(fechaObj, 'yyyy-MM-dd');
+  if (!fecha) return '';
+  
+  try {
+    // Si la fecha ya está en formato YYYY-MM-DD, usarla directamente
+    if (fecha.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      return fecha;
+    }
+    
+    // Si es un objeto Date o string ISO, extraer solo la fecha
+    const fechaObj = new Date(fecha);
+    const year = fechaObj.getFullYear();
+    const month = (fechaObj.getMonth() + 1).toString().padStart(2, '0');
+    const day = fechaObj.getDate().toString().padStart(2, '0');
+    
+    return `${year}-${month}-${day}`;
+  } catch (error) {
+    console.error("Error al formatear fecha:", error);
+    return '';
+  }
 }
 
-// Función para combinar fecha y hora
+// Función para combinar fecha y hora (mantener zona horaria local)
 function combinarFechaYHora(fecha: string, hora: string): string {
-  const [year, month, day] = fecha.split('-');
-  const [hours, minutes] = hora.split(':');
+  if (!fecha || !hora) return '';
   
-  const fechaCompleta = new Date(
-    parseInt(year),
-    parseInt(month) - 1,
-    parseInt(day),
-    parseInt(hours),
-    parseInt(minutes)
-  );
-  
-  return fechaCompleta.toISOString();
+  try {
+    const [year, month, day] = fecha.split('-');
+    const [hours, minutes] = hora.split(':');
+    
+    // Crear fecha local (sin conversión UTC)
+    const fechaCompleta = new Date(
+      parseInt(year),
+      parseInt(month) - 1,
+      parseInt(day),
+      parseInt(hours),
+      parseInt(minutes)
+    );
+    
+    // Retornar en formato local ISO
+    const timezoneOffset = fechaCompleta.getTimezoneOffset();
+    const localDate = new Date(fechaCompleta.getTime() - (timezoneOffset * 60000));
+    return localDate.toISOString().split('T')[0] + 'T' + hora + ':00';
+  } catch (error) {
+    console.error("Error al combinar fecha y hora:", error);
+    return '';
+  }
 }
 
 // Función para calcular la duración en minutos entre dos horas
@@ -220,23 +248,48 @@ const EditarActividadPage = () => {
     if (actividad && typeof actividad === 'object') {
       const data = actividad as any;
       
-      // Extraer fecha y hora del startDate
-      let startDate = data.startDate;
+      // Extraer fecha y hora de manera más robusta
+      let startDate = "";
       let startTime = "09:00";
       let endTime = "10:00";
       
+      console.log("📅 Datos de actividad recibidos:", {
+        startDate: data.startDate,
+        startTime: data.startTime,
+        endTime: data.endTime,
+        duration: data.duration
+      });
+      
+      // Procesar fecha de inicio
       if (data.startDate) {
         try {
-          const startDateObj = new Date(data.startDate);
-          startDate = format(startDateObj, 'yyyy-MM-dd');
-          startTime = format(startDateObj, 'HH:mm');
+          // Si startDate contiene una fecha completa con tiempo, parsearlo
+          if (data.startDate.includes('T') || data.startDate.includes(' ')) {
+            const startDateObj = new Date(data.startDate);
+            startDate = format(startDateObj, 'yyyy-MM-dd');
+            // Solo usar la hora del startDate si no hay startTime separado
+            if (!data.startTime) {
+              startTime = format(startDateObj, 'HH:mm');
+            }
+          } else {
+            // Si es solo fecha (YYYY-MM-DD), usarla directamente
+            startDate = data.startDate;
+          }
         } catch (error) {
-          console.error("Error al parsear fecha de inicio:", error);
+          console.error("❌ Error al parsear fecha de inicio:", error);
+          startDate = "";
         }
       }
       
-      // Calcular hora de fin si hay duración
-      if (data.duration && startTime) {
+      // Usar startTime si está disponible por separado
+      if (data.startTime && typeof data.startTime === 'string') {
+        startTime = data.startTime;
+      }
+      
+      // Usar endTime si está disponible, o calcular usando duración
+      if (data.endTime && typeof data.endTime === 'string') {
+        endTime = data.endTime;
+      } else if (data.duration && startTime) {
         try {
           const [hours, minutes] = startTime.split(':').map(Number);
           const startMinutes = hours * 60 + minutes;
@@ -247,9 +300,16 @@ const EditarActividadPage = () => {
           
           endTime = `${endHours.toString().padStart(2, '0')}:${endMins.toString().padStart(2, '0')}`;
         } catch (error) {
-          console.error("Error al calcular hora de fin:", error);
+          console.error("❌ Error al calcular hora de fin:", error);
+          endTime = "10:00";
         }
       }
+      
+      console.log("✅ Fechas procesadas:", {
+        startDate,
+        startTime,
+        endTime
+      });
       
       setHoraInicio(startTime);
       setHoraFin(endTime);
@@ -275,7 +335,7 @@ const EditarActividadPage = () => {
         recurringDays: Array.isArray(data.recurringDays) ? data.recurringDays : [],
         targetMarket: Array.isArray(data.targetMarket) ? data.targetMarket : [],
         specialNeeds: Array.isArray(data.specialNeeds) ? data.specialNeeds : [],
-        instructorId: data.instructorId && data.instructorId !== 0 ? Number(data.instructorId) : undefined,
+        instructorId: data.instructorId && data.instructorId !== 0 ? Number(data.instructorId) : null,
         instructorName: data.instructorName || "",
         instructorContact: data.instructorContact || "",
         duration: Number(data.duration) || calcularDuracionEnMinutos(startTime, endTime),
@@ -827,13 +887,14 @@ const EditarActividadPage = () => {
                                     <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                                       <FormControl>
                                         <Checkbox
-                                          checked={field.value?.includes(dia.id) || false}
+                                          checked={Array.isArray(field.value) && field.value.includes(dia.id)}
                                           onCheckedChange={(checked) => {
+                                            const currentValue = Array.isArray(field.value) ? field.value : [];
                                             return checked
-                                              ? field.onChange([...field.value || [], dia.id])
+                                              ? field.onChange([...currentValue, dia.id])
                                               : field.onChange(
-                                                  field.value?.filter(
-                                                    (value) => value !== dia.id
+                                                  currentValue.filter(
+                                                    (value: string) => value !== dia.id
                                                   )
                                                 );
                                           }}
@@ -1074,13 +1135,14 @@ const EditarActividadPage = () => {
                                 <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                                   <FormControl>
                                     <Checkbox
-                                      checked={field.value?.includes(grupo.id) || false}
+                                      checked={Array.isArray(field.value) && field.value.includes(grupo.id)}
                                       onCheckedChange={(checked) => {
+                                        const currentValue = Array.isArray(field.value) ? field.value : [];
                                         return checked
-                                          ? field.onChange([...field.value || [], grupo.id])
+                                          ? field.onChange([...currentValue, grupo.id])
                                           : field.onChange(
-                                              field.value?.filter(
-                                                (value) => value !== grupo.id
+                                              currentValue.filter(
+                                                (value: string) => value !== grupo.id
                                               )
                                             );
                                       }}
@@ -1125,13 +1187,14 @@ const EditarActividadPage = () => {
                                 <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                                   <FormControl>
                                     <Checkbox
-                                      checked={field.value?.includes(necesidad.id)}
+                                      checked={Array.isArray(field.value) && field.value.includes(necesidad.id)}
                                       onCheckedChange={(checked) => {
+                                        const currentValue = Array.isArray(field.value) ? field.value : [];
                                         return checked
-                                          ? field.onChange([...field.value || [], necesidad.id])
+                                          ? field.onChange([...currentValue, necesidad.id])
                                           : field.onChange(
-                                              field.value?.filter(
-                                                (value) => value !== necesidad.id
+                                              currentValue.filter(
+                                                (value: string) => value !== necesidad.id
                                               )
                                             );
                                       }}
@@ -1186,7 +1249,7 @@ const EditarActividadPage = () => {
                             }
                           }
                         }}
-                        value={field.value !== undefined && field.value !== null ? field.value.toString() : "0"}
+                        value={field.value !== undefined && field.value !== null && field.value !== 0 ? String(field.value) : "0"}
                       >
                         <FormControl>
                           <SelectTrigger>
