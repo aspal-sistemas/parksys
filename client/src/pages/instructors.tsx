@@ -781,6 +781,15 @@ const InstructorsPage: React.FC = () => {
 
 
 
+      {/* AdSpace 37 - Ajustado al ancho del grid */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 mb-8">
+        <AdSpace 
+          spaceId={37}
+          pageType="instructors"
+          position="banner"
+        />
+      </div>
+
       {/* Sección de Contacto */}
       <section className="bg-gray-50 py-12">
         <div className="max-w-7xl mx-auto px-4">
@@ -826,15 +835,6 @@ const InstructorsPage: React.FC = () => {
           </div>
         </div>
       </section>
-
-      {/* AdSpace 37 - Ajustado al ancho del grid */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 mb-8">
-        <AdSpace 
-          spaceId={37}
-          pageType="instructors"
-          position="banner"
-        />
-      </div>
 
     </PublicLayout>
   );
