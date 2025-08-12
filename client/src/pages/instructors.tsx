@@ -367,7 +367,6 @@ const InstructorsPage: React.FC = () => {
       {/* Panel de filtros y búsqueda - Estilo Volunteers */}
       <section className="sticky top-0 z-10 border-b border-gray-200 shadow-sm bg-white">
         <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="bg-white rounded-lg shadow-sm p-6">
             <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
               {/* Búsqueda */}
               <div className="flex-1 max-w-md">
@@ -457,7 +456,6 @@ const InstructorsPage: React.FC = () => {
                 )}
               </p>
             </div>
-          </div>
         </div>
       </section>
 
