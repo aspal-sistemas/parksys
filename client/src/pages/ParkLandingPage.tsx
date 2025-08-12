@@ -1754,33 +1754,6 @@ function ParkLandingPage() {
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 py-2">
-        <div className="grid grid-cols-1 gap-8">
-          
-          {/* Content Column - Now Full Width */}
-          <div className="space-y-8">{/* Continúa con otras secciones */}
-
-
-
-
-
-
-
-
-
-
-
-          </div>
-
-
-
-
-
-
-        </div>
-      </div>
-
       {/* Image Modal */}
       {isImageModalOpen && selectedImage && (
         <div 
