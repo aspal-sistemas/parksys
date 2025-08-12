@@ -1244,7 +1244,7 @@ function ParkLandingPage() {
                   <p className="text-sm text-green-700 mb-8">
                     Organiza tu evento en este parque. Tenemos opciones para eventos de bajo y alto impacto.
                   </p>
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     <Link href="/admin/eventos-ambu/solicitud-bajo-impacto">
                       <Button 
                         variant="outline" 
