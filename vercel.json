@@ -6,30 +6,26 @@
       "runtime": "nodejs20.x"
     }
   },
-  "routes": [
+  "rewrites": [
     {
-      "src": "/api/(.*)",
-      "dest": "/server/index.ts"
+      "source": "/api/(.*)",
+      "destination": "/server/index.ts"
     },
     {
-      "src": "/uploads/(.*)",
-      "dest": "/server/index.ts"
+      "source": "/uploads/(.*)",
+      "destination": "/server/index.ts"
     },
     {
-      "src": "/objects/(.*)",
-      "dest": "/server/index.ts"
+      "source": "/objects/(.*)",
+      "destination": "/server/index.ts"
     },
     {
-      "src": "/assets/(.*)",
-      "dest": "/server/index.ts"
+      "source": "/assets/(.*)",
+      "destination": "/server/index.ts"
     },
     {
-      "src": "/(.*\\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot))",
-      "dest": "/server/index.ts"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/server/index.ts"
+      "source": "/(.*)",
+      "destination": "/server/index.ts"
     }
   ],
   "env": {
