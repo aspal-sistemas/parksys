@@ -28,6 +28,35 @@ const app = express();
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
+// Early health check middleware - highest priority for deployment compatibility
+app.use((req: Request, res: Response, next: NextFunction) => {
+  // Handle health checks immediately, before any other processing
+  if (req.path === '/' || req.path === '/health' || req.path === '/healthz' || req.path === '/ping') {
+    const userAgent = req.get('User-Agent') || '';
+    const isHealthCheck = 
+      userAgent.includes('GoogleHC') || 
+      userAgent.includes('Cloud Run') ||
+      userAgent.includes('kube-probe') ||
+      userAgent.includes('curl') ||
+      userAgent.includes('Deployment') ||
+      userAgent.includes('HealthCheck') ||
+      req.query.health === 'check' ||
+      req.query.healthcheck === 'true' ||
+      !req.get('Accept')?.includes('text/html');
+
+    if (isHealthCheck) {
+      return res.status(200).json({
+        status: 'ok',
+        health: 'ready',
+        service: 'ParkSys',
+        timestamp: new Date().toISOString(),
+        port: process.env.PORT || 5000
+      });
+    }
+  }
+  next();
+});
+
 // Middleware CORS para Replit
 app.use((req: Request, res: Response, next: NextFunction) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -80,42 +109,44 @@ app.get('/ping', (req: Request, res: Response) => {
   res.status(200).send('pong');
 });
 
-// Root endpoint - handles both health checks and browser requests
+// Root endpoint - prioritized health check handling for deployment
 app.get('/', (req: Request, res: Response, next: NextFunction) => {
   try {
-    // In production, serve static files or return health status
-    // In development, let Vite handle the routing
-    const isProduction = process.env.NODE_ENV === 'production' || process.env.REPLIT_DEPLOYMENT_ID;
+    // Check if this is a health check request first (regardless of environment)
+    const userAgent = req.get('User-Agent') || '';
+    const acceptHeader = req.get('Accept') || '';
     
-    if (isProduction) {
-      // Check if this is a health check request
-      const userAgent = req.get('User-Agent') || '';
-      const acceptHeader = req.get('Accept') || '';
-      
-      const isHealthCheck = 
-        userAgent.includes('GoogleHC') || 
-        userAgent.includes('Cloud Run') ||
-        userAgent.includes('kube-probe') ||
-        userAgent.includes('curl') ||
-        req.query.health === 'check' ||
-        !acceptHeader.includes('text/html');
+    const isHealthCheck = 
+      userAgent.includes('GoogleHC') || 
+      userAgent.includes('Cloud Run') ||
+      userAgent.includes('kube-probe') ||
+      userAgent.includes('curl') ||
+      userAgent.includes('Deployment') ||
+      userAgent.includes('HealthCheck') ||
+      req.query.health === 'check' ||
+      req.query.healthcheck === 'true' ||
+      req.headers['x-health-check'] ||
+      !acceptHeader.includes('text/html');
 
-      if (isHealthCheck) {
-        return res.status(200).json({
-          status: 'ok',
-          message: 'ParkSys - Bosques Urbanos de Guadalajara',
-          timestamp: new Date().toISOString(),
-          service: 'Urban Parks Management System',
-          version: '1.0.0',
-          health: 'ready'
-        });
-      }
+    if (isHealthCheck) {
+      console.log('🏥 Health check request detected from:', userAgent);
+      return res.status(200).json({
+        status: 'ok',
+        message: 'ParkSys - Bosques Urbanos de Guadalajara',
+        timestamp: new Date().toISOString(),
+        service: 'Urban Parks Management System',
+        version: '1.0.0',
+        health: 'ready',
+        port: process.env.PORT || 5000,
+        environment: process.env.NODE_ENV || 'development'
+      });
     }
     
-    // For all other cases, continue to next middleware
+    // For browser requests and other non-health checks, continue to next middleware
     next();
     
   } catch (error) {
+    console.error('Error in root endpoint handler:', error);
     res.status(503).json({ 
       status: 'error', 
       message: 'Service temporarily unavailable',
@@ -1388,8 +1419,11 @@ async function initializeDatabaseAsync() {
 (async () => {
   console.log("🚀 Iniciando servidor ParkSys...");
 
+  // Declare appServer variable at function scope
+  let appServer: any;
+
   // Registrar rutas principales primero
-  const routeServer = await registerRoutes(app);
+  await registerRoutes(app);
   
   // Registrar rutas de pagos de actividades
   registerActivityPaymentRoutes(app);
@@ -1514,86 +1548,46 @@ async function initializeDatabaseAsync() {
   const HOST = '0.0.0.0';
   
   console.log(`🚀 Starting server on ${HOST}:${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
-  
-  let appServer: any;
 
-  // HR routes now registered earlier in the process
-
-  // Forzar modo producción para resolver problemas con proxy de Replit
-  console.log("🔧 Configurando servidor para resolver problemas de proxy de Replit...");
-  
-  // Configurar headers y timeout para mejor compatibilidad con Replit
-  app.use((req: Request, res: Response, next: NextFunction) => {
-    // Headers para mejor compatibilidad con proxy de Replit
-    res.setHeader('X-Powered-By', 'ParkSys');
-    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
+  // START SERVER FIRST - critical for health checks
+  appServer = app.listen(PORT, HOST, () => {
+    console.log(`✅ Server listening on ${HOST}:${PORT} - Health checks ready`);
+    console.log(`🏥 Health endpoints available at /, /health, /healthz, /ping`);
     
-    // Timeout más largo para evitar 503s
-    res.setTimeout(15000, () => {
-      if (!res.headersSent) {
-        console.error(`⚠️ Timeout en ruta: ${req.method} ${req.path}`);
-        res.status(408).json({ error: 'Request timeout', path: req.path });
-      }
-    });
-    next();
-  });
-  
-  // Usar modo desarrollo para Vite, pero con configuración mejorada
-  const isDeployment = false; // Habilitar Vite para desarrollo
-  
-  // Setup Vite in development mode with error handling
-  if (app.get("env") === "development" && !isDeployment) {
-    console.log("Configurando servidor de desarrollo Vite...");
-    
-    // Configurar Vite antes de iniciar el servidor
-    try {
-      const { setupVite } = await import("./vite");
-      appServer = app.listen(PORT, HOST, async () => {
-        console.log(`Servidor ejecutándose en puerto ${PORT}`);
+    // Initialize remaining setup asynchronously AFTER server is listening
+    setTimeout(async () => {
+      try {
+        console.log("🔧 Initializing additional setup after server start...");
         
-        try {
-          await setupVite(app, appServer);
-          console.log("✅ Servidor de desarrollo Vite listo - Aplicación web accesible");
-          console.log("🔗 Proxy de Replit configurado correctamente");
-          console.log("🌐 URL pública disponible");
-        } catch (error) {
-          console.error("Error configurando Vite (continuando sin Vite):", error);
-          console.log("✅ Servidor funcionando sin Vite - API disponible en puerto " + PORT);
+        // Setup development environment if needed
+        if (app.get("env") === "development" && !process.env.REPLIT_DEPLOYMENT_ID) {
+          try {
+            const { setupVite } = await import("./vite");
+            await setupVite(app, appServer);
+            console.log("✅ Vite development server configured");
+          } catch (error) {
+            console.log("⚠️ Continuing without Vite:", error);
+          }
         }
         
-        // Inicializar base de datos después de que todo esté listo
-        setTimeout(() => {
-          initializeDatabaseAsync().catch(error => {
-            console.error("Error inicializando base de datos (no crítico):", error);
-          });
-        }, 3000);
-      });
-    } catch (error) {
-      console.error("Error importando Vite, iniciando servidor sin frontend:", error);
-      appServer = app.listen(PORT, HOST, () => {
-        console.log(`Servidor ejecutándose en puerto ${PORT} (solo API)`);
+        // Initialize database asynchronously
+        initializeDatabaseAsync().catch(error => {
+          console.error("❌ Database initialization error (non-critical):", error);
+        });
         
-        setTimeout(() => {
-          initializeDatabaseAsync().catch(error => {
-            console.error("Error inicializando base de datos (no crítico):", error);
-          });
-        }, 3000);
-      });
-    }
-  } else {
-    // Modo producción - servir archivos estáticos
-    console.log("🏭 Configurando servidor para producción...");
-    console.log("🔍 Deployment ID:", process.env.REPLIT_DEPLOYMENT_ID || "Not set");
-    console.log("🌍 Node Environment:", process.env.NODE_ENV || "development");
-    
-    // Servir archivos estáticos desde public
+      } catch (error) {
+        console.error("❌ Post-startup initialization error:", error);
+      }
+    }, 100); // Very short delay to ensure server is fully ready
+  });
+
+  // Configure production static file serving if needed
+  if (process.env.NODE_ENV === 'production' || process.env.REPLIT_DEPLOYMENT_ID) {
+    console.log("🏭 Production mode detected - Static file serving enabled");
     app.use(express.static(path.join(process.cwd(), 'public')));
     
-    // Fallback para rutas no encontradas - servir index.html
+    // Fallback for production SPA routing
     app.get('*', (req, res) => {
-      // Solo servir HTML para rutas que no son API
       if (!req.path.startsWith('/api/')) {
         const indexPath = path.join(process.cwd(), 'public', 'index.html');
         if (fs.existsSync(indexPath)) {
@@ -1604,19 +1598,6 @@ async function initializeDatabaseAsync() {
       } else {
         res.status(404).json({ error: 'API endpoint not found' });
       }
-    });
-    
-    appServer = app.listen(PORT, HOST, () => {
-      console.log(`🚀 ParkSys servidor en producción ejecutándose en ${HOST}:${PORT}`);
-      console.log(`🌐 Aplicación disponible en http://${HOST}:${PORT}`);
-      console.log(`📊 Sistema de evaluaciones de parques operativo con 169 evaluaciones`);
-      console.log(`🏛️ Bosques Urbanos de Guadalajara - Sistema listo para presentación`);
-      
-      setTimeout(() => {
-        initializeDatabaseAsync().catch(error => {
-          console.error("Error inicializando base de datos (no crítico):", error);
-        });
-      }, 1000);
     });
   }
 
