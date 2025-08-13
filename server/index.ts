@@ -348,8 +348,14 @@ console.log(`📁 Configurando archivos uploads desde: ${uploadsBasePath}`);
 // Servir archivos adjuntos desde attached_assets
 app.use('/attached_assets', express.static(path.join(process.cwd(), 'attached_assets')));
 
-// Servir archivos de uploads con configuración dinámica
+// CRÍTICO: En producción (Vercel), los archivos deben estar en public/uploads 
+// pero ser servidos como /uploads para mantener compatibilidad con URLs de BD
 app.use('/uploads', express.static(uploadsBasePath));
+
+// En producción, también servir desde public/uploads directamente
+if (isProduction) {
+  app.use('/public/uploads', express.static(path.join(process.cwd(), 'public/uploads')));
+}
 
 // Configuraciones específicas con fallback para development
 if (!isProduction) {
