@@ -42,6 +42,88 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
+// Multiple health check endpoints for Cloud Run compatibility
+app.get('/healthz', (req: Request, res: Response) => {
+  try {
+    res.status(200).json({
+      status: 'ok',
+      message: 'ParkSys - Bosques Urbanos de Guadalajara',
+      timestamp: new Date().toISOString(),
+      service: 'Urban Parks Management System',
+      version: '1.0.0',
+      health: 'ready'
+    });
+  } catch (error) {
+    res.status(503).json({ 
+      status: 'error', 
+      message: 'Service temporarily unavailable',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Alternative health check endpoints
+app.get('/health-check', (req: Request, res: Response) => {
+  try {
+    res.status(200).json({
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      service: 'ParkSys'
+    });
+  } catch (error) {
+    res.status(503).json({ status: 'unhealthy', timestamp: new Date().toISOString() });
+  }
+});
+
+app.get('/ping', (req: Request, res: Response) => {
+  res.status(200).send('pong');
+});
+
+// Root endpoint - handles both health checks and browser requests
+app.get('/', (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // In production, serve static files or return health status
+    // In development, let Vite handle the routing
+    const isProduction = process.env.NODE_ENV === 'production' || process.env.REPLIT_DEPLOYMENT_ID;
+    
+    if (isProduction) {
+      // Check if this is a health check request
+      const userAgent = req.get('User-Agent') || '';
+      const acceptHeader = req.get('Accept') || '';
+      
+      const isHealthCheck = 
+        userAgent.includes('GoogleHC') || 
+        userAgent.includes('Cloud Run') ||
+        userAgent.includes('kube-probe') ||
+        userAgent.includes('curl') ||
+        req.query.health === 'check' ||
+        !acceptHeader.includes('text/html');
+
+      if (isHealthCheck) {
+        return res.status(200).json({
+          status: 'ok',
+          message: 'ParkSys - Bosques Urbanos de Guadalajara',
+          timestamp: new Date().toISOString(),
+          service: 'Urban Parks Management System',
+          version: '1.0.0',
+          health: 'ready'
+        });
+      }
+    }
+    
+    // For all other cases, continue to next middleware
+    next();
+    
+  } catch (error) {
+    res.status(503).json({ 
+      status: 'error', 
+      message: 'Service temporarily unavailable',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 // Simple API health check - priority over static files
 app.get('/api/status', (req: Request, res: Response) => {
   try {
