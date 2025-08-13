@@ -427,7 +427,9 @@ export function registerActiveConcessionRoutes(app: any, apiRouter: any, isAuthe
   });
 
   // Configuración de multer para subida de imágenes de concesiones
-  const concessionUploadsDir = 'uploads/concession-images';
+  const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL;
+  const concessionUploadsDir = isProduction ? 'public/uploads/concession-images' : 'uploads/concession-images';
+  
   if (!fs.existsSync(concessionUploadsDir)) {
     fs.mkdirSync(concessionUploadsDir, { recursive: true });
   }

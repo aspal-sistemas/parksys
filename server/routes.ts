@@ -91,7 +91,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const documentUpload = multer({
     storage: multer.diskStorage({
       destination: function (req, file, cb) {
-        cb(null, 'uploads/documents/');
+        const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL;
+        const uploadsDir = isProduction ? 'public/uploads/documents/' : 'uploads/documents/';
+        cb(null, uploadsDir);
       },
       filename: function (req, file, cb) {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);

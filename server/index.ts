@@ -337,20 +337,27 @@ app.get('/status', (req: Request, res: Response) => {
 // Servir archivos estáticos del directorio public ANTES de otras rutas
 app.use(express.static(path.join(process.cwd(), 'public')));
 
+// Configuración dinámica para uploads basada en el entorno
+const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL;
+const uploadsBasePath = isProduction ? 
+  path.join(process.cwd(), 'public/uploads') : 
+  path.join(process.cwd(), 'uploads');
+
+console.log(`📁 Configurando archivos uploads desde: ${uploadsBasePath}`);
+
 // Servir archivos adjuntos desde attached_assets
 app.use('/attached_assets', express.static(path.join(process.cwd(), 'attached_assets')));
 
-// Servir archivos de publicidad desde uploads/advertising
-app.use('/uploads/advertising', express.static(path.join(process.cwd(), 'uploads/advertising')));
+// Servir archivos de uploads con configuración dinámica
+app.use('/uploads', express.static(uploadsBasePath));
 
-// Servir archivos de uploads generales
-app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
-
-// Servir archivos de espacios desde uploads/spaces
-app.use('/uploads/spaces', express.static(path.join(process.cwd(), 'uploads/spaces')));
-
-// Servir archivos de documentos desde uploads/documents
-app.use('/uploads/documents', express.static(path.join(process.cwd(), 'uploads/documents')));
+// Configuraciones específicas con fallback para development
+if (!isProduction) {
+  // Solo en desarrollo, servir desde la carpeta uploads original
+  app.use('/uploads/advertising', express.static(path.join(process.cwd(), 'uploads/advertising')));
+  app.use('/uploads/spaces', express.static(path.join(process.cwd(), 'uploads/spaces')));
+  app.use('/uploads/documents', express.static(path.join(process.cwd(), 'uploads/documents')));
+}
 
 // Endpoint para servir archivos de Object Storage
 app.get('/objects/uploads/:objectId', async (req: Request, res: Response) => {
@@ -1290,11 +1297,7 @@ app.get("/api/users-direct", async (req: Request, res: Response) => {
   }
 });
 
-// Servir archivos estáticos de la carpeta de uploads
-app.use('/uploads', express.static(path.join(process.cwd(), 'public/uploads')));
-
-// Servir archivos estáticos de concesiones y otros uploads directos
-app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+// Configuración de archivos estáticos duplicada eliminada - ahora se maneja arriba con configuración dinámica
 
 console.log('✅ [TEST] Llegando a la sección de rutas de mantenimiento...');
 
