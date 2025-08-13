@@ -10,7 +10,9 @@ import path from "path";
 // Configuración de multer para subida de archivos
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/spaces');
+    const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL;
+    const uploadsDir = isProduction ? 'public/uploads/spaces' : 'uploads/spaces';
+    cb(null, uploadsDir);
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);

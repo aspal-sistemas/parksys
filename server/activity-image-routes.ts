@@ -11,7 +11,10 @@ const router = Router();
 // Configuración de multer para imágenes de actividades
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadDir = 'uploads/activity-images';
+    // Configuración dinámica basada en el entorno
+    const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL;
+    const uploadDir = isProduction ? 'public/uploads/activity-images' : 'uploads/activity-images';
+    
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
