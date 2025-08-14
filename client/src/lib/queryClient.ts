@@ -178,10 +178,9 @@ export const getQueryFn: <T>(options: {
     try {
       const url = queryKey[0] as string;
       
-      // Bloquear queries problemáticas para simplificar interfaz
-      const blockedUrls = ['/api/municipalities', '/api/amenities', '/api/parks-with-amenities'];
-      if (blockedUrls.includes(url)) {
-        console.log(`🚫 [QUERY BLOCKED] ${url} - Devolviendo array vacío para simplificar interfaz`);
+      // ⛔ BLOQUEO DEFINITIVO DE FILTROS - DEVOLVER INMEDIATAMENTE ARRAY VACÍO
+      if (url === '/api/municipalities' || url === '/api/amenities' || url === '/api/parks-with-amenities') {
+        console.log(`🚫 [QUERY BLOCKED] ${url} - Filtros eliminados`);
         return [];
       }
       
