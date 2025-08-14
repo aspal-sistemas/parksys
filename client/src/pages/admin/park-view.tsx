@@ -243,10 +243,8 @@ export default function AdminParkView() {
 
 
 
-  // Obtener amenidades disponibles para agregar
-  const { data: availableAmenities } = useQuery({
-    queryKey: ['/api/amenities'],
-  });
+  // Amenidades disponibles simplificadas - sin consulta automática
+  const availableAmenities: any[] = [];
 
   // Mutación para agregar amenidad al parque
   const addAmenityMutation = useMutation({

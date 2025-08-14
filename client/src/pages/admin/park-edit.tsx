@@ -80,10 +80,8 @@ const AdminParkEdit: React.FC = () => {
     staleTime: 0
   });
   
-  // Consulta la lista de municipios
-  const { data: municipalities } = useQuery({
-    queryKey: ['/api/municipalities'],
-  });
+  // Lista de municipios simplificada - sin consulta automática
+  const municipalities: any[] = [];
   
   // Definir el formulario con react-hook-form
   const form = useForm<ParkFormValues>({

@@ -87,21 +87,8 @@ export default function ParkAmenitiesManager({ parkId }: ParkAmenitiesManagerPro
     enabled: !!parkId
   });
 
-  // Consulta para obtener todas las amenidades disponibles
-  const { data: availableAmenities = [] } = useQuery<Amenity[]>({
-    queryKey: ['/api/amenities'],
-    queryFn: async () => {
-      const response = await fetch('/api/amenities', {
-        headers: {
-          'Authorization': 'Bearer direct-token-1750522117022',
-          'X-User-Id': '1',
-          'X-User-Role': 'super_admin'
-        }
-      });
-      if (!response.ok) throw new Error('Error cargando amenidades disponibles');
-      return response.json();
-    }
-  });
+  // Amenidades disponibles simplificadas - sin consulta automática
+  const availableAmenities: Amenity[] = [];
 
   // Mutación para agregar amenidad
   const addAmenityMutation = useMutation({
