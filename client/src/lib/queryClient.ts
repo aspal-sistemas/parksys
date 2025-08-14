@@ -178,13 +178,8 @@ export const getQueryFn: <T>(options: {
     try {
       const url = queryKey[0] as string;
       
-      // ⛔⛔⛔ BLOQUEO TOTAL DE FILTROS - FORZAR RETURN INMEDIATO
-      if (url === '/api/municipalities' || url === '/api/amenities' || url === '/api/parks-with-amenities' || 
-          url.includes('municipalities') || url.includes('amenities') || url.includes('parks-with-amenities')) {
-        console.error(`🚫🚫🚫 [FILTROS BLOQUEADOS] ${url} - RETORNANDO VACÍO`);
-        setTimeout(() => console.error(`🚫 BLOCKED: ${url}`), 0);
-        return Promise.resolve([]);
-      }
+      // Permitir todas las solicitudes de amenidades y municipios
+      // (Bloqueo anterior removido para permitir funcionamiento normal)
       
       console.log(`🌐 [QUERY] GET ${url}`);
       
