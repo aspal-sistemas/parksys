@@ -819,8 +819,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Parks with amenities - Simplificado para eliminar filtros
   apiRouter.get("/parks-with-amenities", async (_req: Request, res: Response) => {
-    console.log("⚠️ ENDPOINT /api/parks-with-amenities llamado - devolviendo array vacío para eliminar filtros");
-    res.json([]);
+    console.log("🚫🚫🚫 ENDPOINT /api/parks-with-amenities BLOQUEADO - 404");
+    res.status(404).json({ error: 'Endpoint deshabilitado - filtros eliminados' });
   });
 
   // Ruta para obtener estadísticas del dashboard de parques (DEBE IR ANTES DE /parks/:id)
@@ -1834,8 +1834,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Get all amenities - Simplificado para eliminar filtros
   apiRouter.get("/amenities", async (_req: Request, res: Response) => {
-    console.log("⚠️ ENDPOINT /api/amenities llamado - devolviendo array vacío para eliminar filtros");
-    res.json([]);
+    console.log("🚫🚫🚫 ENDPOINT /api/amenities BLOQUEADO - 404");
+    res.status(404).json({ error: 'Endpoint deshabilitado - filtros eliminados' });
   });
 
   // Dashboard endpoint específico para amenidades
@@ -4623,8 +4623,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Get all municipalities - Simplificado para eliminar filtros
   apiRouter.get("/municipalities", async (_req: Request, res: Response) => {
-    console.log("⚠️ ENDPOINT /api/municipalities llamado - devolviendo array vacío para eliminar filtros");
-    res.json([]);
+    console.log("🚫🚫🚫 ENDPOINT /api/municipalities BLOQUEADO - 404");
+    res.status(404).json({ error: 'Endpoint deshabilitado - filtros eliminados' });
   });
 
   // Basic authentication for testing usando la función directa
