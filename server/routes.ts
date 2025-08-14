@@ -817,42 +817,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Endpoint temporalmente desactivado para debug de filtros
-  /*
+  // Parks with amenities - Simplificado para eliminar filtros
   apiRouter.get("/parks-with-amenities", async (_req: Request, res: Response) => {
-    try {
-      const result = await pool.query(`
-        SELECT 
-          p.id as park_id,
-          COALESCE(
-            json_agg(
-              CASE WHEN pa.amenity_id IS NOT NULL 
-              THEN pa.amenity_id 
-              ELSE NULL END
-            ) FILTER (WHERE pa.amenity_id IS NOT NULL),
-            '[]'::json
-          ) as amenity_ids
-        FROM parks p
-        LEFT JOIN park_amenities pa ON p.id = pa.park_id
-        GROUP BY p.id
-        ORDER BY p.id
-      `);
-      
-      const parkAmenities = result.rows.map(row => ({
-        parkId: row.park_id,
-        amenityIds: Array.isArray(row.amenity_ids) ? row.amenity_ids : []
-      }));
-      
-      res.json(parkAmenities);
-    } catch (error) {
-      console.error("Error al obtener parques con amenidades:", error);
-      res.status(500).json({ 
-        message: "Error al obtener parques con amenidades",
-        error: error instanceof Error ? error.message : 'Error desconocido'
-      });
-    }
+    console.log("⚠️ ENDPOINT /api/parks-with-amenities llamado - devolviendo array vacío para eliminar filtros");
+    res.json([]);
   });
-  */
 
   // Ruta para obtener estadísticas del dashboard de parques (DEBE IR ANTES DE /parks/:id)
   apiRouter.get("/parks/dashboard", async (_req: Request, res: Response) => {
@@ -1863,32 +1832,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get all amenities - Endpoint temporalmente desactivado para debug de filtros
-  /*
+  // Get all amenities - Simplificado para eliminar filtros
   apiRouter.get("/amenities", async (_req: Request, res: Response) => {
-    try {
-      const result = await pool.query(`
-        SELECT 
-          a.id,
-          a.name,
-          a.icon,
-          a.category,
-          a.icon_type as "iconType",
-          a.custom_icon_url as "customIconUrl",
-          COUNT(DISTINCT pa.park_id) as "parksCount",
-          COUNT(pa.park_id) as "totalModules"
-        FROM amenities a
-        LEFT JOIN park_amenities pa ON a.id = pa.amenity_id
-        GROUP BY a.id, a.name, a.icon, a.category, a.icon_type, a.custom_icon_url
-        ORDER BY a.name
-      `);
-      res.json(result.rows);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Error fetching amenities" });
-    }
+    console.log("⚠️ ENDPOINT /api/amenities llamado - devolviendo array vacío para eliminar filtros");
+    res.json([]);
   });
-  */
 
   // Dashboard endpoint específico para amenidades
   apiRouter.get("/amenities/dashboard", async (_req: Request, res: Response) => {
@@ -4673,18 +4621,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get all municipalities - Endpoint temporalmente desactivado para debug de filtros  
-  /*
+  // Get all municipalities - Simplificado para eliminar filtros
   apiRouter.get("/municipalities", async (_req: Request, res: Response) => {
-    try {
-      const municipalities = await storage.getMunicipalities();
-      res.json(municipalities);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Error fetching municipalities" });
-    }
+    console.log("⚠️ ENDPOINT /api/municipalities llamado - devolviendo array vacío para eliminar filtros");
+    res.json([]);
   });
-  */
 
   // Basic authentication for testing usando la función directa
   apiRouter.post("/login", async (req: Request, res: Response) => {
