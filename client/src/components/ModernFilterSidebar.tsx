@@ -27,9 +27,8 @@ const ModernFilterSidebar: React.FC<ModernFilterSidebarProps> = ({ onApplyFilter
   const [selectedAmenities, setSelectedAmenities] = useState<number[]>([]);
   const [activeCategory, setActiveCategory] = useState<string>('recreación');
 
-  const { data: amenities = [] } = useQuery<Amenity[]>({ 
-    queryKey: ['/api/amenities'],
-  });
+  // Deshabilitado para simplificar interfaz
+  const amenities: Amenity[] = [];
 
   const handleApplyFilters = () => {
     onApplyFilters({

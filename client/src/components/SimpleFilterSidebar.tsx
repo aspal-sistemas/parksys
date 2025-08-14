@@ -53,10 +53,9 @@ export default function SimpleFilterSidebar({ onApplyFilters }: SimpleFilterSide
     accesibilidad: "Accesibilidad"
   };
 
-  // Obtenemos las amenidades disponibles
-  const { data: amenities = [], isLoading } = useQuery<ExtendedAmenity[]>({
-    queryKey: ['/api/amenities']
-  });
+  // Deshabilitado para simplificar interfaz
+  const amenities: ExtendedAmenity[] = [];
+  const isLoading = false;
 
   // Función para categorizar amenidades por nombre
   const categorizeAmenity = (amenityName: string): string => {

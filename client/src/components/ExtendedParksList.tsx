@@ -38,10 +38,8 @@ function ExtendedParksList({ parks, isLoading, onParkSelect }: ExtendedParksList
     return parkId === 5 || parkId === 2 || parkId === 4 || parkId === 18;
   };
 
-  // Obtenemos las amenidades para mostrar los iconos
-  const { data: amenities = [] } = useQuery<Amenity[]>({
-    queryKey: ['/api/amenities']
-  });
+  // Amenidades simplificadas - sin consulta automática
+  const amenities: Amenity[] = [];
 
   const getAmenityName = (amenityId: number) => {
     const amenity = amenities.find(a => a.id === amenityId);

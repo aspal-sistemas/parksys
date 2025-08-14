@@ -1,0 +1,43 @@
+i18next::backendConnector: loaded namespace common for language es {navigation: {…}, actions: {…}, forms: {…}, messages: {…}, dashboard: {…}}
+Console.js:61 i18next: languageChanged es
+Console.js:61 i18next: initialized {debug: true, initAsync: true, ns: Array(1), defaultNS: 'common', fallbackLng: Array(1), …}
+Console.js:61 ❌ AdSpace 14 no tiene asignación activa {placementsResponse: {…}}
+Console.js:61 🎯 AdSpace 14 (homepage/banner): {isLoading: false, placementsResponse: {…}, activePlacement: null, hasData: false}
+Console.js:61 ❌ AdSpace 14 no tiene asignación activa {placementsResponse: {…}}
+Console.js:61 ❌ AdSpace 14 no tiene asignación activa {placementsResponse: {…}}
+Console.js:61 Respuesta del servidor: {user: {…}, token: 'direct-token-1755210660359'}
+Console.js:61 🌐 [QUERY] GET /api/activities
+Console.js:61 🌐 [QUERY] GET /api/users
+Console.js:61 🌐 [QUERY] GET /api/hr/employees
+Console.js:61 🌐 [QUERY] GET /api/volunteers
+Console.js:61 🌐 [QUERY] GET /api/active-concessions
+Console.js:61 i18next::backendConnector: loaded namespace parks for language es {title: 'Gestión de Parques', subtitle: 'Sistema integral de administración de parques municipales', fields: {…}, types: {…}, status: {…}, …}
+Console.js:61 i18next::translator: missingKey es common forms.municipality forms.municipality
+Console.js:61 i18next::translator: missingKey es common forms.allMunicipalities forms.allMunicipalities
+Console.js:61 i18next::translator: missingKey es common forms.parkType forms.parkType
+Console.js:61 i18next::translator: missingKey es common forms.allTypes forms.allTypes
+Console.js:61 i18next::translator: missingKey es common forms.amenity forms.amenity
+Console.js:61 🌐 [QUERY] GET /api/parks
+Console.js:61 🌐 [QUERY] GET /api/municipalities
+Console.js:61 🌐 [QUERY] GET /api/amenities
+Console.js:61 🌐 [QUERY] GET /api/parks-with-amenities
+Console.js:61 i18next::translator: missingKey es common forms.municipality forms.municipality
+Console.js:61 i18next::translator: missingKey es common forms.allMunicipalities forms.allMunicipalities
+Console.js:61 i18next::translator: missingKey es common forms.parkType forms.parkType
+Console.js:61 i18next::translator: missingKey es common forms.allTypes forms.allTypes
+Console.js:61 i18next::translator: missingKey es common forms.amenity forms.amenity
+Console.js:61 i18next::translator: missingKey es common forms.municipality forms.municipality
+Console.js:61 i18next::translator: missingKey es common forms.allMunicipalities forms.allMunicipalities
+Console.js:61 i18next::translator: missingKey es common forms.parkType forms.parkType
+Console.js:61 i18next::translator: missingKey es common forms.allTypes forms.allTypes
+Console.js:61 i18next::translator: missingKey es common forms.amenity forms.amenity
+Console.js:61 i18next::translator: missingKey es common forms.municipality forms.municipality
+Console.js:61 i18next::translator: missingKey es common forms.allMunicipalities forms.allMunicipalities
+Console.js:61 i18next::translator: missingKey es common forms.parkType forms.parkType
+Console.js:61 i18next::translator: missingKey es common forms.allTypes forms.allTypes
+Console.js:61 i18next::translator: missingKey es common forms.amenity forms.amenity
+Console.js:61 i18next::translator: missingKey es common forms.municipality forms.municipality
+Console.js:61 i18next::translator: missingKey es common forms.allMunicipalities forms.allMunicipalities
+Console.js:61 i18next::translator: missingKey es common forms.parkType forms.parkType
+Console.js:61 i18next::translator: missingKey es common forms.allTypes forms.allTypes
+Console.js:61 i18next::translator: missingKey es common forms.amenity forms.amenity

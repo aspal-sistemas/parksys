@@ -27,10 +27,8 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ onApplyFilters }) => {
   const [selectedAmenities, setSelectedAmenities] = useState<number[]>([]);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
-  // Fetch amenities
-  const { data: amenities = [] } = useQuery<Amenity[]>({ 
-    queryKey: ['/api/amenities'],
-  });
+  // Deshabilitado para simplificar interfaz
+  const amenities: Amenity[] = [];
 
   const handleApplyFilters = () => {
     onApplyFilters({
