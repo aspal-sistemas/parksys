@@ -77,9 +77,7 @@ const AdminParksContent = () => {
   const queryClient = useQueryClient();
   const [location] = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterMunicipality, setFilterMunicipality] = useState<string>('all');
   const [filterParkType, setFilterParkType] = useState<string>('all');
-  const [filterAmenity, setFilterAmenity] = useState<string>('all');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [parkToDelete, setParkToDelete] = useState<Park | null>(null);
   const [parkDependencies, setParkDependencies] = useState<ParkDependencies | null>(null);
@@ -90,14 +88,7 @@ const AdminParksContent = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const itemsPerPage = 10;
 
-  // Effect to handle URL parameters for amenity filtering
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const amenityParam = urlParams.get('amenity');
-    if (amenityParam) {
-      setFilterAmenity(amenityParam);
-    }
-  }, []);
+
 
   // Fetch all parks with simplified configuration
   const { 
@@ -114,32 +105,7 @@ const AdminParksContent = () => {
     suspense: false, // Explicitly disable suspense
   });
 
-  // Fetch municipalities for filter
-  const { 
-    data: municipalities = [] 
-  } = useQuery({
-    queryKey: ['/api/municipalities'],
-    suspense: false,
-    retry: 1,
-  });
 
-  // Fetch amenities for filter
-  const { 
-    data: amenities = [] 
-  } = useQuery({
-    queryKey: ['/api/amenities'],
-    suspense: false,
-    retry: 1,
-  });
-
-  // Fetch parks with amenities for filtering using optimized endpoint
-  const { 
-    data: parkAmenities = [] 
-  } = useQuery({
-    queryKey: ['/api/parks-with-amenities'],
-    suspense: false,
-    retry: 1,
-  });
 
   // Function to fetch park dependencies
   const fetchParkDependencies = async (parkId: number) => {
@@ -191,27 +157,14 @@ const AdminParksContent = () => {
         return false;
       }
       
-      // Apply municipality filter
-      if (filterMunicipality !== 'all' && park.municipalityId?.toString() !== filterMunicipality) {
-        return false;
-      }
-      
       // Apply park type filter
       if (filterParkType !== 'all' && park.parkType !== filterParkType) {
         return false;
       }
       
-      // Apply amenity filter
-      if (filterAmenity !== 'all') {
-        const parkAmenityData = (parkAmenities as any[]).find((pa: any) => pa.parkId === park.id);
-        if (!parkAmenityData || !parkAmenityData.amenityIds.includes(parseInt(filterAmenity))) {
-          return false;
-        }
-      }
-      
       return true;
     }).sort((a, b) => a.name.localeCompare(b.name));
-  }, [parks, searchQuery, filterMunicipality, filterParkType, filterAmenity, parkAmenities]);
+  }, [parks, searchQuery, filterParkType]);
 
   // Pagination calculations
   const totalPages = Math.ceil(filteredParks.length / itemsPerPage);
@@ -222,13 +175,9 @@ const AdminParksContent = () => {
   // Reset to first page when filters change
   React.useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, filterMunicipality, filterParkType, filterAmenity]);
+  }, [searchQuery, filterParkType]);
 
-  // Get municipality name by ID
-  const getMunicipalityName = (municipalityId: number) => {
-    const municipality = (municipalities as any[])?.find((m: any) => m.id === municipalityId);
-    return municipality ? municipality.name : 'Desconocido';
-  };
+
 
   // Get park type display label
   const getParkTypeLabel = (type: string) => {
@@ -249,9 +198,7 @@ const AdminParksContent = () => {
   // Clear all filters
   const handleClearFilters = () => {
     setSearchQuery('');
-    setFilterMunicipality('all');
     setFilterParkType('all');
-    setFilterAmenity('all');
   };
 
   // Pagination navigation
@@ -334,7 +281,6 @@ const AdminParksContent = () => {
                   <div className="flex items-center space-x-4">
                     <div className="flex-1">
                       <h3 className="text-lg font-semibold text-gray-900">{park.name}</h3>
-                      <p className="text-sm text-gray-600">{getMunicipalityName(park.municipalityId)}</p>
                     </div>
                     <div className="flex items-center space-x-6 text-sm text-gray-600">
                       <div className="flex items-center">
@@ -406,9 +352,6 @@ const AdminParksContent = () => {
               <div className="flex justify-between items-start">
                 <div>
                   <CardTitle className="text-lg">{park.name}</CardTitle>
-                  <CardDescription className="mt-1">
-                    {getMunicipalityName(park.municipalityId)}
-                  </CardDescription>
                 </div>
                 <Badge variant="secondary">
                   {getParkTypeLabel(park.parkType)}
@@ -614,20 +557,6 @@ const AdminParksContent = () => {
             />
           </div>
           
-          <Select value={filterMunicipality} onValueChange={setFilterMunicipality}>
-            <SelectTrigger className="w-[220px]">
-              <SelectValue placeholder={t('forms.municipality')} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t('forms.allMunicipalities')}</SelectItem>
-              {(municipalities as any[])?.map((municipality: any) => (
-                <SelectItem key={municipality.id} value={municipality.id.toString()}>
-                  {municipality.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          
           <Select value={filterParkType} onValueChange={setFilterParkType}>
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder={t('forms.parkType')} />
@@ -643,22 +572,8 @@ const AdminParksContent = () => {
               <SelectItem value="deportivo">Deportivo</SelectItem>
             </SelectContent>
           </Select>
-
-          <Select value={filterAmenity} onValueChange={setFilterAmenity}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder={t('forms.amenity')} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas las amenidades</SelectItem>
-              {(amenities as any[])?.map((amenity: any) => (
-                <SelectItem key={amenity.id} value={amenity.id.toString()}>
-                  {amenity.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
           
-          {(searchQuery || filterMunicipality !== 'all' || filterParkType !== 'all' || filterAmenity !== 'all') && (
+          {(searchQuery || filterParkType !== 'all') && (
             <Button variant="ghost" onClick={handleClearFilters} aria-label="Limpiar filtros">
               <X className="h-4 w-4" />
             </Button>
@@ -671,7 +586,7 @@ const AdminParksContent = () => {
             <MapPin className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-2 text-sm font-medium text-gray-900">No hay parques</h3>
             <p className="mt-1 text-sm text-gray-500">
-              {searchQuery || filterMunicipality !== 'all' || filterParkType !== 'all'
+              {searchQuery || filterParkType !== 'all'
                 ? "No se encontraron parques que coincidan con los filtros."
                 : "Comienza agregando un nuevo parque."}
             </p>
