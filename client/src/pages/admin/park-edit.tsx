@@ -58,7 +58,6 @@ const parkSchema = z.object({
   administrator: z.string().nullable().optional(),
   contactPhone: z.string().nullable().optional(),
   contactEmail: z.string().nullable().optional(),
-  videoUrl: z.string().nullable().optional(),
 });
 
 type ParkFormValues = z.infer<typeof parkSchema>;
@@ -102,7 +101,6 @@ const AdminParkEdit: React.FC = () => {
       administrator: '',
       contactPhone: '',
       contactEmail: '',
-      videoUrl: '',
     },
   });
   
@@ -131,7 +129,6 @@ const AdminParkEdit: React.FC = () => {
         administrator: park.administrator || '',
         contactPhone: park.contactPhone || '',
         contactEmail: park.contactEmail || '',
-        videoUrl: park.videoUrl || '',
       };
       
       form.reset(formValues);
@@ -155,7 +152,6 @@ const AdminParkEdit: React.FC = () => {
       administrator: values.administrator || undefined,
       contactPhone: values.contactPhone || undefined,
       contactEmail: values.contactEmail || undefined,
-      videoUrl: values.videoUrl || undefined,
       openingHours: values.openingHours || undefined
     };
     
@@ -508,20 +504,7 @@ const AdminParkEdit: React.FC = () => {
                     )}
                   />
                   
-                  {/* URL de video */}
-                  <FormField
-                    control={form.control}
-                    name="videoUrl"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>URL de video (YouTube, Vimeo, etc.)</FormLabel>
-                        <FormControl>
-                          <Input placeholder="URL del video" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+
                 </CardContent>
                 <CardFooter className="flex justify-end">
                   <Button 
