@@ -62,6 +62,19 @@ const parkSchema = z.object({
 
 type ParkFormValues = z.infer<typeof parkSchema>;
 
+// Municipios del área metropolitana de Guadalajara
+const GUADALAJARA_MUNICIPALITIES = [
+  { id: 1, name: 'Guadalajara' },
+  { id: 2, name: 'Zapopan' },
+  { id: 3, name: 'San Pedro Tlaquepaque' },
+  { id: 4, name: 'Tonalá' },
+  { id: 5, name: 'Tlajomulco de Zúñiga' },
+  { id: 6, name: 'El Salto' },
+  { id: 7, name: 'Ixtlahuacán de los Membrillos' },
+  { id: 8, name: 'Juanacatlán' },
+  { id: 9, name: 'Zapotlanejo' }
+];
+
 const AdminParkEdit: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [_, setLocation] = useWouterLocation();
@@ -79,8 +92,8 @@ const AdminParkEdit: React.FC = () => {
     staleTime: 0
   });
   
-  // Lista de municipios simplificada - sin consulta automática
-  const municipalities: any[] = [];
+  // Usar la lista estática de municipios del área metropolitana de Guadalajara
+  const municipalities = GUADALAJARA_MUNICIPALITIES;
   
   // Definir el formulario con react-hook-form
   const form = useForm<ParkFormValues>({
@@ -307,10 +320,9 @@ const AdminParkEdit: React.FC = () => {
                           <SelectContent>
                             <SelectItem value="Urbano">Parque Urbano</SelectItem>
                             <SelectItem value="Metropolitano">Parque Metropolitano</SelectItem>
-                            <SelectItem value="Linear">Parque Linear</SelectItem>
+                            <SelectItem value="Lineal">Parque Lineal</SelectItem>
                             <SelectItem value="Comunitario">Parque Comunitario</SelectItem>
                             <SelectItem value="Natural">Parque Natural</SelectItem>
-                            <SelectItem value="Temático">Parque Temático</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
