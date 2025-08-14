@@ -47,7 +47,8 @@
     "parkType": "Tipo de Parque",
     "allTypes": "Todos los Tipos",
     "amenity": "Amenidad",
-    "allAmenities": "Todas las Amenidades"
+    "allAmenities": "Todas las Amenidades",
+    "searchParks": "Buscar Parques"
   },
   "messages": {
     "loading": "Cargando...",

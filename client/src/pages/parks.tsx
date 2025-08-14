@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ExtendedPark } from '@shared/schema';
-// SimpleFilterSidebar temporalmente desactivado para debug
-// import SimpleFilterSidebar from '@/components/SimpleFilterSidebar';
+// Filtros completamente eliminados para simplificar interfaz
 import ParksMap from '@/components/ParksMap';
 import ParksList from '@/components/ParksList';
 import ParkDetail from '@/components/ParkDetail';
