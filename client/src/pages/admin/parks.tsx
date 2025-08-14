@@ -89,7 +89,7 @@ const AdminParksContent = () => {
 
 
 
-  // Fetch all parks with simplified configuration
+  // Fetch all parks with auto-refresh configuration
   const { 
     data: parks = [], 
     isLoading: isLoadingParks,
@@ -97,9 +97,9 @@ const AdminParksContent = () => {
     refetch: refetchParks
   } = useQuery<Park[]>({
     queryKey: ['/api/parks'],
-    refetchOnWindowFocus: false,
-    refetchInterval: false,
-    staleTime: 30000,
+    refetchOnWindowFocus: true,    // ✅ Actualizar al volver a la ventana
+    refetchInterval: 30000,        // ✅ Actualizar cada 30 segundos automáticamente
+    staleTime: 10000,              // ✅ Datos frescos por 10 segundos
     retry: 1,
 
   });
@@ -524,9 +524,7 @@ const AdminParksContent = () => {
             <div className="h-6 w-px bg-gray-300 mx-2"></div>
             
             {/* Action buttons */}
-            <Button variant="outline" size="sm" onClick={handleRefresh}>
-              Actualizar
-            </Button>
+
             <Button variant="outline" size="sm" onClick={() => window.location.href = "/admin/parks-import"}>
               <FileUp className="h-4 w-4 mr-2" />
               Importar Parques
