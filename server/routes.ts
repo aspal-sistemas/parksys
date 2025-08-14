@@ -817,7 +817,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Endpoint optimizado para obtener parques con sus amenidades para filtrado
+  // Endpoint temporalmente desactivado para debug de filtros
+  /*
   apiRouter.get("/parks-with-amenities", async (_req: Request, res: Response) => {
     try {
       const result = await pool.query(`
@@ -851,6 +852,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
+  */
 
   // Ruta para obtener estadísticas del dashboard de parques (DEBE IR ANTES DE /parks/:id)
   apiRouter.get("/parks/dashboard", async (_req: Request, res: Response) => {
@@ -1861,7 +1863,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get all amenities
+  // Get all amenities - Endpoint temporalmente desactivado para debug de filtros
+  /*
   apiRouter.get("/amenities", async (_req: Request, res: Response) => {
     try {
       const result = await pool.query(`
@@ -1885,6 +1888,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Error fetching amenities" });
     }
   });
+  */
 
   // Dashboard endpoint específico para amenidades
   apiRouter.get("/amenities/dashboard", async (_req: Request, res: Response) => {
@@ -4669,7 +4673,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get all municipalities
+  // Get all municipalities - Endpoint temporalmente desactivado para debug de filtros  
+  /*
   apiRouter.get("/municipalities", async (_req: Request, res: Response) => {
     try {
       const municipalities = await storage.getMunicipalities();
@@ -4679,6 +4684,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Error fetching municipalities" });
     }
   });
+  */
 
   // Basic authentication for testing usando la función directa
   apiRouter.post("/login", async (req: Request, res: Response) => {
