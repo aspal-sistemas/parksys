@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Search, Plus, FileUp, Trash2, Eye, Edit, X, MapPin, Users, Calendar, Package, AlertTriangle, TreePine, Activity, Camera, FileText, UserCheck, Wrench, Grid, List, ChevronLeft, ChevronRight } from "lucide-react";
@@ -538,23 +538,28 @@ const AdminParksContent = () => {
           </div>
         </div>
         
-        {/* Search and filter bar */}
-        <div className="flex flex-col md:flex-row items-start md:items-center gap-3 bg-white p-4 rounded-lg shadow-sm">
-          <div className="relative flex-1 min-w-[200px]">
+        {/* Search bar only */}
+        <div className="bg-white p-4 rounded-lg shadow-sm">
+          <div className="relative max-w-md">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
             <Input
-              placeholder={`${t('actions.search')} ${t('navigation.parks')}...`}
+              placeholder="Buscar parques por nombre o dirección..."
               className="pl-8"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
+            {searchQuery && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleClearFilters} 
+                className="absolute right-1 top-1 h-8 w-8 p-0"
+                aria-label="Limpiar búsqueda"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
           </div>
-          
-          {searchQuery && (
-            <Button variant="ghost" onClick={handleClearFilters} aria-label="Limpiar búsqueda">
-              <X className="h-4 w-4" />
-            </Button>
-          )}
         </div>
         
         {/* Parks content */}
