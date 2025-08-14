@@ -1,0 +1,27 @@
+T /api/amenities
+Console.js:61 🌐 [QUERY] GET /api/parks-with-amenities
+Console.js:61 i18next::translator: missingKey es common forms.municipality forms.municipality
+Console.js:61 i18next::translator: missingKey es common forms.allMunicipalities forms.allMunicipalities
+Console.js:61 i18next::translator: missingKey es common forms.parkType forms.parkType
+Console.js:61 i18next::translator: missingKey es common forms.allTypes forms.allTypes
+Console.js:61 i18next::translator: missingKey es common forms.amenity forms.amenity
+Console.js:61 i18next::translator: missingKey es common forms.municipality forms.municipality
+Console.js:61 i18next::translator: missingKey es common forms.allMunicipalities forms.allMunicipalities
+Console.js:61 i18next::translator: missingKey es common forms.parkType forms.parkType
+Console.js:61 i18next::translator: missingKey es common forms.allTypes forms.allTypes
+Console.js:61 i18next::translator: missingKey es common forms.amenity forms.amenity
+Console.js:61 i18next::translator: missingKey es common forms.municipality forms.municipality
+Console.js:61 i18next::translator: missingKey es common forms.allMunicipalities forms.allMunicipalities
+Console.js:61 i18next::translator: missingKey es common forms.parkType forms.parkType
+Console.js:61 i18next::translator: missingKey es common forms.allTypes forms.allTypes
+Console.js:61 i18next::translator: missingKey es common forms.amenity forms.amenity
+Console.js:61 i18next::translator: missingKey es common forms.municipality forms.municipality
+Console.js:61 i18next::translator: missingKey es common forms.allMunicipalities forms.allMunicipalities
+Console.js:61 i18next::translator: missingKey es common forms.parkType forms.parkType
+Console.js:61 i18next::translator: missingKey es common forms.allTypes forms.allTypes
+Console.js:61 i18next::translator: missingKey es common forms.amenity forms.amenity
+Console.js:61 i18next::translator: missingKey es common forms.municipality forms.municipality
+Console.js:61 i18next::translator: missingKey es common forms.allMunicipalities forms.allMunicipalities
+Console.js:61 i18next::translator: missingKey es common forms.parkType forms.parkType
+Console.js:61 i18next::translator: missingKey es common forms.allTypes forms.allTypes
+Console.js:61 i18next::translator: missingKey es common forms.amenity forms.amenity

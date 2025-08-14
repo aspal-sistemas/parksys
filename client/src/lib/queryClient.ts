@@ -178,9 +178,9 @@ export const getQueryFn: <T>(options: {
     try {
       const url = queryKey[0] as string;
       
-      // ⛔ BLOQUEO DEFINITIVO DE FILTROS - DEVOLVER INMEDIATAMENTE ARRAY VACÍO
-      if (url === '/api/municipalities' || url === '/api/amenities' || url === '/api/parks-with-amenities') {
-        console.log(`🚫 [QUERY BLOCKED] ${url} - Filtros eliminados`);
+      // ⛔⛔⛔ BLOQUEO TOTAL DE FILTROS - FORZAR RETURN INMEDIATO
+      if (url.includes('/api/municipalities') || url.includes('/api/amenities') || url.includes('/api/parks-with-amenities')) {
+        console.error(`🚫🚫🚫 [FILTROS BLOQUEADOS] ${url} - RETORNANDO VACÍO`);
         return [];
       }
       
