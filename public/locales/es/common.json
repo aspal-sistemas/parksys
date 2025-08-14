@@ -43,7 +43,7 @@
   },
   "forms": {
     "municipality": "Municipio",
-    "allMunicipalities": "Todos los Municipios",
+    "allMunicipalities": "Todos los Municipios", 
     "parkType": "Tipo de Parque",
     "allTypes": "Todos los Tipos",
     "amenity": "Amenidad",
@@ -177,7 +177,14 @@
     "username": "Usuario",
     "password": "Contraseña",
     "fullName": "Nombre Completo",
-    "role": "Rol"
+    "role": "Rol",
+    "municipality": "Municipio",
+    "allMunicipalities": "Todos los Municipios",
+    "parkType": "Tipo de Parque",
+    "allTypes": "Todos los Tipos",
+    "amenity": "Amenidad",
+    "allAmenities": "Todas las Amenidades",
+    "searchParks": "Buscar Parques"
   },
   "messages": {
     "saveSuccess": "Guardado exitosamente",

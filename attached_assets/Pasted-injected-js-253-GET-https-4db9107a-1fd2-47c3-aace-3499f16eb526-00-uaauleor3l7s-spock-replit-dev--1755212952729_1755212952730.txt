@@ -1,0 +1,30 @@
+injected.js:253 
+ GET https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/api/amenities 404 (Not Found)
+Console.js:61 Query failed for: /api/amenities Error: {"error":"Endpoint deshabilitado - filtros eliminados"}
+    at index-D5qLf1ib.js:49:45397
+injected.js:253 
+ GET https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/api/parks-with-amenities 404 (Not Found)
+Console.js:61 Query failed for: /api/parks-with-amenities Error: {"error":"Endpoint deshabilitado - filtros eliminados"}
+    at index-D5qLf1ib.js:49:45397
+Console.js:61 i18next::translator: missingKey es common forms.municipality forms.municipality
+Console.js:61 i18next::translator: missingKey es common forms.allMunicipalities forms.allMunicipalities
+Console.js:61 i18next::translator: missingKey es common forms.parkType forms.parkType
+Console.js:61 i18next::translator: missingKey es common forms.allTypes forms.allTypes
+Console.js:61 i18next::translator: missingKey es common forms.amenity forms.amenity
+Console.js:61 i18next::translator: missingKey es common forms.municipality forms.municipality
+Console.js:61 i18next::translator: missingKey es common forms.allMunicipalities forms.allMunicipalities
+Console.js:61 i18next::translator: missingKey es common forms.parkType forms.parkType
+Console.js:61 i18next::translator: missingKey es common forms.allTypes forms.allTypes
+Console.js:61 i18next::translator: missingKey es common forms.amenity forms.amenity
+﻿
+
+A more reliable and productive Chrome DevTools
+In Chrome 139, DevTools prioritized product excellence and developer experience. We tackled numerous known issues, including some years-old ones, and also made improvements to newer features. Behind the scenes, we enhanced our test coverage and migrated tests to more robust foundations.
+
+We hope you will experience these numerous subtle fixes across various panels, making your daily debugging and development workflows smoother, more reliable, and more productive.
+
+Upload images in AI assistance for styling
+To provide additional visual context to your prompts, you can now upload arbitrary images in the AI assistance panel when you start your conversation from the Elements panel with a DOM element selected as context.
+
+Check out the highlights from I/O
+Check out the features we announced at Google I/O 2025, including features with Gemini integration: modify and save CSS changes to your workspace, ask about performance insights, annotate performance findings, and more.
