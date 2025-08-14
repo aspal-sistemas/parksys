@@ -541,30 +541,7 @@ export default function ParkEditSimple() {
                         />
                       </div>
 
-                      <FormField
-                        control={form.control}
-                        name="conservationStatus"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Estado de Conservación</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Seleccione el estado" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="Excelente">Excelente</SelectItem>
-                                <SelectItem value="Bueno">Bueno</SelectItem>
-                                <SelectItem value="Regular">Regular</SelectItem>
-                                <SelectItem value="Malo">Malo</SelectItem>
-                                <SelectItem value="Crítico">Crítico</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <FormField
