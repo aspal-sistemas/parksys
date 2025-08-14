@@ -559,10 +559,10 @@ const AdminParksContent = () => {
           
           <Select value={filterParkType} onValueChange={setFilterParkType}>
             <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder={t('forms.parkType')} />
+              <SelectValue placeholder="Tipo de Parque" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">{t('forms.allTypes')}</SelectItem>
+              <SelectItem value="all">Todos los tipos</SelectItem>
               <SelectItem value="metropolitano">Metropolitano</SelectItem>
               <SelectItem value="barrial">Barrial</SelectItem>
               <SelectItem value="vecinal">Vecinal</SelectItem>
