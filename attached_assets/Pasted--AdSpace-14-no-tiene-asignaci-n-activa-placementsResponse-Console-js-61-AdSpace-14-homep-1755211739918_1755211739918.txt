@@ -1,0 +1,102 @@
+❌ AdSpace 14 no tiene asignación activa {placementsResponse: {…}}
+Console.js:61 🎯 AdSpace 14 (homepage/banner): {isLoading: false, placementsResponse: {…}, activePlacement: null, hasData: false}
+Console.js:61 ❌ AdSpace 14 no tiene asignación activa {placementsResponse: {…}}
+Console.js:61 Respuesta del servidor: {user: {…}, token: 'direct-token-1755211696917'}
+Console.js:61 🌐 [QUERY] GET /api/activities
+Console.js:61 🌐 [QUERY] GET /api/users
+Console.js:61 🌐 [QUERY] GET /api/hr/employees
+Console.js:61 🌐 [QUERY] GET /api/volunteers
+Console.js:61 🌐 [QUERY] GET /api/active-concessions
+Console.js:61 Error al obtener la imagen de perfil: Request timeout
+Mt.forEach.n.<computed> @ Console.js:61
+(anonymous) @ index-D5qLf1ib.js:788
+Promise.catch
+(anonymous) @ index-D5qLf1ib.js:788
+(anonymous) @ index-D5qLf1ib.js:788
+Hy @ index-D5qLf1ib.js:41
+Id @ index-D5qLf1ib.js:41
+HE @ index-D5qLf1ib.js:41
+ol @ index-D5qLf1ib.js:39
+iX @ index-D5qLf1ib.js:41
+wl @ index-D5qLf1ib.js:41
+fL @ index-D5qLf1ib.js:41
+_ @ index-D5qLf1ib.js:26
+k @ index-D5qLf1ib.js:26Understand this error
+Console.js:61 Usando imagen desde localStorage para usuario 4
+4db9107a-1fd2-47c3-a…t.dev/admin/parks:1 Uncaught (in promise) Request timeout
+Promise.then
+t.send @ request.js:145
+window.fetch @ Network.js:220
+apply @ injected.js:253
+(anonymous) @ index-D5qLf1ib.js:788
+(anonymous) @ index-D5qLf1ib.js:788
+Hy @ index-D5qLf1ib.js:41
+Id @ index-D5qLf1ib.js:41
+HE @ index-D5qLf1ib.js:41
+ol @ index-D5qLf1ib.js:39
+iX @ index-D5qLf1ib.js:41
+wl @ index-D5qLf1ib.js:41
+fL @ index-D5qLf1ib.js:41
+_ @ index-D5qLf1ib.js:26
+k @ index-D5qLf1ib.js:26Understand this error
+Console.js:61 i18next::backendConnector: loaded namespace parks for language es {title: 'Gestión de Parques', subtitle: 'Sistema integral de administración de parques municipales', fields: {…}, types: {…}, status: {…}, …}
+Console.js:61 i18next::translator: missingKey es common forms.municipality forms.municipality
+Console.js:61 i18next::translator: missingKey es common forms.allMunicipalities forms.allMunicipalities
+Console.js:61 i18next::translator: missingKey es common forms.parkType forms.parkType
+Console.js:61 i18next::translator: missingKey es common forms.allTypes forms.allTypes
+Console.js:61 i18next::translator: missingKey es common forms.amenity forms.amenity
+Console.js:61 🌐 [QUERY] GET /api/municipalities
+Console.js:61 🌐 [QUERY] GET /api/amenities
+Console.js:61 🌐 [QUERY] GET /api/parks-with-amenities
+Console.js:61 Error al obtener la imagen de perfil: Request timeout
+Mt.forEach.n.<computed> @ Console.js:61
+(anonymous) @ index-D5qLf1ib.js:788
+Promise.catch
+(anonymous) @ index-D5qLf1ib.js:788
+(anonymous) @ index-D5qLf1ib.js:788
+Hy @ index-D5qLf1ib.js:41
+Id @ index-D5qLf1ib.js:41
+HE @ index-D5qLf1ib.js:41
+ol @ index-D5qLf1ib.js:39
+iX @ index-D5qLf1ib.js:41
+wl @ index-D5qLf1ib.js:41
+fL @ index-D5qLf1ib.js:41
+_ @ index-D5qLf1ib.js:26
+k @ index-D5qLf1ib.js:26Understand this error
+Console.js:61 Usando imagen desde localStorage para usuario 4
+4db9107a-1fd2-47c3-a…t.dev/admin/parks:1 Uncaught (in promise) Request timeout
+Promise.then
+t.send @ request.js:145
+window.fetch @ Network.js:220
+apply @ injected.js:253
+(anonymous) @ index-D5qLf1ib.js:788
+(anonymous) @ index-D5qLf1ib.js:788
+Hy @ index-D5qLf1ib.js:41
+Id @ index-D5qLf1ib.js:41
+HE @ index-D5qLf1ib.js:41
+ol @ index-D5qLf1ib.js:39
+iX @ index-D5qLf1ib.js:41
+wl @ index-D5qLf1ib.js:41
+fL @ index-D5qLf1ib.js:41
+_ @ index-D5qLf1ib.js:26
+k @ index-D5qLf1ib.js:26Understand this error
+Console.js:61 i18next::translator: missingKey es common forms.municipality forms.municipality
+Console.js:61 i18next::translator: missingKey es common forms.allMunicipalities forms.allMunicipalities
+Console.js:61 i18next::translator: missingKey es common forms.parkType forms.parkType
+Console.js:61 i18next::translator: missingKey es common forms.allTypes forms.allTypes
+Console.js:61 i18next::translator: missingKey es common forms.amenity forms.amenity
+Console.js:61 i18next::translator: missingKey es common forms.municipality forms.municipality
+Console.js:61 i18next::translator: missingKey es common forms.allMunicipalities forms.allMunicipalities
+Console.js:61 i18next::translator: missingKey es common forms.parkType forms.parkType
+Console.js:61 i18next::translator: missingKey es common forms.allTypes forms.allTypes
+Console.js:61 i18next::translator: missingKey es common forms.amenity forms.amenity
+Console.js:61 i18next::translator: missingKey es common forms.municipality forms.municipality
+Console.js:61 i18next::translator: missingKey es common forms.allMunicipalities forms.allMunicipalities
+Console.js:61 i18next::translator: missingKey es common forms.parkType forms.parkType
+Console.js:61 i18next::translator: missingKey es common forms.allTypes forms.allTypes
+Console.js:61 i18next::translator: missingKey es common forms.amenity forms.amenity
+Console.js:61 i18next::translator: missingKey es common forms.municipality forms.municipality
+Console.js:61 i18next::translator: missingKey es common forms.allMunicipalities forms.allMunicipalities
+Console.js:61 i18next::translator: missingKey es common forms.parkType forms.parkType
+Console.js:61 i18next::translator: missingKey es common forms.allTypes forms.allTypes
+Console.js:61 i18next::translator: missingKey es common forms.amenity forms.amenity

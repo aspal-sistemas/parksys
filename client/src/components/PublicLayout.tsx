@@ -1,14 +1,11 @@
 import React from 'react';
 import { Link } from 'wouter';
-import { useQuery } from '@tanstack/react-query';
+// import { useQuery } from '@tanstack/react-query'; - No longer needed
 const logoImage = "/images/logo-ambu.png";
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
-  // Se podría añadir la consulta para obtener el nombre del municipio o parque si se necesita
-  const { data: municipalityData } = useQuery({
-    queryKey: ['/api/municipalities/current'],
-    enabled: false, // Por ahora desactivada
-  });
+  // Consulta de municipio completamente eliminada para simplificar
+  const municipalityData = null;
 
   const municipalityName = municipalityData?.name || 'Bosques Urbanos';
 

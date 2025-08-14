@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+// import { useQuery } from '@tanstack/react-query'; - No longer needed
 import { ArrowLeft, FileUp, Download, Upload, AlertTriangle, Check } from 'lucide-react';
 import AdminLayout from '@/components/AdminLayout';
 import { Button } from '@/components/ui/button';
@@ -24,10 +24,9 @@ const ParksImport = () => {
   } | null>(null);
   const [selectedMunicipality, setSelectedMunicipality] = useState<string>('');
 
-  // Fetch municipalities
-  const { data: municipalities, isLoading: loadingMunicipalities } = useQuery<Municipality[]>({
-    queryKey: ['/api/municipalities'],
-  });
+  // Municipios simplificado - eliminado para reducir queries
+  const municipalities = [];
+  const loadingMunicipalities = false;
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
