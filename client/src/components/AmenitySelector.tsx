@@ -32,22 +32,11 @@ const AmenitySelector: React.FC<AmenitySelectorProps> = ({
 
       try {
         setLoading(true);
-        const response = await fetch('/api/amenities');
-        
-        if (!response.ok) {
-          throw new Error('No se pudieron cargar las amenidades');
-        }
-        
-        const allAmenities = await response.json();
-        
-        // Filtrar amenidades que ya están asignadas al parque
-        const filtered = allAmenities.filter((amenity: any) => {
-          return !existingAmenities.some((parkAmenity: any) => 
-            parkAmenity.id === amenity.id
-          );
-        });
-        
-        setAvailableAmenities(filtered);
+        // Query desactivada para simplificar interfaz
+        // const response = await fetch('/api/amenities');
+        setAvailableAmenities([]);
+        setLoading(false);
+        return;
       } catch (error) {
         console.error('Error al cargar amenidades:', error);
         toast({

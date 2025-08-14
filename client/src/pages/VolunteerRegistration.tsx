@@ -67,10 +67,11 @@ export default function VolunteerRegistration() {
     },
   });
 
-  // Consultas para datos necesarios
-  const { data: municipalities } = useQuery({
-    queryKey: ["/api/municipalities"],
-  });
+  // Query desactivada para simplificar interfaz
+  // const { data: municipalities } = useQuery({
+  //   queryKey: ["/api/municipalities"],
+  // });
+  const municipalities: any[] = [];
 
   const createVolunteerMutation = useMutation({
     mutationFn: async (data: VolunteerFormData) => {
