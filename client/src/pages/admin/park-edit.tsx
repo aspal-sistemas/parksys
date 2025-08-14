@@ -53,10 +53,7 @@ const parkSchema = z.object({
   longitude: z.string().nullable().optional(),
   area: z.string().nullable().optional(),
   foundationYear: z.coerce.number().nullable().optional(),
-  hasAccessibility: z.boolean().default(false),
-  hasSportsAreas: z.boolean().default(false),
-  hasPlayground: z.boolean().default(false),
-  hasRestrooms: z.boolean().default(false),
+
   openingHours: z.string().nullable().optional(),
   administrator: z.string().nullable().optional(),
   contactPhone: z.string().nullable().optional(),
@@ -102,10 +99,7 @@ const AdminParkEdit: React.FC = () => {
       longitude: '',
       area: '',
       foundationYear: null,
-      hasAccessibility: false,
-      hasSportsAreas: false,
-      hasPlayground: false,
-      hasRestrooms: false,
+
       openingHours: '',
       administrator: '',
       contactPhone: '',
@@ -450,80 +444,7 @@ const AdminParkEdit: React.FC = () => {
                     />
                   </div>
                   
-                  {/* Características */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <h3 className="text-sm font-medium">Características</h3>
-                      
-                      <FormField
-                        control={form.control}
-                        name="hasAccessibility"
-                        render={({ field }) => (
-                          <FormItem className="flex items-center space-x-2 space-y-0">
-                            <FormControl>
-                              <Switch 
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                            <FormLabel>Accesibilidad para discapacitados</FormLabel>
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={form.control}
-                        name="hasSportsAreas"
-                        render={({ field }) => (
-                          <FormItem className="flex items-center space-x-2 space-y-0">
-                            <FormControl>
-                              <Switch 
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                            <FormLabel>Áreas deportivas</FormLabel>
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    
-                    <div className="space-y-4">
-                      <h3 className="text-sm font-medium">&nbsp;</h3>
-                      
-                      <FormField
-                        control={form.control}
-                        name="hasPlayground"
-                        render={({ field }) => (
-                          <FormItem className="flex items-center space-x-2 space-y-0">
-                            <FormControl>
-                              <Switch 
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                            <FormLabel>Áreas infantiles</FormLabel>
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={form.control}
-                        name="hasRestrooms"
-                        render={({ field }) => (
-                          <FormItem className="flex items-center space-x-2 space-y-0">
-                            <FormControl>
-                              <Switch 
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                            <FormLabel>Baños públicos</FormLabel>
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </div>
+
                   
                   {/* Horario y contacto */}
                   <div>
