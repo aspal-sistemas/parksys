@@ -543,35 +543,7 @@ export default function ParkEditSimple() {
 
 
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <FormField
-                          control={form.control}
-                          name="regulationUrl"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>URL de Reglamento</FormLabel>
-                              <FormControl>
-                                <Input placeholder="https://..." {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
 
-                        <FormField
-                          control={form.control}
-                          name="videoUrl"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>URL de Video</FormLabel>
-                              <FormControl>
-                                <Input placeholder="https://..." {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
                     </CardContent>
                   </Card>
                 </TabsContent>
