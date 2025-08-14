@@ -102,7 +102,7 @@ const AdminParksContent = () => {
     refetchInterval: false,
     staleTime: 30000,
     retry: 1,
-    suspense: false, // Explicitly disable suspense
+
   });
 
 

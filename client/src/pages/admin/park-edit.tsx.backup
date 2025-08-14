@@ -73,7 +73,10 @@ const AdminParkEdit: React.FC = () => {
   const [activeTab, setActiveTab] = useState('basic');
   const { toast } = useToast();
   
-
+  // Estados para recursos multimedia y amenidades
+  const [parkImages, setParkImages] = useState<any[]>([]);
+  const [parkDocuments, setParkDocuments] = useState<any[]>([]);
+  const [parkAmenities, setParkAmenities] = useState<any[]>([]);
   
   // Consulta los datos del parque si estamos editando
   const { data: park, isLoading } = useQuery({
@@ -144,7 +147,35 @@ const AdminParkEdit: React.FC = () => {
       
       form.reset(formValues);
       
-
+      // Cargar recursos multimedia si están disponibles
+      const loadMultimediaResources = async () => {
+        try {
+          // Imágenes
+          const imagesResponse = await fetch(`/api/parks/${id}/images`);
+          if (imagesResponse.ok) {
+            const images = await imagesResponse.json();
+            setParkImages(images);
+          }
+          
+          // Documentos
+          const documentsResponse = await fetch(`/api/parks/${id}/documents`);
+          if (documentsResponse.ok) {
+            const documents = await documentsResponse.json();
+            setParkDocuments(documents);
+          }
+          
+          // Amenidades
+          const amenitiesResponse = await fetch(`/api/parks/${id}/amenities`);
+          if (amenitiesResponse.ok) {
+            const amenities = await amenitiesResponse.json();
+            setParkAmenities(amenities);
+          }
+        } catch (error) {
+          console.error('Error cargando recursos multimedia:', error);
+        }
+      };
+      
+      loadMultimediaResources();
     }
   }, [park, isEdit, form, id]);
   
@@ -611,6 +642,162 @@ const AdminParkEdit: React.FC = () => {
                   >
                     {mutation.isPending && <Loader className="mr-2 h-4 w-4 animate-spin" />}
                     {isEdit ? 'Guardar Cambios' : 'Crear Parque'}
+                  </Button>
+                </CardFooter>
+              </Card>
+            </TabsContent>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Multimedia</CardTitle>
+                  <CardDescription>
+                    Imágenes y documentos del parque
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-medium">Imágenes</h3>
+                    {parkImages.length > 0 ? (
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        {parkImages.map((image: any) => (
+                          <div key={image.id} className="relative group">
+                            <img 
+                              src={image.imageUrl} 
+                              alt={`Imagen del parque ${park?.name || ''}`} 
+                              className="h-40 w-full object-cover rounded-md"
+                            />
+                            <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                              <div className="flex space-x-2">
+                                {image.isPrimary ? (
+                                  <Badge variant="default" className="absolute top-2 right-2">
+                                    Principal
+                                  </Badge>
+                                ) : (
+                                  <Button type="button" size="sm" variant="outline" className="bg-white">
+                                    <Star className="h-4 w-4 mr-1" />
+                                    Principal
+                                  </Button>
+                                )}
+                                <Button type="button" size="sm" variant="destructive">
+                                  <Trash className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        No hay imágenes disponibles. Puede subir imágenes después de crear el parque.
+                      </p>
+                    )}
+                    {isEdit && (
+                      <Button type="button" variant="outline" className="w-full h-32 border-dashed">
+                        <div className="flex flex-col items-center">
+                          <Upload className="h-10 w-10 text-muted-foreground mb-2" />
+                          <span>Subir imágenes</span>
+                        </div>
+                      </Button>
+                    )}
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-medium">Documentos</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Los documentos podrán ser subidos después de crear el parque.
+                    </p>
+                    {isEdit && (
+                      <Button type="button" variant="outline" className="w-full h-32 border-dashed" disabled>
+                        <div className="flex flex-col items-center">
+                          <Upload className="h-10 w-10 text-muted-foreground mb-2" />
+                          <span>Subir documentos</span>
+                          <span className="text-xs text-muted-foreground mt-1">
+                            (Disponible después de guardar)
+                          </span>
+                        </div>
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+                <CardFooter className="flex justify-between">
+                  <Button variant="outline" onClick={() => setActiveTab('basic')}>
+                    Anterior
+                  </Button>
+                  <div className="flex gap-2">
+                    <Button 
+                      type="button"
+                      variant="outline"
+                      disabled={mutation.isPending}
+                      onClick={() => {
+                        console.log('Botón de guardar clickeado (multimedia)');
+                        form.handleSubmit(onSubmit)();
+                      }}
+                    >
+                      {mutation.isPending && <Loader className="mr-2 h-4 w-4 animate-spin" />}
+                      {isEdit ? 'Guardar Cambios' : 'Crear Parque'}
+                    </Button>
+                    <Button onClick={() => setActiveTab('amenities')}>
+                      Siguiente
+                    </Button>
+                  </div>
+                </CardFooter>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="amenities">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Amenidades</CardTitle>
+                  <CardDescription>
+                    Servicios y amenidades disponibles en el parque
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-medium">Amenidades del parque</h3>
+                    {parkAmenities.length > 0 ? (
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        {parkAmenities.map((amenity: any) => (
+                          <div key={amenity.id} className="flex items-center p-3 border rounded-md">
+                            <div className="flex-1">
+                              <p className="text-sm font-medium">{amenity.name}</p>
+                              <p className="text-xs text-muted-foreground capitalize">{amenity.category}</p>
+                            </div>
+                            <Button size="sm" variant="ghost" className="text-red-500 hover:text-red-700">
+                              <Trash className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        No hay amenidades asociadas a este parque.
+                      </p>
+                    )}
+                    
+                    {isEdit && (
+                      <div className="mt-4">
+                        <Button type="button" variant="outline" className="w-full">
+                          <Tag className="h-4 w-4 mr-2" />
+                          Agregar amenidades
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+                <CardFooter className="flex justify-between">
+                  <Button variant="outline" onClick={() => setActiveTab('media')}>
+                    Anterior
+                  </Button>
+                  <Button 
+                    type="button"
+                    disabled={mutation.isPending}
+                    onClick={() => {
+                      console.log('Botón de guardar clickeado (amenidades)');
+                      form.handleSubmit(onSubmit)();
+                    }}
+                  >
+                    {mutation.isPending && <Loader className="mr-2 h-4 w-4 animate-spin" />}
+                    {isEdit ? 'Actualizar Parque' : 'Crear Parque'}
                   </Button>
                 </CardFooter>
               </Card>
