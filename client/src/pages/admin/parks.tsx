@@ -77,7 +77,6 @@ const AdminParksContent = () => {
   const queryClient = useQueryClient();
   const [location] = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterParkType, setFilterParkType] = useState<string>('all');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [parkToDelete, setParkToDelete] = useState<Park | null>(null);
   const [parkDependencies, setParkDependencies] = useState<ParkDependencies | null>(null);
@@ -149,22 +148,17 @@ const AdminParksContent = () => {
     },
   });
 
-  // Filter and sort parks
+  // Filter parks by search only
   const filteredParks = React.useMemo(() => {
     return (parks as Park[]).filter(park => {
-      // Apply search filter
-      if (searchQuery && !park.name.toLowerCase().includes(searchQuery.toLowerCase())) {
-        return false;
-      }
+      // Apply search filter only
+      const matchesSearch = searchQuery === '' || 
+        park.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        park.address.toLowerCase().includes(searchQuery.toLowerCase());
       
-      // Apply park type filter
-      if (filterParkType !== 'all' && park.parkType !== filterParkType) {
-        return false;
-      }
-      
-      return true;
+      return matchesSearch;
     }).sort((a, b) => a.name.localeCompare(b.name));
-  }, [parks, searchQuery, filterParkType]);
+  }, [parks, searchQuery]);
 
   // Pagination calculations
   const totalPages = Math.ceil(filteredParks.length / itemsPerPage);
@@ -172,10 +166,10 @@ const AdminParksContent = () => {
   const endIndex = startIndex + itemsPerPage;
   const currentParks = filteredParks.slice(startIndex, endIndex);
 
-  // Reset to first page when filters change
+  // Reset to first page when search changes
   React.useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, filterParkType]);
+  }, [searchQuery]);
 
 
 
@@ -195,10 +189,9 @@ const AdminParksContent = () => {
 
 
 
-  // Clear all filters
+  // Clear search
   const handleClearFilters = () => {
     setSearchQuery('');
-    setFilterParkType('all');
   };
 
   // Pagination navigation
@@ -557,24 +550,8 @@ const AdminParksContent = () => {
             />
           </div>
           
-          <Select value={filterParkType} onValueChange={setFilterParkType}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Tipo de Parque" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos los tipos</SelectItem>
-              <SelectItem value="metropolitano">Metropolitano</SelectItem>
-              <SelectItem value="barrial">Barrial</SelectItem>
-              <SelectItem value="vecinal">Vecinal</SelectItem>
-              <SelectItem value="lineal">Lineal</SelectItem>
-              <SelectItem value="ecologico">Ecológico</SelectItem>
-              <SelectItem value="botanico">Botánico</SelectItem>
-              <SelectItem value="deportivo">Deportivo</SelectItem>
-            </SelectContent>
-          </Select>
-          
-          {(searchQuery || filterParkType !== 'all') && (
-            <Button variant="ghost" onClick={handleClearFilters} aria-label="Limpiar filtros">
+          {searchQuery && (
+            <Button variant="ghost" onClick={handleClearFilters} aria-label="Limpiar búsqueda">
               <X className="h-4 w-4" />
             </Button>
           )}
@@ -586,8 +563,8 @@ const AdminParksContent = () => {
             <MapPin className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-2 text-sm font-medium text-gray-900">No hay parques</h3>
             <p className="mt-1 text-sm text-gray-500">
-              {searchQuery || filterParkType !== 'all'
-                ? "No se encontraron parques que coincidan con los filtros."
+              {searchQuery
+                ? "No se encontraron parques que coincidan con la búsqueda."
                 : "Comienza agregando un nuevo parque."}
             </p>
           </div>
