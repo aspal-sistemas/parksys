@@ -332,8 +332,18 @@ export default function AdminParkView() {
     );
   }
 
-  // Use the park data directly from the main API
-  const displayPark = park;
+  // Create displayPark object with proper data structure for view
+  const displayPark = React.useMemo(() => {
+    if (!park) return {};
+    
+    return {
+      ...park,
+      municipality: park.municipality || { name: park.municipalityName || 'No especificado' },
+      documents: park.documents || [],
+      parkType: park.parkType || park.type || 'No especificado',
+      address: park.address || 'No especificado'
+    };
+  }, [park]);
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
@@ -613,7 +623,7 @@ export default function AdminParkView() {
             setIsAddAmenityModalOpen={setIsAddAmenityModalOpen}
             availableAmenities={availableAmenities || []}
             addAmenityMutation={addAmenityMutation}
-            parkData={park}
+            parkData={displayPark}
             isEditAmenityModalOpen={isEditAmenityModalOpen}
             setIsEditAmenityModalOpen={setIsEditAmenityModalOpen}
             editingAmenity={editingAmenity}
@@ -807,7 +817,7 @@ export default function AdminParkView() {
             onSubmit={(data) => addAmenityMutation.mutate(data)}
             isLoading={addAmenityMutation.isPending}
             onCancel={() => setIsAddAmenityModalOpen(false)}
-            parkData={park}
+            parkData={displayPark}
           />
         </DialogContent>
       </Dialog>
@@ -830,7 +840,7 @@ export default function AdminParkView() {
                 setIsEditAmenityModalOpen(false);
                 setEditingAmenity(null);
               }}
-              parkData={park}
+              parkData={displayPark}
             />
           )}
         </DialogContent>
@@ -1048,11 +1058,12 @@ const AmenitiesTable = ({
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  // Use amenities data from parkData instead of separate query
+  // Use amenities data from parkData with proper mapping
   const amenitiesArray = Array.isArray(parkData?.amenities) ? parkData.amenities.map(amenity => ({
     ...amenity,
-    amenityName: amenity.name,
-    amenityIcon: amenity.icon
+    amenityName: amenity.amenityName || amenity.name,
+    amenityIcon: amenity.amenityIcon || amenity.icon,
+    parkAmenityId: amenity.id
   })) : [];
   
   const isLoading = !parkData;
