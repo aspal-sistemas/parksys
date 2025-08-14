@@ -241,7 +241,18 @@ export default function AdminParkView() {
     enabled: !!id,
   });
 
-
+  // Create displayPark object with proper data structure for view - moved before conditional returns
+  const displayPark = React.useMemo(() => {
+    if (!park) return {};
+    
+    return {
+      ...park,
+      municipality: park.municipality || { name: park.municipalityName || 'No especificado' },
+      documents: park.documents || [],
+      parkType: park.parkType || park.type || 'No especificado',
+      address: park.address || 'No especificado'
+    };
+  }, [park]);
 
   // Amenidades disponibles simplificadas - sin consulta automática
   const availableAmenities: any[] = [];
@@ -331,19 +342,6 @@ export default function AdminParkView() {
       </div>
     );
   }
-
-  // Create displayPark object with proper data structure for view
-  const displayPark = React.useMemo(() => {
-    if (!park) return {};
-    
-    return {
-      ...park,
-      municipality: park.municipality || { name: park.municipalityName || 'No especificado' },
-      documents: park.documents || [],
-      parkType: park.parkType || park.type || 'No especificado',
-      address: park.address || 'No especificado'
-    };
-  }, [park]);
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
