@@ -479,13 +479,7 @@ export default function AdminParkView() {
                   <p className="text-gray-600">{displayPark.parkType || 'No especificado'}</p>
                 </div>
                 
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <Clock className="h-4 w-4 text-gray-500" />
-                    <span className="font-medium text-gray-700">Horarios:</span>
-                  </div>
-                  {formatOpeningHours(displayPark.openingHours)}
-                </div>
+
                 
                 <div>
                   <div className="flex items-center gap-2 mb-1">
@@ -547,7 +541,7 @@ export default function AdminParkView() {
                     <MapPin className="h-4 w-4 text-gray-500" />
                     <span className="font-medium text-gray-700">Dirección:</span>
                   </div>
-                  <p className="text-gray-600">{displayPark.address || displayPark.location || 'No especificado'}</p>
+                  <p className="text-gray-600">{displayPark.address || 'No especificado'}</p>
                 </div>
 
                 {displayPark.postalCode && (
@@ -608,86 +602,7 @@ export default function AdminParkView() {
               </CardContent>
             </Card>
 
-            {/* Características */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Shield className="h-5 w-5 text-purple-600" />
-                  Características
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {displayPark.administrator && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <Users className="h-4 w-4 text-gray-500" />
-                      <span className="font-medium text-gray-700">Administrador:</span>
-                    </div>
-                    <p className="text-gray-600">{displayPark.administrator}</p>
-                  </div>
-                )}
 
-                {displayPark.conservationStatus && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-medium text-gray-700">Estado de Conservación:</span>
-                    </div>
-                    <Badge variant={displayPark.conservationStatus === 'bueno' ? 'default' : 'secondary'}>
-                      {displayPark.conservationStatus}
-                    </Badge>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Enlaces y Recursos */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Globe className="h-5 w-5 text-indigo-600" />
-                  Enlaces y Recursos
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {park.regulationUrl && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <FileText className="h-4 w-4 text-gray-500" />
-                      <span className="font-medium text-gray-700">Reglamento:</span>
-                    </div>
-                    <a 
-                      href={park.regulationUrl} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-800 underline"
-                    >
-                      Ver reglamento
-                    </a>
-                  </div>
-                )}
-
-                {park.videoUrl && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <Globe className="h-4 w-4 text-gray-500" />
-                      <span className="font-medium text-gray-700">Video:</span>
-                    </div>
-                    <a 
-                      href={park.videoUrl} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-800 underline"
-                    >
-                      Ver video del parque
-                    </a>
-                  </div>
-                )}
-
-                {!park.regulationUrl && !park.videoUrl && (
-                  <p className="text-gray-500 italic">No hay enlaces disponibles</p>
-                )}
-              </CardContent>
-            </Card>
           </div>
         </TabsContent>
 
@@ -825,28 +740,39 @@ export default function AdminParkView() {
         <TabsContent value="documents" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Documentos ({park.documents?.length || 0})</CardTitle>
+              <CardTitle>Documentos ({displayPark.documents?.length || 0})</CardTitle>
               <CardDescription>Documentos oficiales y archivos del parque</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {park.documents?.map((doc) => (
+                {displayPark.documents?.map((doc) => (
                   <div key={doc.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="flex items-center gap-3">
                       <FileText className="h-8 w-8 text-blue-600" />
                       <div>
                         <h4 className="font-medium">{doc.title}</h4>
                         <div className="text-sm text-gray-500">
-                          <span>{doc.type}</span> • 
-                          <span> {new Date(doc.uploadedAt).toLocaleDateString()}</span>
+                          <span>{doc.fileType || 'PDF'}</span> • 
+                          <span> {new Date(doc.createdAt || doc.uploadedAt).toLocaleDateString()}</span>
+                          {doc.fileSize && <span> • {(parseInt(doc.fileSize) / 1024).toFixed(0)} KB</span>}
                         </div>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm">
-                      Descargar
-                    </Button>
+                    <a href={doc.fileUrl || doc.downloadUrl || '#'} target="_blank" rel="noopener noreferrer">
+                      <Button variant="outline" size="sm">
+                        <Download className="h-4 w-4 mr-2" />
+                        Descargar
+                      </Button>
+                    </a>
                   </div>
                 ))}
+                
+                {!displayPark.documents?.length && (
+                  <div className="text-center py-8">
+                    <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-500">No hay documentos disponibles para este parque</p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -1222,28 +1148,7 @@ const AmenitiesTable = ({
             <CardTitle>Amenidades del Parque ({amenitiesArray.length})</CardTitle>
             <CardDescription>Servicios e infraestructura disponible</CardDescription>
           </div>
-          <Dialog open={isAddAmenityModalOpen} onOpenChange={setIsAddAmenityModalOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Agregar Módulo
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]">
-              <DialogHeader>
-                <DialogTitle>Agregar módulo</DialogTitle>
-                <DialogDescription>
-                  Selecciona una amenidad existente para agregar al parque.
-                </DialogDescription>
-              </DialogHeader>
-              <AddAmenityForm 
-                availableAmenities={availableAmenities || []}
-                onSubmit={(data) => addAmenityMutation.mutate(data)}
-                isLoading={addAmenityMutation.isPending}
-                onCancel={() => setIsAddAmenityModalOpen(false)}
-              />
-            </DialogContent>
-          </Dialog>
+
         </div>
       </CardHeader>
       <CardContent>
