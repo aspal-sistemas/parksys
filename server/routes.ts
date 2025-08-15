@@ -693,7 +693,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  apiRouter.get('/events/park/:parkId', async (req: Request, res: Response) => {
+  apiRouter.get('/parks/:parkId/events', async (req: Request, res: Response) => {
     try {
       const parkId = parseInt(req.params.parkId);
       
@@ -709,7 +709,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const eventsQuery = await pool.query(
         `SELECT * FROM events 
          WHERE LOWER(location) LIKE LOWER($1) 
-         AND start_date >= CURRENT_DATE 
          ORDER BY start_date ASC`,
         [`%${parkName}%`]
       );
