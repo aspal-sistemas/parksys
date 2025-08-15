@@ -73,6 +73,8 @@ const AdminParksLoading = () => (
 );
 
 const AdminParksContent = () => {
+  // IMPORTANTE: ESTA PÁGINA NO DEBE TENER FILTROS - SOLO BARRA DE BÚSQUEDA
+  // Usuario específicamente pidió que NO aparezcan filtros de amenidades u otros
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [location] = useLocation();
@@ -518,7 +520,7 @@ const AdminParksContent = () => {
             <MapPin className="w-8 h-8 text-gray-900" />
             <h1 className="text-3xl font-bold text-gray-900">Parques</h1>
           </div>
-          <p className="text-gray-600 mt-2">Gestión General del Sistema</p>
+          <p className="text-gray-600 mt-2">Gestión General del Sistema - Sin Filtros</p>
         </Card>
         
         {/* View mode toggle and actions */}
@@ -563,29 +565,37 @@ const AdminParksContent = () => {
           </div>
         </div>
         
-        {/* Search bar only */}
-        <div className="bg-white p-4 rounded-lg shadow-sm">
-          <div className="relative max-w-md">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Buscar parques por nombre o dirección..."
-              className="pl-8"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            {searchQuery && (
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={handleClearSearch} 
-                className="absolute right-1 top-1 h-8 w-8 p-0"
-                aria-label="Limpiar búsqueda"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
-        </div>
+        {/* SOLO BARRA DE BÚSQUEDA - SIN FILTROS */}
+        <Card className="bg-white shadow-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-4">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  type="text"
+                  placeholder="Buscar parques por nombre o dirección..."
+                  className="pl-10 w-full"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                {searchQuery && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={handleClearSearch} 
+                    className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-gray-100"
+                    aria-label="Limpiar búsqueda"
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
+              <div className="text-sm text-gray-500">
+                {filteredParks.length} resultado{filteredParks.length !== 1 ? 's' : ''}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
         
         {/* Parks content */}
         {currentParks.length === 0 ? (

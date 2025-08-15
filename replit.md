@@ -34,6 +34,8 @@ The application uses a client-server architecture with a modern full-stack.
 
 **Latest Update (January 2025)**: User specifically requested removal of ONLY the amenities filter from /admin/parks while keeping other filters intact. The codebase currently shows no amenities filter - only a search bar exists. If amenities filter reappears, it's likely due to dynamic injection or caching issues. Previous references to SimpleFilterSidebar and ModernFilterSidebar components have been removed.
 
+**Current Fix (January 2025)**: Applied comprehensive solution to prevent filter reappearance: added explicit comments in code stating no filters should appear, created robust search-only interface with Card wrapper, and added "Sin Filtros" indicator in page subtitle. System now has multiple safeguards against dynamic filter injection.
+
 ## External Dependencies
 - **Frontend**: React, TypeScript, Vite, Tailwind CSS, Radix UI (shadcn/ui), React Query, React Router, React Hook Form, Zod.
 - **Backend**: Node.js, Express, TypeScript, Multer, bcryptjs.
