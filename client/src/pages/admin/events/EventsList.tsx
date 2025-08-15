@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Calendar, MapPin, Users, Clock, Edit, Trash2, Eye, Grid, List, ClipboardList } from 'lucide-react';
+import { Search, Calendar, MapPin, Users, Clock, Edit, Trash2, Eye, Grid, List, ClipboardList, Building } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import AdminLayout from '@/components/AdminLayout';
@@ -17,21 +17,37 @@ interface Event {
   description: string;
   startDate: string;
   endDate: string;
+  startTime?: string;
+  endTime?: string;
   location: string;
   parkName?: string;
   capacity: number;
-  registeredCount: number;
+  registeredCount?: number;
   categoryId?: number;
-  category: string;
-  eventType?: string;
+  category?: string;
+  eventType: string;
+  targetAudience?: string;
   status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled' | 'published' | 'draft';
   imageUrl?: string;
   featuredImageUrl?: string;
   price?: number;
-  organizer: string;
+  registrationType?: string;
+  organizerName?: string;
+  organizerEmail?: string;
+  organizerPhone?: string;
+  isRecurring?: boolean;
+  recurrencePattern?: string;
+  geolocation?: any;
   createdAt: string;
   updatedAt: string;
+  createdById?: number;
+  parks?: Array<{ id: number; name: string; address?: string }>;
+  resources?: any[];
+  registrations?: any[];
+  staff?: any[];
+  evaluations?: any[];
   // Legacy fields for backward compatibility
+  organizer?: string;
   date?: string;
   time?: string;
 }
@@ -51,21 +67,18 @@ const EventsList: React.FC = () => {
   // Obtener eventos desde el backend
   const { data: eventsData = [], isLoading } = useQuery({
     queryKey: ['/api/events'],
-    suspense: false,
     retry: 1
   });
 
   // Obtener lista de parques para el filtro
   const { data: parksData = [] } = useQuery({
     queryKey: ['/api/parks'],
-    suspense: false,
     retry: 1
   });
 
   // Obtener categorías de eventos
   const { data: categoriesData = [] } = useQuery({
     queryKey: ['/api/event-categories'],
-    suspense: false,
     retry: 1
   });
 
@@ -107,22 +120,26 @@ const EventsList: React.FC = () => {
     }
   };
 
-  const events = Array.isArray(eventsData?.data) ? eventsData.data : Array.isArray(eventsData) ? eventsData : [];
-  const parks = Array.isArray(parksData?.data) ? parksData.data : Array.isArray(parksData) ? parksData : [];
-  const categories = Array.isArray(categoriesData?.data) ? categoriesData.data : Array.isArray(categoriesData) ? categoriesData : [];
+  const events: Event[] = Array.isArray(eventsData?.data) ? eventsData.data : Array.isArray(eventsData) ? eventsData : [];
+  const parks: any[] = Array.isArray(parksData?.data) ? parksData.data : Array.isArray(parksData) ? parksData : [];
+  const categories: any[] = Array.isArray(categoriesData?.data) ? categoriesData.data : Array.isArray(categoriesData) ? categoriesData : [];
 
   const statusLabels = {
     upcoming: 'Próximo',
     ongoing: 'En curso',
     completed: 'Completado',
-    cancelled: 'Cancelado'
+    cancelled: 'Cancelado',
+    published: 'Publicado',
+    draft: 'Borrador'
   };
 
   const statusColors = {
     upcoming: 'bg-blue-100 text-blue-800',
     ongoing: 'bg-green-100 text-green-800',
     completed: 'bg-gray-100 text-gray-800',
-    cancelled: 'bg-red-100 text-red-800'
+    cancelled: 'bg-red-100 text-red-800',
+    published: 'bg-emerald-100 text-emerald-800',
+    draft: 'bg-yellow-100 text-yellow-800'
   };
 
   const filteredEvents = events.filter((event: Event) => {
@@ -152,13 +169,21 @@ const EventsList: React.FC = () => {
     }
   };
 
-  const formatDateTime = (dateString: string) => {
+  const formatDateTime = (dateString: string, timeString?: string) => {
     if (!dateString) return 'Fecha no disponible';
     try {
+      // Crear fecha base
       const date = new Date(dateString);
+      
+      // Si hay hora específica, combinarla
+      if (timeString) {
+        const [hours, minutes] = timeString.split(':').map(Number);
+        date.setHours(hours, minutes, 0, 0);
+      }
+      
       return date.toLocaleDateString('es-MX', {
         day: '2-digit',
-        month: '2-digit',
+        month: 'short',
         year: 'numeric',
         hour: '2-digit',
         minute: '2-digit'
@@ -166,6 +191,23 @@ const EventsList: React.FC = () => {
     } catch {
       return 'Fecha inválida';
     }
+  };
+
+  const formatEventDateTime = (event: Event) => {
+    if (event.startDate) {
+      const startDateTime = formatDateTime(event.startDate, event.startTime);
+      if (event.endDate && event.endDate !== event.startDate) {
+        const endDateTime = formatDateTime(event.endDate, event.endTime);
+        return `${startDateTime} - ${endDateTime}`;
+      } else if (event.endTime && event.endTime !== event.startTime) {
+        const endTime = event.endTime;
+        return `${startDateTime} - ${endTime}`;
+      }
+      return startDateTime;
+    } else if (event.date) {
+      return `${formatDate(event.date)} ${event.time || ''}`.trim();
+    }
+    return 'Fecha no disponible';
   };
 
   const formatPrice = (price: number) => {
@@ -359,18 +401,9 @@ const EventsList: React.FC = () => {
                       <div className="space-y-2 text-sm text-gray-500 mb-4">
                         <div className="flex items-center">
                           <Calendar className="h-4 w-4 mr-2 text-gray-400" />
-                          <span>
-                            {event.startDate ? formatDateTime(event.startDate) : 
-                             event.date ? `${formatDate(event.date)} ${event.time || ''}`.trim() : 
-                             'Fecha no disponible'}
-                          </span>
+                          <span>{formatEventDateTime(event)}</span>
                         </div>
-                        {event.endDate && event.endDate !== event.startDate && (
-                          <div className="flex items-center">
-                            <Clock className="h-4 w-4 mr-2 text-gray-400" />
-                            <span>Termina: {formatDateTime(event.endDate)}</span>
-                          </div>
-                        )}
+
                         <div className="flex items-center">
                           <MapPin className="h-4 w-4 mr-2 text-gray-400" />
                           <span>{event.location || 'Ubicación no especificada'}</span>
@@ -439,9 +472,7 @@ const EventsList: React.FC = () => {
                         <div className="flex items-center gap-6 text-sm text-gray-500">
                           <div className="flex items-center">
                             <Calendar className="h-4 w-4 mr-1" />
-                            {event.startDate ? formatDateTime(event.startDate) : 
-                             event.date ? `${formatDate(event.date)} ${event.time || ''}`.trim() : 
-                             'Fecha no disponible'}
+                            {formatEventDateTime(event)}
                           </div>
                           <div className="flex items-center">
                             <MapPin className="h-4 w-4 mr-1" />
@@ -564,12 +595,30 @@ const EventsList: React.FC = () => {
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium text-gray-500">Categoría:</span>
-                        <span className="text-sm text-gray-900">{selectedEvent.category}</span>
+                        <span className="text-sm text-gray-900">{selectedEvent.category || 'No especificada'}</span>
                       </div>
+                      {selectedEvent.eventType && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-gray-500">Tipo de evento:</span>
+                          <span className="text-sm text-gray-900">{selectedEvent.eventType}</span>
+                        </div>
+                      )}
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium text-gray-500">Organizador:</span>
-                        <span className="text-sm text-gray-900">{selectedEvent.organizer}</span>
+                        <span className="text-sm text-gray-900">{selectedEvent.organizerName || selectedEvent.organizer || 'No especificado'}</span>
                       </div>
+                      {selectedEvent.organizerEmail && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-gray-500">Email:</span>
+                          <span className="text-sm text-gray-900">{selectedEvent.organizerEmail}</span>
+                        </div>
+                      )}
+                      {selectedEvent.organizerPhone && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-gray-500">Teléfono:</span>
+                          <span className="text-sm text-gray-900">{selectedEvent.organizerPhone}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                   
@@ -579,13 +628,21 @@ const EventsList: React.FC = () => {
                       <div className="flex items-center">
                         <Calendar className="h-4 w-4 mr-2 text-gray-500" />
                         <span className="text-sm text-gray-900">
-                          {formatDate(selectedEvent.date)} a las {selectedEvent.time}
+                          {formatEventDateTime(selectedEvent)}
                         </span>
                       </div>
                       <div className="flex items-center">
                         <MapPin className="h-4 w-4 mr-2 text-gray-500" />
-                        <span className="text-sm text-gray-900">{selectedEvent.location}</span>
+                        <span className="text-sm text-gray-900">{selectedEvent.location || 'Ubicación no especificada'}</span>
                       </div>
+                      {selectedEvent.parks && selectedEvent.parks.length > 0 && (
+                        <div className="flex items-center">
+                          <Building className="h-4 w-4 mr-2 text-gray-500" />
+                          <span className="text-sm text-gray-900">
+                            Parques: {selectedEvent.parks.map(park => park.name).join(', ')}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -594,26 +651,35 @@ const EventsList: React.FC = () => {
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">Capacidad y Participantes</h3>
                     <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-gray-500">Capacidad total:</span>
-                        <span className="text-sm text-gray-900">{selectedEvent.capacity} personas</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-gray-500">Registrados:</span>
-                        <span className="text-sm text-gray-900">{selectedEvent.registeredCount || 0} personas</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-gray-500">Disponibles:</span>
-                        <span className="text-sm text-gray-900">
-                          {selectedEvent.capacity - (selectedEvent.registeredCount || 0)} personas
-                        </span>
-                      </div>
-                      {selectedEvent.price !== undefined && (
+                      {selectedEvent.capacity && (
+                        <>
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-gray-500">Capacidad total:</span>
+                            <span className="text-sm text-gray-900">{selectedEvent.capacity} personas</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-gray-500">Registrados:</span>
+                            <span className="text-sm text-gray-900">{selectedEvent.registeredCount || 0} personas</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-gray-500">Disponibles:</span>
+                            <span className="text-sm text-gray-900">
+                              {selectedEvent.capacity - (selectedEvent.registeredCount || 0)} personas
+                            </span>
+                          </div>
+                        </>
+                      )}
+                      {selectedEvent.price !== undefined && selectedEvent.price !== null && (
                         <div className="flex items-center justify-between">
                           <span className="text-sm font-medium text-gray-500">Precio:</span>
                           <span className="text-sm font-medium text-green-600">
                             {formatPrice(selectedEvent.price)}
                           </span>
+                        </div>
+                      )}
+                      {(!selectedEvent.capacity || selectedEvent.capacity === 0) && (
+                        <div className="text-sm text-gray-500 italic">
+                          Sin límite de capacidad especificado
                         </div>
                       )}
                     </div>
