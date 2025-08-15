@@ -118,6 +118,13 @@ export async function apiRequest(
 
   console.log(`🌐 [API REQUEST] ${method} ${url}`);
   
+  // Debug específico para el problema
+  if (url.includes('/api/activities') && method === 'POST') {
+    console.error('🚨 POST a /api/activities detectado!');
+    console.error('Stack trace:', new Error().stack);
+    console.error('Data enviada:', data);
+  }
+  
   const res = await fetch(url, {
     method,
     headers,
