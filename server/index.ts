@@ -507,6 +507,8 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
+
+
 // ENDPOINT DUPLICADO ELIMINADO - USANDO ÚNICO ENDPOINT EN routes.ts
 
 // ENDPOINT PARA OBTENER ACTIVIDAD ESPECÍFICA
@@ -1563,12 +1565,12 @@ async function initializeDatabaseAsync() {
     console.log(`✅ Server listening on ${HOST}:${PORT} - Health checks ready`);
     console.log(`🏥 Health endpoints available at /, /health, /healthz, /ping`);
     
-    // Initialize remaining setup asynchronously AFTER server is listening
+    // Initialize Vite IMMEDIATELY after server is listening
     setTimeout(async () => {
       try {
-        console.log("🔧 Initializing additional setup after server start...");
+        console.log("🔧 Initializing Vite development server...");
         
-        // Setup development environment - también funciona en Replit
+        // Setup development environment - FIRST priority
         if (app.get("env") === "development") {
           try {
             const { setupVite } = await import("./vite");
@@ -1579,15 +1581,17 @@ async function initializeDatabaseAsync() {
           }
         }
         
-        // Initialize database asynchronously
-        initializeDatabaseAsync().catch(error => {
-          console.error("❌ Database initialization error (non-critical):", error);
-        });
+        // Initialize database asynchronously after Vite
+        setTimeout(() => {
+          initializeDatabaseAsync().catch(error => {
+            console.error("❌ Database initialization error (non-critical):", error);
+          });
+        }, 50);
         
       } catch (error) {
         console.error("❌ Post-startup initialization error:", error);
       }
-    }, 100); // Very short delay to ensure server is fully ready
+    }, 0); // IMMEDIATE setup
   });
 
   // Configure production static file serving if needed

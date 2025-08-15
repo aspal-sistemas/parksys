@@ -1,116 +1,48 @@
-import React, { useEffect } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { useLocation, useParams } from "wouter";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { queryClient } from "@/lib/queryClient";
-import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import AdminLayout from "@/components/AdminLayout";
-import PageHeader from "@/components/PageHeader";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { toast } from "@/hooks/use-toast";
-import { format, parseISO } from "date-fns";
-import { es } from "date-fns/locale";
-import { CalendarIcon, Clock, Users, MapPin } from "lucide-react";
-import LoadingSpinner from "@/components/LoadingSpinner";
+import React, { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useLocation, useParams } from 'wouter';
+import { ArrowLeft, Calendar, MapPin, Users, Clock, FileText, Save, Plus, Image } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
+import AdminLayout from '@/components/AdminLayout';
+import { apiRequest } from '@/lib/queryClient';
+import EventImageUploader from '@/components/EventImageUploader';
 
-// Esquema para validar el formulario
-const eventFormSchema = z.object({
-  title: z
-    .string()
-    .min(3, { message: "El título debe tener al menos 3 caracteres" })
-    .max(255, { message: "El título no puede exceder los 255 caracteres" }),
-  description: z.string().optional().nullable(),
-  eventType: z.string({
-    required_error: "Selecciona un tipo de evento",
-  }),
-  targetAudience: z.string().default("all"),
-  status: z.string().default("draft"),
-  startDate: z.date({
-    required_error: "La fecha de inicio es requerida",
-  }),
-  endDate: z.date().optional().nullable(),
-  location: z.string().optional().nullable(),
-  capacity: z.coerce
-    .number()
-    .min(0, { message: "La capacidad no puede ser negativa" })
-    .optional()
-    .nullable(),
-  registrationType: z.string().default("open"),
-  parkIds: z.array(z.coerce.number()).optional().default([]),
-  organizerName: z.string().optional().nullable(),
-  organizerEmail: z.string().email().optional().nullable(),
-  organizerPhone: z.string().optional().nullable(),
-  geolocation: z.any().optional().nullable(),
+// Schema de validación para evento (idéntico al de nuevo evento)
+const editEventSchema = z.object({
+  title: z.string().min(1, 'El título es requerido').max(255, 'El título es muy largo'),
+  description: z.string().min(1, 'La descripción es requerida'),
+  start_date: z.string().min(1, 'La fecha de inicio es requerida'),
+  end_date: z.string().optional(),
+  start_time: z.string().min(1, 'La hora de inicio es requerida'),
+  end_time: z.string().optional(),
+  park_id: z.string().min(1, 'Debe seleccionar un parque'),
+  category: z.string().min(1, 'Debe seleccionar una categoría'),
+  capacity: z.string().optional(),
+  location: z.string().optional(),
+  contact_email: z.string().email('Email inválido').optional().or(z.literal('')),
+  contact_phone: z.string().optional(),
+  registration_required: z.boolean().default(false),
+  price: z.string().optional(),
+  notes: z.string().optional()
 });
 
-// Tipos
-type EventFormValues = z.infer<typeof eventFormSchema>;
+type EditEventForm = z.infer<typeof editEventSchema>;
 
-// Arreglo de tipos de eventos
-const eventTypes = [
-  { value: "cultural", label: "Cultural" },
-  { value: "sports", label: "Deportivo" },
-  { value: "environmental", label: "Ambiental" },
-  { value: "social", label: "Social" },
-  { value: "educational", label: "Educativo" },
-  { value: "recreational", label: "Recreativo" },
-  { value: "other", label: "Otro" },
-];
-
-// Arreglo de públicos objetivo
-const targetAudiences = [
-  { value: "all", label: "Todo público" },
-  { value: "children", label: "Niños" },
-  { value: "youth", label: "Jóvenes" },
-  { value: "adults", label: "Adultos" },
-  { value: "seniors", label: "Adultos mayores" },
-  { value: "families", label: "Familias" },
-];
-
-// Arreglo de estados de eventos
-const eventStatuses = [
-  { value: "draft", label: "Borrador" },
-  { value: "published", label: "Publicado" },
-  { value: "cancelled", label: "Cancelado" },
-  { value: "postponed", label: "Pospuesto" },
-  { value: "completed", label: "Completado" },
-];
-
-// Arreglo de tipos de registro
-const registrationTypes = [
-  { value: "open", label: "Abierto" },
-  { value: "invitation", label: "Por invitación" },
-  { value: "closed", label: "Cerrado" },
-];
-
-const EditEventPage: React.FC = () => {
+export default function EditEventPage() {
   const { id } = useParams();
-  const [, navigate] = useLocation();
+  const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [eventImage, setEventImage] = useState<string>('');
 
   // Consultar el evento para editar
   const { data: event, isLoading } = useQuery({
@@ -118,98 +50,166 @@ const EditEventPage: React.FC = () => {
     enabled: !!id,
   });
 
-  // Consultar parques para el select
-  const { data: parks = [] } = useQuery({
-    queryKey: ["/api/parks"],
-  });
+  // Función para convertir fecha ISO a formato de input date
+  const formatDateForInput = (dateString: string | null): string => {
+    if (!dateString) return '';
+    try {
+      return dateString.split('T')[0];
+    } catch {
+      return '';
+    }
+  };
 
-  // Formulario con validación zod
-  const form = useForm<EventFormValues>({
-    resolver: zodResolver(eventFormSchema),
+  // Función para extraer hora de datetime ISO
+  const extractTime = (dateTimeString: string | null): string => {
+    if (!dateTimeString) return '';
+    try {
+      const date = new Date(dateTimeString);
+      return date.toTimeString().substring(0, 5); // HH:MM
+    } catch {
+      return '';
+    }
+  };
+
+  const form = useForm<EditEventForm>({
+    resolver: zodResolver(editEventSchema),
     defaultValues: {
-      title: "",
-      description: "",
-      eventType: "",
-      targetAudience: "all",
-      status: "draft",
-      startDate: new Date(),
-      endDate: null,
-      location: "",
-      capacity: null,
-      registrationType: "open",
-      parkIds: [],
-      organizerName: "",
-      organizerEmail: "",
-      organizerPhone: "",
-      geolocation: null,
-    },
+      title: '',
+      description: '',
+      start_date: '',
+      end_date: '',
+      start_time: '',
+      end_time: '',
+      park_id: '',
+      category: '',
+      capacity: '',
+      location: '',
+      contact_email: '',
+      contact_phone: '',
+      registration_required: false,
+      price: '',
+      notes: ''
+    }
   });
 
-  // Cargar los datos del evento en el formulario cuando estén disponibles
+  // Actualizar el formulario cuando se cargue el evento
   useEffect(() => {
     if (event) {
-      // Formatear las fechas correctamente
-      const formattedEvent = {
-        ...event,
-        startDate: event.startDate ? parseISO(event.startDate) : new Date(),
-        endDate: event.endDate ? parseISO(event.endDate) : null,
-        parkIds: event.parks?.map((park: any) => park.id) || [],
-      };
+      console.log('🔄 Cargando datos del evento:', event);
       
-      form.reset(formattedEvent);
+      // Establecer la imagen del evento
+      if (event.featuredImageUrl) {
+        setEventImage(event.featuredImageUrl);
+      }
+
+      // Actualizar valores del formulario
+      form.reset({
+        title: event.title || '',
+        description: event.description || '',
+        start_date: formatDateForInput(event.startDate),
+        end_date: formatDateForInput(event.endDate),
+        start_time: extractTime(event.startDate),
+        end_time: extractTime(event.endDate),
+        park_id: event.parkIds && event.parkIds.length > 0 ? String(event.parkIds[0]) : '',
+        category: event.eventType || '',
+        capacity: event.capacity ? String(event.capacity) : '',
+        location: event.location || '',
+        contact_email: event.organizerEmail || '',
+        contact_phone: event.organizerPhone || '',
+        registration_required: event.registrationType === 'registration',
+        price: '',
+        notes: ''
+      });
     }
   }, [event, form]);
 
-  // Mutación para actualizar el evento
+  // Obtener parques para el selector
+  const { data: parks } = useQuery({
+    queryKey: ['/api/parks'],
+    select: (data: any[]) => data.map((park: any) => ({
+      id: park.id,
+      name: park.name
+    }))
+  });
+
+  // Obtener categorías de eventos
+  const { data: categories } = useQuery({
+    queryKey: ['/api/event-categories']
+  });
+
+  // Mutación para actualizar evento
   const updateEventMutation = useMutation({
-    mutationFn: async (data: EventFormValues) => {
-      const response = await fetch(`/api/events/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
+    mutationFn: async (data: EditEventForm) => {
+      const eventData = {
+        title: data.title,
+        description: data.description,
+        eventType: data.category, // Usar category del formulario como eventType
+        startDate: data.start_date,
+        endDate: data.end_date || null,
+        startTime: data.start_time || null,
+        endTime: data.end_time || null,
+        capacity: data.capacity ? parseInt(data.capacity) : null,
+        location: data.location || null,
+        organizerEmail: data.contact_email || null,
+        organizerPhone: data.contact_phone || null,
+        registrationType: data.registration_required ? 'registration' : 'free',
+        status: 'published',
+        targetAudience: 'general',
+        featuredImageUrl: eventImage || null, // Agregar la imagen del evento
+        // Campo requerido por el backend - array de IDs de parques
+        parkIds: data.park_id ? [parseInt(data.park_id)] : []
+      };
+
+      console.log('🚀 Actualizando datos del evento:', eventData);
+      return apiRequest(`/api/events/${id}`, {
+        method: 'PUT',
+        data: eventData
       });
-      
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Error al actualizar el evento");
-      }
-      
-      return response.json();
     },
     onSuccess: () => {
       toast({
-        title: "Evento actualizado",
-        description: "El evento ha sido actualizado exitosamente",
+        title: 'Evento actualizado',
+        description: 'El evento ha sido actualizado exitosamente.'
       });
-      queryClient.invalidateQueries({
-        queryKey: [`/api/events/${id}`],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["/api/events"],
-      });
-      navigate(`/admin/events/${id}`);
+      queryClient.invalidateQueries({ queryKey: [`/api/events/${id}`] });
+      queryClient.invalidateQueries({ queryKey: ['/api/events'] });
+      setLocation('/admin/events');
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({
-        title: "Error",
-        description: `No se pudo actualizar el evento: ${error.message}`,
-        variant: "destructive",
+        title: 'Error',
+        description: error.message || 'Error al actualizar el evento',
+        variant: 'destructive'
       });
-    },
+    }
   });
 
-  // Manejar envío del formulario
-  const onSubmit = (data: EventFormValues) => {
+  const onSubmit = (data: EditEventForm) => {
+    console.log('📝 Datos del formulario:', data);
     updateEventMutation.mutate(data);
   };
 
   if (isLoading) {
     return (
       <AdminLayout>
-        <div className="container mx-auto py-6 flex items-center justify-center min-h-[60vh]">
-          <LoadingSpinner />
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <Clock className="h-8 w-8 animate-spin mx-auto mb-4" />
+            <p>Cargando evento...</p>
+          </div>
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  if (!event) {
+    return (
+      <AdminLayout>
+        <div className="text-center py-12">
+          <h2 className="text-xl font-semibold mb-4">Evento no encontrado</h2>
+          <Button onClick={() => setLocation('/admin/events')}>
+            Volver a eventos
+          </Button>
         </div>
       </AdminLayout>
     );
@@ -217,459 +217,334 @@ const EditEventPage: React.FC = () => {
 
   return (
     <AdminLayout>
-      <div className="container mx-auto py-6">
-        <PageHeader
-          title="Editar Evento"
-          description="Modifica los detalles del evento"
-          actions={
-            <Button variant="outline" onClick={() => navigate(`/admin/events/${id}`)}>
-              Cancelar
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setLocation('/admin/events')}
+              className="flex items-center space-x-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span>Volver</span>
             </Button>
-          }
-        />
-
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            <div className="bg-card p-6 rounded-lg border">
-              <h3 className="text-lg font-medium mb-4">Información básica</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
-                  control={form.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Título del evento</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Título del evento" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="status"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Estado</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecciona un estado" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {eventStatuses.map((status) => (
-                            <SelectItem key={status.value} value={status.value}>
-                              {status.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem className="md:col-span-2">
-                      <FormLabel>Descripción</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Descripción del evento"
-                          className="min-h-24"
-                          {...field}
-                          value={field.value || ""}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="eventType"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Tipo de evento</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecciona un tipo" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {eventTypes.map((type) => (
-                            <SelectItem key={type.value} value={type.value}>
-                              {type.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="targetAudience"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Público objetivo</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value || "all"}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecciona el público" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {targetAudiences.map((audience) => (
-                            <SelectItem key={audience.value} value={audience.value}>
-                              {audience.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Editar Evento</h1>
+              <p className="text-gray-600">Modifica los detalles del evento</p>
             </div>
+          </div>
+        </div>
 
-            <div className="bg-card p-6 rounded-lg border">
-              <h3 className="text-lg font-medium mb-4">Fecha y hora</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
-                  control={form.control}
-                  name="startDate"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Fecha de inicio</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant={"outline"}
-                              className={`w-full pl-3 text-left font-normal ${
-                                !field.value ? "text-muted-foreground" : ""
-                              }`}
-                            >
-                              {field.value ? (
-                                format(field.value, "PPP", { locale: es })
-                              ) : (
-                                <span>Seleccionar fecha</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            disabled={(date) =>
-                              date < new Date(new Date().setHours(0, 0, 0, 0))
-                            }
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+        {/* Formulario */}
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Columna principal - Información básica */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Información básica */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <FileText className="h-5 w-5" />
+                    <span>Información Básica</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label htmlFor="title">Título del Evento *</Label>
+                    <Input
+                      id="title"
+                      {...form.register('title')}
+                      placeholder="Nombre del evento"
+                      className="mt-1"
+                    />
+                    {form.formState.errors.title && (
+                      <p className="text-sm text-red-500 mt-1">{form.formState.errors.title.message}</p>
+                    )}
+                  </div>
 
-                <FormField
-                  control={form.control}
-                  name="endDate"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Fecha de fin (opcional)</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant={"outline"}
-                              className={`w-full pl-3 text-left font-normal ${
-                                !field.value ? "text-muted-foreground" : ""
-                              }`}
-                            >
-                              {field.value ? (
-                                format(field.value, "PPP", { locale: es })
-                              ) : (
-                                <span>Seleccionar fecha</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value || undefined}
-                            onSelect={field.onChange}
-                            disabled={(date) => {
-                              const startDate = form.getValues("startDate");
-                              return startDate && date < startDate;
-                            }}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormDescription>
-                        Opcional: si es un evento de varios días
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </div>
+                  <div>
+                    <Label htmlFor="description">Descripción *</Label>
+                    <Textarea
+                      id="description"
+                      {...form.register('description')}
+                      placeholder="Describe el evento, sus objetivos y actividades"
+                      rows={4}
+                      className="mt-1"
+                    />
+                    {form.formState.errors.description && (
+                      <p className="text-sm text-red-500 mt-1">{form.formState.errors.description.message}</p>
+                    )}
+                  </div>
 
-            <div className="bg-card p-6 rounded-lg border">
-              <h3 className="text-lg font-medium mb-4">
-                <MapPin className="w-5 h-5 inline-block mr-2" />
-                Ubicación
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
-                  control={form.control}
-                  name="parkIds"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Parques asociados</FormLabel>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="park_id">Parque *</Label>
                       <Select
-                        onValueChange={(value) => {
-                          const currentValues = field.value || [];
-                          const valueNumber = Number(value);
-                          
-                          if (currentValues.includes(valueNumber)) {
-                            field.onChange(
-                              currentValues.filter((val) => val !== valueNumber)
-                            );
-                          } else {
-                            field.onChange([...currentValues, valueNumber]);
-                          }
-                        }}
+                        value={form.watch('park_id')}
+                        onValueChange={(value) => form.setValue('park_id', value)}
                       >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Seleccionar parques" />
-                          </SelectTrigger>
-                        </FormControl>
+                        <SelectTrigger className="mt-1">
+                          <SelectValue placeholder="Seleccionar parque" />
+                        </SelectTrigger>
                         <SelectContent>
-                          {parks.map((park: any) => (
+                          {parks?.map((park) => (
                             <SelectItem key={park.id} value={park.id.toString()}>
                               {park.name}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
-                      <FormDescription>
-                        Parques seleccionados:{" "}
-                        {field.value?.length
-                          ? parks
-                              .filter((park: any) => field.value?.includes(park.id))
-                              .map((park: any) => park.name)
-                              .join(", ")
-                          : "Ninguno"}
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                      {form.formState.errors.park_id && (
+                        <p className="text-sm text-red-500 mt-1">{form.formState.errors.park_id.message}</p>
+                      )}
+                    </div>
 
-                <FormField
-                  control={form.control}
-                  name="location"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Ubicación específica (opcional)</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Ej: Área de picnic, Entrada principal..."
-                          {...field}
-                          value={field.value || ""}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Especifica el punto exacto dentro del parque
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </div>
-
-            <div className="bg-card p-6 rounded-lg border">
-              <h3 className="text-lg font-medium mb-4">
-                <Users className="w-5 h-5 inline-block mr-2" />
-                Participantes
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
-                  control={form.control}
-                  name="capacity"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Capacidad máxima (opcional)</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="Número de participantes"
-                          {...field}
-                          value={field.value === null ? "" : field.value}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            field.onChange(value === "" ? null : parseInt(value, 10));
-                          }}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Deja en blanco si no hay límite
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="registrationType"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Tipo de registro</FormLabel>
+                    <div>
+                      <Label htmlFor="category">Categoría *</Label>
                       <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        value={field.value}
+                        value={form.watch('category')}
+                        onValueChange={(value) => form.setValue('category', value)}
                       >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecciona tipo de registro" />
-                          </SelectTrigger>
-                        </FormControl>
+                        <SelectTrigger className="mt-1">
+                          <SelectValue placeholder="Seleccionar categoría" />
+                        </SelectTrigger>
                         <SelectContent>
-                          {registrationTypes.map((type) => (
-                            <SelectItem key={type.value} value={type.value}>
-                              {type.label}
+                          {categories?.map((category: any) => (
+                            <SelectItem key={category.id} value={category.name}>
+                              {category.name}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
-                      <FormDescription>
-                        Define cómo se registrarán los participantes
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+                      {form.formState.errors.category && (
+                        <p className="text-sm text-red-500 mt-1">{form.formState.errors.category.message}</p>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Fecha y hora */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Calendar className="h-5 w-5" />
+                    <span>Fecha y Hora</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="start_date">Fecha de Inicio *</Label>
+                      <Input
+                        id="start_date"
+                        type="date"
+                        {...form.register('start_date')}
+                        className="mt-1"
+                      />
+                      {form.formState.errors.start_date && (
+                        <p className="text-sm text-red-500 mt-1">{form.formState.errors.start_date.message}</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <Label htmlFor="end_date">Fecha de Fin</Label>
+                      <Input
+                        id="end_date"
+                        type="date"
+                        {...form.register('end_date')}
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="start_time">Hora de Inicio *</Label>
+                      <Input
+                        id="start_time"
+                        type="time"
+                        {...form.register('start_time')}
+                        className="mt-1"
+                      />
+                      {form.formState.errors.start_time && (
+                        <p className="text-sm text-red-500 mt-1">{form.formState.errors.start_time.message}</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <Label htmlFor="end_time">Hora de Fin</Label>
+                      <Input
+                        id="end_time"
+                        type="time"
+                        {...form.register('end_time')}
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Detalles adicionales */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <MapPin className="h-5 w-5" />
+                    <span>Detalles Adicionales</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="capacity">Capacidad</Label>
+                      <Input
+                        id="capacity"
+                        type="number"
+                        {...form.register('capacity')}
+                        placeholder="Número máximo de asistentes"
+                        className="mt-1"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="price">Precio</Label>
+                      <Input
+                        id="price"
+                        {...form.register('price')}
+                        placeholder="Ej: $100, Gratuito"
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="location">Ubicación Específica</Label>
+                    <Input
+                      id="location"
+                      {...form.register('location')}
+                      placeholder="Ej: Cancha de fútbol, Área de juegos"
+                      className="mt-1"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="notes">Notas Adicionales</Label>
+                    <Textarea
+                      id="notes"
+                      {...form.register('notes')}
+                      placeholder="Información adicional, requisitos, etc."
+                      rows={3}
+                      className="mt-1"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
             </div>
 
-            <div className="bg-card p-6 rounded-lg border">
-              <h3 className="text-lg font-medium mb-4">
-                Información de contacto
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
-                  control={form.control}
-                  name="organizerName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nombre del organizador</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Nombre" {...field} value={field.value || ""} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+            {/* Columna lateral */}
+            <div className="space-y-6">
+              {/* Imagen del evento */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Image className="h-5 w-5" />
+                    <span>Imagen del Evento</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <EventImageUploader
+                    onImageUploaded={setEventImage}
+                    currentImage={eventImage}
+                  />
+                </CardContent>
+              </Card>
 
-                <FormField
-                  control={form.control}
-                  name="organizerEmail"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email de contacto</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="email"
-                          placeholder="email@ejemplo.com"
-                          {...field}
-                          value={field.value || ""}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              {/* Contacto */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Users className="h-5 w-5" />
+                    <span>Información de Contacto</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label htmlFor="contact_email">Email de Contacto</Label>
+                    <Input
+                      id="contact_email"
+                      type="email"
+                      {...form.register('contact_email')}
+                      placeholder="organizador@parques.gob.mx"
+                      className="mt-1"
+                    />
+                    {form.formState.errors.contact_email && (
+                      <p className="text-sm text-red-500 mt-1">{form.formState.errors.contact_email.message}</p>
+                    )}
+                  </div>
 
-                <FormField
-                  control={form.control}
-                  name="organizerPhone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Teléfono de contacto</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="(555) 555-5555"
-                          {...field}
-                          value={field.value || ""}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Opcional: para contacto directo
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+                  <div>
+                    <Label htmlFor="contact_phone">Teléfono de Contacto</Label>
+                    <Input
+                      id="contact_phone"
+                      {...form.register('contact_phone')}
+                      placeholder="33 1234 5678"
+                      className="mt-1"
+                    />
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <input
+                      id="registration_required"
+                      type="checkbox"
+                      {...form.register('registration_required')}
+                      className="rounded"
+                    />
+                    <Label htmlFor="registration_required" className="text-sm">
+                      Requiere inscripción previa
+                    </Label>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Acciones */}
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="space-y-3">
+                    <Button
+                      type="submit"
+                      className="w-full"
+                      disabled={updateEventMutation.isPending}
+                    >
+                      {updateEventMutation.isPending ? (
+                        <>
+                          <Clock className="h-4 w-4 animate-spin mr-2" />
+                          Actualizando...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="h-4 w-4 mr-2" />
+                          Actualizar Evento
+                        </>
+                      )}
+                    </Button>
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => setLocation('/admin/events')}
+                    >
+                      Cancelar
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
-
-            <div className="flex justify-end space-x-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => navigate(`/admin/events/${id}`)}
-              >
-                Cancelar
-              </Button>
-              <Button
-                type="submit"
-                disabled={updateEventMutation.isPending}
-                className="min-w-24"
-              >
-                {updateEventMutation.isPending ? "Guardando..." : "Actualizar"}
-              </Button>
-            </div>
-          </form>
-        </Form>
+          </div>
+        </form>
       </div>
     </AdminLayout>
   );
-};
-
-export default EditEventPage;
+}
