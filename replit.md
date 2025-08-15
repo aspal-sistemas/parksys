@@ -32,6 +32,8 @@ The application uses a client-server architecture with a modern full-stack.
 
 **Known Issues**: The /admin/parks page occasionally experiences intermittent filter elements reappearing despite being removed from the code. This appears to be related to caching or code regeneration processes. The page should only display a simple search bar without additional filters. Current implementation has been cleaned to show only search functionality without type, status, or category filters.
 
+**Latest Update (January 2025)**: User specifically requested removal of ONLY the amenities filter from /admin/parks while keeping other filters intact. The codebase currently shows no amenities filter - only a search bar exists. If amenities filter reappears, it's likely due to dynamic injection or caching issues. Previous references to SimpleFilterSidebar and ModernFilterSidebar components have been removed.
+
 ## External Dependencies
 - **Frontend**: React, TypeScript, Vite, Tailwind CSS, Radix UI (shadcn/ui), React Query, React Router, React Hook Form, Zod.
 - **Backend**: Node.js, Express, TypeScript, Multer, bcryptjs.
