@@ -1410,17 +1410,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Get active concessions for this park
       const concessionsQuery = await pool.query(
-        'SELECT COUNT(*) as count FROM active_concessions WHERE park_id = $1 AND status = $2',
-        [parkId, 'active']
+        'SELECT COUNT(*) as count FROM active_concessions WHERE park_id = $1',
+        [parkId]
       );
       const activeConcessions = parseInt(concessionsQuery.rows[0]?.count || 0);
 
-      // Get feedback count for this park
-      const feedbackQuery = await pool.query(
-        'SELECT COUNT(*) as count FROM visitor_feedback WHERE park_id = $1',
-        [parkId]
-      );
-      const totalFeedback = parseInt(feedbackQuery.rows[0]?.count || 0);
+      // Get feedback count for this park (usando visitor_feedback si existe, sino 0)
+      let totalFeedback = 0;
+      try {
+        const feedbackQuery = await pool.query(
+          'SELECT COUNT(*) as count FROM feedback WHERE park_id = $1',
+          [parkId]
+        );
+        totalFeedback = parseInt(feedbackQuery.rows[0]?.count || 0);
+      } catch (error) {
+        // La tabla feedback no existe, usar valor 0
+        totalFeedback = 0;
+      }
 
       // Get evaluations count for this park
       const evaluationsCountQuery = await pool.query(
