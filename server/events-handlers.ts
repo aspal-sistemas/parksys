@@ -214,8 +214,9 @@ export async function createEvent(req: Request, res: Response) {
         errors: validationResult.error.errors 
       });
     }
-    
-    const { parkIds, ...eventData } = req.body;
+
+    console.log("✅ Validación exitosa, procesando creación del evento...");
+    const { parkIds, ...eventDataWithoutParks } = req.body;
     
     // Asegurarse de que hay al menos un parque seleccionado
     if (!parkIds || !Array.isArray(parkIds) || parkIds.length === 0) {
@@ -234,15 +235,15 @@ export async function createEvent(req: Request, res: Response) {
     const [createdEvent] = await db
       .insert(events)
       .values({
-        ...eventData,
+        ...eventDataWithoutParks,
         createdById,
         // Convertir fechas de string a Date si vienen como string
-        startDate: eventData.startDate instanceof Date 
-          ? eventData.startDate 
-          : new Date(eventData.startDate),
-        endDate: eventData.endDate instanceof Date 
-          ? eventData.endDate 
-          : eventData.endDate ? new Date(eventData.endDate) : null,
+        startDate: eventDataWithoutParks.startDate instanceof Date 
+          ? eventDataWithoutParks.startDate 
+          : new Date(eventDataWithoutParks.startDate),
+        endDate: eventDataWithoutParks.endDate instanceof Date 
+          ? eventDataWithoutParks.endDate 
+          : eventDataWithoutParks.endDate ? new Date(eventDataWithoutParks.endDate) : null,
       })
       .returning();
     
