@@ -73,6 +73,7 @@ import {
 import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
 import { registerRoleRoutes } from "./roleRoutes";
+import feedbackRouter from "./feedback-routes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Create HTTP server first
@@ -793,6 +794,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Añadir rutas de pagos con Stripe
   app.use(paymentsRouter);
+  
+  // Registrar rutas de feedback de visitantes
+  app.use('/api/feedback', feedbackRouter);
+  console.log('✅ Rutas de feedback de visitantes registradas');
 
   // Get all parks with option to filter
   apiRouter.get("/parks", async (req: Request, res: Response) => {
