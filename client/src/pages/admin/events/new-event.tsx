@@ -98,9 +98,10 @@ export default function NewEventPage() {
         parkIds: data.park_id ? [parseInt(data.park_id)] : []
       };
 
+      console.log('🚀 Enviando datos del evento:', eventData);
       return apiRequest('/api/events', {
         method: 'POST',
-        body: JSON.stringify(eventData)
+        data: eventData
       });
     },
     onSuccess: () => {
@@ -168,11 +169,13 @@ export default function NewEventPage() {
                       <SelectValue placeholder="Seleccionar categoría" />
                     </SelectTrigger>
                     <SelectContent>
-                      {categories?.map((category: any) => (
+                      {categories && Array.isArray(categories) ? categories.map((category: any) => (
                         <SelectItem key={category.id} value={category.name}>
                           {category.name}
                         </SelectItem>
-                      ))}
+                      )) : (
+                        <SelectItem value="cultural">Cultural</SelectItem>
+                      )}
                     </SelectContent>
                   </Select>
                   {form.formState.errors.category && (
