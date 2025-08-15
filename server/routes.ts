@@ -74,6 +74,7 @@ import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
 import { registerRoleRoutes } from "./roleRoutes";
 import feedbackRouter from "./feedback-routes";
+import { registerEventCategoriesRoutes } from "./event-categories-routes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Create HTTP server first
@@ -420,6 +421,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Registramos las rutas del módulo de eventos
   registerEventRoutes(app, apiRouter, isAuthenticated);
+  
+  // Registramos las rutas de categorías de eventos
+  registerEventCategoriesRoutes(app, apiRouter, isAuthenticated);
   
   // Registramos las rutas del módulo financiero
   registerFinanceRoutes(app, apiRouter, isAuthenticated);

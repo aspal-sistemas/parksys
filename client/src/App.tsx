@@ -37,6 +37,7 @@ import AdminParticipationEdit from "@/pages/admin/volunteers/participations/edit
 import AdminVolunteerEvaluations from "@/pages/admin/volunteers/evaluations";
 import AdminEvaluationEdit from "@/pages/admin/volunteers/evaluations/edit";
 import DashboardPage from "@/pages/admin/volunteers/dashboard-page";
+import EventCategoriesPage from "@/pages/admin/events/categories";
 import Header from "@/components/Header";
 
 function Router() {
@@ -541,11 +542,7 @@ function Router() {
           </Suspense>
         </Route>
 
-        <Route path="/admin/events/categories">
-          <Suspense fallback={<div className="p-8 text-center">Cargando categorías de eventos...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/events/categories')))}
-          </Suspense>
-        </Route>
+        <Route path="/admin/events/categories" component={EventCategoriesPage} />
 
         <Route path="/admin/events/list">
           <Suspense fallback={<div className="p-8 text-center">Cargando listado de eventos...</div>}>
