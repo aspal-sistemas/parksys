@@ -28,7 +28,7 @@ type CategoryFormData = z.infer<typeof categorySchema>;
 const defaultColors = [
   '#3B82F6', '#10B981', '#F59E0B', '#EF4444', 
   '#8B5CF6', '#F97316', '#06B6D4', '#84CC16',
-  '#EC4899', '#6366F1', '#14B8A6', '#F59E0B'
+  '#EC4899', '#6366F1', '#14B8A6', '#FB7185'
 ];
 
 export default function EventCategoriesPage() {
@@ -337,8 +337,8 @@ export default function EventCategoriesPage() {
                       {category.name}
                     </Badge>
                     
-                    {/* Botones de acción - visibles en hover */}
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 ml-2">
+                    {/* Botones de acción - siempre visibles */}
+                    <div className="flex gap-1 ml-2">
                       <Button
                         variant="ghost"
                         size="sm"
