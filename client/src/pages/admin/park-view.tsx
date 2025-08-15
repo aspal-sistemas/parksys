@@ -247,14 +247,61 @@ export default function AdminParkView() {
 
   // Create displayPark object with proper data structure for view - moved before conditional returns
   const displayPark = React.useMemo(() => {
-    if (!park) return {};
+    if (!park) return {
+      id: 0,
+      name: '',
+      location: '',
+      openingHours: '',
+      description: '',
+      municipalityId: null,
+      municipality: { name: 'No especificado' },
+      amenities: [],
+      activities: [],
+      volunteers: [],
+      trees: [],
+      assets: [],
+      incidents: [],
+      documents: [],
+      images: [],
+      evaluations: [],
+      stats: {
+        totalActivities: 0,
+        activeVolunteers: 0,
+        totalTrees: 0,
+        totalAssets: 0,
+        averageEvaluation: 0,
+        pendingIncidents: 0,
+        activeConcessions: 0,
+        totalFeedback: 0,
+        totalEvaluations: 0,
+        totalReservations: 0
+      },
+      parkType: 'No especificado',
+      address: 'No especificado',
+      area: '',
+      greenArea: '',
+      foundationYear: '',
+      postalCode: '',
+      contactPhone: '',
+      contactEmail: '',
+      latitude: 0,
+      longitude: 0
+    };
     
     return {
       ...park,
-      municipality: park.municipality || { name: park.municipalityName || 'No especificado' },
+      municipality: park.municipality || { name: 'No especificado' },
       documents: park.documents || [],
-      parkType: park.parkType || park.type || 'No especificado',
-      address: park.address || 'No especificado'
+      parkType: park.parkType || 'No especificado',
+      address: park.address || park.location || 'No especificado',
+      area: park.area || '',
+      greenArea: park.greenArea || '',
+      foundationYear: park.foundationYear || '',
+      postalCode: park.postalCode || '',
+      contactPhone: park.contactPhone || '',
+      contactEmail: park.contactEmail || '',
+      latitude: park.latitude || 0,
+      longitude: park.longitude || 0
     };
   }, [park]);
 
@@ -712,7 +759,7 @@ export default function AdminParkView() {
               </div>
               
               {/* Inventario detallado */}
-              <ParkTreesInventory parkId={parseInt(id)} />
+              <ParkTreesInventory parkId={parseInt(id || '0')} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -733,7 +780,7 @@ export default function AdminParkView() {
             </CardHeader>
             <CardContent>
               <ParkAssetsInventory 
-                parkId={parseInt(id)} 
+                parkId={parseInt(id || '0')} 
                 assets={park.assets || []} 
                 amenities={park.amenities || []} 
               />
@@ -749,7 +796,7 @@ export default function AdminParkView() {
             </CardHeader>
             <CardContent>
               <ParkIncidentsInventory 
-                parkId={parseInt(id)} 
+                parkId={parseInt(id || '0')} 
               />
             </CardContent>
           </Card>
@@ -851,8 +898,8 @@ export default function AdminParkView() {
                   <div className="border rounded-lg p-3 bg-white overflow-hidden">
                     <div className="w-full h-48 relative mb-2">
                       <MapViewer
-                        latitude={parseFloat(park?.latitude || "20.6597")}
-                        longitude={parseFloat(park?.longitude || "-103.3496")}
+                        latitude={typeof park?.latitude === 'string' ? parseFloat(park.latitude) : park?.latitude || 20.6597}
+                        longitude={typeof park?.longitude === 'string' ? parseFloat(park.longitude) : park?.longitude || -103.3496}
                         parkName={park?.name || "Parque"}
                         height="192px"
                         selectedLocation={{
@@ -1013,8 +1060,8 @@ const AmenitiesTable = ({
   // Use amenities data from parkData with proper mapping
   const amenitiesArray = Array.isArray(parkData?.amenities) ? parkData.amenities.map(amenity => ({
     ...amenity,
-    amenityName: amenity.amenityName || amenity.name,
-    amenityIcon: amenity.amenityIcon || amenity.icon,
+    amenityName: amenity.name,
+    amenityIcon: amenity.icon,
     parkAmenityId: amenity.id
   })) : [];
   
@@ -1399,8 +1446,8 @@ function AddAmenityForm({ availableAmenities, onSubmit, isLoading, onCancel, par
                 selectedLocation={
                   form.watch("locationLatitude") && form.watch("locationLongitude")
                     ? {
-                        lat: parseFloat(form.watch("locationLatitude")),
-                        lng: parseFloat(form.watch("locationLongitude"))
+                        lat: parseFloat(form.watch("locationLatitude") || "0"),
+                        lng: parseFloat(form.watch("locationLongitude") || "0")
                       }
                     : null
                 }

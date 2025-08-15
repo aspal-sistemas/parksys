@@ -1420,16 +1420,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
       const activeConcessions = parseInt(concessionsQuery.rows[0]?.count || 0);
 
-      // Get feedback count for this park (usando visitor_feedback si existe, sino 0)
+      // Get feedback count for this park from park_feedback table
       let totalFeedback = 0;
       try {
         const feedbackQuery = await pool.query(
-          'SELECT COUNT(*) as count FROM feedback WHERE park_id = $1',
+          'SELECT COUNT(*) as count FROM park_feedback WHERE park_id = $1',
           [parkId]
         );
         totalFeedback = parseInt(feedbackQuery.rows[0]?.count || 0);
+        console.log(`[DETAILS] Feedback encontrado para parque ${parkId}: ${totalFeedback}`);
       } catch (error) {
-        // La tabla feedback no existe, usar valor 0
+        console.log('Error obteniendo feedback, usando valor 0:', error);
         totalFeedback = 0;
       }
 
@@ -1440,18 +1441,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
       const totalEvaluations = parseInt(evaluationsCountQuery.rows[0]?.count || 0);
 
-      // Get reservations count for this park - usando datos de ejemplo
+      // Get reservations count for this park by joining with reservable_spaces
       let totalReservations = 0;
       try {
         const reservationsQuery = await pool.query(
-          'SELECT COUNT(*) as count FROM space_reservations',
-          []
+          `SELECT COUNT(*) as count 
+           FROM space_reservations sr 
+           JOIN reservable_spaces rs ON sr.space_id = rs.id 
+           WHERE rs.park_id = $1`,
+          [parkId]
         );
-        // Usar un porcentaje del total para simular reservas por parque
-        const totalCount = parseInt(reservationsQuery.rows[0]?.count || 0);
-        totalReservations = Math.floor(totalCount / 10); // Aproximación
+        totalReservations = parseInt(reservationsQuery.rows[0]?.count || 0);
+        console.log(`[DETAILS] Reservas encontradas para parque ${parkId}: ${totalReservations}`);
       } catch (error) {
-        console.log('No se pudo obtener reservas, usando valor 0');
+        console.log('Error obteniendo reservas, usando valor 0:', error);
         totalReservations = 0;
       }
 
