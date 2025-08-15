@@ -381,7 +381,7 @@ export default function AdminParkView() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
@@ -389,18 +389,6 @@ export default function AdminParkView() {
               <div>
                 <p className="text-2xl font-bold">{displayPark.stats?.totalActivities || 0}</p>
                 <p className="text-sm text-gray-600">Actividades</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <Users className="h-8 w-8 text-green-600" />
-              <div>
-                <p className="text-2xl font-bold">{park.stats?.activeVolunteers || 0}</p>
-                <p className="text-sm text-gray-600">Voluntarios</p>
               </div>
             </div>
           </CardContent>
