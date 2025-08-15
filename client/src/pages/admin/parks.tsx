@@ -578,7 +578,6 @@ const AdminParksContent = () => {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-gray-900">Buscar Parques</h3>
-              <span className="text-xs text-red-500 font-mono">NO_FILTERS_MODE</span>
             </div>
             <div className="flex items-center space-x-4">
               <div className="relative flex-1 max-w-md">
