@@ -977,10 +977,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Parks with amenities - Simplificado para eliminar filtros
+  // Parks with amenities 
   apiRouter.get("/parks-with-amenities", async (_req: Request, res: Response) => {
-    console.log("🚫🚫🚫 ENDPOINT /api/parks-with-amenities BLOQUEADO - 404");
-    res.status(404).json({ error: 'Endpoint deshabilitado - filtros eliminados' });
+    try {
+      const parks = await db
+        .select({
+          id: schema.parks.id,
+          name: schema.parks.name,
+          address: schema.parks.address,
+          municipalityId: schema.parks.municipalityId,
+          area: schema.parks.area,
+          parkType: schema.parks.parkType
+        })
+        .from(schema.parks)
+        .leftJoin(schema.municipalities, eq(schema.parks.municipalityId, schema.municipalities.id));
+        
+      res.json(parks);
+    } catch (error) {
+      console.error("Error getting parks with amenities:", error);
+      res.status(500).json({ error: "Error al obtener parques con amenidades" });
+    }
   });
 
   // Ruta para obtener estadísticas del dashboard de parques (DEBE IR ANTES DE /parks/:id)
@@ -5088,10 +5104,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get all municipalities - Simplificado para eliminar filtros
+  // Get all municipalities
   apiRouter.get("/municipalities", async (_req: Request, res: Response) => {
-    console.log("🚫🚫🚫 ENDPOINT /api/municipalities BLOQUEADO - 404");
-    res.status(404).json({ error: 'Endpoint deshabilitado - filtros eliminados' });
+    try {
+      const municipalities = await db.select().from(schema.municipalities);
+      res.json(municipalities);
+    } catch (error) {
+      console.error("Error getting municipalities:", error);
+      res.status(500).json({ error: "Error al obtener municipios" });
+    }
   });
 
   // Basic authentication for testing usando la función directa

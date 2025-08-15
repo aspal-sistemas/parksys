@@ -12,10 +12,14 @@ interface EventoAmbu {
   descripcion: string;
   impactoTipo: "bajo_impacto" | "alto_impacto";
   categoria: string;
-  fechaEvento: string;
-  horaInicio: string;
-  horaFin: string;
-  numeroAsistentes: number;
+  fechaEvento?: string; // Formato camelCase
+  fechaevento?: string; // Formato lowercase del API
+  horaInicio?: string;
+  horainicio?: string; // Formato lowercase del API
+  horaFin?: string;
+  horafin?: string; // Formato lowercase del API
+  numeroAsistentes?: number;
+  numeroasistentes?: number; // Formato lowercase del API
   status: string;
   costoTotal?: string | number;
 }
@@ -60,6 +64,7 @@ export default function CalendarioEventosAmbu() {
         
         const data = await response.json();
         console.log("Datos recibidos:", data);
+        console.log("Eventos encontrados:", data.length);
         
         // Manejo flexible de la estructura de respuesta
         let eventosArray = [];
@@ -94,7 +99,16 @@ export default function CalendarioEventosAmbu() {
 
   const obtenerEventosDelDia = (dia: number) => {
     const fechaDia = new Date(añoActual, mesActual, dia).toISOString().split('T')[0];
-    return eventos.filter((evento: EventoAmbu) => evento.fechaEvento === fechaDia);
+    const eventosDelDia = eventos.filter((evento: EventoAmbu) => {
+      // Manejar ambos formatos de fecha: fechaEvento y fechaevento
+      const fechaEvento = (evento.fechaEvento || evento.fechaevento || '').split('T')[0];
+      const coincide = fechaEvento === fechaDia;
+      if (dia === 16 && mesActual === 7) { // Debug para agosto 16
+        console.log(`Comparando evento ${evento.id} (${evento.titulo}): ${fechaEvento} === ${fechaDia}? ${coincide}`);
+      }
+      return coincide;
+    });
+    return eventosDelDia;
   };
 
   const obtenerDiasDelMes = () => {
@@ -283,8 +297,8 @@ export default function CalendarioEventosAmbu() {
               <CardContent>
                 <div className="space-y-3">
                   {eventos
-                    .filter((evento: EventoAmbu) => new Date(evento.fechaEvento) >= new Date())
-                    .sort((a: EventoAmbu, b: EventoAmbu) => new Date(a.fechaEvento).getTime() - new Date(b.fechaEvento).getTime())
+                    .filter((evento: EventoAmbu) => new Date(evento.fechaEvento || evento.fechaevento || '') >= new Date())
+                    .sort((a: EventoAmbu, b: EventoAmbu) => new Date(a.fechaEvento || a.fechaevento || '').getTime() - new Date(b.fechaEvento || b.fechaevento || '').getTime())
                     .slice(0, 5)
                     .map((evento: EventoAmbu) => (
                       <div key={`proximo-${evento.id}`} className="border-l-4 border-blue-500 pl-3 py-2">
@@ -297,15 +311,15 @@ export default function CalendarioEventosAmbu() {
                         <div className="space-y-1">
                           <div className="flex items-center gap-1 text-xs text-gray-600">
                             <Calendar className="h-3 w-3" />
-                            {new Date(evento.fechaEvento).toLocaleDateString()}
+                            {new Date(evento.fechaEvento || evento.fechaevento || '').toLocaleDateString()}
                           </div>
                           <div className="flex items-center gap-1 text-xs text-gray-600">
                             <Clock className="h-3 w-3" />
-                            {evento.horaInicio} - {evento.horaFin}
+                            {evento.horaInicio || evento.horainicio} - {evento.horaFin || evento.horafin}
                           </div>
                           <div className="flex items-center gap-1 text-xs text-gray-600">
                             <Users className="h-3 w-3" />
-                            {evento.numeroAsistentes} asistentes
+                            {evento.numeroAsistentes || evento.numeroasistentes} asistentes
                           </div>
                           {evento.costoTotal && parseFloat(formatearCosto(evento.costoTotal)) > 0 && (
                             <div className="flex items-center gap-1 text-xs text-gray-600">
@@ -320,7 +334,7 @@ export default function CalendarioEventosAmbu() {
                       </div>
                     ))}
                   
-                  {eventos.filter((evento: EventoAmbu) => new Date(evento.fechaEvento) >= new Date()).length === 0 && (
+                  {eventos.filter((evento: EventoAmbu) => new Date(evento.fechaEvento || evento.fechaevento || '') >= new Date()).length === 0 && (
                     <p className="text-sm text-gray-500 text-center py-4">
                       No hay eventos próximos
                     </p>
