@@ -5,7 +5,7 @@ import * as XLSX from "xlsx";
 import path from "path";
 import fs from "fs";
 import { createServer, type Server } from "http";
-import { storage } from "./simple-storage";
+import { storage } from "./storage";
 import { isAuthenticated, hasMunicipalityAccess, hasParkAccess, requirePermission, requireAdmin } from "./middleware/auth";
 import { handleProfileImageUpload } from "./api/profileImageUpload";
 import { saveProfileImage, getProfileImage } from "./profileImageCache";
@@ -13,7 +13,7 @@ import { db, pool } from "./db";
 import { sql, eq } from "drizzle-orm";
 import { deleteAllVolunteers, deleteVolunteer } from "./delete-all-volunteers";
 import * as schema from "@shared/schema";
-const { parkAmenities, amenities } = schema;
+const { parkAmenities, amenities, insertParkSchema } = schema;
 import { videoRouter } from "./video_routes";
 import { registerVolunteerRoutes } from "./volunteerRoutes";
 import { registerInstructorRoutes } from "./instructor-routes";
@@ -67,7 +67,7 @@ import { registerSpacePaymentRoutes } from "./routes/space-payments";
 import { registerActivityStatsRoutes } from "./routes/activity-stats";
 import { uploadAdvertising, handleAdvertisingUpload } from "./api/advertising-upload";
 import { 
-  insertParkSchema, insertCommentSchema, insertIncidentSchema, 
+  insertCommentSchema, insertIncidentSchema, 
   insertActivitySchema, insertDocumentSchema, insertParkImageSchema,
   insertParkAmenitySchema, ExtendedPark, Park, Municipality, Amenity, Activity
 } from "@shared/schema";
@@ -1723,107 +1723,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create a new park (admin/municipality only) - CON AUTOMATIZACIÓN DE LANDING PAGE
+  // Create a new park - Simplified version without automation
   apiRouter.post("/parks", async (req: Request, res: Response) => {
     try {
-      // Si el usuario está autenticado y no es super_admin, forzamos que el parque sea de su municipio
-      if (req.user.role !== 'super_admin' && req.user.municipalityId) {
-        req.body.municipalityId = req.user.municipalityId;
-      }
+      console.log('🚀 Recibiendo petición de creación de parque:', req.body);
       
       const parkData = insertParkSchema.parse(req.body);
+      console.log('✅ Datos del parque validados:', parkData);
       
-      // Verificar que el usuario tenga permisos para el municipio del parque
-      // MODO DESARROLLO: Permitir a administradores sin municipalityId
-      const isDevelopment = process.env.NODE_ENV !== 'production';
-      if (req.user.role !== 'super_admin' && 
-          req.user.municipalityId && 
-          parkData.municipalityId !== req.user.municipalityId) {
-        return res.status(403).json({ 
-          message: "No tiene permisos para crear parques en este municipio" 
-        });
-      }
-      
-      // En desarrollo, permitir a admins sin municipalityId asignado
-      if (isDevelopment && req.user.role === 'admin' && !req.user.municipalityId) {
-        console.log('🛠️ Modo desarrollo - Permitiendo creación de parque para admin sin municipalityId');
-      }
-      
-      // PASO 1: Crear el parque en la base de datos
+      // Crear el parque en la base de datos
       const newPark = await storage.createPark(parkData);
-      console.log(`🏞️ Parque creado: ${newPark.name} (ID: ${newPark.id})`);
+      console.log(`🏞️ Parque creado exitosamente: ${newPark.name} (ID: ${newPark.id})`);
       
-      // PASO 2: AUTOMATIZACIÓN - Procesar para landing page
-      try {
-        const { 
-          processNewParkForLanding, 
-          validateParkForLanding, 
-          logLandingPageAutomation 
-        } = await import('./park-landing-automation');
-        
-        // Validar que el parque tenga datos mínimos para landing page
-        const validation = validateParkForLanding(newPark);
-        
-        if (validation.isValid) {
-          // Procesar automáticamente para landing page
-          const landingPageData = await processNewParkForLanding(newPark);
-          
-          // Log del proceso de automatización
-          logLandingPageAutomation('LANDING_PAGE_GENERATED', newPark, {
-            slug: landingPageData.slug,
-            url: landingPageData.landingPageUrl,
-            syncedFields: Object.keys(landingPageData.syncedData).length
-          });
-          
-          // Responder con información extendida incluyendo datos de landing page
-          res.status(201).json({
-            ...newPark,
-            landingPage: {
-              enabled: true,
-              slug: landingPageData.slug,
-              url: landingPageData.landingPageUrl,
-              lastSync: landingPageData.syncedData.lastSyncAt
-            }
-          });
-        } else {
-          // Si falta información crítica, crear parque pero sin landing page automática
-          logLandingPageAutomation('LANDING_PAGE_SKIPPED', newPark, {
-            reason: 'MISSING_REQUIRED_FIELDS',
-            missingFields: validation.missingFields,
-            warnings: validation.warnings
-          });
-          
-          res.status(201).json({
-            ...newPark,
-            landingPage: {
-              enabled: false,
-              reason: 'Faltan campos requeridos para landing page',
-              missingFields: validation.missingFields
-            }
-          });
-        }
-        
-      } catch (automationError) {
-        // Si falla la automatización, el parque ya está creado - solo notificar
-        console.error('⚠️ Error en automatización de landing page:', automationError);
-        
-        res.status(201).json({
-          ...newPark,
-          landingPage: {
-            enabled: false,
-            reason: 'Error en automatización',
-            error: automationError.message
-          }
-        });
-      }
+      res.status(201).json(newPark);
       
     } catch (error) {
-      if (error instanceof ZodError) {
-        const validationError = fromZodError(error);
-        return res.status(400).json({ message: validationError.message });
-      }
       console.error('❌ Error creando parque:', error);
-      res.status(500).json({ message: "Error creating park" });
+      
+      if (error?.name === 'ZodError') {
+        return res.status(400).json({ 
+          message: "Datos de entrada inválidos",
+          details: error.issues 
+        });
+      }
+      
+      res.status(500).json({ 
+        message: "Error creating park",
+        details: error?.message || "Unknown error"
+      });
     }
   });
   

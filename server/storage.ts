@@ -27,6 +27,7 @@ export interface IStorage {
   getParks(filters?: any): Promise<any[]>;
   getExtendedParks(filters?: any): Promise<any[]>;
   getPark(id: number): Promise<any>;
+  createPark(data: any): Promise<any>;
   updatePark(id: number, data: any): Promise<any>;
   deletePark(id: number): Promise<boolean>;
   getMunicipalities(): Promise<any[]>;
@@ -799,6 +800,8 @@ export class DatabaseStorage implements IStorage {
       return null;
     }
   }
+
+
 
   async updatePark(id: number, data: any): Promise<any> {
     try {
