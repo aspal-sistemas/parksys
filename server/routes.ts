@@ -1734,10 +1734,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const parkData = insertParkSchema.parse(req.body);
       
       // Verificar que el usuario tenga permisos para el municipio del parque
-      if (req.user.role !== 'super_admin' && parkData.municipalityId !== req.user.municipalityId) {
+      // MODO DESARROLLO: Permitir a administradores sin municipalityId
+      const isDevelopment = process.env.NODE_ENV !== 'production';
+      if (req.user.role !== 'super_admin' && 
+          req.user.municipalityId && 
+          parkData.municipalityId !== req.user.municipalityId) {
         return res.status(403).json({ 
           message: "No tiene permisos para crear parques en este municipio" 
         });
+      }
+      
+      // En desarrollo, permitir a admins sin municipalityId asignado
+      if (isDevelopment && req.user.role === 'admin' && !req.user.municipalityId) {
+        console.log('🛠️ Modo desarrollo - Permitiendo creación de parque para admin sin municipalityId');
       }
       
       // PASO 1: Crear el parque en la base de datos
