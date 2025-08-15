@@ -9,7 +9,7 @@ import {
   eventEvaluations,
   insertEventSchema 
 } from "../shared/events-schema";
-import { parks } from "../shared/schema";
+import { parks, eventCategories } from "../shared/schema";
 import { eq, and, desc, gte, sql, inArray } from "drizzle-orm";
 import { z } from "zod";
 
@@ -635,5 +635,85 @@ export async function updateParticipantStatus(req: Request, res: Response) {
   } catch (error) {
     console.error("Error al actualizar estado del participante:", error);
     return res.status(500).json({ message: "Error al actualizar estado del participante", error });
+  }
+}
+
+// Obtener estadísticas de eventos
+export async function getEventStats(req: Request, res: Response) {
+  try {
+    // Obtener total de eventos
+    const totalResult = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(events);
+    const total = Number(totalResult[0].count);
+
+    // Obtener eventos publicados
+    const publishedResult = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(events)
+      .where(eq(events.status, 'published'));
+    const published = Number(publishedResult[0].count);
+
+    // Obtener eventos en borrador
+    const draftResult = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(events)
+      .where(eq(events.status, 'draft'));
+    const draft = Number(draftResult[0].count);
+
+    // Obtener eventos próximos (futuras fechas)
+    const today = new Date().toISOString().split('T')[0];
+    const upcomingResult = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(events)
+      .where(sql`${events.startDate} >= ${today}`);
+    const upcoming = Number(upcomingResult[0].count);
+
+    // Obtener número de categorías
+    const categoriesResult = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(eventCategories);
+    const categories = Number(categoriesResult[0].count);
+
+    const stats = {
+      total,
+      published,
+      draft,
+      upcoming,
+      categories
+    };
+
+    return res.json(stats);
+  } catch (error) {
+    console.error("Error al obtener estadísticas de eventos:", error);
+    return res.status(500).json({ message: "Error al obtener estadísticas de eventos", error });
+  }
+}
+
+// Obtener eventos recientes
+export async function getRecentEvents(req: Request, res: Response) {
+  try {
+    const recentEvents = await db
+      .select({
+        id: events.id,
+        title: events.title,
+        description: events.description,
+        eventType: events.eventType,
+        status: events.status,
+        startDate: events.startDate,
+        endDate: events.endDate,
+        location: events.location,
+        capacity: events.capacity,
+        featuredImageUrl: events.featuredImageUrl,
+        createdAt: events.createdAt
+      })
+      .from(events)
+      .orderBy(desc(events.createdAt))
+      .limit(10);
+
+    return res.json(recentEvents);
+  } catch (error) {
+    console.error("Error al obtener eventos recientes:", error);
+    return res.status(500).json({ message: "Error al obtener eventos recientes", error });
   }
 }

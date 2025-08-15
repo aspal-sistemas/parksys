@@ -6,7 +6,9 @@ import {
   updateEvent,
   deleteEvent,
   getParkEvents,
-  getEventReferenceData
+  getEventReferenceData,
+  getEventStats,
+  getRecentEvents
 } from "./events-handlers";
 
 import {
@@ -61,6 +63,8 @@ export function registerEventRoutes(app: any, apiRouter: Router, isAuthenticated
 
   // Rutas públicas
   apiRouter.get("/events", getAllEvents);
+  apiRouter.get("/events/stats", getEventStats);
+  apiRouter.get("/events/recent", getRecentEvents);
   apiRouter.get("/events/:id", getEventById);
   apiRouter.get("/parks/:id/events", getParkEvents);
   apiRouter.get("/events-reference-data", getEventReferenceData);

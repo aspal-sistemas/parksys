@@ -537,6 +537,12 @@ function Router() {
         </Route>
         
         {/* Rutas para eventos generales */}
+        <Route path="/admin/events" exact>
+          <Suspense fallback={<div className="p-8 text-center">Cargando gestión de eventos...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/events')))}
+          </Suspense>
+        </Route>
+        
         <Route path="/admin/events/new" component={NewEventPage} />
 
         <Route path="/admin/events/categories" component={EventCategoriesPage} />

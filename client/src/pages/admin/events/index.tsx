@@ -1,343 +1,289 @@
-import React, { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Link, useLocation } from "wouter";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import LoadingSpinner from "@/components/LoadingSpinner";
-import EmptyState from "@/components/EmptyState";
-import PageHeader from "@/components/PageHeader";
-import AdminLayout from "@/components/AdminLayout";
 import { 
   Calendar, 
-  ChevronRight, 
-  Filter, 
-  PlusCircle, 
-  Search,
-  CalendarDays
+  CalendarPlus, 
+  FolderOpen, 
+  List, 
+  TrendingUp,
+  Users,
+  MapPin,
+  Clock
 } from "lucide-react";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
+import { Link } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 
-// Definimos los tipos que necesitamos para los eventos
-interface Event {
-  id: number;
-  title: string;
-  description: string | null;
-  eventType: string;
-  targetAudience: string | null;
-  status: string;
-  startDate: string;
-  endDate: string | null;
-  location: string | null;
-  capacity: number | null;
-  registrationType: string;
-  organizerName: string | null;
-  parks?: { id: number; name: string }[];
+interface EventStats {
+  total: number;
+  published: number;
+  draft: number;
+  upcoming: number;
+  categories: number;
 }
 
-const EventsPage = () => {
-  const [, navigate] = useLocation();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [typeFilter, setTypeFilter] = useState<string>("all");
-
-  // Obtenemos los eventos desde el servidor
-  const { data, isLoading, error } = useQuery<Event[]>({
-    queryKey: ["/api/events"],
+export default function EventsIndex() {
+  // Consulta para obtener estadísticas de eventos
+  const { data: stats, isLoading: statsLoading } = useQuery<EventStats>({
+    queryKey: ['/api/events/stats'],
+    retry: false,
   });
 
-  // Si hay un error en la carga de datos
-  if (error) {
-    return (
-      <AdminLayout>
-        <div className="container mx-auto py-6">
-          <PageHeader
-            title="Eventos"
-            description="Gestiona los eventos de los parques"
-            actions={
-              <Button asChild>
-                <Link href="/admin/events/new">
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  Nuevo Evento
-                </Link>
-              </Button>
-            }
-          />
-          <Card className="bg-destructive/10 border-destructive">
-            <CardHeader>
-              <CardTitle>Error al cargar los eventos</CardTitle>
-              <CardDescription>
-                Hubo un problema al obtener los datos. Intenta recargar la página.
-              </CardDescription>
-            </CardHeader>
-          </Card>
-        </div>
-      </AdminLayout>
-    );
-  }
+  // Consulta para obtener eventos recientes
+  const { data: recentEvents, isLoading: eventsLoading } = useQuery({
+    queryKey: ['/api/events/recent'],
+    retry: false,
+  });
 
-  // Filtrar eventos por búsqueda, estado y tipo
-  const filteredEvents = data
-    ? data.filter((event) => {
-        const matchesSearch =
-          !searchQuery ||
-          event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (event.description &&
-            event.description.toLowerCase().includes(searchQuery.toLowerCase()));
+  const quickActions = [
+    {
+      title: "Crear Nuevo Evento",
+      description: "Agregar un nuevo evento al sistema",
+      icon: CalendarPlus,
+      href: "/admin/events/new",
+      color: "bg-blue-500",
+    },
+    {
+      title: "Gestionar Categorías",
+      description: "Administrar categorías de eventos",
+      icon: FolderOpen,
+      href: "/admin/events/categories",
+      color: "bg-green-500",
+    },
+    {
+      title: "Lista de Eventos",
+      description: "Ver todos los eventos registrados",
+      icon: List,
+      href: "/admin/events/list",
+      color: "bg-purple-500",
+    },
+    {
+      title: "Calendario de Eventos",
+      description: "Vista de calendario de eventos",
+      icon: Calendar,
+      href: "/admin/events/calendar",
+      color: "bg-orange-500",
+    },
+  ];
 
-        const matchesStatus =
-          statusFilter === "all" || event.status === statusFilter;
-
-        const matchesType = typeFilter === "all" || event.eventType === typeFilter;
-
-        return matchesSearch && matchesStatus && matchesType;
-      })
-    : [];
-
-  // Obtener los tipos de eventos únicos para los filtros
-  const eventTypes = data
-    ? Array.from(new Set(data.map((event) => event.eventType)))
-    : [];
-
-  // Generar un mapa de colores para los diferentes tipos de eventos
-  const typeColorMap: Record<string, string> = {
-    cultural: "bg-indigo-100 text-indigo-800 border-indigo-300",
-    sports: "bg-green-100 text-green-800 border-green-300",
-    environmental: "bg-emerald-100 text-emerald-800 border-emerald-300",
-    social: "bg-orange-100 text-orange-800 border-orange-300",
-    educational: "bg-blue-100 text-blue-800 border-blue-300",
-    default: "bg-gray-100 text-gray-800 border-gray-300",
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'published':
+        return 'bg-green-100 text-green-800';
+      case 'draft':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'cancelled':
+        return 'bg-red-100 text-red-800';
+      case 'postponed':
+        return 'bg-blue-100 text-blue-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
   };
 
-  // Obtener los estados de eventos únicos para los filtros
-  const eventStatuses = data
-    ? Array.from(new Set(data.map((event) => event.status)))
-    : [];
-
-  // Generar un mapa de colores para los diferentes estados
-  const statusColorMap: Record<string, string> = {
-    draft: "bg-gray-100 text-gray-800",
-    published: "bg-green-100 text-green-800",
-    canceled: "bg-red-100 text-red-800",
-    postponed: "bg-amber-100 text-amber-800",
-    completed: "bg-blue-100 text-blue-800",
-    default: "bg-gray-100 text-gray-800",
-  };
-
-  // Traducir tipos de eventos a español
-  const eventTypeTranslations: Record<string, string> = {
-    cultural: "Cultural",
-    sports: "Deportivo",
-    environmental: "Ambiental",
-    social: "Social",
-    educational: "Educativo",
-  };
-
-  // Traducir estados a español
-  const statusTranslations: Record<string, string> = {
-    draft: "Borrador",
-    published: "Publicado",
-    canceled: "Cancelado",
-    postponed: "Pospuesto",
-    completed: "Completado",
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    });
   };
 
   return (
-    <AdminLayout>
-      <div className="container mx-auto py-6">
-        <PageHeader
-          title="Eventos"
-          description="Gestiona los eventos de los parques"
-          actions={
-            <>
-              <Button variant="outline" asChild>
-                <Link href="/admin/events/calendar">
-                  <CalendarDays className="mr-2 h-4 w-4" />
-                  Calendario
-                </Link>
-              </Button>
-              <Button asChild>
-                <Link href="/admin/events/new">
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  Nuevo Evento
-                </Link>
-              </Button>
-            </>
-          }
-        />
-
-        <div className="flex flex-col md:flex-row gap-4 mb-6">
-          <div className="relative flex-grow">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Buscar eventos..."
-              className="pl-8"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          <div className="flex gap-2">
-            <div className="w-40">
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger>
-                  <Filter className="mr-2 h-4 w-4" />
-                  <SelectValue placeholder="Estado" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos los estados</SelectItem>
-                  {eventStatuses.map((status) => (
-                    <SelectItem key={status} value={status}>
-                      {statusTranslations[status] || status}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="w-40">
-              <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger>
-                  <Filter className="mr-2 h-4 w-4" />
-                  <SelectValue placeholder="Tipo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos los tipos</SelectItem>
-                  {eventTypes.map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {eventTypeTranslations[type] || type}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+    <div className="space-y-6 p-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Gestión de Eventos</h1>
+          <p className="text-gray-600 mt-2">
+            Administra eventos, categorías y programación de actividades
+          </p>
         </div>
+        <Link href="/admin/events/new">
+          <Button className="bg-blue-600 hover:bg-blue-700">
+            <CalendarPlus className="w-4 h-4 mr-2" />
+            Nuevo Evento
+          </Button>
+        </Link>
+      </div>
+
+      {/* Estadísticas */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">
+              Total de Eventos
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center">
+              <Calendar className="w-6 h-6 text-blue-500 mr-2" />
+              <span className="text-2xl font-bold">
+                {statsLoading ? '...' : stats?.total || 0}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
 
         <Card>
-          {isLoading ? (
-            <LoadingSpinner />
-          ) : filteredEvents.length === 0 ? (
-            <CardContent className="p-6">
-              <EmptyState
-                icon={<Calendar className="h-10 w-10" />}
-                title="No hay eventos"
-                description={
-                  searchQuery || statusFilter !== "all" || typeFilter !== "all"
-                    ? "No se encontraron eventos con los filtros aplicados."
-                    : "Aún no se han creado eventos. Crea tu primer evento para comenzar."
-                }
-                actions={
-                  <Button asChild>
-                    <Link href="/admin/events/new">
-                      <PlusCircle className="mr-2 h-4 w-4" />
-                      Nuevo Evento
-                    </Link>
-                  </Button>
-                }
-              />
-            </CardContent>
-          ) : (
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nombre</TableHead>
-                    <TableHead>Tipo</TableHead>
-                    <TableHead>Fecha</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead>Ubicación</TableHead>
-                    <TableHead className="text-right">Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredEvents.map((event) => {
-                    const formattedDate = event.startDate
-                      ? format(new Date(event.startDate), "dd MMM yyyy", { locale: es })
-                      : "Sin fecha";
-                    
-                    return (
-                      <TableRow key={event.id}>
-                        <TableCell className="font-medium">
-                          <div className="max-w-xs truncate">{event.title}</div>
-                          <div className="text-xs text-muted-foreground mt-1">
-                            ID: {event.id}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant="outline"
-                            className={
-                              typeColorMap[event.eventType] || typeColorMap.default
-                            }
-                          >
-                            {eventTypeTranslations[event.eventType] || event.eventType}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1">
-                            <Calendar className="h-3 w-3 text-muted-foreground" />
-                            <span>{formattedDate}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant="secondary"
-                            className={
-                              statusColorMap[event.status] || statusColorMap.default
-                            }
-                          >
-                            {statusTranslations[event.status] || event.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="max-w-xs truncate">
-                            {event.location || "Sin ubicación"}
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => navigate(`/admin/events/${event.id}`)}
-                          >
-                            <span className="sr-only">Ver detalles</span>
-                            <ChevronRight className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">
+              Publicados
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center">
+              <TrendingUp className="w-6 h-6 text-green-500 mr-2" />
+              <span className="text-2xl font-bold">
+                {statsLoading ? '...' : stats?.published || 0}
+              </span>
             </div>
-          )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">
+              Borradores
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center">
+              <Clock className="w-6 h-6 text-yellow-500 mr-2" />
+              <span className="text-2xl font-bold">
+                {statsLoading ? '...' : stats?.draft || 0}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">
+              Próximos
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center">
+              <Users className="w-6 h-6 text-purple-500 mr-2" />
+              <span className="text-2xl font-bold">
+                {statsLoading ? '...' : stats?.upcoming || 0}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">
+              Categorías
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center">
+              <FolderOpen className="w-6 h-6 text-orange-500 mr-2" />
+              <span className="text-2xl font-bold">
+                {statsLoading ? '...' : stats?.categories || 0}
+              </span>
+            </div>
+          </CardContent>
         </Card>
       </div>
-    </AdminLayout>
-  );
-};
 
-export default EventsPage;
+      {/* Acciones rápidas */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Acciones Rápidas</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {quickActions.map((action, index) => {
+              const IconComponent = action.icon;
+              return (
+                <Link key={index} href={action.href}>
+                  <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
+                    <CardContent className="p-4">
+                      <div className={`w-12 h-12 rounded-lg ${action.color} flex items-center justify-center mb-3`}>
+                        <IconComponent className="w-6 h-6 text-white" />
+                      </div>
+                      <h3 className="font-semibold text-gray-900 mb-1">
+                        {action.title}
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        {action.description}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </Link>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Eventos recientes */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>Eventos Recientes</CardTitle>
+          <Link href="/admin/events/list">
+            <Button variant="outline" size="sm">
+              Ver Todos
+            </Button>
+          </Link>
+        </CardHeader>
+        <CardContent>
+          {eventsLoading ? (
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex items-center space-x-4 p-3 border rounded-lg animate-pulse">
+                  <div className="w-12 h-12 bg-gray-200 rounded-lg"></div>
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : recentEvents && recentEvents.length > 0 ? (
+            <div className="space-y-3">
+              {recentEvents.slice(0, 5).map((event: any) => (
+                <div key={event.id} className="flex items-center space-x-4 p-3 border rounded-lg hover:bg-gray-50">
+                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <Calendar className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-medium text-gray-900">{event.title}</h4>
+                    <div className="flex items-center space-x-4 mt-1">
+                      <div className="flex items-center text-sm text-gray-600">
+                        <MapPin className="w-3 h-3 mr-1" />
+                        {event.location || 'Sin ubicación'}
+                      </div>
+                      <div className="flex items-center text-sm text-gray-600">
+                        <Calendar className="w-3 h-3 mr-1" />
+                        {formatDate(event.startDate)}
+                      </div>
+                      <Badge className={getStatusColor(event.status)}>
+                        {event.status === 'published' ? 'Publicado' : 
+                         event.status === 'draft' ? 'Borrador' :
+                         event.status === 'cancelled' ? 'Cancelado' : event.status}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+              <p>No hay eventos registrados aún</p>
+              <Link href="/admin/events/new">
+                <Button className="mt-4">
+                  Crear Primer Evento
+                </Button>
+              </Link>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
