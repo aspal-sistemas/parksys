@@ -18,9 +18,10 @@ export const isAuthenticated = async (req: Request, res: Response, next: NextFun
     // En modo desarrollo, permitir acceso directo para ciertas rutas problemáticas
     const isDevelopment = process.env.NODE_ENV !== 'production';
     const isReservationRoute = req.url.includes('/space-reservations/');
+    const isParksRoute = req.url.includes('/parks');
     
-    if (isDevelopment && isReservationRoute) {
-      console.log('🛠️ Modo desarrollo - Permitiendo acceso directo a reservas');
+    if (isDevelopment && (isReservationRoute || isParksRoute)) {
+      console.log('🛠️ Modo desarrollo - Permitiendo acceso directo a', isParksRoute ? 'parques' : 'reservas');
       req.user = {
         id: 4,
         username: 'Luis',

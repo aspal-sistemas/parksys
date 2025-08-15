@@ -159,8 +159,8 @@ const AdminParkEdit: React.FC = () => {
     // Limpiar valores nulos/vacíos para el backend
     const cleanedValues = {
       ...values,
-      latitude: values.latitude || undefined,
-      longitude: values.longitude || undefined,
+      latitude: values.latitude ? values.latitude.trim().replace(/,$/, '') : undefined,
+      longitude: values.longitude ? values.longitude.trim().replace(/,$/, '') : undefined,
       area: values.area || undefined,
       foundationYear: values.foundationYear || undefined,
       administrator: values.administrator || undefined,
