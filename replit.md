@@ -30,6 +30,8 @@ The application uses a client-server architecture with a modern full-stack.
 
 **Recent Updates (January 2025)**: Park view interface has been restructured with 5 core tabs: Actividades, Concesiones, Reservas, Eventos, and Incidencias. Removed Trees, Assets, and Información tabs, replaced with streamlined operational modules. All tabs display real database data with detailed information cards. Concessions show full operational details including payments and schedules. Reservations display contact information, costs, and booking details. Events system adapted to work with location-based searching instead of direct park relationships. Dashboard indicator cards updated to reflect new tab structure with proper data connectivity. Default tab changed from "Información" to "Actividades" for immediate operational focus.
 
+**Known Issues**: The /admin/parks page occasionally experiences intermittent filter elements reappearing despite being removed from the code. This appears to be related to caching or code regeneration processes. The page should only display a simple search bar without additional filters. Current implementation has been cleaned to show only search functionality without type, status, or category filters.
+
 ## External Dependencies
 - **Frontend**: React, TypeScript, Vite, Tailwind CSS, Radix UI (shadcn/ui), React Query, React Router, React Hook Form, Zod.
 - **Backend**: Node.js, Express, TypeScript, Multer, bcryptjs.
