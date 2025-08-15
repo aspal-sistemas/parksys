@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 
+// NOTA CRÍTICA: NO IMPORTAR Select, SelectContent, SelectItem, SelectTrigger, SelectValue
+// El usuario específicamente NO quiere filtros en esta página
+
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Search, Plus, FileUp, Trash2, Eye, Edit, X, MapPin, Users, Calendar, Package, AlertTriangle, TreePine, Activity, Camera, FileText, UserCheck, Wrench, Grid, List, ChevronLeft, ChevronRight } from "lucide-react";
@@ -565,37 +568,45 @@ const AdminParksContent = () => {
           </div>
         </div>
         
-        {/* SOLO BARRA DE BÚSQUEDA - SIN FILTROS */}
-        <Card className="bg-white shadow-sm">
-          <CardContent className="p-4">
+        {/* ===== ATENCIÓN: USUARIO ESPECÍFICAMENTE PIDIÓ SIN FILTROS ===== */}
+        {/* ===== SOLO BARRA DE BÚSQUEDA - NO AGREGAR SELECT O FILTROS ===== */}
+        <div 
+          className="bg-white p-6 rounded-lg border shadow-sm"
+          data-no-filters="true"
+          id="search-section-no-filters"
+        >
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900">Buscar Parques</h3>
+              <span className="text-xs text-red-500 font-mono">NO_FILTERS_MODE</span>
+            </div>
             <div className="flex items-center space-x-4">
               <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <input
                   type="text"
                   placeholder="Buscar parques por nombre o dirección..."
-                  className="pl-10 w-full"
+                  className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
                 {searchQuery && (
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
+                  <button 
                     onClick={handleClearSearch} 
-                    className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-gray-100"
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 rounded"
                     aria-label="Limpiar búsqueda"
                   >
-                    <X className="h-3 w-3" />
-                  </Button>
+                    <X className="h-4 w-4 text-gray-400" />
+                  </button>
                 )}
               </div>
-              <div className="text-sm text-gray-500">
-                {filteredParks.length} resultado{filteredParks.length !== 1 ? 's' : ''}
+              <div className="text-sm text-gray-500 font-medium">
+                {filteredParks.length} parque{filteredParks.length !== 1 ? 's' : ''} encontrado{filteredParks.length !== 1 ? 's' : ''}
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
+        {/* ===== FIN SECCIÓN BÚSQUEDA SIN FILTROS ===== */}
         
         {/* Parks content */}
         {currentParks.length === 0 ? (
