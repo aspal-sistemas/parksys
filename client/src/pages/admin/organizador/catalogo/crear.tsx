@@ -149,26 +149,37 @@ const CrearActividadPage = () => {
   const [location, setLocation] = useLocation();
 
   // Consulta para obtener la lista de parques
-  const { data: parquesResponse } = useQuery({
+  const { data: parquesResponse, isLoading: parquesLoading } = useQuery({
     queryKey: ['/api/parks'],
   });
   
-  const parques = parquesResponse?.data || [];
+  const parques = Array.isArray(parquesResponse) ? parquesResponse : [];
   
   // Consulta para obtener las categorías de actividades
-  const { data: categoriasResponse } = useQuery({
+  const { data: categoriasResponse, isLoading: categoriasLoading } = useQuery({
     queryKey: ['/api/activity-categories'],
   });
   
-  const categorias = categoriasResponse?.data || [];
+  const categorias = Array.isArray(categoriasResponse) ? categoriasResponse : [];
   
   // Consulta para obtener la lista de usuarios con rol de instructor
-  const { data: usersResponse } = useQuery({
+  const { data: usersResponse, isLoading: usersLoading } = useQuery({
     queryKey: ['/api/users'],
   });
   
-  const allUsers = usersResponse?.data || [];
-  const instructores = allUsers.filter((user: any) => user.role === 'instructor');
+  const allUsers = Array.isArray(usersResponse) ? usersResponse : [];
+  const instructores = allUsers.filter((user: any) => 
+    user.roleName?.toLowerCase() === 'instructor' || 
+    user.roleName?.toLowerCase().includes('instructor')
+  );
+
+  // Logging para diagnosticar
+  console.log('🔧 Datos procesados correctamente:', { 
+    parques: parques.length, 
+    categorias: categorias.length, 
+    instructores: instructores.length,
+    roles: allUsers.map(u => u.roleName) 
+  });
 
   // Configuración del formulario
   const form = useForm<FormValues>({
