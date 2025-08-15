@@ -719,6 +719,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // API endpoint for eventos AMBU calendar
+  apiRouter.get('/eventos-ambu', async (req: Request, res: Response) => {
+    try {
+      const { fecha_desde, fecha_hasta, limit = '50' } = req.query;
+      
+      let query = `
+        SELECT 
+          id,
+          title as titulo,
+          description as descripcion,
+          event_type as categoria,
+          start_date as fechaEvento,
+          start_time as horaInicio,
+          end_time as horaFin,
+          capacity as numeroAsistentes,
+          status,
+          'alto_impacto' as impactoTipo
+        FROM events 
+        WHERE 1=1
+      `;
+      
+      const params = [];
+      let paramIndex = 1;
+      
+      if (fecha_desde) {
+        query += ` AND start_date >= $${paramIndex}`;
+        params.push(fecha_desde);
+        paramIndex++;
+      }
+      
+      if (fecha_hasta) {
+        query += ` AND start_date <= $${paramIndex}`;
+        params.push(fecha_hasta);
+        paramIndex++;
+      }
+      
+      query += ` ORDER BY start_date ASC LIMIT $${paramIndex}`;
+      params.push(parseInt(limit as string));
+      
+      const result = await pool.query(query, params);
+      res.json(result.rows);
+    } catch (error) {
+      console.error('Error fetching eventos AMBU:', error);
+      res.json([]); // Return empty array to prevent UI errors
+    }
+  });
+
   // Endpoints para imágenes de perfil
   // Obtener la imagen de perfil de un usuario
   apiRouter.get('/users/:id/profile-image', async (req: Request, res: Response) => {
