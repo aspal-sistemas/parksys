@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, Request, Response } from "express";
 import {
   getAllEvents,
   getEventById,
@@ -56,6 +56,20 @@ eventRouter.put("/events/:id", updateEvent);
 eventRouter.delete("/events/:id", deleteEvent);
 
 export function registerEventRoutes(app: any, apiRouter: Router, isAuthenticated: any) {
+  // Endpoint específico para categorías de eventos - debe ir antes de /:id  
+  apiRouter.get("/event-categories", (req: Request, res: Response) => {
+    const eventCategories = [
+      "Culturales",
+      "Deportivos", 
+      "Educativos",
+      "Comunitarios",
+      "Recreativos",
+      "Ambientales",
+      "Sociales"
+    ];
+    res.json(eventCategories);
+  });
+
   // Rutas públicas
   apiRouter.get("/events", getAllEvents);
   apiRouter.get("/events/:id", getEventById);

@@ -58,7 +58,7 @@ const EventsList: React.FC = () => {
 
   // Obtener categorías de eventos
   const { data: categoriesData = [] } = useQuery({
-    queryKey: ['/api/events/categories'],
+    queryKey: ['/api/event-categories'],
     suspense: false,
     retry: 1
   });
