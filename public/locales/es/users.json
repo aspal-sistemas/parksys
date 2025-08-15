@@ -49,7 +49,6 @@
   },
   "filters": {
     "allRoles": "Todos los Roles",
-    "allMunicipalities": "Todos los Municipios",
     "allStatuses": "Todos los Estados"
   }
 }

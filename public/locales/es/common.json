@@ -43,11 +43,8 @@
   },
   "forms": {
     "municipality": "Municipio",
-    "allMunicipalities": "Todos los Municipios", 
     "parkType": "Tipo de Parque",
-    "allTypes": "Todos los Tipos",
     "amenity": "Amenidad",
-    "allAmenities": "Todas las Amenidades",
     "searchParks": "Buscar Parques"
   },
   "messages": {
@@ -179,11 +176,8 @@
     "fullName": "Nombre Completo",
     "role": "Rol",
     "municipality": "Municipio",
-    "allMunicipalities": "Todos los Municipios",
     "parkType": "Tipo de Parque",
-    "allTypes": "Todos los Tipos",
     "amenity": "Amenidad",
-    "allAmenities": "Todas las Amenidades",
     "searchParks": "Buscar Parques"
   },
   "messages": {

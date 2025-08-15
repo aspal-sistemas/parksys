@@ -1,1 +1,0 @@
-import{az as n,j as a}from"./index-D5qLf1ib.js";import{D as s}from"./DocumentationViewer-BHcksTAO.js";import"./purify.es-BFmuJLeH.js";function r(){const[,t]=n();return a.jsx("div",{className:"min-h-screen bg-gray-50 py-8",children:a.jsx(s,{documentId:"visitantes-manual",onBack:()=>t("/admin")})})}export{r as default};
