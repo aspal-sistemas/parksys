@@ -4,12 +4,12 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Images, MapPin, Calendar, Users, TreePine, Wrench, AlertTriangle, FileText } from "lucide-react";
+import { ArrowLeft, Images, MapPin, Users, TreePine } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 import ParkMultimediaManager from "@/components/ParkMultimediaManager";
 import ParkAmenitiesManager from "@/components/ParkAmenitiesManager";
 import ParkTreeSpeciesManager from "@/components/ParkTreeSpeciesManager";
-import ParkActivitiesManager from "@/components/ParkActivitiesManager";
+
 import ParkVolunteersManager from "@/components/ParkVolunteersManager";
 
 export default function ParkManage() {
@@ -80,15 +80,12 @@ export default function ParkManage() {
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Wrench className="h-5 w-5 text-blue-600" />
-              <span className="text-sm font-medium text-blue-600">Modo Gestión</span>
-            </div>
+
           </div>
 
           {/* Tabs de gestión */}
           <Tabs defaultValue="multimedia" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-6">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="multimedia" className="flex items-center gap-2">
                 <Images className="h-4 w-4" />
                 Multimedia
@@ -97,10 +94,6 @@ export default function ParkManage() {
                 <MapPin className="h-4 w-4" />
                 Amenidades
               </TabsTrigger>
-              <TabsTrigger value="actividades" className="flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
-                Actividades
-              </TabsTrigger>
               <TabsTrigger value="arboles" className="flex items-center gap-2">
                 <TreePine className="h-4 w-4" />
                 Árboles
@@ -108,10 +101,6 @@ export default function ParkManage() {
               <TabsTrigger value="voluntarios" className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
                 Voluntarios
-              </TabsTrigger>
-              <TabsTrigger value="incidencias" className="flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4" />
-                Incidencias
               </TabsTrigger>
             </TabsList>
 
@@ -151,22 +140,7 @@ export default function ParkManage() {
               </Card>
             </TabsContent>
 
-            <TabsContent value="actividades" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-2xl text-blue-600 flex items-center gap-2">
-                    <Calendar className="h-6 w-6" />
-                    Actividades del Parque
-                  </CardTitle>
-                  <CardDescription>
-                    Visualiza las actividades programadas en este parque. Para gestionar actividades, utiliza el módulo de Actividades.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ParkActivitiesManager parkId={parseInt(id!)} />
-                </CardContent>
-              </Card>
-            </TabsContent>
+
 
             <TabsContent value="arboles" className="space-y-4">
               <Card>
@@ -202,22 +176,7 @@ export default function ParkManage() {
               </Card>
             </TabsContent>
 
-            <TabsContent value="incidencias" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Gestión de Incidencias</CardTitle>
-                  <CardDescription>
-                    Administra las incidencias reportadas en el parque.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-8 text-gray-500">
-                    <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                    <p>Funcionalidad de gestión de incidencias próximamente</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
+
           </Tabs>
         </div>
     </AdminLayout>
