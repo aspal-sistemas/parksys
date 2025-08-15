@@ -686,9 +686,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.get('/events/park/:parkId', async (req: Request, res: Response) => {
     try {
       const parkId = parseInt(req.params.parkId);
+      
+      // First get the park name to search in location field
+      const parkResult = await pool.query('SELECT name FROM parks WHERE id = $1', [parkId]);
+      if (parkResult.rows.length === 0) {
+        return res.json([]);
+      }
+      
+      const parkName = parkResult.rows[0].name;
+      
+      // Search for events that mention this park in their location
       const eventsQuery = await pool.query(
-        'SELECT * FROM events WHERE park_id = $1 AND event_date >= CURRENT_DATE ORDER BY event_date ASC',
-        [parkId]
+        `SELECT * FROM events 
+         WHERE LOWER(location) LIKE LOWER($1) 
+         AND start_date >= CURRENT_DATE 
+         ORDER BY start_date ASC`,
+        [`%${parkName}%`]
       );
       res.json(eventsQuery.rows);
     } catch (error) {
@@ -1508,11 +1521,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get events count for this park
       let totalEvents = 0;
       try {
-        const eventsQuery = await pool.query(
-          'SELECT COUNT(*) as count FROM events WHERE park_id = $1 AND event_date >= CURRENT_DATE',
-          [parkId]
-        );
-        totalEvents = parseInt(eventsQuery.rows[0]?.count || 0);
+        // First get the park name to search in location field
+        const parkResult = await pool.query('SELECT name FROM parks WHERE id = $1', [parkId]);
+        if (parkResult.rows.length > 0) {
+          const parkName = parkResult.rows[0].name;
+          const eventsQuery = await pool.query(
+            `SELECT COUNT(*) as count FROM events 
+             WHERE LOWER(location) LIKE LOWER($1) 
+             AND start_date >= CURRENT_DATE`,
+            [`%${parkName}%`]
+          );
+          totalEvents = parseInt(eventsQuery.rows[0]?.count || 0);
+        }
         console.log(`[DETAILS] Eventos encontrados para parque ${parkId}: ${totalEvents}`);
       } catch (error) {
         console.log('Error obteniendo eventos, usando valor 0:', error);

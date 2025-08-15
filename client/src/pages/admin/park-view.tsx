@@ -74,8 +74,17 @@ const ParkConcessionsTab = ({ parkId }: { parkId: number }) => {
                   <div>
                     <h4 className="font-semibold">{concession.name}</h4>
                     <p className="text-sm text-gray-600">{concession.description}</p>
-                    <Badge variant={concession.status === 'active' ? 'default' : 'secondary'}>
-                      {concession.status}
+                    <p className="text-xs text-gray-500 mt-1">
+                      Ubicación: {concession.specific_location}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      Horario: {concession.operating_hours} | {concession.operating_days}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      Pago mensual: ${concession.monthly_payment} | Contacto: {concession.emergency_phone}
+                    </p>
+                    <Badge variant={concession.status === 'activa' ? 'default' : 'secondary'}>
+                      {concession.status === 'activa' ? 'Activa' : concession.status}
                     </Badge>
                   </div>
                   <Button variant="outline" size="sm">Ver Detalles</Button>
@@ -110,14 +119,24 @@ const ParkReservationsTab = ({ parkId }: { parkId: number }) => {
               <CardContent className="p-4">
                 <div className="flex justify-between items-start">
                   <div>
-                    <h4 className="font-semibold">{reservation.spaceName}</h4>
-                    <p className="text-sm text-gray-600">{reservation.eventTitle}</p>
+                    <h4 className="font-semibold">{reservation.spacename || reservation.contact_name}</h4>
+                    <p className="text-sm text-gray-600">{reservation.purpose}</p>
                     <p className="text-xs text-gray-500">
-                      {new Date(reservation.startDate).toLocaleDateString()} - 
-                      {new Date(reservation.endDate).toLocaleDateString()}
+                      {new Date(reservation.reservation_date).toLocaleDateString()} 
+                      <span className="ml-2">
+                        {reservation.start_time} - {reservation.end_time}
+                      </span>
                     </p>
-                    <Badge variant={reservation.status === 'confirmed' ? 'default' : 'secondary'}>
-                      {reservation.status}
+                    <p className="text-xs text-gray-500 mt-1">
+                      Contacto: {reservation.contact_email} | {reservation.contact_phone}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      Asistentes: {reservation.expected_attendees} | Costo: ${reservation.total_cost}
+                    </p>
+                    <Badge variant={reservation.status === 'confirmed' ? 'default' : reservation.status === 'pending' ? 'secondary' : 'destructive'}>
+                      {reservation.status === 'confirmed' ? 'Confirmada' : 
+                       reservation.status === 'pending' ? 'Pendiente' : 
+                       reservation.status === 'cancelled' ? 'Cancelada' : reservation.status}
                     </Badge>
                   </div>
                   <Button variant="outline" size="sm">Ver Detalles</Button>
@@ -154,11 +173,22 @@ const ParkEventsTab = ({ parkId }: { parkId: number }) => {
                   <div>
                     <h4 className="font-semibold">{event.title}</h4>
                     <p className="text-sm text-gray-600">{event.description}</p>
-                    <p className="text-xs text-gray-500">
-                      {new Date(event.eventDate).toLocaleDateString()} a las {event.eventTime}
+                    <p className="text-xs text-gray-500 mt-1">
+                      Tipo: {event.event_type} | Audiencia: {event.target_audience}
                     </p>
-                    <Badge variant={event.status === 'scheduled' ? 'default' : 'secondary'}>
-                      {event.status}
+                    <p className="text-xs text-gray-500">
+                      {new Date(event.start_date).toLocaleDateString()} 
+                      {event.start_time && ` - ${event.start_time}`}
+                      {event.end_date && event.end_date !== event.start_date && 
+                        ` al ${new Date(event.end_date).toLocaleDateString()}`}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      Ubicación: {event.location} | Capacidad: {event.capacity || 'No especificada'}
+                    </p>
+                    <Badge variant={event.status === 'confirmed' ? 'default' : event.status === 'pending' ? 'secondary' : 'destructive'}>
+                      {event.status === 'confirmed' ? 'Confirmado' : 
+                       event.status === 'pending' ? 'Pendiente' : 
+                       event.status === 'cancelled' ? 'Cancelado' : event.status}
                     </Badge>
                   </div>
                   <Button variant="outline" size="sm">Ver Detalles</Button>
@@ -856,17 +886,9 @@ export default function AdminParkView() {
 
         <TabsContent value="concessions" className="space-y-4">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-              <div>
-                <CardTitle>Concesiones Activas ({park.stats?.activeConcessions || 0})</CardTitle>
-                <CardDescription>Concesiones comerciales operando en el parque</CardDescription>
-              </div>
-              <Link href={`/admin/concessions/new?parkId=${id}`}>
-                <Button size="sm">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Nueva Concesión
-                </Button>
-              </Link>
+            <CardHeader>
+              <CardTitle>Concesiones Activas ({park.stats?.activeConcessions || 0})</CardTitle>
+              <CardDescription>Concesiones comerciales operando en el parque</CardDescription>
             </CardHeader>
             <CardContent>
               <ParkConcessionsTab parkId={parseInt(id || '0')} />
@@ -876,17 +898,9 @@ export default function AdminParkView() {
 
         <TabsContent value="reservations" className="space-y-4">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-              <div>
-                <CardTitle>Reservas de Espacios ({park.stats?.totalReservations || 0})</CardTitle>
-                <CardDescription>Reservas activas de espacios del parque</CardDescription>
-              </div>
-              <Link href={`/admin/space-reservations?parkId=${id}`}>
-                <Button size="sm">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Nueva Reserva
-                </Button>
-              </Link>
+            <CardHeader>
+              <CardTitle>Reservas de Espacios ({park.stats?.totalReservations || 0})</CardTitle>
+              <CardDescription>Reservas activas de espacios del parque</CardDescription>
             </CardHeader>
             <CardContent>
               <ParkReservationsTab parkId={parseInt(id || '0')} />
@@ -896,17 +910,9 @@ export default function AdminParkView() {
 
         <TabsContent value="events" className="space-y-4">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-              <div>
-                <CardTitle>Eventos Programados ({park.stats?.totalEvents || 0})</CardTitle>
-                <CardDescription>Eventos activos y programados para el parque</CardDescription>
-              </div>
-              <Link href={`/admin/events/new?parkId=${id}`}>
-                <Button size="sm">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Nuevo Evento
-                </Button>
-              </Link>
+            <CardHeader>
+              <CardTitle>Eventos Programados ({park.stats?.totalEvents || 0})</CardTitle>
+              <CardDescription>Eventos activos y programados para el parque</CardDescription>
             </CardHeader>
             <CardContent>
               <ParkEventsTab parkId={parseInt(id || '0')} />
