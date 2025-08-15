@@ -1844,8 +1844,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           icon,
           category,
           icon_type as "iconType",
-          custom_icon_url as "customIconUrl",
-          created_at as "createdAt"
+          custom_icon_url as "customIconUrl"
         FROM amenities
         ORDER BY name
       `);
