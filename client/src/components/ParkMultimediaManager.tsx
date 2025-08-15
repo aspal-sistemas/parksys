@@ -130,15 +130,7 @@ export default function ParkMultimediaManager({ parkId }: ParkMultimediaManagerP
     setVideoUploadType('file');
   };
 
-  // Función para limpiar formulario de video
-  const resetVideoForm = () => {
-    setNewVideoFile(null);
-    setNewVideoUrl('');
-    setNewVideoTitle('');
-    setNewVideoDescription('');
-    setIsVideoFeatured(false);
-    setVideoUploadType('file');
-  };
+
 
   // Consultas para obtener datos
   const { data: images = [], isLoading: imagesLoading, error: imagesError } = useQuery<ParkImage[]>({
