@@ -148,6 +148,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Configure multer specifically for video uploads
+  const videoUpload = multer({
+    storage: multer.diskStorage({
+      destination: function (req, file, cb) {
+        const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL;
+        const uploadsDir = isProduction ? 'public/uploads/videos/' : 'uploads/videos/';
+        // Crear directorio si no existe
+        if (!fs.existsSync(uploadsDir)) {
+          fs.mkdirSync(uploadsDir, { recursive: true });
+        }
+        cb(null, uploadsDir);
+      },
+      filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const extension = file.originalname.split('.').pop();
+        cb(null, `video-${uniqueSuffix}.${extension}`);
+      }
+    }),
+    fileFilter: (req, file, cb) => {
+      const allowedTypes = [
+        'video/mp4',
+        'video/mpeg',
+        'video/quicktime',
+        'video/x-msvideo', // AVI
+        'video/webm',
+        'video/ogg'
+      ];
+      
+      if (allowedTypes.includes(file.mimetype)) {
+        cb(null, true);
+      } else {
+        cb(new Error('Tipo de archivo no permitido. Solo se aceptan videos (MP4, MPEG, MOV, AVI, WebM, OGG).'));
+      }
+    },
+    limits: {
+      fileSize: 100 * 1024 * 1024 // 100MB limit for videos
+    }
+  });
+
   // Configure multer specifically for sponsor logo uploads
   const sponsorLogoUpload = multer({
     storage: multer.diskStorage({
@@ -3191,6 +3230,224 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500)
          .setHeader('Content-Type', 'application/json')
          .send(JSON.stringify({ message: "Error fetching documents" }));
+    }
+  });
+
+  // ================= VIDEO ROUTES =================
+  
+  // Get videos for a specific park
+  apiRouter.get("/parks/:id/videos", async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.id);
+      console.log(`🔧 DIRECT VIDEOS API: Consultando videos para parque ${parkId}`);
+      
+      const result = await pool.query(`
+        SELECT * FROM park_videos 
+        WHERE park_id = $1 
+        ORDER BY is_featured DESC, created_at DESC
+      `, [parkId]);
+      
+      console.log(`✅ DIRECT VIDEOS API: Videos encontrados: ${result.rows.length}`);
+      console.log(`📋 DIRECT VIDEOS API: Datos:`, result.rows);
+      
+      res.json(result.rows);
+    } catch (error) {
+      console.error(`❌ DIRECT VIDEOS API: Error consultando videos para parque ${req.params.id}:`, error);
+      res.status(500).json({ message: "Error fetching park videos" });
+    }
+  });
+
+  // Add a video to a park (file upload or URL)
+  apiRouter.post("/parks/:id/videos", isAuthenticated, hasParkAccess, videoUpload.single('video'), async (req: Request, res: Response) => {
+    try {
+      const parkId = Number(req.params.id);
+      console.log(`🔍 POST /parks/${parkId}/videos - DETAILED DEBUG:`);
+      console.log(`  - Request body:`, req.body);
+      console.log(`  - Request file:`, req.file);
+      console.log(`  - Content-Type:`, req.headers['content-type']);
+      
+      let videoData;
+      
+      if (req.file) {
+        // Video file uploaded
+        videoData = {
+          parkId,
+          title: req.body.title,
+          description: req.body.description || '',
+          videoUrl: `/uploads/videos/${req.file.filename}`,
+          videoType: 'file',
+          isFeatured: req.body.isFeatured === 'true',
+          fileSize: req.file.size,
+          mimeType: req.file.mimetype
+        };
+        console.log(`🎬 Video file uploaded:`, req.file);
+      } else if (req.body.videoUrl) {
+        // Video URL provided
+        let videoType = 'external';
+        const url = req.body.videoUrl;
+        
+        // Detect video type from URL
+        if (url.includes('youtube.com') || url.includes('youtu.be')) {
+          videoType = 'youtube';
+        } else if (url.includes('vimeo.com')) {
+          videoType = 'vimeo';
+        }
+        
+        videoData = {
+          parkId,
+          title: req.body.title,
+          description: req.body.description || '',
+          videoUrl: req.body.videoUrl,
+          videoType,
+          isFeatured: req.body.isFeatured === true || req.body.isFeatured === 'true',
+          fileSize: null,
+          mimeType: null
+        };
+        console.log(`🔗 Video URL provided:`, req.body.videoUrl);
+      } else {
+        return res.status(400).json({ 
+          message: "Se requiere un archivo de video o una URL de video.",
+          error: "MISSING_VIDEO_DATA"
+        });
+      }
+      
+      console.log(`🔍 Parsed video data:`, videoData);
+      
+      // Validate required fields
+      if (!videoData.title || !videoData.videoUrl) {
+        return res.status(400).json({ 
+          message: "Campos requeridos faltantes: title, videoUrl",
+          missing: {
+            title: !videoData.title,
+            videoUrl: !videoData.videoUrl
+          },
+          received: videoData
+        });
+      }
+      
+      // If this video is marked as featured, remove featured flag from other videos
+      if (videoData.isFeatured) {
+        await pool.query(`
+          UPDATE park_videos 
+          SET is_featured = false 
+          WHERE park_id = $1 AND is_featured = true
+        `, [parkId]);
+      }
+      
+      // Insert the new video
+      const result = await pool.query(`
+        INSERT INTO park_videos (
+          park_id, title, description, video_url, video_type, 
+          is_featured, file_size, mime_type
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        RETURNING *
+      `, [
+        videoData.parkId,
+        videoData.title,
+        videoData.description,
+        videoData.videoUrl,
+        videoData.videoType,
+        videoData.isFeatured,
+        videoData.fileSize,
+        videoData.mimeType
+      ]);
+      
+      console.log(`✅ Video added successfully:`, result.rows[0]);
+      res.status(201).json(result.rows[0]);
+    } catch (error) {
+      console.error(`❌ Server error for POST /parks/${req.params.id}/videos:`, error);
+      res.status(500).json({ message: "Error adding video to park" });
+    }
+  });
+
+  // Set a video as featured
+  apiRouter.post("/park-videos/:videoId/set-featured", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const videoId = Number(req.params.videoId);
+      
+      // Get the video to check park access
+      const videoResult = await pool.query(`
+        SELECT park_id FROM park_videos WHERE id = $1
+      `, [videoId]);
+      
+      if (videoResult.rows.length === 0) {
+        return res.status(404).json({ message: "Video not found" });
+      }
+      
+      const parkId = videoResult.rows[0].park_id;
+      
+      // Remove featured flag from other videos in the same park
+      await pool.query(`
+        UPDATE park_videos 
+        SET is_featured = false 
+        WHERE park_id = $1 AND is_featured = true
+      `, [parkId]);
+      
+      // Set this video as featured
+      const result = await pool.query(`
+        UPDATE park_videos 
+        SET is_featured = true 
+        WHERE id = $1
+        RETURNING *
+      `, [videoId]);
+      
+      console.log(`✅ Video ${videoId} set as featured for park ${parkId}`);
+      res.json(result.rows[0]);
+    } catch (error) {
+      console.error(`❌ Error setting featured video ${req.params.videoId}:`, error);
+      res.status(500).json({ message: "Error setting featured video" });
+    }
+  });
+
+  // Delete a video
+  apiRouter.delete("/park-videos/:videoId", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const videoId = Number(req.params.videoId);
+      console.log(`🗑️ DELETE /park-videos/${videoId} - Iniciando eliminación`);
+      
+      // Check if video exists and get park info for permission check
+      const videoResult = await pool.query(`
+        SELECT pv.*, p.municipality_id 
+        FROM park_videos pv
+        JOIN parks p ON pv.park_id = p.id
+        WHERE pv.id = $1
+      `, [videoId]);
+      
+      if (videoResult.rows.length === 0) {
+        console.log(`❌ Video ${videoId} no encontrado`);
+        return res.status(404).json({ message: "Video not found" });
+      }
+      
+      const video = videoResult.rows[0];
+      console.log(`🎬 Video encontrado:`, { id: video.id, parkId: video.park_id, title: video.title });
+      
+      // Check permissions (unless super admin)
+      if (req.user.role !== 'super_admin') {
+        console.log(`🏛️ Verificando permisos: usuario municipio ${req.user.municipalityId}, parque municipio ${video.municipality_id}`);
+        
+        if (video.municipality_id !== req.user.municipalityId) {
+          console.log(`❌ Sin permisos para eliminar video del parque ${video.park_id}`);
+          return res.status(403).json({ 
+            message: "No tiene permisos para administrar videos de este parque" 
+          });
+        }
+      }
+      
+      // Delete the video
+      const deleteResult = await pool.query(`
+        DELETE FROM park_videos WHERE id = $1 RETURNING *
+      `, [videoId]);
+      
+      if (deleteResult.rows.length === 0) {
+        console.log(`❌ No se pudo eliminar el video ${videoId}`);
+        return res.status(404).json({ message: "Video not found" });
+      }
+      
+      console.log(`✅ Video ${videoId} eliminado exitosamente`);
+      res.json({ message: "Video eliminado correctamente", video: deleteResult.rows[0] });
+    } catch (error) {
+      console.error(`❌ Error eliminando video ${req.params.videoId}:`, error);
+      res.status(500).json({ message: "Error eliminating video" });
     }
   });
 
