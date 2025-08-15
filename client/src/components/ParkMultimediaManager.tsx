@@ -377,17 +377,6 @@ export default function ParkMultimediaManager({ parkId }: ParkMultimediaManagerP
 
   return (
     <div className="space-y-6">
-      {/* Header de Debug */}
-      <div className="bg-blue-50 p-4 rounded-lg border">
-        <h4 className="font-semibold text-blue-800">Estado del Componente Multimedia</h4>
-        <p className="text-sm text-blue-600">
-          Parque ID: {parkId} | Imágenes: {images.length} | Documentos: {documents.length}
-        </p>
-        <p className="text-sm text-blue-600">
-          Cargando imágenes: {imagesLoading ? 'Sí' : 'No'} | Error: {imagesError ? 'Sí' : 'No'}
-        </p>
-      </div>
-
       <Tabs defaultValue="images" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="images" className="flex items-center gap-2">
