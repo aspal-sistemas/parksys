@@ -40,6 +40,7 @@ import { Switch } from '@/components/ui/switch';
 import AdminLayout from '@/components/AdminLayout';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest, queryClient } from '@/lib/queryClient';
+import ScheduleConfiguration from '@/components/ScheduleConfiguration';
 
 // Define el esquema de validación para el formulario
 const parkSchema = z.object({
@@ -452,16 +453,20 @@ const AdminParkEdit: React.FC = () => {
                   
 
                   
-                  {/* Horario y contacto */}
+                  {/* Horario de apertura configurado */}
                   <div>
                     <FormField
                       control={form.control}
                       name="openingHours"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Horario de apertura</FormLabel>
+                          <FormLabel>Horarios de apertura</FormLabel>
                           <FormControl>
-                            <Input placeholder="Ej: Lunes a Domingo de 6:00 a 22:00" {...field} />
+                            <ScheduleConfiguration
+                              value={field.value || ''}
+                              onChange={field.onChange}
+                              className="mt-2"
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
