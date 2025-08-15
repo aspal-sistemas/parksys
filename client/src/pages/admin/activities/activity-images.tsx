@@ -98,34 +98,6 @@ const ActivityImagesPage: React.FC = () => {
           </Button>
         </div>
 
-        {/* Información de la actividad */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Image className="h-5 w-5" />
-              {activity.title}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-              <div>
-                <span className="font-medium text-gray-700">Parque:</span>
-                <p className="text-gray-600">{activity.parkName || 'No especificado'}</p>
-              </div>
-              <div>
-                <span className="font-medium text-gray-700">Categoría:</span>
-                <p className="text-gray-600">{activity.categoryName || activity.category || 'No especificada'}</p>
-              </div>
-              <div>
-                <span className="font-medium text-gray-700">Fecha de inicio:</span>
-                <p className="text-gray-600">
-                  {activity.startDate ? new Date(activity.startDate).toLocaleDateString('es-ES') : 'No especificada'}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Gestor de imágenes */}
         <ActivityImageManager activityId={activityId} />
       </div>
