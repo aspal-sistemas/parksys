@@ -6,7 +6,6 @@ declare global {
   namespace Express {
     interface Request {
       user?: any;
-      session?: any;
     }
   }
 }
@@ -74,6 +73,13 @@ export const hasMunicipalityAccess = (municipalityId?: number) => {
     // Si no hay usuario autenticado, no tiene acceso
     if (!req.user) {
       return res.status(401).json({ message: 'No autorizado' });
+    }
+
+    // MODO DESARROLLO: Permitir acceso a todos los usuarios autenticados
+    const isDevelopment = process.env.NODE_ENV !== 'production';
+    if (isDevelopment && req.user.role === 'admin') {
+      console.log('🛠️ Modo desarrollo - Permitiendo acceso municipal para admin');
+      return next();
     }
 
     // Si el usuario es super admin, tiene acceso a todos los municipios
