@@ -1476,6 +1476,15 @@ export type InsertEventCategory = typeof eventCategories.$inferInsert;
 export type Event = typeof events.$inferSelect;
 export type InsertEvent = typeof events.$inferInsert;
 
+// Esquemas de validación para categorías de eventos
+export const insertEventCategorySchema = createInsertSchema(eventCategories).omit({
+  id: true,
+  created_at: true,
+  updated_at: true
+});
+
+export const updateEventCategorySchema = insertEventCategorySchema.partial();
+
 export const insertTreeSpeciesSchema = createInsertSchema(treeSpecies).omit({ 
   id: true,
   createdAt: true,

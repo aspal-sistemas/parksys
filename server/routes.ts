@@ -76,6 +76,7 @@ import { fromZodError } from "zod-validation-error";
 import { registerRoleRoutes } from "./roleRoutes";
 import feedbackRouter from "./feedback-routes";
 import { registerEventCategoriesRoutes } from "./event-categories-routes";
+import { seedEventCategories } from "./seed-event-categories";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Create HTTP server first
@@ -6250,6 +6251,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
+
+  // Inicializar categorías de eventos en segundo plano
+  setTimeout(async () => {
+    try {
+      await seedEventCategories();
+    } catch (error) {
+      console.error('Error al inicializar categorías de eventos:', error);
+    }
+  }, 1000);
   
   return httpServer;
 }
