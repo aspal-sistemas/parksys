@@ -1832,10 +1832,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get all amenities - Simplificado para eliminar filtros
+  // Get all amenities - Restaurado para funcionamiento normal
   apiRouter.get("/amenities", async (_req: Request, res: Response) => {
-    console.log("🚫🚫🚫 ENDPOINT /api/amenities BLOQUEADO - 404");
-    res.status(404).json({ error: 'Endpoint deshabilitado - filtros eliminados' });
+    try {
+      console.log("[AMENITIES] Obteniendo todas las amenidades...");
+      
+      const result = await pool.query(`
+        SELECT 
+          id,
+          name,
+          icon,
+          category,
+          icon_type as "iconType",
+          custom_icon_url as "customIconUrl",
+          created_at as "createdAt"
+        FROM amenities
+        ORDER BY name
+      `);
+      
+      console.log("[AMENITIES] Amenidades encontradas:", result.rows.length);
+      res.json(result.rows);
+    } catch (error) {
+      console.error("Error al obtener amenidades:", error);
+      res.status(500).json({ message: "Error fetching amenities", error: error.message });
+    }
   });
 
   // Dashboard endpoint específico para amenidades

@@ -1,0 +1,68 @@
+i18next::backendConnector: loaded namespace common for language es {navigation: {…}, actions: {…}, forms: {…}, messages: {…}, dashboard: {…}}
+eruda.js:2 i18next: languageChanged es
+eruda.js:2 i18next: initialized {debug: true, initAsync: true, ns: Array(1), defaultNS: 'common', fallbackLng: Array(1), …}
+eruda.js:2 🔍 MULTIMEDIA MANAGER - Renderizando con: {parkId: 5, images: 0, documents: 0, imagesLoading: true, documentsLoading: true, …}
+eruda.js:2 🔍 FRONTEND: Cargando imágenes para parque 5
+eruda.js:2 🔍 FRONTEND: Cargando documentos para parque 5
+eruda.js:2 ✅ FRONTEND: Imágenes cargadas: (8) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
+eruda.js:2 🔍 MULTIMEDIA MANAGER - Renderizando con: {parkId: 5, images: 8, documents: 0, imagesLoading: false, documentsLoading: true, …}
+eruda.js:2 ✅ FRONTEND: Documentos cargados: (3) [{…}, {…}, {…}]
+eruda.js:2 🔍 MULTIMEDIA MANAGER - Renderizando con: {parkId: 5, images: 8, documents: 3, imagesLoading: false, documentsLoading: false, …}
+eruda.js:2 🔍 AMENITIES MANAGER - Renderizando con: {parkId: 5, amenitiesCount: 0, amenitiesLoading: true, amenitiesError: null, availableCount: 0}
+eruda.js:2 🔍 FRONTEND: Cargando amenidades para parque 5
+eruda.js:2 ✅ FRONTEND: Amenidades cargadas: (18) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
+eruda.js:2 🔍 AMENITIES MANAGER - Renderizando con: {parkId: 5, amenitiesCount: 18, amenitiesLoading: false, amenitiesError: null, availableCount: 0}
+eruda.js:2 🚫🚫🚫 [FILTROS BLOQUEADOS] /api/amenities/dashboard - RETORNANDO VACÍO
+Mt.forEach.n.<computed> @ Console.js:61
+(anonymous) @ queryClient.ts:132
+fetchFn @ @tanstack_react-query.js?v=b67041de:850
+run @ @tanstack_react-query.js?v=b67041de:500
+start @ @tanstack_react-query.js?v=b67041de:542
+fetch @ @tanstack_react-query.js?v=b67041de:937
+executeFetch_fn @ @tanstack_react-query.js?v=b67041de:2244
+onSubscribe @ @tanstack_react-query.js?v=b67041de:1948
+subscribe @ @tanstack_react-query.js?v=b67041de:24
+(anonymous) @ @tanstack_react-query.js?v=b67041de:3093
+subscribeToStore @ chunk-SKRUXVEK.js?v=b67041de:11984
+commitHookEffectListMount @ chunk-SKRUXVEK.js?v=b67041de:16915
+commitPassiveMountOnFiber @ chunk-SKRUXVEK.js?v=b67041de:18156
+commitPassiveMountEffects_complete @ chunk-SKRUXVEK.js?v=b67041de:18129
+commitPassiveMountEffects_begin @ chunk-SKRUXVEK.js?v=b67041de:18119
+commitPassiveMountEffects @ chunk-SKRUXVEK.js?v=b67041de:18109
+flushPassiveEffectsImpl @ chunk-SKRUXVEK.js?v=b67041de:19490
+flushPassiveEffects @ chunk-SKRUXVEK.js?v=b67041de:19447
+commitRootImpl @ chunk-SKRUXVEK.js?v=b67041de:19416
+commitRoot @ chunk-SKRUXVEK.js?v=b67041de:19277
+performSyncWorkOnRoot @ chunk-SKRUXVEK.js?v=b67041de:18895
+flushSyncCallbacks @ chunk-SKRUXVEK.js?v=b67041de:9119
+(anonymous) @ chunk-SKRUXVEK.js?v=b67041de:18627Understand this error
+eruda.js:2 🌐 [API REQUEST] GET /api/amenities/custom-icons
+eruda.js:2 🚫 BLOCKED: /api/amenities/dashboard
+Mt.forEach.n.<computed> @ Console.js:61
+(anonymous) @ queryClient.ts:133
+setTimeout
+(anonymous) @ queryClient.ts:133
+fetchFn @ @tanstack_react-query.js?v=b67041de:850
+run @ @tanstack_react-query.js?v=b67041de:500
+start @ @tanstack_react-query.js?v=b67041de:542
+fetch @ @tanstack_react-query.js?v=b67041de:937
+executeFetch_fn @ @tanstack_react-query.js?v=b67041de:2244
+onSubscribe @ @tanstack_react-query.js?v=b67041de:1948
+subscribe @ @tanstack_react-query.js?v=b67041de:24
+(anonymous) @ @tanstack_react-query.js?v=b67041de:3093
+subscribeToStore @ chunk-SKRUXVEK.js?v=b67041de:11984
+commitHookEffectListMount @ chunk-SKRUXVEK.js?v=b67041de:16915
+commitPassiveMountOnFiber @ chunk-SKRUXVEK.js?v=b67041de:18156
+commitPassiveMountEffects_complete @ chunk-SKRUXVEK.js?v=b67041de:18129
+commitPassiveMountEffects_begin @ chunk-SKRUXVEK.js?v=b67041de:18119
+commitPassiveMountEffects @ chunk-SKRUXVEK.js?v=b67041de:18109
+flushPassiveEffectsImpl @ chunk-SKRUXVEK.js?v=b67041de:19490
+flushPassiveEffects @ chunk-SKRUXVEK.js?v=b67041de:19447
+commitRootImpl @ chunk-SKRUXVEK.js?v=b67041de:19416
+commitRoot @ chunk-SKRUXVEK.js?v=b67041de:19277
+performSyncWorkOnRoot @ chunk-SKRUXVEK.js?v=b67041de:18895
+flushSyncCallbacks @ chunk-SKRUXVEK.js?v=b67041de:9119
+(anonymous) @ chunk-SKRUXVEK.js?v=b67041de:18627Understand this error
+eruda.js:2 [vite] server connection lost. Polling for restart...
+workspace_iframe.html?initialPath=%2Fadmin%2Famenities&id=%3Ar2pp%3A:151  GET https://4db9107a-1fd2-47c3-aace-3499f16eb526-00-uaauleor3l7s.spock.replit.dev/admin/amenities 404 (Not Found)
+(anonymous) @ workspace_iframe.html?initialPath=%2Fadmin%2Famenities&id=%3Ar2pp%3A:151Understand this error
