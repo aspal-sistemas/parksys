@@ -148,10 +148,10 @@ const AdminParksContent = () => {
     },
   });
 
-  // Filter parks by search only
+  // Search through parks
   const filteredParks = React.useMemo(() => {
     return (parks as Park[]).filter(park => {
-      // Apply search filter only
+      // Apply search criteria only
       const matchesSearch = searchQuery === '' || 
         park.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         park.address.toLowerCase().includes(searchQuery.toLowerCase());
@@ -190,7 +190,7 @@ const AdminParksContent = () => {
 
 
   // Clear search
-  const handleClearFilters = () => {
+  const handleClearSearch = () => {
     setSearchQuery('');
   };
 
@@ -550,7 +550,7 @@ const AdminParksContent = () => {
               <Button 
                 variant="ghost" 
                 size="sm" 
-                onClick={handleClearFilters} 
+                onClick={handleClearSearch} 
                 className="absolute right-1 top-1 h-8 w-8 p-0"
                 aria-label="Limpiar búsqueda"
               >
