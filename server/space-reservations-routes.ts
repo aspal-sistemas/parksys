@@ -298,7 +298,7 @@ export function registerSpaceReservationRoutes(app: any, apiRouter: any, isAuthe
     }
   });
 
-  // Actualizar estado de reserva
+  // Actualizar estado de reserva  
   apiRouter.put('/space-reservations/:id', isAuthenticated, async (req: Request, res: Response) => {
     try {
       const reservationId = parseInt(req.params.id);
