@@ -121,7 +121,10 @@ export const insertEventSchema = createInsertSchema(events, {
   eventType: z.string().min(2).max(50),
   targetAudience: z.string().max(100).optional(),
   status: z.enum(["draft", "published", "cancelled", "postponed"]).default("draft"),
-  featuredImageUrl: z.string().url().optional().or(z.literal('')),
+  featuredImageUrl: z.string().optional().refine(
+    (val) => !val || val === '' || val.startsWith('http') || val.startsWith('/'),
+    { message: "Debe ser una URL válida o una ruta relativa" }
+  ),
   startDate: z.string().min(1),
   endDate: z.string().optional(),
   startTime: z.string().optional(),
