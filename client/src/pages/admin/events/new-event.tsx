@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
-import { ArrowLeft, Calendar, MapPin, Users, Clock, FileText, Save, Plus } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Users, Clock, FileText, Save, Plus, Image } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import AdminLayout from '@/components/AdminLayout';
 import { apiRequest } from '@/lib/queryClient';
+import EventImageUploader from '@/components/EventImageUploader';
 
 // Schema de validación para nuevo evento
 const newEventSchema = z.object({
@@ -40,6 +41,7 @@ export default function NewEventPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [eventImage, setEventImage] = useState<string>('');
 
   const form = useForm<NewEventForm>({
     resolver: zodResolver(newEventSchema),
@@ -94,6 +96,7 @@ export default function NewEventPage() {
         registrationType: data.registration_required ? 'registration' : 'free',
         status: 'published',
         targetAudience: 'general',
+        featuredImageUrl: eventImage || null, // Agregar la imagen del evento
         // Campo requerido por el backend - array de IDs de parques
         parkIds: data.park_id ? [parseInt(data.park_id)] : []
       };
@@ -199,6 +202,28 @@ export default function NewEventPage() {
                     {form.formState.errors.description.message}
                   </p>
                 )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Imagen del Evento */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Image className="h-5 w-5" />
+                Imagen del Evento
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <p className="text-sm text-gray-600">
+                  Sube una imagen representativa que se mostrará en la página pública del evento.
+                </p>
+                <EventImageUploader
+                  onImageUpload={(imageUrl) => setEventImage(imageUrl)}
+                  currentImage={eventImage}
+                  onRemoveImage={() => setEventImage('')}
+                />
               </div>
             </CardContent>
           </Card>

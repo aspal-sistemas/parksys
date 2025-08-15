@@ -57,6 +57,7 @@ import {
 import { registerUserRoutes } from "./userRoutes";
 import { updateSkillsRouter } from "./updateSkills";
 import { registerEventRoutes } from "./events-routes";
+import { eventImageRouter } from "./events-image-routes";
 import { registerActivityRoutes } from "./activitiesRoutes";
 import advertisingRoutes from "./advertising-routes";
 import activityRegistrationsRouter from "./routes/activity-registrations";
@@ -421,6 +422,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Registramos las rutas del módulo de eventos
   registerEventRoutes(app, apiRouter, isAuthenticated);
+  
+  // Registramos las rutas de imágenes de eventos
+  apiRouter.use('/events', eventImageRouter);
+  console.log('📸 Rutas de imágenes de eventos registradas');
   
   // Registramos las rutas de categorías de eventos
   registerEventCategoriesRoutes(app, apiRouter, isAuthenticated);
