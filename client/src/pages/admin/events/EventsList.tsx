@@ -15,19 +15,25 @@ interface Event {
   id: number;
   title: string;
   description: string;
-  date: string;
-  time: string;
+  startDate: string;
+  endDate: string;
   location: string;
   parkName?: string;
   capacity: number;
   registeredCount: number;
+  categoryId?: number;
   category: string;
-  status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
+  eventType?: string;
+  status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled' | 'published' | 'draft';
   imageUrl?: string;
+  featuredImageUrl?: string;
   price?: number;
   organizer: string;
   createdAt: string;
   updatedAt: string;
+  // Legacy fields for backward compatibility
+  date?: string;
+  time?: string;
 }
 
 const EventsList: React.FC = () => {
@@ -132,13 +138,34 @@ const EventsList: React.FC = () => {
   });
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('es-MX', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+    if (!dateString) return 'Fecha no disponible';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('es-MX', {
+        weekday: 'short',
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    } catch {
+      return 'Fecha inválida';
+    }
+  };
+
+  const formatDateTime = (dateString: string) => {
+    if (!dateString) return 'Fecha no disponible';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('es-MX', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch {
+      return 'Fecha inválida';
+    }
   };
 
   const formatPrice = (price: number) => {
@@ -274,42 +301,86 @@ const EventsList: React.FC = () => {
               <Card key={event.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                 {viewMode === 'grid' ? (
                   <>
-                    {event.imageUrl && (
-                      <div className="h-48 overflow-hidden">
+                    {/* Imagen de cabecera */}
+                    <div className="relative h-48 bg-gray-100">
+                      {(event.imageUrl || event.featuredImageUrl) ? (
                         <img 
-                          src={event.imageUrl} 
+                          src={event.imageUrl || event.featuredImageUrl} 
                           alt={event.title}
                           className="w-full h-full object-cover"
                         />
-                      </div>
-                    )}
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between mb-3">
-                        <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">
-                          {event.title}
-                        </h3>
-                        <Badge className={`ml-2 ${statusColors[event.status]}`}>
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
+                          <div className="text-center">
+                            <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+                            <p className="text-sm text-gray-500">Sin imagen</p>
+                          </div>
+                        </div>
+                      )}
+                      {/* Badge de evento */}
+                      <div className="absolute top-2 right-2">
+                        <Badge className={`${statusColors[event.status]}`}>
                           {statusLabels[event.status]}
                         </Badge>
                       </div>
+                      {/* ID del evento */}
+                      <div className="absolute top-2 left-2">
+                        <span className="text-xs text-white bg-black/60 px-2 py-1 rounded">
+                          #{event.id}
+                        </span>
+                      </div>
+                    </div>
+                    <CardContent className="p-6">
+                      {/* Header de la ficha */}
+                      <div className="mb-3">
+                        <h3 className="text-lg font-semibold text-gray-900 line-clamp-2 mb-2">
+                          {event.title}
+                        </h3>
+                        <div className="flex items-center gap-2">
+                          {event.category && (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                              {event.category}
+                            </span>
+                          )}
+                          {event.eventType && (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                              {event.eventType}
+                            </span>
+                          )}
+                        </div>
+                      </div>
                       
-                      <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                        {event.description}
-                      </p>
+                      {event.description && (
+                        <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                          {event.description}
+                        </p>
+                      )}
                       
                       <div className="space-y-2 text-sm text-gray-500 mb-4">
                         <div className="flex items-center">
-                          <Calendar className="h-4 w-4 mr-2" />
-                          {formatDate(event.date)} a las {event.time}
+                          <Calendar className="h-4 w-4 mr-2 text-gray-400" />
+                          <span>
+                            {event.startDate ? formatDateTime(event.startDate) : 
+                             event.date ? `${formatDate(event.date)} ${event.time || ''}`.trim() : 
+                             'Fecha no disponible'}
+                          </span>
                         </div>
+                        {event.endDate && event.endDate !== event.startDate && (
+                          <div className="flex items-center">
+                            <Clock className="h-4 w-4 mr-2 text-gray-400" />
+                            <span>Termina: {formatDateTime(event.endDate)}</span>
+                          </div>
+                        )}
                         <div className="flex items-center">
-                          <MapPin className="h-4 w-4 mr-2" />
-                          {event.location}
+                          <MapPin className="h-4 w-4 mr-2 text-gray-400" />
+                          <span>{event.location || 'Ubicación no especificada'}</span>
                         </div>
-                        <div className="flex items-center">
-                          <Users className="h-4 w-4 mr-2" />
-                          {event.registeredCount || 0} / {event.capacity} participantes
-                        </div>
+                        {event.capacity && (
+                          <div className="flex items-center">
+                            <Users className="h-4 w-4 mr-2 text-gray-400" />
+                            <span>{event.registeredCount || 0} / {event.capacity} participantes</span>
+                          </div>
+                        )}
                         {event.price !== undefined && (
                           <div className="flex items-center">
                             <span className="font-medium text-green-600">
@@ -368,15 +439,17 @@ const EventsList: React.FC = () => {
                         <div className="flex items-center gap-6 text-sm text-gray-500">
                           <div className="flex items-center">
                             <Calendar className="h-4 w-4 mr-1" />
-                            {formatDate(event.date)} - {event.time}
+                            {event.startDate ? formatDateTime(event.startDate) : 
+                             event.date ? `${formatDate(event.date)} ${event.time || ''}`.trim() : 
+                             'Fecha no disponible'}
                           </div>
                           <div className="flex items-center">
                             <MapPin className="h-4 w-4 mr-1" />
-                            {event.location}
+                            {event.location || 'Ubicación no especificada'}
                           </div>
                           <div className="flex items-center">
                             <Users className="h-4 w-4 mr-1" />
-                            {event.registeredCount || 0}/{event.capacity}
+                            {event.registeredCount || 0}/{event.capacity || 0}
                           </div>
                           {event.price !== undefined && (
                             <span className="font-medium text-green-600">
