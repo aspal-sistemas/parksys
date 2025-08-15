@@ -21,6 +21,7 @@ import AmenityIcon from '@/components/AmenityIcon';
 import ParkQuickActions from '@/components/ParkQuickActions';
 import { ParkImageManager } from '@/components/ParkImageManager';
 import { useAuth } from '@/hooks/useAuth';
+import { formatScheduleForDisplay, getScheduleStatus } from '@/lib/schedule-utils';
 
 
 const ParkDetail: React.FC = () => {
@@ -215,7 +216,7 @@ const ParkDetail: React.FC = () => {
                     {park.openingHours && (
                       <div className="flex justify-between border-b pb-2">
                         <span className="text-gray-600">Horario:</span>
-                        <span className="font-medium">{park.openingHours}</span>
+                        <span className="font-medium">{formatScheduleForDisplay(park.openingHours)}</span>
                       </div>
                     )}
                     

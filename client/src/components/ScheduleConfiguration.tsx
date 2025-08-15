@@ -65,6 +65,17 @@ export const ScheduleConfiguration: React.FC<ScheduleConfigurationProps> = ({
   }, [value]);
 
   const parseScheduleString = (scheduleStr: string): Schedule[] => {
+    // Check for special 24/7 format
+    if (scheduleStr.includes('24/7') || scheduleStr.toLowerCase().includes('abierto 24/7')) {
+      return [{
+        id: Date.now().toString(),
+        days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'],
+        openTime: '00:00',
+        closeTime: '23:59',
+        isClosed: false
+      }];
+    }
+    
     // Simple parser for common formats like "Lunes a Domingo de 6:00 a 22:00"
     // This is a basic implementation - can be enhanced based on needs
     const allDays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
@@ -131,6 +142,18 @@ export const ScheduleConfiguration: React.FC<ScheduleConfigurationProps> = ({
   const formatSchedulesToString = (schedules: Schedule[]): string => {
     if (schedules.length === 0) return '';
     
+    // Check if it's a 24/7 schedule (all days, 00:00-23:59)
+    if (schedules.length === 1) {
+      const schedule = schedules[0];
+      const hasAllDays = schedule.days.length === 7;
+      const is24Hours = (schedule.openTime === '00:00' && schedule.closeTime === '23:59') || 
+                       (schedule.openTime === '0:00' && schedule.closeTime === '23:59');
+      
+      if (hasAllDays && is24Hours && !schedule.isClosed) {
+        return 'Abierto 24/7';
+      }
+    }
+    
     return schedules.map(schedule => {
       const dayLabels = schedule.days.map(dayId => 
         DAYS_OF_WEEK.find(d => d.id === dayId)?.label || dayId
@@ -177,6 +200,10 @@ export const ScheduleConfiguration: React.FC<ScheduleConfigurationProps> = ({
                   <div className="text-sm text-gray-600">
                     {schedule.isClosed ? (
                       <span className="text-red-600 font-medium">Cerrado</span>
+                    ) : schedule.openTime === '00:00' && schedule.closeTime === '23:59' && schedule.days.length === 7 ? (
+                      <span className="flex items-center gap-1 text-green-600 font-medium">
+                        🕐 Abierto 24/7
+                      </span>
                     ) : (
                       <span className="flex items-center gap-1">
                         <Clock className="w-4 h-4" />
@@ -292,6 +319,25 @@ export const ScheduleConfiguration: React.FC<ScheduleConfigurationProps> = ({
       <div className="space-y-2">
         <Label className="text-sm font-medium">Configuraciones rápidas:</Label>
         <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              const preset: Schedule = {
+                id: Date.now().toString(),
+                days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'],
+                openTime: '00:00',
+                closeTime: '23:59',
+                isClosed: false
+              };
+              const newSchedules = [preset];
+              setSchedules(newSchedules);
+              // Set special value for 24/7
+              onChange('Abierto 24/7');
+            }}
+          >
+            🕐 Abierto 24/7
+          </Button>
           <Button
             variant="outline"
             size="sm"

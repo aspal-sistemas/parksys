@@ -26,6 +26,7 @@ import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ExtendedPark } from '@shared/schema';
 import AmenityIcon from '@/components/ui/amenity-icon';
+import { formatScheduleForDisplay, getScheduleStatus } from '@/lib/schedule-utils';
 
 interface ParkDetailProps {
   park: ExtendedPark;
@@ -144,7 +145,18 @@ const ParkDetail: React.FC<ParkDetailProps> = ({
                         {park.openingHours && (
                           <div>
                             <p className="text-gray-500">Horario</p>
-                            <p className="font-medium">{park.openingHours}</p>
+                            <p className="font-medium">{formatScheduleForDisplay(park.openingHours)}</p>
+                            {/* Status badge */}
+                            <div className="mt-1">
+                              {(() => {
+                                const status = getScheduleStatus(park.openingHours);
+                                return (
+                                  <Badge className={`text-xs ${status.colorClass}`}>
+                                    {status.text}
+                                  </Badge>
+                                );
+                              })()}
+                            </div>
                           </div>
                         )}
                       </div>
