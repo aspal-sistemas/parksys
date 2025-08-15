@@ -701,9 +701,8 @@ export default function AdminParkView() {
       </div>
 
       {/* Detailed Tabs */}
-      <Tabs defaultValue="basic-info" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="basic-info">Información</TabsTrigger>
+      <Tabs defaultValue="activities" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="activities">Actividades</TabsTrigger>
           <TabsTrigger value="concessions">Concesiones</TabsTrigger>
           <TabsTrigger value="reservations">Reservas</TabsTrigger>
@@ -711,150 +710,7 @@ export default function AdminParkView() {
           <TabsTrigger value="incidents">Incidencias</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="basic-info" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Información General */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Info className="h-5 w-5 text-blue-600" />
-                  Información General
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-medium text-gray-700">Tipo de Parque:</span>
-                  </div>
-                  <p className="text-gray-600">{displayPark.parkType || 'No especificado'}</p>
-                </div>
-                
 
-                
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <FileText className="h-4 w-4 text-gray-500" />
-                    <span className="font-medium text-gray-700">Descripción:</span>
-                  </div>
-                  <p className="text-gray-600">{displayPark.description || 'No especificado'}</p>
-                </div>
-
-                {displayPark.area && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-medium text-gray-700">Superficie Total:</span>
-                    </div>
-                    <p className="text-gray-600">{displayPark.area} m²</p>
-                  </div>
-                )}
-
-                {displayPark.greenArea && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-medium text-gray-700">Área Permeable:</span>
-                    </div>
-                    <p className="text-gray-600">{parseFloat(displayPark.greenArea).toLocaleString()} m²</p>
-                  </div>
-                )}
-
-                {displayPark.foundationYear && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <Calendar className="h-4 w-4 text-gray-500" />
-                      <span className="font-medium text-gray-700">Año de Fundación:</span>
-                    </div>
-                    <p className="text-gray-600">{displayPark.foundationYear}</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Información de Contacto y Ubicación */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MapPin className="h-5 w-5 text-green-600" />
-                  Ubicación y Contacto
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <Building className="h-4 w-4 text-gray-500" />
-                    <span className="font-medium text-gray-700">Municipio:</span>
-                  </div>
-                  <p className="text-gray-600">{displayPark.municipality?.name || 'No especificado'}</p>
-                </div>
-
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <MapPin className="h-4 w-4 text-gray-500" />
-                    <span className="font-medium text-gray-700">Dirección:</span>
-                  </div>
-                  <p className="text-gray-600">{displayPark.address || 'No especificado'}</p>
-                </div>
-
-                {displayPark.postalCode && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-medium text-gray-700">Código Postal:</span>
-                    </div>
-                    <p className="text-gray-600">{displayPark.postalCode}</p>
-                  </div>
-                )}
-
-                {displayPark.contactPhone && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <Phone className="h-4 w-4 text-gray-500" />
-                      <span className="font-medium text-gray-700">Teléfono:</span>
-                    </div>
-                    <p className="text-gray-600">{displayPark.contactPhone}</p>
-                  </div>
-                )}
-
-                {displayPark.contactEmail && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <Mail className="h-4 w-4 text-gray-500" />
-                      <span className="font-medium text-gray-700">Correo Electrónico:</span>
-                    </div>
-                    <p className="text-gray-600">{displayPark.contactEmail}</p>
-                  </div>
-                )}
-
-                {(displayPark.latitude && displayPark.longitude) && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <MapPin className="h-4 w-4 text-gray-500" />
-                      <span className="font-medium text-gray-700">Coordenadas:</span>
-                    </div>
-                    <p className="text-gray-600">{displayPark.latitude}, {displayPark.longitude}</p>
-                  </div>
-                )}
-
-                {/* Mapa de Ubicación */}
-                {(displayPark.latitude && displayPark.longitude) && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <MapPin className="h-4 w-4 text-gray-500" />
-                      <span className="font-medium text-gray-700">Ubicación en el Mapa:</span>
-                    </div>
-                    <MapViewer
-                      latitude={displayPark.latitude}
-                      longitude={displayPark.longitude}
-                      parkName={displayPark.name}
-                      height="300px"
-                      className="w-full"
-                    />
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-
-          </div>
-        </TabsContent>
 
 
 
