@@ -384,115 +384,121 @@ export default function AdminParkView() {
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-9 gap-4 mb-8">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <Calendar className="h-8 w-8 text-blue-600" />
-              <div>
-                <p className="text-2xl font-bold">{displayPark.stats?.totalActivities || 0}</p>
-                <p className="text-sm text-gray-600">Actividades</p>
+      {/* Stats Cards - Reorganized in two rows */}
+      <div className="space-y-4 mb-8">
+        {/* Primera fila - 5 tarjetas principales */}
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <Calendar className="h-8 w-8 text-blue-600" />
+                <div>
+                  <p className="text-2xl font-bold">{displayPark.stats?.totalActivities || 0}</p>
+                  <p className="text-sm text-gray-600">Actividades</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <TreePine className="h-8 w-8 text-emerald-600" />
-              <div>
-                <p className="text-2xl font-bold">{park.stats?.totalTrees || 0}</p>
-                <p className="text-sm text-gray-600">Árboles</p>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <TreePine className="h-8 w-8 text-emerald-600" />
+                <div>
+                  <p className="text-2xl font-bold">{park.stats?.totalTrees || 0}</p>
+                  <p className="text-sm text-gray-600">Árboles</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <Star className="h-8 w-8 text-yellow-600" />
-              <div>
-                <p className="text-2xl font-bold">{park.stats?.averageEvaluation?.toFixed(1) || '0.0'}</p>
-                <p className="text-sm text-gray-600">Evaluación</p>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <Star className="h-8 w-8 text-yellow-600" />
+                <div>
+                  <p className="text-2xl font-bold">{park.stats?.averageEvaluation?.toFixed(1) || '0.0'}</p>
+                  <p className="text-sm text-gray-600">Evaluación</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <Settings className="h-8 w-8 text-purple-600" />
-              <div>
-                <p className="text-2xl font-bold">{park.stats?.totalAssets || 0}</p>
-                <p className="text-sm text-gray-600">Activos</p>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <Settings className="h-8 w-8 text-purple-600" />
+                <div>
+                  <p className="text-2xl font-bold">{park.stats?.totalAssets || 0}</p>
+                  <p className="text-sm text-gray-600">Activos</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <AlertTriangle className="h-8 w-8 text-red-600" />
-              <div>
-                <p className="text-2xl font-bold">{park.stats?.pendingIncidents || 0}</p>
-                <p className="text-sm text-gray-600">Incidencias</p>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <AlertTriangle className="h-8 w-8 text-red-600" />
+                <div>
+                  <p className="text-2xl font-bold">{park.stats?.pendingIncidents || 0}</p>
+                  <p className="text-sm text-gray-600">Incidencias</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <Store className="h-8 w-8 text-orange-600" />
-              <div>
-                <p className="text-2xl font-bold">{park.stats?.activeConcessions || 0}</p>
-                <p className="text-sm text-gray-600">Concesiones</p>
+        {/* Segunda fila - 4 tarjetas nuevas */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <Store className="h-8 w-8 text-orange-600" />
+                <div>
+                  <p className="text-2xl font-bold">{park.stats?.activeConcessions || 0}</p>
+                  <p className="text-sm text-gray-600">Concesiones</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <MessageSquare className="h-8 w-8 text-cyan-600" />
-              <div>
-                <p className="text-2xl font-bold">{park.stats?.totalFeedback || 0}</p>
-                <p className="text-sm text-gray-600">Retroalimentación</p>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <MessageSquare className="h-8 w-8 text-cyan-600" />
+                <div>
+                  <p className="text-2xl font-bold">{park.stats?.totalFeedback || 0}</p>
+                  <p className="text-sm text-gray-600">Retroalimentación</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <ThumbsUp className="h-8 w-8 text-green-600" />
-              <div>
-                <p className="text-2xl font-bold">{park.stats?.totalEvaluations || 0}</p>
-                <p className="text-sm text-gray-600">Evaluaciones</p>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <ThumbsUp className="h-8 w-8 text-green-600" />
+                <div>
+                  <p className="text-2xl font-bold">{park.stats?.totalEvaluations || 0}</p>
+                  <p className="text-sm text-gray-600">Evaluaciones</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <CalendarDays className="h-8 w-8 text-indigo-600" />
-              <div>
-                <p className="text-2xl font-bold">{park.stats?.totalReservations || 0}</p>
-                <p className="text-sm text-gray-600">Reservas</p>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <CalendarDays className="h-8 w-8 text-indigo-600" />
+                <div>
+                  <p className="text-2xl font-bold">{park.stats?.totalReservations || 0}</p>
+                  <p className="text-sm text-gray-600">Reservas</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       {/* Detailed Tabs */}
