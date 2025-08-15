@@ -1528,21 +1528,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         totalReservations = 0;
       }
 
-      // Get events count for this park
+      // Get events count for this park using event_parks relationship table
       let totalEvents = 0;
       try {
-        // First get the park name to search in location field
-        const parkResult = await pool.query('SELECT name FROM parks WHERE id = $1', [parkId]);
-        if (parkResult.rows.length > 0) {
-          const parkName = parkResult.rows[0].name;
-          const eventsQuery = await pool.query(
-            `SELECT COUNT(*) as count FROM events 
-             WHERE LOWER(location) LIKE LOWER($1) 
-             AND start_date >= CURRENT_DATE`,
-            [`%${parkName}%`]
-          );
-          totalEvents = parseInt(eventsQuery.rows[0]?.count || 0);
-        }
+        const eventsQuery = await pool.query(
+          `SELECT COUNT(*) as count 
+           FROM event_parks ep 
+           JOIN events e ON ep.event_id = e.id 
+           WHERE ep.park_id = $1 
+           AND e.start_date >= CURRENT_DATE`,
+          [parkId]
+        );
+        totalEvents = parseInt(eventsQuery.rows[0]?.count || 0);
         console.log(`[DETAILS] Eventos encontrados para parque ${parkId}: ${totalEvents}`);
       } catch (error) {
         console.log('Error obteniendo eventos, usando valor 0:', error);

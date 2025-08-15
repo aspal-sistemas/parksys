@@ -152,7 +152,7 @@ const ParkReservationsTab = ({ parkId }: { parkId: number }) => {
 
 const ParkEventsTab = ({ parkId }: { parkId: number }) => {
   const { data: events = [], isLoading } = useQuery({
-    queryKey: [`/api/events/park/${parkId}`],
+    queryKey: [`/api/parks/${parkId}/events`],
   });
 
   if (isLoading) return <div className="p-4">Cargando eventos...</div>;
@@ -426,7 +426,8 @@ export default function AdminParkView() {
         activeConcessions: 0,
         totalFeedback: 0,
         totalEvaluations: 0,
-        totalReservations: 0
+        totalReservations: 0,
+        totalEvents: 0
       },
       parkType: 'No especificado',
       address: 'No especificado',
