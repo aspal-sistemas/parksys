@@ -47,7 +47,7 @@ export default function EventCategoriesPage() {
     mutationFn: async (data: CategoryFormData) => {
       return apiRequest('/api/event-categories', {
         method: 'POST',
-        body: JSON.stringify(data)
+        data: data
       });
     },
     onSuccess: () => {
@@ -72,7 +72,7 @@ export default function EventCategoriesPage() {
     mutationFn: async ({ id, data }: { id: number; data: CategoryFormData }) => {
       return apiRequest(`/api/event-categories/${id}`, {
         method: 'PUT',
-        body: JSON.stringify(data)
+        data: data
       });
     },
     onSuccess: () => {
@@ -324,14 +324,14 @@ export default function EventCategoriesPage() {
                   <div className="flex items-center gap-3">
                     <div 
                       className="w-4 h-4 rounded-full"
-                      style={{ backgroundColor: category.color }}
+                      style={{ backgroundColor: category.color || '#3B82F6' }}
                     />
                     <CardTitle className="text-lg">{category.name}</CardTitle>
                   </div>
                   
                   <div className="flex items-center gap-1">
                     <Badge 
-                      style={{ backgroundColor: category.color + '20', color: category.color }}
+                      style={{ backgroundColor: (category.color || '#3B82F6') + '20', color: category.color || '#3B82F6' }}
                       className="text-xs"
                     >
                       {category.name}
