@@ -11,17 +11,15 @@ declare global {
 }
 
 // Middleware para verificar si el usuario está autenticado
-export const isAuthenticated = async (req: Request, res: Response, next: NextFunction) => {
+export const isAuthenticated = (req: Request, res: Response, next: NextFunction) => {
   console.log('🔐 Verificando autenticación...', { url: req.url, method: req.method });
   
   try {
-    // En modo desarrollo, permitir acceso directo para ciertas rutas problemáticas
+    // En modo desarrollo, permitir acceso directo completamente
     const isDevelopment = process.env.NODE_ENV !== 'production';
-    const isReservationRoute = req.url.includes('/space-reservations/');
-    const isParksRoute = req.url.includes('/parks');
     
-    if (isDevelopment && (isReservationRoute || isParksRoute)) {
-      console.log('🛠️ Modo desarrollo - Permitiendo acceso directo a', isParksRoute ? 'parques' : 'reservas');
+    if (isDevelopment) {
+      console.log('🛠️ Modo desarrollo - Permitiendo acceso directo completo');
       req.user = {
         id: 4,
         username: 'Luis',
@@ -29,6 +27,7 @@ export const isAuthenticated = async (req: Request, res: Response, next: NextFun
         isActive: true,
         roleId: 1
       };
+      console.log('✅ Usuario asignado para desarrollo:', req.user);
       return next();
     }
     
