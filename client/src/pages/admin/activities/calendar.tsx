@@ -507,7 +507,7 @@ export default function ActivitiesCalendarPage() {
                     className="bg-blue-600 hover:bg-blue-700 text-white"
                     onClick={() => {
                       setIsDialogOpen(false);
-                      setLocation(`/admin/organizador/catalogo/ver`);
+                      setLocation(`/admin/activities`);
                     }}
                   >
                     Ver todas las actividades

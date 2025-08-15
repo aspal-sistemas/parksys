@@ -422,7 +422,7 @@ const EditarActividadPage = () => {
       });
       queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
       queryClient.invalidateQueries({ queryKey: [`/api/activities/${activityId}`] });
-      setLocation("/admin/organizador/catalogo/ver");
+      setLocation("/admin/activities");
     },
     onError: (error) => {
       console.error("Error al actualizar actividad:", error);
@@ -500,8 +500,8 @@ const EditarActividadPage = () => {
             <CardDescription>No se pudo encontrar la actividad con el ID proporcionado</CardDescription>
           </CardHeader>
           <CardFooter>
-            <Button onClick={() => setLocation("/admin/organizador/catalogo/ver")}>
-              Volver al catálogo
+            <Button onClick={() => setLocation("/admin/activities")}>
+              Volver al listado
             </Button>
           </CardFooter>
         </Card>
@@ -516,9 +516,9 @@ const EditarActividadPage = () => {
           <h1 className="text-3xl font-bold">Editar Actividad</h1>
           <Button
             variant="outline"
-            onClick={() => setLocation("/admin/organizador/catalogo/ver")}
+            onClick={() => setLocation("/admin/activities")}
           >
-            Volver al catálogo
+            Volver al listado
           </Button>
         </div>
         

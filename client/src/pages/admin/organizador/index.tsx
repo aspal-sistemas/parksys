@@ -123,7 +123,7 @@ const OrganizadorPage: React.FC = () => {
               <p className="text-gray-600 mt-2">Gestión de actividades y eventos en parques</p>
             </div>
             <div className="flex gap-2">
-              <Link href="/admin/organizador/catalogo/ver">
+              <Link href="/admin/activities">
                 <Button variant="outline" className="flex items-center gap-2">
                   <Eye size={16} />
                   Ver Todas las Actividades

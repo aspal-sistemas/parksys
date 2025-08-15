@@ -332,7 +332,7 @@ const CrearActividadPage = () => {
               </div>
               <p className="text-gray-600 mt-2">Completa el formulario para crear una nueva actividad para el catálogo</p>
             </div>
-            <Button variant="outline" onClick={() => setLocation('/admin/organizador/catalogo/ver')}>
+            <Button variant="outline" onClick={() => setLocation('/admin/activities')}>
               Actividades Disponibles
             </Button>
           </div>

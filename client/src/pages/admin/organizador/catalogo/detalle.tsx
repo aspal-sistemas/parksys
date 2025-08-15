@@ -126,10 +126,10 @@ const DetalleActividadPage = () => {
             </p>
             <Button 
               className="mt-6" 
-              onClick={() => setLocation('/admin/organizador/catalogo/ver')}
+              onClick={() => setLocation('/admin/activities')}
             >
               <ChevronLeft className="h-4 w-4 mr-2" />
-              Volver al catálogo
+              Volver al listado
             </Button>
           </div>
         </div>
@@ -145,11 +145,11 @@ const DetalleActividadPage = () => {
         <div className="mb-6">
           <Button 
             variant="outline" 
-            onClick={() => setLocation('/admin/organizador/catalogo/ver')}
+            onClick={() => setLocation('/admin/activities')}
             className="mb-4"
           >
             <ChevronLeft className="h-4 w-4 mr-2" />
-            Volver al catálogo
+            Volver al listado
           </Button>
           
           <div className="flex justify-between items-center">
