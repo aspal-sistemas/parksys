@@ -1568,8 +1568,8 @@ async function initializeDatabaseAsync() {
       try {
         console.log("🔧 Initializing additional setup after server start...");
         
-        // Setup development environment if needed
-        if (app.get("env") === "development" && !process.env.REPLIT_DEPLOYMENT_ID) {
+        // Setup development environment - también funciona en Replit
+        if (app.get("env") === "development") {
           try {
             const { setupVite } = await import("./vite");
             await setupVite(app, appServer);
