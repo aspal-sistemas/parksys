@@ -650,6 +650,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Rutas temporales para las nuevas pestañas del parque
+  apiRouter.get('/concessions/park/:parkId', async (req: Request, res: Response) => {
+    try {
+      const parkId = parseInt(req.params.parkId);
+      const concessionsQuery = await pool.query(
+        'SELECT * FROM active_concessions WHERE park_id = $1 ORDER BY created_at DESC',
+        [parkId]
+      );
+      res.json(concessionsQuery.rows);
+    } catch (error) {
+      console.error('Error fetching park concessions:', error);
+      res.json([]); // Return empty array instead of error to prevent breaking the UI
+    }
+  });
+
+  apiRouter.get('/space-reservations/park/:parkId', async (req: Request, res: Response) => {
+    try {
+      const parkId = parseInt(req.params.parkId);
+      const reservationsQuery = await pool.query(
+        `SELECT sr.*, rs.name as spaceName 
+         FROM space_reservations sr 
+         JOIN reservable_spaces rs ON sr.space_id = rs.id 
+         WHERE rs.park_id = $1 
+         ORDER BY sr.start_date DESC`,
+        [parkId]
+      );
+      res.json(reservationsQuery.rows);
+    } catch (error) {
+      console.error('Error fetching park reservations:', error);
+      res.json([]); // Return empty array instead of error to prevent breaking the UI
+    }
+  });
+
+  apiRouter.get('/events/park/:parkId', async (req: Request, res: Response) => {
+    try {
+      const parkId = parseInt(req.params.parkId);
+      const eventsQuery = await pool.query(
+        'SELECT * FROM events WHERE park_id = $1 AND event_date >= CURRENT_DATE ORDER BY event_date ASC',
+        [parkId]
+      );
+      res.json(eventsQuery.rows);
+    } catch (error) {
+      console.error('Error fetching park events:', error);
+      res.json([]); // Return empty array instead of error to prevent breaking the UI
+    }
+  });
+
   // Endpoints para imágenes de perfil
   // Obtener la imagen de perfil de un usuario
   apiRouter.get('/users/:id/profile-image', async (req: Request, res: Response) => {
@@ -1458,6 +1505,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         totalReservations = 0;
       }
 
+      // Get events count for this park
+      let totalEvents = 0;
+      try {
+        const eventsQuery = await pool.query(
+          'SELECT COUNT(*) as count FROM events WHERE park_id = $1 AND event_date >= CURRENT_DATE',
+          [parkId]
+        );
+        totalEvents = parseInt(eventsQuery.rows[0]?.count || 0);
+        console.log(`[DETAILS] Eventos encontrados para parque ${parkId}: ${totalEvents}`);
+      } catch (error) {
+        console.log('Error obteniendo eventos, usando valor 0:', error);
+        totalEvents = 0;
+      }
+
       // For now, we'll use empty arrays for data we don't have direct access to
       const documents: any[] = [];
 
@@ -1472,7 +1533,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         activeConcessions: activeConcessions,
         totalFeedback: totalFeedback,
         totalEvaluations: totalEvaluations,
-        totalReservations: totalReservations
+        totalReservations: totalReservations,
+        totalEvents: totalEvents
       };
       
       console.log(`[DETAILS] Estadísticas calculadas:`, stats);

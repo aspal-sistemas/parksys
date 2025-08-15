@@ -50,6 +50,128 @@ const editAmenitySchema = z.object({
 type AddAmenityFormData = z.infer<typeof addAmenitySchema>;
 type EditAmenityFormData = z.infer<typeof editAmenitySchema>;
 
+// Componentes temporales para las nuevas pestañas
+const ParkConcessionsTab = ({ parkId }: { parkId: number }) => {
+  const { data: concessions = [], isLoading } = useQuery({
+    queryKey: [`/api/concessions/park/${parkId}`],
+  });
+
+  if (isLoading) return <div className="p-4">Cargando concesiones...</div>;
+
+  return (
+    <div className="space-y-4">
+      {concessions.length === 0 ? (
+        <div className="text-center p-8 text-gray-500">
+          <Store className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+          <p>No hay concesiones activas en este parque</p>
+        </div>
+      ) : (
+        <div className="grid gap-4">
+          {concessions.map((concession: any) => (
+            <Card key={concession.id}>
+              <CardContent className="p-4">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h4 className="font-semibold">{concession.name}</h4>
+                    <p className="text-sm text-gray-600">{concession.description}</p>
+                    <Badge variant={concession.status === 'active' ? 'default' : 'secondary'}>
+                      {concession.status}
+                    </Badge>
+                  </div>
+                  <Button variant="outline" size="sm">Ver Detalles</Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const ParkReservationsTab = ({ parkId }: { parkId: number }) => {
+  const { data: reservations = [], isLoading } = useQuery({
+    queryKey: [`/api/space-reservations/park/${parkId}`],
+  });
+
+  if (isLoading) return <div className="p-4">Cargando reservas...</div>;
+
+  return (
+    <div className="space-y-4">
+      {reservations.length === 0 ? (
+        <div className="text-center p-8 text-gray-500">
+          <CalendarDays className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+          <p>No hay reservas activas en este parque</p>
+        </div>
+      ) : (
+        <div className="grid gap-4">
+          {reservations.map((reservation: any) => (
+            <Card key={reservation.id}>
+              <CardContent className="p-4">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h4 className="font-semibold">{reservation.spaceName}</h4>
+                    <p className="text-sm text-gray-600">{reservation.eventTitle}</p>
+                    <p className="text-xs text-gray-500">
+                      {new Date(reservation.startDate).toLocaleDateString()} - 
+                      {new Date(reservation.endDate).toLocaleDateString()}
+                    </p>
+                    <Badge variant={reservation.status === 'confirmed' ? 'default' : 'secondary'}>
+                      {reservation.status}
+                    </Badge>
+                  </div>
+                  <Button variant="outline" size="sm">Ver Detalles</Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const ParkEventsTab = ({ parkId }: { parkId: number }) => {
+  const { data: events = [], isLoading } = useQuery({
+    queryKey: [`/api/events/park/${parkId}`],
+  });
+
+  if (isLoading) return <div className="p-4">Cargando eventos...</div>;
+
+  return (
+    <div className="space-y-4">
+      {events.length === 0 ? (
+        <div className="text-center p-8 text-gray-500">
+          <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+          <p>No hay eventos programados en este parque</p>
+        </div>
+      ) : (
+        <div className="grid gap-4">
+          {events.map((event: any) => (
+            <Card key={event.id}>
+              <CardContent className="p-4">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h4 className="font-semibold">{event.title}</h4>
+                    <p className="text-sm text-gray-600">{event.description}</p>
+                    <p className="text-xs text-gray-500">
+                      {new Date(event.eventDate).toLocaleDateString()} a las {event.eventTime}
+                    </p>
+                    <Badge variant={event.status === 'scheduled' ? 'default' : 'secondary'}>
+                      {event.status}
+                    </Badge>
+                  </div>
+                  <Button variant="outline" size="sm">Ver Detalles</Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 // Función para mapear nombres de iconos a símbolos Unicode
 const getIconSymbol = (iconName: string): string => {
   const iconMap: Record<string, string> = {
@@ -474,10 +596,10 @@ export default function AdminParkView() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <Settings className="h-8 w-8 text-purple-600" />
+                <Calendar className="h-8 w-8 text-purple-600" />
                 <div>
-                  <p className="text-2xl font-bold">{park.stats?.totalAssets || 0}</p>
-                  <p className="text-sm text-gray-600">Activos</p>
+                  <p className="text-2xl font-bold">{park.stats?.totalEvents || 0}</p>
+                  <p className="text-sm text-gray-600">Eventos</p>
                 </div>
               </div>
             </CardContent>
@@ -550,11 +672,12 @@ export default function AdminParkView() {
 
       {/* Detailed Tabs */}
       <Tabs defaultValue="basic-info" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="basic-info">Información</TabsTrigger>
           <TabsTrigger value="activities">Actividades</TabsTrigger>
-          <TabsTrigger value="trees">Árboles</TabsTrigger>
-          <TabsTrigger value="assets">Activos</TabsTrigger>
+          <TabsTrigger value="concessions">Concesiones</TabsTrigger>
+          <TabsTrigger value="reservations">Reservas</TabsTrigger>
+          <TabsTrigger value="events">Eventos</TabsTrigger>
           <TabsTrigger value="incidents">Incidencias</TabsTrigger>
         </TabsList>
 
@@ -731,59 +854,62 @@ export default function AdminParkView() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="trees" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Inventario de Árboles ({park.trees?.stats?.total || 0})</CardTitle>
-              <CardDescription>Estado y estadísticas de árboles en este parque</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {/* Estadísticas generales */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <div className="text-center p-4 bg-green-50 rounded-lg">
-                  <div className="text-2xl font-bold text-green-600">{park.trees?.stats?.good || 0}</div>
-                  <div className="text-sm text-gray-600">Bueno</div>
-                </div>
-                <div className="text-center p-4 bg-yellow-50 rounded-lg">
-                  <div className="text-2xl font-bold text-yellow-600">{park.trees?.stats?.regular || 0}</div>
-                  <div className="text-sm text-gray-600">Regular</div>
-                </div>
-                <div className="text-center p-4 bg-red-50 rounded-lg">
-                  <div className="text-2xl font-bold text-red-600">{park.trees?.stats?.bad || 0}</div>
-                  <div className="text-sm text-gray-600">Malo</div>
-                </div>
-                <div className="text-center p-4 bg-gray-50 rounded-lg">
-                  <div className="text-2xl font-bold text-gray-600">{park.trees?.stats?.total || 0}</div>
-                  <div className="text-sm text-gray-600">Total</div>
-                </div>
-              </div>
-              
-              {/* Inventario detallado */}
-              <ParkTreesInventory parkId={parseInt(id || '0')} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="assets" className="space-y-4">
+        <TabsContent value="concessions" className="space-y-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
               <div>
-                <CardTitle>Activos ({park.assets?.length || 0})</CardTitle>
-                <CardDescription>Equipamiento e infraestructura del parque</CardDescription>
+                <CardTitle>Concesiones Activas ({park.stats?.activeConcessions || 0})</CardTitle>
+                <CardDescription>Concesiones comerciales operando en el parque</CardDescription>
               </div>
-              <Link href={`/admin/assets/new?parkId=${id}`}>
+              <Link href={`/admin/concessions/new?parkId=${id}`}>
                 <Button size="sm">
                   <Plus className="h-4 w-4 mr-2" />
-                  Agregar Activo
+                  Nueva Concesión
                 </Button>
               </Link>
             </CardHeader>
             <CardContent>
-              <ParkAssetsInventory 
-                parkId={parseInt(id || '0')} 
-                assets={park.assets || []} 
-                amenities={park.amenities || []} 
-              />
+              <ParkConcessionsTab parkId={parseInt(id || '0')} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="reservations" className="space-y-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+              <div>
+                <CardTitle>Reservas de Espacios ({park.stats?.totalReservations || 0})</CardTitle>
+                <CardDescription>Reservas activas de espacios del parque</CardDescription>
+              </div>
+              <Link href={`/admin/space-reservations?parkId=${id}`}>
+                <Button size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nueva Reserva
+                </Button>
+              </Link>
+            </CardHeader>
+            <CardContent>
+              <ParkReservationsTab parkId={parseInt(id || '0')} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="events" className="space-y-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+              <div>
+                <CardTitle>Eventos Programados ({park.stats?.totalEvents || 0})</CardTitle>
+                <CardDescription>Eventos activos y programados para el parque</CardDescription>
+              </div>
+              <Link href={`/admin/events/new?parkId=${id}`}>
+                <Button size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nuevo Evento
+                </Button>
+              </Link>
+            </CardHeader>
+            <CardContent>
+              <ParkEventsTab parkId={parseInt(id || '0')} />
             </CardContent>
           </Card>
         </TabsContent>
