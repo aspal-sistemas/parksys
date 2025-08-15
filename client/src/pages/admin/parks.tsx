@@ -173,7 +173,7 @@ const AdminParksContent = () => {
 
 
 
-  // Get park type display label
+  // Get park type display label and color
   const getParkTypeLabel = (type: string) => {
     const typeMap: Record<string, string> = {
       'metropolitano': 'Metropolitano',
@@ -182,9 +182,30 @@ const AdminParksContent = () => {
       'lineal': 'Lineal',
       'ecologico': 'Ecológico',
       'botanico': 'Botánico',
-      'deportivo': 'Deportivo'
+      'deportivo': 'Deportivo',
+      'urbano': 'Urbano',
+      'natural': 'Natural',
+      'de_bolsillo': 'De Bolsillo',
+      'tematico': 'Temático'
     };
     return typeMap[type] || type;
+  };
+
+  const getParkTypeColor = (type: string) => {
+    const colorMap: Record<string, string> = {
+      'metropolitano': 'bg-purple-100 text-purple-800 border-purple-200',
+      'barrial': 'bg-blue-100 text-blue-800 border-blue-200',
+      'vecinal': 'bg-green-100 text-green-800 border-green-200',
+      'lineal': 'bg-orange-100 text-orange-800 border-orange-200',
+      'ecologico': 'bg-emerald-100 text-emerald-800 border-emerald-200',
+      'botanico': 'bg-teal-100 text-teal-800 border-teal-200',
+      'deportivo': 'bg-red-100 text-red-800 border-red-200',
+      'urbano': 'bg-gray-100 text-gray-800 border-gray-200',
+      'natural': 'bg-lime-100 text-lime-800 border-lime-200',
+      'de_bolsillo': 'bg-pink-100 text-pink-800 border-pink-200',
+      'tematico': 'bg-indigo-100 text-indigo-800 border-indigo-200'
+    };
+    return colorMap[type] || 'bg-gray-100 text-gray-800 border-gray-200';
   };
 
 
@@ -284,7 +305,10 @@ const AdminParksContent = () => {
                         <Package className="h-4 w-4 mr-1" />
                         <span>{park.area ? park.area.toLocaleString() : 'N/A'} m²</span>
                       </div>
-                      <Badge variant="secondary">
+                      <Badge 
+                        variant="outline" 
+                        className={`border ${getParkTypeColor(park.parkType)}`}
+                      >
                         {getParkTypeLabel(park.parkType)}
                       </Badge>
                     </div>
@@ -346,7 +370,10 @@ const AdminParksContent = () => {
                 <div>
                   <CardTitle className="text-lg">{park.name}</CardTitle>
                 </div>
-                <Badge variant="secondary">
+                <Badge 
+                  variant="outline" 
+                  className={`border ${getParkTypeColor(park.parkType)}`}
+                >
                   {getParkTypeLabel(park.parkType)}
                 </Badge>
               </div>
