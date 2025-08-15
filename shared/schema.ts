@@ -550,6 +550,8 @@ export const activities = pgTable("activities", {
   category: text("category"), // Campo de texto para categoría legacy
   createdAt: timestamp("created_at").notNull().defaultNow(),
   location: text("location"),
+  latitude: decimal("latitude", { precision: 10, scale: 8 }), // Coordenadas GPS - latitud
+  longitude: decimal("longitude", { precision: 11, scale: 8 }), // Coordenadas GPS - longitud
   categoryId: integer("category_id").references(() => activityCategories.id),
   instructorId: integer("instructor_id").references(() => instructors.id),
   // Campos adicionales del formulario

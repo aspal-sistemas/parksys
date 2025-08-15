@@ -67,6 +67,8 @@ const formSchema = z.object({
   endTime: z.string().min(1, "La hora de finalización es obligatoria"),
   
   location: z.string().optional(),
+  latitude: z.coerce.number().optional(),
+  longitude: z.coerce.number().optional(),
   capacity: z.coerce.number().int().positive().optional(),
   duration: z.coerce.number().int().positive().optional(),
   
@@ -194,6 +196,8 @@ const CrearActividadPage = () => {
       startTime: "09:00", // Valor predeterminado para la hora de inicio
       endTime: "10:00",   // Valor predeterminado para la hora de finalización
       location: "",
+      latitude: undefined,
+      longitude: undefined,
       capacity: undefined,
       duration: undefined,
       price: 0,
@@ -258,6 +262,8 @@ const CrearActividadPage = () => {
         endTime: values.endTime,
         category_id: parseInt(values.category), // Convertir a number para la API
         location: values.location || null,
+        latitude: values.latitude || null,
+        longitude: values.longitude || null,
         capacity: values.capacity || null,
         duration: duracion || null,
         price: values.price || 0,
@@ -476,6 +482,104 @@ const CrearActividadPage = () => {
                     </FormItem>
                   )}
                 />
+
+                {/* Sección de Coordenadas GPS */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border border-gray-200 rounded-lg p-4">
+                  <div className="md:col-span-2">
+                    <h4 className="font-medium text-gray-900 mb-2">Coordenadas GPS Exactas</h4>
+                    <p className="text-sm text-gray-600 mb-4">
+                      Establece las coordenadas GPS específicas donde se llevará a cabo la actividad dentro del parque.
+                    </p>
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="latitude"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Latitud</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="number"
+                            step="any"
+                            placeholder="20.123456"
+                            value={field.value || ''}
+                            onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Coordenada de latitud (ej: 20.123456)
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="longitude"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Longitud</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="number"
+                            step="any"
+                            placeholder="-103.123456"
+                            value={field.value || ''}
+                            onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Coordenada de longitud (ej: -103.123456)
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="md:col-span-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        if (navigator.geolocation) {
+                          navigator.geolocation.getCurrentPosition(
+                            (position) => {
+                              form.setValue('latitude', position.coords.latitude);
+                              form.setValue('longitude', position.coords.longitude);
+                              toast({
+                                title: "Ubicación obtenida",
+                                description: "Las coordenadas GPS han sido establecidas automáticamente.",
+                              });
+                            },
+                            (error) => {
+                              toast({
+                                title: "Error",
+                                description: "No se pudo obtener la ubicación. Por favor ingresa las coordenadas manualmente.",
+                                variant: "destructive"
+                              });
+                            }
+                          );
+                        } else {
+                          toast({
+                            title: "No soportado",
+                            description: "Tu navegador no soporta la geolocalización.",
+                            variant: "destructive"
+                          });
+                        }
+                      }}
+                      className="w-full"
+                    >
+                      📍 Obtener Ubicación Actual
+                    </Button>
+                    <p className="text-xs text-gray-500 mt-2 text-center">
+                      Haz clic para obtener automáticamente tu ubicación GPS actual
+                    </p>
+                  </div>
+                </div>
               </div>
 
               {/* Sección de Segmentación */}
