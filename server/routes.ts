@@ -3085,6 +3085,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Error removing image from park" });
     }
   });
+
+  // Alternative route for direct image deletion (used by frontend)
+  apiRouter.delete("/park-images/:imageId", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const imageId = Number(req.params.imageId);
+      console.log(`🗑️ DELETE: Eliminando imagen ${imageId}`);
+      
+      // Obtener la imagen para verificar que existe y obtener info del parque
+      const image = await storage.getParkImage(imageId);
+      if (!image) {
+        console.log(`❌ DELETE: Imagen ${imageId} no encontrada`);
+        return res.status(404).json({ message: "Image not found" });
+      }
+      
+      console.log(`📍 DELETE: Imagen ${imageId} pertenece al parque ${image.parkId}`);
+      
+      // Eliminar la imagen del sistema de archivos si existe
+      if (image.imageUrl && image.imageUrl.startsWith('/uploads/')) {
+        try {
+          const filePath = path.join(process.cwd(), image.imageUrl);
+          
+          if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+            console.log(`🗂️ DELETE: Archivo físico eliminado: ${filePath}`);
+          }
+        } catch (fileError) {
+          console.error(`⚠️ DELETE: Error eliminando archivo físico:`, fileError);
+          // Continuar con la eliminación de la base de datos aunque falle el archivo
+        }
+      }
+      
+      // Eliminar la imagen de la base de datos
+      const result = await storage.deleteParkImage(imageId);
+      
+      if (!result) {
+        console.log(`❌ DELETE: No se pudo eliminar imagen ${imageId} de la base de datos`);
+        return res.status(404).json({ message: "Image not found in database" });
+      }
+      
+      console.log(`✅ DELETE: Imagen ${imageId} eliminada exitosamente`);
+      res.status(204).send();
+    } catch (error) {
+      console.error(`💥 DELETE: Error eliminando imagen ${req.params.imageId}:`, error);
+      res.status(500).json({ message: "Error removing image" });
+    }
+  });
   
   // Set an image as primary for a park (admin/municipality only)
   apiRouter.put("/parks/:parkId/images/:imageId/set-primary", isAuthenticated, async (req: Request, res: Response) => {

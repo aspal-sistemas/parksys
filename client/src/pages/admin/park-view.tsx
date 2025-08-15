@@ -65,18 +65,20 @@ const ParkConcessionsTab = ({ parkId }: { parkId: number }) => {
   };
 
   if (isLoading) return <div className="p-4">Cargando concesiones...</div>;
+  
+  const concessionsArray = Array.isArray(concessions) ? concessions : [];
 
   return (
     <>
       <div className="space-y-4">
-        {concessions.length === 0 ? (
+        {concessionsArray.length === 0 ? (
           <div className="text-center p-8 text-gray-500">
             <Store className="h-12 w-12 mx-auto mb-4 text-gray-300" />
             <p>No hay concesiones activas en este parque</p>
           </div>
         ) : (
           <div className="grid gap-4">
-            {concessions.map((concession: any) => (
+            {concessionsArray.map((concession: any) => (
               <Card key={concession.id}>
                 <CardContent className="p-4">
                   <div className="flex justify-between items-start">
@@ -157,18 +159,20 @@ const ParkReservationsTab = ({ parkId }: { parkId: number }) => {
   };
 
   if (isLoading) return <div className="p-4">Cargando reservas...</div>;
+  
+  const reservationsArray = Array.isArray(reservations) ? reservations : [];
 
   return (
     <>
       <div className="space-y-4">
-        {reservations.length === 0 ? (
+        {reservationsArray.length === 0 ? (
           <div className="text-center p-8 text-gray-500">
             <CalendarDays className="h-12 w-12 mx-auto mb-4 text-gray-300" />
             <p>No hay reservas activas en este parque</p>
           </div>
         ) : (
           <div className="grid gap-4">
-            {reservations.map((reservation: any) => (
+            {reservationsArray.map((reservation: any) => (
               <Card key={reservation.id}>
                 <CardContent className="p-4">
                   <div className="flex justify-between items-start">
@@ -262,18 +266,20 @@ const ParkEventsTab = ({ parkId }: { parkId: number }) => {
   };
 
   if (isLoading) return <div className="p-4">Cargando eventos...</div>;
+  
+  const eventsArray = Array.isArray(events) ? events : [];
 
   return (
     <>
       <div className="space-y-4">
-        {events.length === 0 ? (
+        {eventsArray.length === 0 ? (
           <div className="text-center p-8 text-gray-500">
             <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-300" />
             <p>No hay eventos programados en este parque</p>
           </div>
         ) : (
           <div className="grid gap-4">
-            {events.map((event: any) => (
+            {eventsArray.map((event: any) => (
               <Card key={event.id}>
                 <CardContent className="p-4">
                   <div className="flex justify-between items-start">
