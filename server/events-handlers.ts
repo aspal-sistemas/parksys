@@ -26,15 +26,15 @@ export async function getAllEvents(req: Request, res: Response) {
   try {
     const { status, type, park, search, upcoming } = req.query;
     
-    let query = db.select().from(events);
+    let baseQuery = db.select().from(events);
     
     // Aplicar filtros si están presentes
     if (status) {
-      query = query.where(eq(events.status, status as string));
+      baseQuery = baseQuery.where(eq(events.status, status as string));
     }
     
     if (type) {
-      query = query.where(eq(events.eventType, type as string));
+      baseQuery = baseQuery.where(eq(events.eventType, type as string));
     }
     
     // Para filtrar por parque, necesitamos un join con la tabla de relación
@@ -49,7 +49,7 @@ export async function getAllEvents(req: Request, res: Response) {
       
       if (eventIds.length > 0) {
         const ids = eventIds.map(item => item.eventId);
-        query = query.where(inArray(events.id, ids));
+        baseQuery = baseQuery.where(inArray(events.id, ids));
       } else {
         // Si no hay eventos en este parque, devolvemos array vacío
         return res.json([]);
@@ -59,22 +59,21 @@ export async function getAllEvents(req: Request, res: Response) {
     // Filtrar por búsqueda en título o descripción
     if (search) {
       const searchTerm = `%${search}%`;
-      query = query.where(
+      baseQuery = baseQuery.where(
         sql`(${events.title} ILIKE ${searchTerm} OR ${events.description} ILIKE ${searchTerm})`
       );
     }
     
     // Filtrar solo eventos futuros
     if (upcoming === 'true') {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      query = query.where(gte(events.startDate, today));
+      const today = new Date().toISOString().split('T')[0];
+      baseQuery = baseQuery.where(sql`${events.startDate} >= ${today}`);
     }
     
     // Ordenar por fecha de inicio descendente
-    query = query.orderBy(desc(events.startDate));
+    baseQuery = baseQuery.orderBy(desc(events.startDate));
     
-    const allEvents = await query;
+    const allEvents = await baseQuery;
     
     // Si la consulta incluye eventos con parques, obtenemos la información de parques
     if (allEvents.length > 0) {
@@ -203,10 +202,13 @@ export async function getEventById(req: Request, res: Response) {
 // Crear un nuevo evento
 export async function createEvent(req: Request, res: Response) {
   try {
+    console.log("🎯 CREATE EVENT - Datos recibidos:", JSON.stringify(req.body, null, 2));
+    
     // Validar los datos de entrada
     const validationResult = insertEventSchema.safeParse(req.body);
     
     if (!validationResult.success) {
+      console.error("❌ Validación fallida:", validationResult.error.errors);
       return res.status(400).json({ 
         message: "Datos inválidos", 
         errors: validationResult.error.errors 

@@ -121,15 +121,19 @@ export const insertEventSchema = createInsertSchema(events, {
   eventType: z.string().min(2).max(50),
   targetAudience: z.string().max(100).optional(),
   status: z.enum(["draft", "published", "cancelled", "postponed"]).default("draft"),
-  featuredImageUrl: z.string().url().optional(),
-  startDate: z.coerce.date(),
-  endDate: z.coerce.date().optional(),
+  featuredImageUrl: z.string().url().optional().or(z.literal('')),
+  startDate: z.string().min(1),
+  endDate: z.string().optional(),
+  startTime: z.string().optional(),
+  endTime: z.string().optional(),
   capacity: z.number().int().positive().optional(),
   registrationType: z.enum(["free", "registration"]).default("free"),
   organizerName: z.string().max(100).optional(),
-  organizerEmail: z.string().email().optional(),
+  organizerEmail: z.string().email().optional().or(z.literal('')),
   organizerPhone: z.string().max(20).optional(),
-}).omit({ id: true, createdAt: true, updatedAt: true });
+}).omit({ id: true, createdAt: true, updatedAt: true }).extend({
+  parkIds: z.array(z.number()).min(1, "Debe seleccionar al menos un parque")
+});
 
 // Tipos para TypeScript
 export type Event = typeof events.$inferSelect;

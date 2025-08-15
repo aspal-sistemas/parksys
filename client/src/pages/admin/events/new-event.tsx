@@ -95,7 +95,7 @@ export default function NewEventPage() {
         status: 'published',
         targetAudience: 'general',
         // Campo requerido por el backend - array de IDs de parques
-        parkIds: data.park_id ? [data.park_id] : []
+        parkIds: data.park_id ? [parseInt(data.park_id)] : []
       };
 
       return apiRequest('/api/events', {
