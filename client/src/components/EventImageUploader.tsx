@@ -122,15 +122,49 @@ export default function EventImageUploader({
                 size="sm"
                 className="absolute top-2 right-2"
                 onClick={onRemoveImage}
+                title="Borrar imagen"
               >
                 <X className="h-4 w-4" />
               </Button>
             )}
           </div>
-          <div className="mt-2 text-sm text-gray-600">
-            <Camera className="h-4 w-4 inline mr-1" />
-            Imagen del evento cargada
+          <div className="mt-3 space-y-2">
+            <div className="text-sm text-gray-600 flex items-center">
+              <Camera className="h-4 w-4 mr-1" />
+              Imagen del evento cargada
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={uploading}
+                onClick={() => document.getElementById('file-input')?.click()}
+                className="flex-1"
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                Cambiar imagen
+              </Button>
+              {onRemoveImage && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onRemoveImage}
+                  className="text-red-600 hover:text-red-700"
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  Borrar
+                </Button>
+              )}
+            </div>
           </div>
+          
+          <input
+            id="file-input"
+            type="file"
+            accept="image/*"
+            onChange={handleFileInputChange}
+            className="hidden"
+          />
         </CardContent>
       </Card>
     );

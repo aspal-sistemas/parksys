@@ -455,9 +455,15 @@ export default function EditEventPage() {
                 </CardHeader>
                 <CardContent>
                   <EventImageUploader
-                    onImageUploaded={setEventImage}
+                    onImageUpload={setEventImage}
                     currentImage={eventImage}
+                    onRemoveImage={() => setEventImage('')}
                   />
+                  {!eventImage && (
+                    <div className="mt-2 text-sm text-gray-500">
+                      Puedes cambiar la imagen del evento arrastrando una nueva imagen o haciendo clic para seleccionar
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
