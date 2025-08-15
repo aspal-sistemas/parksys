@@ -628,6 +628,7 @@ app.get("/api/activities/:id", async (req: Request, res: Response) => {
       title: activity.title,
       description: activity.description,
       category: activity.category_name || activity.category,
+      categoryName: activity.category_name || activity.category,
       categoryId: activity.category_id,
       parkId: activity.park_id,
       parkName: activity.park_name,

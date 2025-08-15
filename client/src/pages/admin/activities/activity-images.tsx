@@ -7,13 +7,34 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Image } from 'lucide-react';
 
+// Tipo para la actividad con información completa
+interface ActivityWithDetails {
+  id: number;
+  parkId: number;
+  title: string;
+  description?: string;
+  startDate: string;
+  endDate?: string;
+  category?: string;
+  categoryId?: number;
+  location?: string;
+  capacity?: number;
+  price?: string;
+  isFree: boolean;
+  instructorId?: number;
+  createdAt: string;
+  parkName?: string;
+  categoryName?: string;
+  instructorName?: string;
+}
+
 const ActivityImagesPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [, setLocation] = useLocation();
   const activityId = parseInt(id || '0');
 
   // Obtener información de la actividad
-  const { data: activity, isLoading } = useQuery({
+  const { data: activity, isLoading } = useQuery<ActivityWithDetails>({
     queryKey: ['/api/activities', activityId],
     enabled: !!activityId,
   });
@@ -93,7 +114,7 @@ const ActivityImagesPage: React.FC = () => {
               </div>
               <div>
                 <span className="font-medium text-gray-700">Categoría:</span>
-                <p className="text-gray-600">{activity.category || 'No especificada'}</p>
+                <p className="text-gray-600">{activity.categoryName || activity.category || 'No especificada'}</p>
               </div>
               <div>
                 <span className="font-medium text-gray-700">Fecha de inicio:</span>
