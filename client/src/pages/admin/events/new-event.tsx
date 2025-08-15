@@ -79,32 +79,24 @@ export default function NewEventPage() {
   // Mutación para crear evento
   const createEventMutation = useMutation({
     mutationFn: async (data: NewEventForm) => {
-      // Combinar fecha y hora para crear timestamps completos
-      const startDateTime = `${data.start_date}T${data.start_time}:00`;
-      const endDateTime = data.end_date && data.end_time 
-        ? `${data.end_date}T${data.end_time}:00`
-        : data.end_date
-        ? `${data.end_date}T23:59:59`
-        : startDateTime;
-
       const eventData = {
         title: data.title,
         description: data.description,
-        start_date: startDateTime,
-        end_date: endDateTime,
-        park_id: parseInt(data.park_id),
-        category: data.category,
+        eventType: data.category, // Usar category del formulario como eventType
+        startDate: data.start_date,
+        endDate: data.end_date || null,
+        startTime: data.start_time || null,
+        endTime: data.end_time || null,
         capacity: data.capacity ? parseInt(data.capacity) : null,
         location: data.location || null,
-        contact_email: data.contact_email || null,
-        contact_phone: data.contact_phone || null,
-        registration_required: data.registration_required,
-        price: data.price ? parseFloat(data.price) : null,
-        notes: data.notes || null,
-        status: 'programado'
+        organizerEmail: data.contact_email || null,
+        organizerPhone: data.contact_phone || null,
+        registrationType: data.registration_required ? 'registration' : 'free',
+        status: 'published',
+        targetAudience: 'general'
       };
 
-      return apiRequest('/api/activities', {
+      return apiRequest('/api/events', {
         method: 'POST',
         body: JSON.stringify(eventData)
       });
@@ -114,8 +106,8 @@ export default function NewEventPage() {
         title: 'Evento creado',
         description: 'El evento ha sido creado exitosamente.'
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
-      setLocation('/admin/activities');
+      queryClient.invalidateQueries({ queryKey: ['/api/events'] });
+      setLocation('/admin/events');
     },
     onError: (error: any) => {
       toast({
