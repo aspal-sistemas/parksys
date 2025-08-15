@@ -52,153 +52,314 @@ type EditAmenityFormData = z.infer<typeof editAmenitySchema>;
 
 // Componentes temporales para las nuevas pestañas
 const ParkConcessionsTab = ({ parkId }: { parkId: number }) => {
+  const [selectedConcession, setSelectedConcession] = useState<any>(null);
+  const [showConcessionDialog, setShowConcessionDialog] = useState(false);
+  
   const { data: concessions = [], isLoading } = useQuery({
     queryKey: [`/api/concessions/park/${parkId}`],
   });
 
+  const handleViewConcession = (concession: any) => {
+    setSelectedConcession(concession);
+    setShowConcessionDialog(true);
+  };
+
   if (isLoading) return <div className="p-4">Cargando concesiones...</div>;
 
   return (
-    <div className="space-y-4">
-      {concessions.length === 0 ? (
-        <div className="text-center p-8 text-gray-500">
-          <Store className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-          <p>No hay concesiones activas en este parque</p>
-        </div>
-      ) : (
-        <div className="grid gap-4">
-          {concessions.map((concession: any) => (
-            <Card key={concession.id}>
-              <CardContent className="p-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h4 className="font-semibold">{concession.name}</h4>
-                    <p className="text-sm text-gray-600">{concession.description}</p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Ubicación: {concession.specific_location}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      Horario: {concession.operating_hours} | {concession.operating_days}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      Pago mensual: ${concession.monthly_payment} | Contacto: {concession.emergency_phone}
-                    </p>
-                    <Badge variant={concession.status === 'activa' ? 'default' : 'secondary'}>
-                      {concession.status === 'activa' ? 'Activa' : concession.status}
-                    </Badge>
+    <>
+      <div className="space-y-4">
+        {concessions.length === 0 ? (
+          <div className="text-center p-8 text-gray-500">
+            <Store className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+            <p>No hay concesiones activas en este parque</p>
+          </div>
+        ) : (
+          <div className="grid gap-4">
+            {concessions.map((concession: any) => (
+              <Card key={concession.id}>
+                <CardContent className="p-4">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="font-semibold">{concession.name}</h4>
+                      <p className="text-sm text-gray-600">{concession.description}</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Ubicación: {concession.specific_location}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        Horario: {concession.operating_hours} | {concession.operating_days}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        Pago mensual: ${concession.monthly_payment} | Contacto: {concession.emergency_phone}
+                      </p>
+                      <Badge variant={concession.status === 'activa' ? 'default' : 'secondary'}>
+                        {concession.status === 'activa' ? 'Activa' : concession.status}
+                      </Badge>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={() => handleViewConcession(concession)}>
+                      Ver Detalles
+                    </Button>
                   </div>
-                  <Button variant="outline" size="sm">Ver Detalles</Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Modal de detalles de concesión */}
+      <Dialog open={showConcessionDialog} onOpenChange={setShowConcessionDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Detalles de la Concesión</DialogTitle>
+          </DialogHeader>
+          {selectedConcession && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h3 className="font-medium text-gray-900">Información General</h3>
+                  <div className="mt-2 space-y-1 text-sm">
+                    <p><span className="font-medium">Nombre:</span> {selectedConcession.name}</p>
+                    <p><span className="font-medium">Descripción:</span> {selectedConcession.description}</p>
+                    <p><span className="font-medium">Ubicación:</span> {selectedConcession.specific_location}</p>
+                    <p><span className="font-medium">Estado:</span> {selectedConcession.status}</p>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
-    </div>
+                <div>
+                  <h3 className="font-medium text-gray-900">Información Operativa</h3>
+                  <div className="mt-2 space-y-1 text-sm">
+                    <p><span className="font-medium">Horarios:</span> {selectedConcession.operating_hours}</p>
+                    <p><span className="font-medium">Días:</span> {selectedConcession.operating_days}</p>
+                    <p><span className="font-medium">Pago mensual:</span> ${selectedConcession.monthly_payment}</p>
+                    <p><span className="font-medium">Teléfono:</span> {selectedConcession.emergency_phone}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 
 const ParkReservationsTab = ({ parkId }: { parkId: number }) => {
+  const [selectedReservation, setSelectedReservation] = useState<any>(null);
+  const [showReservationDialog, setShowReservationDialog] = useState(false);
+  
   const { data: reservations = [], isLoading } = useQuery({
     queryKey: [`/api/space-reservations/park/${parkId}`],
   });
 
+  const handleViewReservation = (reservation: any) => {
+    setSelectedReservation(reservation);
+    setShowReservationDialog(true);
+  };
+
   if (isLoading) return <div className="p-4">Cargando reservas...</div>;
 
   return (
-    <div className="space-y-4">
-      {reservations.length === 0 ? (
-        <div className="text-center p-8 text-gray-500">
-          <CalendarDays className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-          <p>No hay reservas activas en este parque</p>
-        </div>
-      ) : (
-        <div className="grid gap-4">
-          {reservations.map((reservation: any) => (
-            <Card key={reservation.id}>
-              <CardContent className="p-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h4 className="font-semibold">{reservation.spacename || reservation.contact_name}</h4>
-                    <p className="text-sm text-gray-600">{reservation.purpose}</p>
-                    <p className="text-xs text-gray-500">
-                      {new Date(reservation.reservation_date).toLocaleDateString()} 
-                      <span className="ml-2">
-                        {reservation.start_time} - {reservation.end_time}
-                      </span>
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Contacto: {reservation.contact_email} | {reservation.contact_phone}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      Asistentes: {reservation.expected_attendees} | Costo: ${reservation.total_cost}
-                    </p>
-                    <Badge variant={reservation.status === 'confirmed' ? 'default' : reservation.status === 'pending' ? 'secondary' : 'destructive'}>
-                      {reservation.status === 'confirmed' ? 'Confirmada' : 
-                       reservation.status === 'pending' ? 'Pendiente' : 
-                       reservation.status === 'cancelled' ? 'Cancelada' : reservation.status}
-                    </Badge>
+    <>
+      <div className="space-y-4">
+        {reservations.length === 0 ? (
+          <div className="text-center p-8 text-gray-500">
+            <CalendarDays className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+            <p>No hay reservas activas en este parque</p>
+          </div>
+        ) : (
+          <div className="grid gap-4">
+            {reservations.map((reservation: any) => (
+              <Card key={reservation.id}>
+                <CardContent className="p-4">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="font-semibold">{reservation.spacename || reservation.contact_name}</h4>
+                      <p className="text-sm text-gray-600">{reservation.purpose}</p>
+                      <p className="text-xs text-gray-500">
+                        {new Date(reservation.reservation_date).toLocaleDateString()} 
+                        <span className="ml-2">
+                          {reservation.start_time} - {reservation.end_time}
+                        </span>
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Contacto: {reservation.contact_email} | {reservation.contact_phone}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        Asistentes: {reservation.expected_attendees} | Costo: ${reservation.total_cost}
+                      </p>
+                      <Badge variant={reservation.status === 'confirmed' ? 'default' : reservation.status === 'pending' ? 'secondary' : 'destructive'}>
+                        {reservation.status === 'confirmed' ? 'Confirmada' : 
+                         reservation.status === 'pending' ? 'Pendiente' : 
+                         reservation.status === 'cancelled' ? 'Cancelada' : reservation.status}
+                      </Badge>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={() => handleViewReservation(reservation)}>
+                      Ver Detalles
+                    </Button>
                   </div>
-                  <Button variant="outline" size="sm">Ver Detalles</Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Modal de detalles de reserva */}
+      <Dialog open={showReservationDialog} onOpenChange={setShowReservationDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Detalles de la Reserva</DialogTitle>
+          </DialogHeader>
+          {selectedReservation && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h3 className="font-medium text-gray-900">Información del Evento</h3>
+                  <div className="mt-2 space-y-1 text-sm">
+                    <p><span className="font-medium">Nombre del evento:</span> {selectedReservation.spacename}</p>
+                    <p><span className="font-medium">Propósito:</span> {selectedReservation.purpose}</p>
+                    <p><span className="font-medium">Fecha:</span> {new Date(selectedReservation.reservation_date).toLocaleDateString()}</p>
+                    <p><span className="font-medium">Hora:</span> {selectedReservation.start_time} - {selectedReservation.end_time}</p>
+                    <p><span className="font-medium">Estado:</span> {selectedReservation.status}</p>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
-    </div>
+                <div>
+                  <h3 className="font-medium text-gray-900">Información de Contacto</h3>
+                  <div className="mt-2 space-y-1 text-sm">
+                    <p><span className="font-medium">Nombre:</span> {selectedReservation.contact_name}</p>
+                    <p><span className="font-medium">Email:</span> {selectedReservation.contact_email}</p>
+                    <p><span className="font-medium">Teléfono:</span> {selectedReservation.contact_phone}</p>
+                    <p><span className="font-medium">Asistentes esperados:</span> {selectedReservation.expected_attendees}</p>
+                    <p><span className="font-medium">Costo total:</span> ${selectedReservation.total_cost}</p>
+                  </div>
+                </div>
+              </div>
+              {selectedReservation.notes && (
+                <div>
+                  <h3 className="font-medium text-gray-900">Notas adicionales</h3>
+                  <p className="mt-1 text-sm text-gray-600">{selectedReservation.notes}</p>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 
 const ParkEventsTab = ({ parkId }: { parkId: number }) => {
+  const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [showEventDialog, setShowEventDialog] = useState(false);
+  
   const { data: events = [], isLoading } = useQuery({
     queryKey: [`/api/parks/${parkId}/events`],
   });
 
+  const handleViewEvent = (event: any) => {
+    setSelectedEvent(event);
+    setShowEventDialog(true);
+  };
+
   if (isLoading) return <div className="p-4">Cargando eventos...</div>;
 
   return (
-    <div className="space-y-4">
-      {events.length === 0 ? (
-        <div className="text-center p-8 text-gray-500">
-          <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-          <p>No hay eventos programados en este parque</p>
-        </div>
-      ) : (
-        <div className="grid gap-4">
-          {events.map((event: any) => (
-            <Card key={event.id}>
-              <CardContent className="p-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h4 className="font-semibold">{event.title}</h4>
-                    <p className="text-sm text-gray-600">{event.description}</p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Tipo: {event.event_type} | Audiencia: {event.target_audience}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {new Date(event.start_date).toLocaleDateString()} 
-                      {event.start_time && ` - ${event.start_time}`}
-                      {event.end_date && event.end_date !== event.start_date && 
-                        ` al ${new Date(event.end_date).toLocaleDateString()}`}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      Ubicación: {event.location} | Capacidad: {event.capacity || 'No especificada'}
-                    </p>
-                    <Badge variant={event.status === 'confirmed' ? 'default' : event.status === 'pending' ? 'secondary' : 'destructive'}>
-                      {event.status === 'confirmed' ? 'Confirmado' : 
-                       event.status === 'pending' ? 'Pendiente' : 
-                       event.status === 'cancelled' ? 'Cancelado' : event.status}
-                    </Badge>
+    <>
+      <div className="space-y-4">
+        {events.length === 0 ? (
+          <div className="text-center p-8 text-gray-500">
+            <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+            <p>No hay eventos programados en este parque</p>
+          </div>
+        ) : (
+          <div className="grid gap-4">
+            {events.map((event: any) => (
+              <Card key={event.id}>
+                <CardContent className="p-4">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="font-semibold">{event.title}</h4>
+                      <p className="text-sm text-gray-600">{event.description}</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Tipo: {event.event_type} | Audiencia: {event.target_audience}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {new Date(event.start_date).toLocaleDateString()} 
+                        {event.start_time && ` - ${event.start_time}`}
+                        {event.end_date && event.end_date !== event.start_date && 
+                          ` al ${new Date(event.end_date).toLocaleDateString()}`}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        Ubicación: {event.location} | Capacidad: {event.capacity || 'No especificada'}
+                      </p>
+                      <Badge variant={event.status === 'confirmed' ? 'default' : event.status === 'pending' ? 'secondary' : 'destructive'}>
+                        {event.status === 'confirmed' ? 'Confirmado' : 
+                         event.status === 'pending' ? 'Pendiente' : 
+                         event.status === 'cancelled' ? 'Cancelado' : event.status}
+                      </Badge>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={() => handleViewEvent(event)}>
+                      Ver Detalles
+                    </Button>
                   </div>
-                  <Button variant="outline" size="sm">Ver Detalles</Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Modal de detalles de evento */}
+      <Dialog open={showEventDialog} onOpenChange={setShowEventDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Detalles del Evento</DialogTitle>
+          </DialogHeader>
+          {selectedEvent && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h3 className="font-medium text-gray-900">Información General</h3>
+                  <div className="mt-2 space-y-1 text-sm">
+                    <p><span className="font-medium">Título:</span> {selectedEvent.title}</p>
+                    <p><span className="font-medium">Tipo:</span> {selectedEvent.event_type}</p>
+                    <p><span className="font-medium">Audiencia:</span> {selectedEvent.target_audience}</p>
+                    <p><span className="font-medium">Estado:</span> {selectedEvent.status}</p>
+                    <p><span className="font-medium">Ubicación:</span> {selectedEvent.location}</p>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
-    </div>
+                <div>
+                  <h3 className="font-medium text-gray-900">Fechas y Logística</h3>
+                  <div className="mt-2 space-y-1 text-sm">
+                    <p><span className="font-medium">Fecha inicio:</span> {new Date(selectedEvent.start_date).toLocaleDateString()}</p>
+                    {selectedEvent.end_date && selectedEvent.end_date !== selectedEvent.start_date && (
+                      <p><span className="font-medium">Fecha fin:</span> {new Date(selectedEvent.end_date).toLocaleDateString()}</p>
+                    )}
+                    {selectedEvent.start_time && (
+                      <p><span className="font-medium">Hora:</span> {selectedEvent.start_time} {selectedEvent.end_time && `- ${selectedEvent.end_time}`}</p>
+                    )}
+                    <p><span className="font-medium">Capacidad:</span> {selectedEvent.capacity || 'No especificada'}</p>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <h3 className="font-medium text-gray-900">Descripción</h3>
+                <p className="mt-1 text-sm text-gray-600">{selectedEvent.description}</p>
+              </div>
+              {selectedEvent.organizer_email && (
+                <div>
+                  <h3 className="font-medium text-gray-900">Organizador</h3>
+                  <div className="mt-1 text-sm text-gray-600">
+                    <p>Email: {selectedEvent.organizer_email}</p>
+                    {selectedEvent.organizer_phone && <p>Teléfono: {selectedEvent.organizer_phone}</p>}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 
