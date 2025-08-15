@@ -1,3 +1,4 @@
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +14,7 @@ import {
 } from "lucide-react";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
+import AdminLayout from '@/components/AdminLayout';
 
 interface EventStats {
   total: number;
@@ -20,6 +22,20 @@ interface EventStats {
   draft: number;
   upcoming: number;
   categories: number;
+}
+
+interface RecentEvent {
+  id: number;
+  title: string;
+  description: string;
+  eventType: string;
+  status: string;
+  startDate: string;
+  endDate: string;
+  location: string;
+  capacity: number | null;
+  featuredImageUrl: string | null;
+  createdAt: string;
 }
 
 export default function EventsIndex() {
@@ -30,7 +46,7 @@ export default function EventsIndex() {
   });
 
   // Consulta para obtener eventos recientes
-  const { data: recentEvents, isLoading: eventsLoading } = useQuery({
+  const { data: recentEvents, isLoading: eventsLoading } = useQuery<RecentEvent[]>({
     queryKey: ['/api/events/recent'],
     retry: false,
   });
@@ -90,7 +106,8 @@ export default function EventsIndex() {
   };
 
   return (
-    <div className="space-y-6 p-6">
+    <AdminLayout>
+      <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Gestión de Eventos</h1>
@@ -284,6 +301,7 @@ export default function EventsIndex() {
           )}
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </AdminLayout>
   );
 }

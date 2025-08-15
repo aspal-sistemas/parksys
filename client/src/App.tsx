@@ -39,6 +39,7 @@ import AdminEvaluationEdit from "@/pages/admin/volunteers/evaluations/edit";
 import DashboardPage from "@/pages/admin/volunteers/dashboard-page";
 import EventCategoriesPage from "@/pages/admin/events/categories";
 import NewEventPage from "@/pages/admin/events/new-event";
+import EventsIndex from "@/pages/admin/events/index";
 import Header from "@/components/Header";
 
 function Router() {
@@ -537,11 +538,7 @@ function Router() {
         </Route>
         
         {/* Rutas para eventos generales */}
-        <Route path="/admin/events" exact>
-          <Suspense fallback={<div className="p-8 text-center">Cargando gestión de eventos...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/events')))}
-          </Suspense>
-        </Route>
+        <Route path="/admin/events" component={EventsIndex} />
         
         <Route path="/admin/events/new" component={NewEventPage} />
 
