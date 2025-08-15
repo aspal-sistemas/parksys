@@ -13,6 +13,7 @@ import ParkDetail from "@/pages/park-detail";
 import AdminDashboard from "@/pages/admin";
 import AdminParks from "@/pages/admin/parks";
 import AdminParkEdit from "@/pages/admin/park-edit";
+import AdminParkView from "@/pages/admin/park-view";
 import AdminParksImport from "@/pages/admin/parks-import";
 import AdminAnalytics from "@/pages/admin/analytics";
 import AdminDocuments from "@/pages/admin/documents";
@@ -245,11 +246,7 @@ function Router() {
         <Route path="/admin/parks-import" component={AdminParksImport} />
         <Route path="/admin/parks/new" component={AdminParkEdit} />
         <Route path="/admin/parks/:id" component={AdminParkEdit} />
-        <Route path="/admin/parks/:id/view">
-          <Suspense fallback={<div className="p-8 text-center">Cargando vista del parque...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/park-view')))}
-          </Suspense>
-        </Route>
+        <Route path="/admin/parks/:id/view" component={AdminParkView} />
         <Route path="/admin/parks/:id/manage">
           <Suspense fallback={<div className="p-8 text-center">Cargando gestión del parque...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/admin/park-manage')))}

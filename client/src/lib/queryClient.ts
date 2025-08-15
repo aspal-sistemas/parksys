@@ -96,7 +96,7 @@ export async function apiRequest(
       }
     }
     
-    headers["Authorization"] = storedToken ? `Bearer ${storedToken}` : "Bearer direct-token-1754063087518";
+    headers["Authorization"] = storedToken ? `Bearer ${storedToken}` : `Bearer direct-token-${Date.now()}`;
     headers["X-User-Id"] = userId;
     headers["X-User-Role"] = userRole;
   }
