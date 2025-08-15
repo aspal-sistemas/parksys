@@ -93,7 +93,9 @@ export default function NewEventPage() {
         organizerPhone: data.contact_phone || null,
         registrationType: data.registration_required ? 'registration' : 'free',
         status: 'published',
-        targetAudience: 'general'
+        targetAudience: 'general',
+        // Campo requerido por el backend - array de IDs de parques
+        parkIds: data.park_id ? [data.park_id] : []
       };
 
       return apiRequest('/api/events', {
