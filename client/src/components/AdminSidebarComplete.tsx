@@ -449,6 +449,13 @@ const AdminSidebarComplete: React.FC = () => {
               >
                 {t('navigation.management')}
               </NavItem>
+              <NavItem 
+                href="/admin/parks/configuration" 
+                icon={<Settings className="h-4 w-4" />}
+                active={location === '/admin/parks/configuration'}
+              >
+                Configuración
+              </NavItem>
             </CollapsibleSubmenu>
 
             {/* ACTIVIDADES */}
