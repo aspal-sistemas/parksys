@@ -523,7 +523,7 @@ const AdminParksContent = () => {
             <MapPin className="w-8 h-8 text-gray-900" />
             <h1 className="text-3xl font-bold text-gray-900">Parques</h1>
           </div>
-          <p className="text-gray-600 mt-2">Gestión General del Sistema - Sin Filtros</p>
+          <p className="text-gray-600 mt-2">Gestión General del Sistema</p>
         </Card>
         
         {/* View mode toggle and actions */}
