@@ -457,16 +457,12 @@ export default function AdminParkView() {
 
       {/* Detailed Tabs */}
       <Tabs defaultValue="basic-info" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-9">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="basic-info">Información</TabsTrigger>
-          <TabsTrigger value="amenities">Amenidades</TabsTrigger>
           <TabsTrigger value="activities">Actividades</TabsTrigger>
           <TabsTrigger value="trees">Árboles</TabsTrigger>
           <TabsTrigger value="assets">Activos</TabsTrigger>
           <TabsTrigger value="incidents">Incidencias</TabsTrigger>
-          <TabsTrigger value="volunteers">Voluntarios</TabsTrigger>
-          <TabsTrigger value="documents">Documentos</TabsTrigger>
-          <TabsTrigger value="multimedia">Multimedia</TabsTrigger>
         </TabsList>
 
         <TabsContent value="basic-info" className="space-y-6">
@@ -614,24 +610,7 @@ export default function AdminParkView() {
           </div>
         </TabsContent>
 
-        <TabsContent value="amenities" className="space-y-4">
-          <AmenitiesTable 
-            parkId={parseInt(id || "0")} 
-            isAddAmenityModalOpen={isAddAmenityModalOpen}
-            setIsAddAmenityModalOpen={setIsAddAmenityModalOpen}
-            availableAmenities={availableAmenities || []}
-            addAmenityMutation={addAmenityMutation}
-            parkData={displayPark}
-            isEditAmenityModalOpen={isEditAmenityModalOpen}
-            setIsEditAmenityModalOpen={setIsEditAmenityModalOpen}
-            editingAmenity={editingAmenity}
-            setEditingAmenity={setEditingAmenity}
-            isViewAmenityModalOpen={isViewAmenityModalOpen}
-            setIsViewAmenityModalOpen={setIsViewAmenityModalOpen}
-            viewingAmenity={viewingAmenity}
-            setViewingAmenity={setViewingAmenity}
-          />
-        </TabsContent>
+
 
         <TabsContent value="activities" className="space-y-4">
           <Card>
@@ -730,78 +709,7 @@ export default function AdminParkView() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="volunteers" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Voluntarios ({park.volunteers?.length || 0})</CardTitle>
-              <CardDescription>Voluntarios asignados a este parque</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ParkVolunteersInventory 
-                parkId={parseInt(id)} 
-                volunteers={park.volunteers || []} 
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
 
-        <TabsContent value="documents" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Documentos ({displayPark.documents?.length || 0})</CardTitle>
-              <CardDescription>Documentos oficiales y archivos del parque</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {displayPark.documents?.map((doc) => (
-                  <div key={doc.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <FileText className="h-8 w-8 text-blue-600" />
-                      <div>
-                        <h4 className="font-medium">{doc.title}</h4>
-                        <div className="text-sm text-gray-500">
-                          <span>{doc.fileType || 'PDF'}</span> • 
-                          <span> {new Date(doc.createdAt || doc.uploadedAt).toLocaleDateString()}</span>
-                          {doc.fileSize && <span> • {(parseInt(doc.fileSize) / 1024).toFixed(0)} KB</span>}
-                        </div>
-                      </div>
-                    </div>
-                    <a href={doc.fileUrl || doc.downloadUrl || '#'} target="_blank" rel="noopener noreferrer">
-                      <Button variant="outline" size="sm">
-                        <Download className="h-4 w-4 mr-2" />
-                        Descargar
-                      </Button>
-                    </a>
-                  </div>
-                ))}
-                
-                {!displayPark.documents?.length && (
-                  <div className="text-center py-8">
-                    <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-500">No hay documentos disponibles para este parque</p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="multimedia" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl text-green-600 flex items-center gap-2">
-                <Images className="h-6 w-6" />
-                Multimedia del Parque
-              </CardTitle>
-              <CardDescription>
-                Visualiza las imágenes y documentos del parque.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ParkMultimediaViewer parkId={parseInt(id)} />
-            </CardContent>
-          </Card>
-        </TabsContent>
       </Tabs>
 
       {/* Modal para agregar amenidad */}
