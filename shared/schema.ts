@@ -480,6 +480,19 @@ export const parkImages = pgTable("park_images", {
   createdAt: timestamp("created_at").notNull().defaultNow()
 });
 
+export const parkVideos = pgTable("park_videos", {
+  id: serial("id").primaryKey(),
+  parkId: integer("park_id").notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  videoUrl: text("video_url").notNull(),
+  videoType: text("video_type").default("file"), // 'file' or 'url'
+  fileSize: integer("file_size"),
+  mimeType: text("mime_type"),
+  isFeatured: boolean("is_featured").default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow()
+});
+
 export const amenities = pgTable("amenities", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
@@ -774,6 +787,14 @@ export const insertParkImageSchema = createInsertSchema(parkImages).omit({
   id: true,
   createdAt: true,
   updatedAt: true
+});
+
+export type ParkVideo = typeof parkVideos.$inferSelect;
+export type InsertParkVideo = typeof parkVideos.$inferInsert;
+
+export const insertParkVideoSchema = createInsertSchema(parkVideos).omit({ 
+  id: true,
+  createdAt: true
 });
 
 export type Amenity = typeof amenities.$inferSelect;
