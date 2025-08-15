@@ -85,7 +85,7 @@ const AdminParksContent = () => {
   // Pagination and view states
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const itemsPerPage = 10;
+  const itemsPerPage = 9;
 
 
 
