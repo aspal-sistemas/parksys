@@ -55,7 +55,7 @@ const AdminActivities = () => {
   const [selectedActivity, setSelectedActivity] = useState<any>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   
-  const activitiesPerPage = 10;
+  const activitiesPerPage = 9;
   const { toast } = useToast();
 
   // Fetch data
