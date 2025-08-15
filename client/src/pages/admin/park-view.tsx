@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ArrowLeft, MapPin, Clock, TreePine, Calendar, Users, Wrench, AlertTriangle, FileText, Images, Star, Info, Building, Phone, Mail, Globe, Shield, Edit, Trash2, Plus, Filter, SortAsc, Map as MapIcon, Eye, Download, Settings } from "lucide-react";
+import { ArrowLeft, MapPin, Clock, TreePine, Calendar, Users, Wrench, AlertTriangle, FileText, Images, Star, Info, Building, Phone, Mail, Globe, Shield, Edit, Trash2, Plus, Filter, SortAsc, Map as MapIcon, Eye, Download, Settings, Store, MessageSquare, ThumbsUp, CalendarDays } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 import { MapViewer } from "@/components/ui/map-viewer";
 import ParkMultimediaViewer from "@/components/ParkMultimediaViewer";
@@ -177,6 +177,10 @@ interface ParkDetails {
     totalAssets: number;
     averageEvaluation: number;
     pendingIncidents: number;
+    activeConcessions: number;
+    totalFeedback: number;
+    totalEvaluations: number;
+    totalReservations: number;
   };
 }
 
@@ -381,7 +385,7 @@ export default function AdminParkView() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-9 gap-4 mb-8">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
@@ -437,6 +441,54 @@ export default function AdminParkView() {
               <div>
                 <p className="text-2xl font-bold">{park.stats?.pendingIncidents || 0}</p>
                 <p className="text-sm text-gray-600">Incidencias</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <Store className="h-8 w-8 text-orange-600" />
+              <div>
+                <p className="text-2xl font-bold">{park.stats?.activeConcessions || 0}</p>
+                <p className="text-sm text-gray-600">Concesiones</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <MessageSquare className="h-8 w-8 text-cyan-600" />
+              <div>
+                <p className="text-2xl font-bold">{park.stats?.totalFeedback || 0}</p>
+                <p className="text-sm text-gray-600">Retroalimentación</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <ThumbsUp className="h-8 w-8 text-green-600" />
+              <div>
+                <p className="text-2xl font-bold">{park.stats?.totalEvaluations || 0}</p>
+                <p className="text-sm text-gray-600">Evaluaciones</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <CalendarDays className="h-8 w-8 text-indigo-600" />
+              <div>
+                <p className="text-2xl font-bold">{park.stats?.totalReservations || 0}</p>
+                <p className="text-sm text-gray-600">Reservas</p>
               </div>
             </div>
           </CardContent>

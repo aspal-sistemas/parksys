@@ -1408,6 +1408,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
       const assets = assetsQuery.rows;
 
+      // Get active concessions for this park
+      const concessionsQuery = await pool.query(
+        'SELECT COUNT(*) as count FROM active_concessions WHERE park_id = $1 AND status = $2',
+        [parkId, 'active']
+      );
+      const activeConcessions = parseInt(concessionsQuery.rows[0]?.count || 0);
+
+      // Get feedback count for this park
+      const feedbackQuery = await pool.query(
+        'SELECT COUNT(*) as count FROM visitor_feedback WHERE park_id = $1',
+        [parkId]
+      );
+      const totalFeedback = parseInt(feedbackQuery.rows[0]?.count || 0);
+
+      // Get evaluations count for this park
+      const evaluationsCountQuery = await pool.query(
+        'SELECT COUNT(*) as count FROM park_evaluations WHERE park_id = $1',
+        [parkId]
+      );
+      const totalEvaluations = parseInt(evaluationsCountQuery.rows[0]?.count || 0);
+
+      // Get reservations count for this park
+      const reservationsQuery = await pool.query(
+        'SELECT COUNT(*) as count FROM space_reservations sr JOIN spaces s ON sr.space_id = s.id WHERE s.park_id = $1',
+        [parkId]
+      );
+      const totalReservations = parseInt(reservationsQuery.rows[0]?.count || 0);
+
       // For now, we'll use empty arrays for data we don't have direct access to
       const documents: any[] = [];
 
@@ -1418,7 +1446,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         totalTrees: parseInt(treeStats.total),
         totalAssets: assets.length,
         averageEvaluation: averageEvaluation,
-        pendingIncidents: incidentsCount
+        pendingIncidents: incidentsCount,
+        activeConcessions: activeConcessions,
+        totalFeedback: totalFeedback,
+        totalEvaluations: totalEvaluations,
+        totalReservations: totalReservations
       };
       
       console.log(`[DETAILS] Estadísticas calculadas:`, stats);
