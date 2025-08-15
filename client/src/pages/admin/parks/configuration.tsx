@@ -23,9 +23,9 @@ interface SystemConfiguration {
   parkTypeConfigurations: ParkTypeConfiguration[];
   publicPageTemplates: PublicPageTemplate[];
   municipalityInfo?: {
-    name: string;
-    population: string;
-    contact: string;
+    name?: string;
+    population?: string;
+    contact?: string;
   };
 }
 
@@ -174,8 +174,8 @@ export default function ParksConfiguration() {
   const saveConfiguration = useMutation({
     mutationFn: (configData: SystemConfiguration) => 
       apiRequest('/api/system/configuration', {
-        method: 'POST',
-        body: JSON.stringify(configData)
+        method: 'PUT',
+        data: configData
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/system/configuration'] });

@@ -326,6 +326,7 @@ const AdminSidebarComplete: React.FC = () => {
     if (location.startsWith('/admin/configuracion-seguridad/notifications')) return 'notificaciones';
     if (location.startsWith('/admin/configuracion-seguridad/audit')) return 'auditoria';
     if (location.startsWith('/admin/configuracion-seguridad/maintenance')) return 'mantenimiento-sistema';
+    if (location.startsWith('/admin/parks/configuration')) return 'configuracion-sistema';
     return null;
   };
   
@@ -357,7 +358,7 @@ const AdminSidebarComplete: React.FC = () => {
     
     // Rutas que pertenecen al módulo "Gestión"
     if (location.startsWith('/admin/visitors') || 
-        location.startsWith('/admin/parks') || 
+        (location.startsWith('/admin/parks') && !location.startsWith('/admin/parks/configuration')) || 
         location.startsWith('/admin/trees') || 
         location.startsWith('/admin/fauna') || 
         location.startsWith('/admin/organizador') || 
@@ -386,7 +387,7 @@ const AdminSidebarComplete: React.FC = () => {
     }
     
     // Rutas que pertenecen al módulo "Configuración y Seguridad"
-    if (location.startsWith('/admin/configuracion-seguridad/')) {
+    if (location.startsWith('/admin/configuracion-seguridad/') || location.startsWith('/admin/parks/configuration')) {
       return ['config-security'];
     }
     
@@ -1244,6 +1245,23 @@ const AdminSidebarComplete: React.FC = () => {
                 active={location === '/admin/configuracion-seguridad/audit/role-audits'}
               >
                 Auditoría de Roles
+              </NavItem>
+            </CollapsibleSubmenu>
+
+            {/* CONFIGURACIÓN DEL SISTEMA */}
+            <CollapsibleSubmenu
+              id="configuracion-sistema"
+              title="Configuración del Sistema"
+              icon={<Wrench className="h-4 w-4" />}
+              isExpanded={expandedSubmenus.includes('configuracion-sistema')}
+              onToggle={toggleSubmenu}
+            >
+              <NavItem 
+                href="/admin/parks/configuration" 
+                icon={<Settings className="h-4 w-4" />}
+                active={location === '/admin/parks/configuration'}
+              >
+                Configuración General
               </NavItem>
             </CollapsibleSubmenu>
 
