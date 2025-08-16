@@ -250,6 +250,8 @@ export function registerActivityRoutes(app: any, apiRouter: any, isAuthenticated
         requiresApproval: activityData.requiresApproval
       });
       
+      console.log("🚀 PUNTO DE CONTROL: Antes de llamar al storage...");
+      
       console.log("🔄 Llamando a storage.updateActivity con ID:", activityId);
       console.log("📤 Datos que se envían al storage:", activityData);
       console.log("🔎 Específicamente categoryId y allowsPublicRegistration:", {
