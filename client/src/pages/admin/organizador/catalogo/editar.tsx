@@ -445,7 +445,7 @@ const EditarActividadPage = () => {
                       name="title"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Nombre de la actividad *</FormLabel>
+                          <FormLabel>Título *</FormLabel>
                           <FormControl>
                             <Input placeholder="Ej: Yoga en el parque" {...field} />
                           </FormControl>
