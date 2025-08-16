@@ -150,15 +150,10 @@ const EditarActividadPage = () => {
     queryKey: ['/api/activity-categories'],
   });
 
-  // Consulta para obtener la lista de usuarios con rol de instructor
-  const { data: allUsers = [], isLoading: isLoadingUsers } = useQuery({
-    queryKey: ['/api/users']
+  // Consulta para obtener la lista de instructores
+  const { data: instructores = [], isLoading: isLoadingInstructores } = useQuery({
+    queryKey: ['/api/instructors']
   });
-
-  const instructores = allUsers.filter((user: any) => 
-    user.roleName?.toLowerCase() === 'instructor' || 
-    user.roleName?.toLowerCase().includes('instructor')
-  );
 
 
 
@@ -417,7 +412,7 @@ const EditarActividadPage = () => {
     updateMutation.mutate(values);
   };
 
-  if (isLoadingActividad || isLoadingParques || isLoadingCategorias || isLoadingUsers) {
+  if (isLoadingActividad || isLoadingParques || isLoadingCategorias || isLoadingInstructores) {
     return (
       <AdminLayout>
         <div className="flex items-center justify-center min-h-screen">
