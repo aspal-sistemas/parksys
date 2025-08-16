@@ -688,6 +688,72 @@ const AdminSidebarComplete: React.FC = () => {
                 Cal. Reservas
               </NavItem>
             </CollapsibleSubmenu>
+
+            {/* EVALUACIONES */}
+            <CollapsibleSubmenu
+              id="evaluaciones"
+              title="Evaluaciones"
+              icon={<Star className="h-4 w-4" />}
+              isExpanded={expandedSubmenus.includes('evaluaciones')}
+              onToggle={toggleSubmenu}
+            >
+              <NavItem 
+                href="/admin/evaluaciones" 
+                icon={<BarChart3 className="h-4 w-4" />}
+                active={location === '/admin/evaluaciones'}
+              >
+                Dashboard
+              </NavItem>
+              <NavItem 
+                href="/admin/evaluaciones/parques" 
+                icon={<MapPin className="h-4 w-4" />}
+                active={location.startsWith('/admin/evaluaciones/parques')}
+              >
+                Parques
+              </NavItem>
+              <NavItem 
+                href="/admin/evaluaciones/instructores" 
+                icon={<UserCheck className="h-4 w-4" />}
+                active={location.startsWith('/admin/evaluaciones/instructores')}
+              >
+                Instructores
+              </NavItem>
+              <NavItem 
+                href="/admin/evaluaciones/voluntarios" 
+                icon={<Users className="h-4 w-4" />}
+                active={location.startsWith('/admin/evaluaciones/voluntarios')}
+              >
+                Voluntarios
+              </NavItem>
+              <NavItem 
+                href="/admin/evaluaciones/actividades" 
+                icon={<Calendar className="h-4 w-4" />}
+                active={location.startsWith('/admin/evaluaciones/actividades')}
+              >
+                Actividades
+              </NavItem>
+              <NavItem 
+                href="/admin/evaluaciones/concesionarios" 
+                icon={<Building className="h-4 w-4" />}
+                active={location.startsWith('/admin/evaluaciones/concesionarios')}
+              >
+                Concesionarios
+              </NavItem>
+              <NavItem 
+                href="/admin/evaluaciones/eventos" 
+                icon={<Target className="h-4 w-4" />}
+                active={location.startsWith('/admin/evaluaciones/eventos')}
+              >
+                Eventos
+              </NavItem>
+              <NavItem 
+                href="/admin/evaluaciones/criterios" 
+                icon={<Settings className="h-4 w-4" />}
+                active={location.startsWith('/admin/evaluaciones/criterios')}
+              >
+                Criterios
+              </NavItem>
+            </CollapsibleSubmenu>
           </ModuleNav>
 
 

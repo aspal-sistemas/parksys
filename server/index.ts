@@ -21,6 +21,7 @@ import { registerInstructorApplicationRoutes } from "./instructorApplicationRout
 import { registerAuditRoutes } from "./audit-routes";
 import { ObjectStorageService } from "./objectStorage";
 import faunaRoutes from "./faunaRoutes";
+import evaluacionesRoutes from "./evaluaciones-routes";
 
 const app = express();
 
@@ -1016,6 +1017,10 @@ app.use('/api/fauna', faunaRoutes);
 
 // Registrar las rutas de conteo de visitantes
 app.use('/api', visitorCountRoutes);
+
+// Registrar las rutas de evaluaciones
+app.use(evaluacionesRoutes);
+console.log("📊 Rutas del módulo de evaluaciones registradas correctamente");
 
 // ENDPOINT DIRECTO PARA SUBIDA DE IMÁGENES - PRIORITY ROUTING
 

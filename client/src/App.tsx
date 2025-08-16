@@ -232,6 +232,48 @@ function Router() {
           </Suspense>
         </Route>
         
+        {/* MÓDULO DE EVALUACIONES */}
+        <Route path="/admin/evaluaciones">
+          <Suspense fallback={<div className="p-8 text-center">Cargando sistema de evaluaciones...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/evaluaciones/dashboard')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/evaluaciones/parques">
+          <Suspense fallback={<div className="p-8 text-center">Cargando evaluaciones de parques...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/evaluaciones/parques')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/evaluaciones/instructores">
+          <Suspense fallback={<div className="p-8 text-center">Cargando evaluaciones de instructores...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/evaluaciones/instructores')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/evaluaciones/voluntarios">
+          <Suspense fallback={<div className="p-8 text-center">Cargando evaluaciones de voluntarios...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/evaluaciones/voluntarios')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/evaluaciones/actividades">
+          <Suspense fallback={<div className="p-8 text-center">Cargando evaluaciones de actividades...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/evaluaciones/actividades')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/evaluaciones/concesionarios">
+          <Suspense fallback={<div className="p-8 text-center">Cargando evaluaciones de concesionarios...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/evaluaciones/concesionarios')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/evaluaciones/eventos">
+          <Suspense fallback={<div className="p-8 text-center">Cargando evaluaciones de eventos...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/evaluaciones/eventos')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/evaluaciones/criterios">
+          <Suspense fallback={<div className="p-8 text-center">Cargando criterios de evaluación...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/evaluaciones/criterios')))}
+          </Suspense>
+        </Route>
+        
         {/* Ruta del módulo de Configuración y Seguridad */}
         <Route path="/admin/configuracion-seguridad">
           <Suspense fallback={<div className="p-8 text-center">Cargando configuración y seguridad...</div>}>

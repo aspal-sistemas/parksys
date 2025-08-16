@@ -3807,6 +3807,154 @@ export type InsertEvaluationCriteria = z.infer<typeof insertEvaluationCriteriaSc
 export type EvaluationResponse = typeof evaluationResponses.$inferSelect;
 export type InsertEvaluationResponse = z.infer<typeof insertEvaluationResponseSchema>;
 
+// ===== SISTEMA UNIFICADO DE EVALUACIONES MULTI-ENTIDAD =====
+
+// Enum para tipos de entidades evaluables
+export const evaluationEntityTypeEnum = pgEnum("evaluation_entity_type", [
+  "park", 
+  "instructor", 
+  "volunteer", 
+  "activity", 
+  "concessionaire", 
+  "event"
+]);
+
+// Configuración de criterios por tipo de entidad
+export const evaluationCriteriaAssignments = pgTable("evaluation_criteria_assignments", {
+  id: serial("id").primaryKey(),
+  criteriaId: integer("criteria_id").references(() => evaluationCriteria.id).notNull(),
+  entityType: evaluationEntityTypeEnum("entity_type").notNull(),
+  isRequired: boolean("is_required").default(true),
+  isActive: boolean("is_active").default(true),
+  sortOrder: integer("sort_order").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Tabla principal de evaluaciones unificadas (para instructores, voluntarios, actividades, concesionarios, eventos)
+export const universalEvaluations = pgTable("universal_evaluations", {
+  id: serial("id").primaryKey(),
+  
+  // Tipo de entidad y referencia flexible
+  entityType: evaluationEntityTypeEnum("entity_type").notNull(),
+  entityId: integer("entity_id").notNull(), // ID de la entidad (instructor.id, volunteer.id, etc.)
+  
+  // Información del evaluador
+  evaluatorName: varchar("evaluator_name", { length: 255 }).notNull(),
+  evaluatorEmail: varchar("evaluator_email", { length: 255 }),
+  evaluatorPhone: varchar("evaluator_phone", { length: 20 }),
+  evaluatorCity: varchar("evaluator_city", { length: 100 }),
+  evaluatorAge: integer("evaluator_age"),
+  evaluatorRole: varchar("evaluator_role", { length: 100 }), // participant, citizen, admin, etc.
+  
+  // Información contextual (flexible según tipo de entidad)
+  contextualInfo: jsonb("contextual_info").$type<Record<string, any>>(), // Información específica del contexto
+  
+  // Calificación general
+  overallRating: integer("overall_rating").notNull(), // Calificación general 1-5
+  
+  // Comentarios y sugerencias
+  comments: text("comments"),
+  suggestions: text("suggestions"),
+  wouldRecommend: boolean("would_recommend").default(true),
+  
+  // Información de la experiencia
+  experienceDate: date("experience_date"), // Fecha de la experiencia evaluada
+  experienceDetails: jsonb("experience_details").$type<Record<string, any>>(), // Detalles específicos
+  
+  // Moderación
+  status: varchar("status", { length: 20 }).default("pending"), // pending, approved, rejected
+  moderatedBy: integer("moderated_by").references(() => users.id),
+  moderatedAt: timestamp("moderated_at"),
+  moderationNotes: text("moderation_notes"),
+  
+  // Metadata
+  ipAddress: varchar("ip_address", { length: 45 }),
+  userAgent: text("user_agent"),
+  source: varchar("source", { length: 50 }).default("web"), // web, mobile, admin
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Respuestas de evaluaciones universales (usando criterios configurables)
+export const universalEvaluationResponses = pgTable("universal_evaluation_responses", {
+  id: serial("id").primaryKey(),
+  evaluationId: integer("evaluation_id").notNull().references(() => universalEvaluations.id),
+  criteriaId: integer("criteria_id").notNull().references(() => evaluationCriteria.id),
+  ratingValue: integer("rating_value"), // Para criterios tipo rating
+  textValue: text("text_value"), // Para criterios tipo text
+  booleanValue: boolean("boolean_value"), // Para criterios tipo boolean
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Vista consolidada para el administrador (une parques y evaluaciones universales)
+export const consolidatedEvaluationsView = pgTable("consolidated_evaluations_view", {
+  id: serial("id").primaryKey(),
+  evaluationType: varchar("evaluation_type", { length: 20 }).notNull(), // "park" | "universal"
+  originalEvaluationId: integer("original_evaluation_id").notNull(),
+  entityType: varchar("entity_type", { length: 20 }).notNull(),
+  entityId: integer("entity_id").notNull(),
+  entityName: varchar("entity_name", { length: 255 }).notNull(),
+  evaluatorName: varchar("evaluator_name", { length: 255 }).notNull(),
+  evaluatorEmail: varchar("evaluator_email", { length: 255 }),
+  overallRating: integer("overall_rating").notNull(),
+  comments: text("comments"),
+  status: varchar("status", { length: 20 }).notNull(),
+  experienceDate: date("experience_date"),
+  createdAt: timestamp("created_at").notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
+});
+
+// Relaciones para evaluaciones universales
+export const universalEvaluationsRelations = relations(universalEvaluations, ({ one, many }) => ({
+  moderatedBy: one(users, { fields: [universalEvaluations.moderatedBy], references: [users.id] }),
+  responses: many(universalEvaluationResponses),
+}));
+
+export const evaluationCriteriaAssignmentsRelations = relations(evaluationCriteriaAssignments, ({ one }) => ({
+  criteria: one(evaluationCriteria, { fields: [evaluationCriteriaAssignments.criteriaId], references: [evaluationCriteria.id] }),
+}));
+
+export const universalEvaluationResponsesRelations = relations(universalEvaluationResponses, ({ one }) => ({
+  evaluation: one(universalEvaluations, { fields: [universalEvaluationResponses.evaluationId], references: [universalEvaluations.id] }),
+  criteria: one(evaluationCriteria, { fields: [universalEvaluationResponses.criteriaId], references: [evaluationCriteria.id] }),
+}));
+
+// Esquemas de validación para sistema unificado
+export const insertUniversalEvaluationSchema = createInsertSchema(universalEvaluations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  moderatedBy: true,
+  moderatedAt: true,
+  moderationNotes: true,
+}).extend({
+  overallRating: z.number().min(1).max(5),
+  evaluatorEmail: z.string().email().optional(),
+  evaluatorAge: z.number().min(13).max(120).optional(),
+});
+
+export const insertEvaluationCriteriaAssignmentSchema = createInsertSchema(evaluationCriteriaAssignments).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertUniversalEvaluationResponseSchema = createInsertSchema(universalEvaluationResponses).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Tipos TypeScript para sistema unificado
+export type UniversalEvaluation = typeof universalEvaluations.$inferSelect;
+export type InsertUniversalEvaluation = z.infer<typeof insertUniversalEvaluationSchema>;
+export type UniversalEvaluationResponse = typeof universalEvaluationResponses.$inferSelect;
+export type InsertUniversalEvaluationResponse = z.infer<typeof insertUniversalEvaluationResponseSchema>;
+export type EvaluationCriteriaAssignment = typeof evaluationCriteriaAssignments.$inferSelect;
+export type InsertEvaluationCriteriaAssignment = z.infer<typeof insertEvaluationCriteriaAssignmentSchema>;
+export type ConsolidatedEvaluation = typeof consolidatedEvaluationsView.$inferSelect;
+
 // ===== SISTEMA DE RETROALIMENTACIÓN =====
 
 // Enum para tipos de formulario
@@ -4123,5 +4271,6 @@ export const insertRoleAuditLogSchema = createInsertSchema(roleAuditLogs).omit({
   timestamp: true,
   createdAt: true
 });
+
 
 
