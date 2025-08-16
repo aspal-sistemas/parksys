@@ -1138,7 +1138,7 @@ const EditarActividadPage = () => {
                                 />
                               </FormControl>
                               <FormDescription>
-                                Número máximo de personas que se pueden inscribir
+                                Número máximo de personas que se pueden inscribir. Se recomienda que coincida con el número máximo escrito en la sección de Capacidad y Materiales.
                               </FormDescription>
                               <FormMessage />
                             </FormItem>
