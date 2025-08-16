@@ -694,16 +694,9 @@ const AdminSidebarComplete: React.FC = () => {
               id="evaluaciones"
               title="Evaluaciones"
               icon={<Star className="h-4 w-4" />}
-              isExpanded={expandedSubmenus.includes('evaluaciones')}
+              isExpanded={expandedSubmenus.includes('evaluaciones') || location.startsWith('/admin/evaluaciones')}
               onToggle={toggleSubmenu}
             >
-              <NavItem 
-                href="/admin/evaluaciones" 
-                icon={<BarChart3 className="h-4 w-4" />}
-                active={location === '/admin/evaluaciones'}
-              >
-                Dashboard
-              </NavItem>
               <NavItem 
                 href="/admin/evaluaciones/parques" 
                 icon={<MapPin className="h-4 w-4" />}

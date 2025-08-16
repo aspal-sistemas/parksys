@@ -265,8 +265,8 @@ const EvaluationsDashboard = () => {
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {recentEvaluations?.length ? (
-                      recentEvaluations.slice(0, 5).map((evaluation: any) => (
+                    {(recentEvaluations as any[])?.length ? (
+                      (recentEvaluations as any[]).slice(0, 5).map((evaluation: any) => (
                         <div key={evaluation.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
                           <div className="flex items-center gap-3">
                             {getStatusIcon(evaluation.status)}
