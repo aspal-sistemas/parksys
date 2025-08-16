@@ -240,11 +240,11 @@ export function registerActivityRoutes(app: any, apiRouter: any, isAuthenticated
       };
       
       // Debug logging para verificar valores críticos
-      console.log("🔍 Valores antes del UPDATE:", {
-        category_id: activityData.categoryId,
+      console.log("🔍 Valores recibidos del frontend:", {
+        categoryId: activityData.categoryId,
+        allowsPublicRegistration: activityData.allowsPublicRegistration,
         targetMarket: activityData.targetMarket,
         specialNeeds: activityData.specialNeeds,
-        registrationEnabled: activityData.registrationEnabled,
         maxRegistrations: activityData.maxRegistrations,
         registrationDeadline: activityData.registrationDeadline,
         requiresApproval: activityData.requiresApproval
