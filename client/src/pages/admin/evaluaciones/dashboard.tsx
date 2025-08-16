@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import AdminLayout from '@/components/AdminLayout';
 import { 
   Users, 
   UserCheck, 
@@ -86,21 +87,24 @@ const EvaluationsDashboard = () => {
 
   if (isLoading) {
     return (
-      <div className="p-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="h-32 bg-gray-200 rounded"></div>
-            ))}
+      <AdminLayout title="Dashboard de Evaluaciones" subtitle="Cargando sistema de evaluaciones...">
+        <div className="p-6">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="h-32 bg-gray-200 rounded"></div>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      </AdminLayout>
     );
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <AdminLayout title="Dashboard de Evaluaciones" subtitle="Gestión centralizada de evaluaciones del sistema">
+      <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -300,7 +304,8 @@ const EvaluationsDashboard = () => {
           </TabsContent>
         ))}
       </Tabs>
-    </div>
+      </div>
+    </AdminLayout>
   );
 };
 
