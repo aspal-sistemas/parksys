@@ -167,6 +167,9 @@ const EditarActividadPage = () => {
     instructores: instructores.length,
   });
 
+  // Debug categorias
+  console.log('🔧 Categorías disponibles:', categorias.map((cat: any) => ({ id: cat.id, nombre: cat.nombre || cat.name })));
+
   // Consulta para obtener los datos de la actividad actual
   const { data: actividad, isLoading: isLoadingActividad } = useQuery({
     queryKey: [`/api/activities/${activityId}`],
@@ -316,7 +319,9 @@ const EditarActividadPage = () => {
       };
 
       console.log('📝 Valores para el formulario:', formValues);
+      console.log('🔧 Valor de category antes de reset:', formValues.category);
       form.reset(formValues);
+      console.log('🔧 Valor actual category en form después de reset:', form.getValues('category'));
     }
   }, [actividad, form]);
 
