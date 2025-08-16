@@ -14,7 +14,8 @@ import {
   activities,
   concessionaireProfiles
 } from '../shared/schema';
-import { eq, desc, sql, count, avg, and } from 'drizzle-orm';
+import { eq, desc, sql, count, and } from 'drizzle-orm';
+import { createInsertSchema } from 'drizzle-zod';
 
 const router = express.Router();
 
@@ -25,7 +26,7 @@ router.get('/api/evaluations/stats', async (req, res) => {
     const parkStats = await db
       .select({
         total: count(),
-        avgRating: avg(parkEvaluations.overallRating)
+        avgRating: sql`COALESCE(AVG(CAST(${parkEvaluations.overallRating} AS DECIMAL)), 0)`
       })
       .from(parkEvaluations);
 
@@ -33,7 +34,7 @@ router.get('/api/evaluations/stats', async (req, res) => {
     const instructorStats = await db
       .select({
         total: count(),
-        avgRating: avg(instructorEvaluations.overallRating)
+        avgRating: sql`COALESCE(AVG(CAST(${instructorEvaluations.overallRating} AS DECIMAL)), 0)`
       })
       .from(instructorEvaluations);
 
@@ -41,7 +42,7 @@ router.get('/api/evaluations/stats', async (req, res) => {
     const volunteerStats = await db
       .select({
         total: count(),
-        avgRating: avg(volunteerEvaluations.overallRating)
+        avgRating: sql`COALESCE(AVG(CAST(${volunteerEvaluations.overallRating} AS DECIMAL)), 0)`
       })
       .from(volunteerEvaluations);
 
@@ -50,7 +51,7 @@ router.get('/api/evaluations/stats', async (req, res) => {
       .select({
         entityType: universalEvaluations.entityType,
         total: count(),
-        avgRating: avg(universalEvaluations.overallRating)
+        avgRating: sql`COALESCE(AVG(CAST(${universalEvaluations.overallRating} AS DECIMAL)), 0)`
       })
       .from(universalEvaluations)
       .groupBy(universalEvaluations.entityType);
@@ -176,16 +177,16 @@ router.get('/api/evaluations/volunteers', async (req, res) => {
   try {
     const evaluations = await db
       .select({
-        id: volunteerEvaluations.id,
-        volunteerName: sql`${volunteers.firstName} || ' ' || ${volunteers.lastName}`,
-        evaluatorName: volunteerEvaluations.evaluatorName,
-        overallRating: volunteerEvaluations.overallRating,
-        status: volunteerEvaluations.status,
-        createdAt: volunteerEvaluations.createdAt
+        id: universalEvaluations.id,
+        volunteerName: sql`'Voluntario ID: ' || ${universalEvaluations.entityId}`,
+        evaluatorName: universalEvaluations.evaluatorName,
+        overallRating: universalEvaluations.overallRating,
+        status: universalEvaluations.status,
+        createdAt: universalEvaluations.createdAt
       })
-      .from(volunteerEvaluations)
-      .leftJoin(volunteers, eq(volunteerEvaluations.volunteerId, volunteers.id))
-      .orderBy(desc(volunteerEvaluations.createdAt));
+      .from(universalEvaluations)
+      .where(eq(universalEvaluations.entityType, 'volunteer'))
+      .orderBy(desc(universalEvaluations.createdAt));
 
     res.json(evaluations);
   } catch (error) {
@@ -302,7 +303,7 @@ router.get('/api/evaluations/criteria/:entityType', async (req, res) => {
       .innerJoin(evaluationCriteriaAssignments, eq(evaluationCriteria.id, evaluationCriteriaAssignments.criteriaId))
       .where(
         and(
-          eq(evaluationCriteriaAssignments.entityType, entityType as any),
+          eq(evaluationCriteriaAssignments.entityType, entityType),
           eq(evaluationCriteria.isActive, true),
           eq(evaluationCriteriaAssignments.isActive, true)
         )
@@ -312,6 +313,153 @@ router.get('/api/evaluations/criteria/:entityType', async (req, res) => {
     res.json(criteria);
   } catch (error) {
     console.error('Error al obtener criterios por tipo de entidad:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// Crear nuevo criterio de evaluación
+router.post('/api/evaluations/criteria', async (req, res) => {
+  try {
+    console.log('📊 [EVALUACIONES] Creando nuevo criterio de evaluación:', req.body);
+    
+    const { name, label, description, fieldType, minValue, maxValue, isRequired, isActive, sortOrder, icon, category } = req.body;
+    
+    // Validar datos requeridos
+    if (!name || !label || !fieldType) {
+      return res.status(400).json({ error: 'Nombre, etiqueta y tipo de campo son requeridos' });
+    }
+    
+    const [newCriteria] = await db
+      .insert(evaluationCriteria)
+      .values({
+        name,
+        label,
+        description,
+        fieldType,
+        minValue: minValue || 1,
+        maxValue: maxValue || 5,
+        isRequired: isRequired !== undefined ? isRequired : true,
+        isActive: isActive !== undefined ? isActive : true,
+        sortOrder: sortOrder || 0,
+        icon: icon || 'Star',
+        category: category || 'experiencia'
+      })
+      .returning();
+    
+    console.log('✅ [EVALUACIONES] Criterio creado:', newCriteria);
+    res.status(201).json(newCriteria);
+  } catch (error) {
+    console.error('❌ Error creando criterio de evaluación:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// Actualizar criterio de evaluación
+router.put('/api/evaluations/criteria/:id', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    console.log(`📊 [EVALUACIONES] Actualizando criterio ${id}:`, req.body);
+    
+    const { name, label, description, fieldType, minValue, maxValue, isRequired, isActive, sortOrder, icon, category } = req.body;
+    
+    const [updatedCriteria] = await db
+      .update(evaluationCriteria)
+      .set({
+        name,
+        label,
+        description,
+        fieldType,
+        minValue,
+        maxValue,
+        isRequired,
+        isActive,
+        sortOrder,
+        icon,
+        category,
+        updatedAt: new Date()
+      })
+      .where(eq(evaluationCriteria.id, id))
+      .returning();
+    
+    if (!updatedCriteria) {
+      return res.status(404).json({ error: 'Criterio no encontrado' });
+    }
+    
+    console.log('✅ [EVALUACIONES] Criterio actualizado:', updatedCriteria);
+    res.json(updatedCriteria);
+  } catch (error) {
+    console.error('❌ Error actualizando criterio de evaluación:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// Eliminar criterio de evaluación
+router.delete('/api/evaluations/criteria/:id', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    console.log(`📊 [EVALUACIONES] Eliminando criterio ${id}`);
+    
+    // Verificar si el criterio está siendo usado en asignaciones
+    const assignments = await db
+      .select()
+      .from(evaluationCriteriaAssignments)
+      .where(eq(evaluationCriteriaAssignments.criteriaId, id));
+    
+    if (assignments.length > 0) {
+      return res.status(400).json({ 
+        error: 'No se puede eliminar el criterio porque está siendo usado en formularios de evaluación' 
+      });
+    }
+    
+    const [deletedCriteria] = await db
+      .delete(evaluationCriteria)
+      .where(eq(evaluationCriteria.id, id))
+      .returning();
+    
+    if (!deletedCriteria) {
+      return res.status(404).json({ error: 'Criterio no encontrado' });
+    }
+    
+    console.log('✅ [EVALUACIONES] Criterio eliminado:', deletedCriteria);
+    res.json({ message: 'Criterio eliminado exitosamente' });
+  } catch (error) {
+    console.error('❌ Error eliminando criterio de evaluación:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// Asignar criterios a un tipo de entidad (construir formulario)
+router.post('/api/evaluations/criteria/assign/:entityType', async (req, res) => {
+  try {
+    const entityType = req.params.entityType;
+    const { criteria } = req.body;
+    
+    console.log(`📊 [EVALUACIONES] Asignando criterios para ${entityType}:`, criteria);
+    
+    // Eliminar asignaciones existentes para este tipo de entidad
+    await db
+      .delete(evaluationCriteriaAssignments)
+      .where(eq(evaluationCriteriaAssignments.entityType, entityType));
+    
+    // Crear nuevas asignaciones
+    if (criteria && criteria.length > 0) {
+      const assignments = criteria.map((c: any) => ({
+        criteriaId: c.criteriaId,
+        entityType,
+        isRequired: c.isRequired,
+        isActive: true,
+        sortOrder: c.sortOrder
+      }));
+      
+      await db
+        .insert(evaluationCriteriaAssignments)
+        .values(assignments);
+    }
+    
+    console.log(`✅ [EVALUACIONES] Criterios asignados exitosamente para ${entityType}`);
+    res.json({ message: 'Formulario configurado exitosamente', entityType, criteriaCount: criteria?.length || 0 });
+  } catch (error) {
+    console.error('❌ Error asignando criterios:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
