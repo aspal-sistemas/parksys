@@ -519,6 +519,7 @@ app.post("/api/activities", async (req: Request, res: Response) => {
       title,
       description,
       categoryId,
+      category_id,
       parkId,
       startDate,
       endDate,
@@ -556,19 +557,39 @@ app.post("/api/activities", async (req: Request, res: Response) => {
     const { db } = await import("./db");
     const { activities } = await import("../shared/schema");
 
+    // Validar y procesar coordenadas GPS
+    let validLatitude = null;
+    let validLongitude = null;
+    
+    if (latitude && longitude) {
+      const lat = Number(latitude);
+      const lng = Number(longitude);
+      
+      console.log("🌍 Coordenadas recibidas - Lat:", lat, "Lng:", lng);
+      
+      // Validar rangos GPS válidos
+      if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+        validLatitude = lat;
+        validLongitude = lng;
+        console.log("✅ Coordenadas válidas");
+      } else {
+        console.log("⚠️ Coordenadas fuera de rango GPS válido, se omitirán");
+      }
+    }
+
     // Crear objeto con todos los campos
     const activityData = {
       title,
       description,
-      categoryId: categoryId ? Number(categoryId) : null,
+      categoryId: categoryId ? Number(categoryId) : (category_id ? Number(category_id) : null),
       parkId: Number(parkId),
       startDate: parsedStartDate,
       endDate: parsedEndDate,
       startTime,
       endTime,
       location,
-      latitude: latitude ? Number(latitude) : null,
-      longitude: longitude ? Number(longitude) : null,
+      latitude: validLatitude,
+      longitude: validLongitude,
       instructorId: instructorId || null,
       duration: duration ? Number(duration) : null,
       capacity: capacity ? Number(capacity) : null,
