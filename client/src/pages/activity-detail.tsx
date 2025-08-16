@@ -47,7 +47,10 @@ interface ActivityData {
   registrationEnabled?: boolean;
   maxRegistrations?: number;
   registrationDeadline?: string;
+  registrationInstructions?: string;
   requiresApproval?: boolean;
+  ageRestrictions?: string;
+  healthRequirements?: string;
 }
 
 interface ActivityImage {
@@ -73,6 +76,7 @@ import {
   Mail,
   Phone,
   CreditCard,
+  Package,
   CheckCircle,
   AlertCircle
 } from 'lucide-react';
@@ -149,6 +153,12 @@ function ActivityDetailPage() {
   const { data: registrationStats, refetch: refetchStats } = useQuery({
     queryKey: [`/api/activity-registrations/stats/${activityId}`],
     enabled: !!activityId,
+  });
+
+  // Consultar información del instructor si existe
+  const { data: instructorDetails } = useQuery({
+    queryKey: [`/api/instructors/${activity?.instructorId}`],
+    enabled: !!activity?.instructorId,
   });
 
   // Mutación para inscripción con Stripe
@@ -376,6 +386,86 @@ function ActivityDetailPage() {
                 </p>
               </CardContent>
             </Card>
+
+            {/* Materiales Necesarios */}
+            {activity?.materials && (
+              <Card className="mt-4">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Package className="h-5 w-5 text-orange-600" />
+                    Materiales Necesarios
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                    <p className="text-gray-700 leading-relaxed">
+                      {activity.materials}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Requisitos para participantes */}
+            {activity?.requirements && (
+              <Card className="mt-4">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <CheckCircle className="h-5 w-5 text-green-600" />
+                    Requisitos para participantes
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <p className="text-gray-700 leading-relaxed">
+                      {activity.requirements}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Instrucciones para inscripción, Restricciones de edad y Requisitos de salud */}
+            {(activity?.registrationInstructions || activity?.ageRestrictions || activity?.healthRequirements) && (
+              <Card className="mt-4">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <AlertCircle className="h-5 w-5 text-blue-600" />
+                    Información importante para la inscripción
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {activity?.registrationInstructions && (
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <h4 className="font-semibold text-blue-900 mb-2">Instrucciones para inscripción</h4>
+                        <p className="text-blue-800 text-sm">
+                          {activity.registrationInstructions}
+                        </p>
+                      </div>
+                    )}
+                    
+                    {activity?.ageRestrictions && (
+                      <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                        <h4 className="font-semibold text-purple-900 mb-2">Restricciones de edad</h4>
+                        <p className="text-purple-800 text-sm">
+                          {activity.ageRestrictions}
+                        </p>
+                      </div>
+                    )}
+                    
+                    {activity?.healthRequirements && (
+                      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                        <h4 className="font-semibold text-red-900 mb-2">Requisitos de salud</h4>
+                        <p className="text-red-800 text-sm">
+                          {activity.healthRequirements}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Formulario de Inscripción */}
             {activity?.registrationEnabled && (
@@ -616,6 +706,23 @@ function ActivityDetailPage() {
                   </div>
                 )}
 
+                {/* Accesibilidad */}
+                {activity?.specialNeeds && activity.specialNeeds.length > 0 && (
+                  <div className="flex items-center gap-3">
+                    <Activity className="h-5 w-5 text-blue-600" />
+                    <div>
+                      <p className="font-medium">Accesibilidad</p>
+                      <p className="text-sm text-gray-600">
+                        {activity.specialNeeds.includes('fisica') && 'Discapacidad física, '}
+                        {activity.specialNeeds.includes('visual') && 'Discapacidad visual, '}
+                        {activity.specialNeeds.includes('auditiva') && 'Discapacidad auditiva, '}
+                        {activity.specialNeeds.includes('intelectual') && 'Discapacidad intelectual, '}
+                        {activity.specialNeeds.includes('temporal') && 'Situación temporal'}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 {/* Ubicación */}
                 {activity?.location && (
                   <div className="flex items-center gap-3">
@@ -639,6 +746,72 @@ function ActivityDetailPage() {
                 )}
               </CardContent>
             </Card>
+
+            {/* Ficha del Instructor */}
+            {(activity?.instructorName || instructorDetails) && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <User className="h-5 w-5 text-indigo-600" />
+                    Instructor a cargo
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+                    <div className="space-y-3">
+                      {/* Nombre del instructor */}
+                      <div>
+                        <h4 className="font-semibold text-indigo-900">
+                          {instructorDetails?.firstName && instructorDetails?.lastName 
+                            ? `${instructorDetails.firstName} ${instructorDetails.lastName}`
+                            : activity?.instructorName || 'Instructor asignado'
+                          }
+                        </h4>
+                        {instructorDetails?.specialization && (
+                          <p className="text-sm text-indigo-700">
+                            Especialización: {instructorDetails.specialization}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Contacto del instructor */}
+                      {instructorDetails?.email && (
+                        <div className="flex items-center gap-2">
+                          <Mail className="h-4 w-4 text-indigo-600" />
+                          <span className="text-sm text-indigo-800">{instructorDetails.email}</span>
+                        </div>
+                      )}
+
+                      {instructorDetails?.phone && (
+                        <div className="flex items-center gap-2">
+                          <Phone className="h-4 w-4 text-indigo-600" />
+                          <span className="text-sm text-indigo-800">{instructorDetails.phone}</span>
+                        </div>
+                      )}
+
+                      {/* Experiencia o bio */}
+                      {instructorDetails?.bio && (
+                        <div className="mt-3 pt-3 border-t border-indigo-200">
+                          <p className="text-sm text-indigo-800">
+                            {instructorDetails.bio}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Experiencia en años */}
+                      {instructorDetails?.experience && (
+                        <div className="flex items-center gap-2">
+                          <Star className="h-4 w-4 text-indigo-600" />
+                          <span className="text-sm text-indigo-800">
+                            {instructorDetails.experience} años de experiencia
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Espacio Publicitario - Diseño Tipo Tarjeta */}
             <AdSpace 
