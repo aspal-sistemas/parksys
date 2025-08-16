@@ -192,6 +192,7 @@ export function registerActivityRoutes(app: any, apiRouter: any, isAuthenticated
   });
 
   // Actualizar una actividad existente
+  console.log("🔧 REGISTRANDO ENDPOINT PUT /activities/:id");
   apiRouter.put("/activities/:id", isAuthenticated, async (req: Request, res: Response) => {
     try {
       const activityId = Number(req.params.id);

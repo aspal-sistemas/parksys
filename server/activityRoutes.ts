@@ -280,12 +280,20 @@ activityRouter.put("/activities/:id", isAuthenticated, async (req: Request, res:
     
     // Extraer los datos
     const { 
-      startDate, endDate, title, description, category, category_id, location, parkId,
+      startDate, endDate, title, description, category, categoryId, location, parkId,
       startTime, endTime, capacity, duration, price, isPriceRandom, isFree,
       materials, requirements, isRecurring, recurringDays, targetMarket, specialNeeds,
       instructorId, instructorName, instructorContact,
-      registrationEnabled, maxRegistrations, registrationDeadline, requiresApproval
+      allowsPublicRegistration, maxRegistrations, registrationDeadline, requiresApproval
     } = req.body;
+    
+    // Mapear los valores correctos
+    const category_id = categoryId;
+    const registrationEnabled = allowsPublicRegistration;
+    
+    console.log("🔄 MAPEO DE VALORES:");
+    console.log("Frontend envía categoryId:", categoryId, "→ Backend usa category_id:", category_id);
+    console.log("Frontend envía allowsPublicRegistration:", allowsPublicRegistration, "→ Backend usa registrationEnabled:", registrationEnabled);
     
     // Convertir las fechas explícitamente a objetos Date
     let parsedStartDate: Date;
