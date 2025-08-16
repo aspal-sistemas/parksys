@@ -50,12 +50,12 @@ const CriteriosEvaluacion = () => {
   const queryClient = useQueryClient();
 
   // Obtener lista de criterios
-  const { data: criterios = [], isLoading } = useQuery({
+  const { data: criterios = [], isLoading } = useQuery<any[]>({
     queryKey: ['/api/evaluations/criteria'],
   });
 
   // Obtener criterios asignados para la entidad seleccionada
-  const { data: assignedCriteria = [], isLoading: isLoadingAssigned } = useQuery({
+  const { data: assignedCriteria = [], isLoading: isLoadingAssigned } = useQuery<any[]>({
     queryKey: ['/api/evaluations/criteria', selectedEntityType],
     enabled: !!selectedEntityType,
   });
@@ -487,13 +487,86 @@ const CriteriosEvaluacion = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8 text-gray-500">
-                <ShieldCheck className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                <p>Constructor de formularios específicos en desarrollo.</p>
-                <p className="text-sm">
-                  Aquí podrás seleccionar y organizar los criterios para el tipo de evaluación seleccionado.
-                </p>
-              </div>
+              {selectedEntityType === 'park' ? (
+                <div className="space-y-6">
+                  {/* Formulario oficial existente */}
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="flex items-center justify-center w-10 h-10 bg-green-100 rounded-full">
+                        <MapPin className="h-5 w-5 text-green-600" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-green-800">Formulario Oficial de Evaluación de Parques</h3>
+                        <p className="text-sm text-green-600">Sistema activo y funcional</p>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <div className="bg-white rounded-lg p-4 border border-green-100">
+                        <h4 className="font-medium text-gray-900 mb-2">Características del formulario:</h4>
+                        <ul className="text-sm text-gray-600 space-y-1">
+                          <li>• Evaluación integral de experiencia del visitante</li>
+                          <li>• Criterios de limpieza, seguridad, y accesibilidad</li>
+                          <li>• Sistema de calificación por estrellas</li>
+                          <li>• Comentarios y sugerencias</li>
+                          <li>• Geolocalización automática</li>
+                        </ul>
+                      </div>
+                      
+                      <div className="flex gap-3">
+                        <Button 
+                          className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
+                          onClick={() => window.open('/parque/bosque-los-colomos-5/evaluar', '_blank')}
+                        >
+                          <Star className="h-4 w-4" />
+                          Ver Formulario Oficial
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          className="flex items-center gap-2 border-green-200 text-green-700 hover:bg-green-50"
+                          onClick={() => window.open('/parque/bosque-los-colomos-5/evaluaciones', '_blank')}
+                        >
+                          <BarChart className="h-4 w-4" />
+                          Ver Evaluaciones
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Constructor personalizado */}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-full">
+                        <Settings className="h-5 w-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-blue-800">Constructor de Formularios Personalizados</h3>
+                        <p className="text-sm text-blue-600">Próximamente disponible</p>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white rounded-lg p-4 border border-blue-100">
+                      <p className="text-sm text-gray-600 mb-3">
+                        Funcionalidades en desarrollo para crear formularios personalizados:
+                      </p>
+                      <ul className="text-sm text-gray-500 space-y-1">
+                        <li>• Selección de criterios específicos de la biblioteca</li>
+                        <li>• Configuración de pesos y prioridades</li>
+                        <li>• Personalización de escalas de calificación</li>
+                        <li>• Exportación e integración con formulario oficial</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <ShieldCheck className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                  <p>Constructor de formularios específicos en desarrollo.</p>
+                  <p className="text-sm">
+                    Aquí podrás seleccionar y organizar los criterios para el tipo de evaluación seleccionado.
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
