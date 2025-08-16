@@ -1711,7 +1711,17 @@ DatabaseStorage.prototype.getParkActivities = async function(parkId: number): Pr
 };
 
 DatabaseStorage.prototype.createActivity = async function(activityData: any): Promise<any> {
-  return { id: Date.now(), ...activityData };
+  console.log("🔥 CREANDO ACTIVIDAD - Datos recibidos:", activityData);
+  
+  try {
+    const [newActivity] = await db.insert(activities).values(activityData).returning();
+    
+    console.log("✅ Actividad creada exitosamente:", newActivity);
+    return newActivity;
+  } catch (error) {
+    console.error("❌ Error al crear actividad en la base de datos:", error);
+    throw error;
+  }
 };
 
 DatabaseStorage.prototype.getActivity = async function(id: number): Promise<any> {
