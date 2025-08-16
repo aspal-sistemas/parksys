@@ -1857,14 +1857,19 @@ DatabaseStorage.prototype.updateActivity = async function(id: number, activityDa
     if (activityData.specialNeeds !== undefined) updateData.special_needs = Array.isArray(activityData.specialNeeds) ? JSON.stringify(activityData.specialNeeds) : activityData.specialNeeds;
     
     // Campos de inscripciones - usando nombres correctos de la base de datos
-    if (activityData.registrationEnabled !== undefined) updateData.registration_enabled = Boolean(activityData.registrationEnabled);
+    if (activityData.registrationEnabled !== undefined || activityData.allowsPublicRegistration !== undefined) {
+      updateData.registration_enabled = Boolean(activityData.allowsPublicRegistration || activityData.registrationEnabled);
+    }
     if (activityData.maxRegistrations !== undefined) updateData.max_registrations = activityData.maxRegistrations ? Number(activityData.maxRegistrations) : null;
     if (activityData.registrationDeadline !== undefined) updateData.registration_deadline = activityData.registrationDeadline;
+    if (activityData.registrationInstructions !== undefined) updateData.registration_instructions = activityData.registrationInstructions;
     if (activityData.requiresApproval !== undefined) updateData.requires_approval = Boolean(activityData.requiresApproval);
+    if (activityData.ageRestrictions !== undefined) updateData.age_restrictions = activityData.ageRestrictions;
+    if (activityData.healthRequirements !== undefined) updateData.health_requirements = activityData.healthRequirements;
     
     // Campos específicos que necesitan mapeo especial
-    if (activityData.category_id) {
-      updateData.category_id = Number(activityData.category_id);
+    if (activityData.categoryId || activityData.category_id) {
+      updateData.category_id = Number(activityData.categoryId || activityData.category_id);
       updateData.category = null; // Limpiar el campo legacy
     }
     
