@@ -27,6 +27,8 @@ interface ActivityData {
   parkId: number;
   parkName: string;
   location: string;
+  latitude?: number;
+  longitude?: number;
   startDate: string;
   endDate: string;
   capacity: number;
@@ -51,6 +53,23 @@ interface ActivityData {
   requiresApproval?: boolean;
   ageRestrictions?: string;
   healthRequirements?: string;
+}
+
+interface InstructorDetails {
+  id: number;
+  fullName: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  specialties?: string[];
+  experienceYears?: number;
+  rating?: number;
+  bio?: string;
+  profileImageUrl?: string;
+  profile_image_url?: string;
+  full_name?: string;
+  experience_years?: number;
 }
 
 interface ActivityImage {
@@ -120,17 +139,17 @@ function ActivityDetailPage() {
   const queryClient = useQueryClient();
 
   // Estados para dialogo del instructor
-  const [selectedInstructor, setSelectedInstructor] = useState(null);
+  const [selectedInstructor, setSelectedInstructor] = useState<InstructorDetails | null>(null);
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
-  const [evaluationInstructor, setEvaluationInstructor] = useState(null);
+  const [evaluationInstructor, setEvaluationInstructor] = useState<InstructorDetails | null>(null);
 
   // Funciones auxiliares para instructor
-  const openProfile = (instructor: any) => {
+  const openProfile = (instructor: InstructorDetails | null) => {
     setSelectedInstructor(instructor);
     setProfileDialogOpen(true);
   };
 
-  const openEvaluation = (instructor: any) => {
+  const openEvaluation = (instructor: InstructorDetails | null) => {
     setEvaluationInstructor(instructor);
   };
 
@@ -228,6 +247,9 @@ function ActivityDetailPage() {
     queryKey: [`/api/instructors/${activity?.instructorId}`],
     enabled: !!activity?.instructorId,
   });
+
+  console.log('🧑‍🏫 Instructor Details:', instructorDetails);
+  console.log('🧑‍🏫 Activity Instructor ID:', activity?.instructorId);
 
   // Mutación para inscripción con Stripe
   const registerMutation = useMutation({
@@ -812,19 +834,19 @@ function ActivityDetailPage() {
                 <CardHeader className="text-center pb-2">
                   <Avatar className="h-20 w-20 mx-auto mb-4 ring-4 ring-primary/10">
                     <AvatarImage 
-                      src={(instructorDetails as any)?.profile_image_url || undefined} 
-                      alt={(instructorDetails as any)?.full_name || activity?.instructorName || 'Instructor'}
+                      src={instructorDetails?.profileImageUrl || undefined} 
+                      alt={instructorDetails?.fullName || activity?.instructorName || 'Instructor'}
                     />
                     <AvatarFallback className="bg-gradient-to-br from-primary to-primary-600 text-white font-semibold text-lg">
-                      {((instructorDetails as any)?.full_name || activity?.instructorName || 'IN').split(' ').map((n: string) => n[0]).join('')}
+                      {(instructorDetails?.fullName || activity?.instructorName || 'IN').split(' ').map((n: string) => n[0]).join('')}
                     </AvatarFallback>
                   </Avatar>
                   <CardTitle className="text-lg font-semibold text-gray-900">
-                    {(instructorDetails as any)?.full_name || activity?.instructorName || 'Instructor asignado'}
+                    {instructorDetails?.fullName || activity?.instructorName || 'Instructor asignado'}
                   </CardTitle>
                   <CardDescription className="flex items-center justify-center gap-1 text-primary">
                     <Award className="h-4 w-4" />
-                    {(instructorDetails as any)?.experience_years || 'N/A'} años de experiencia
+                    {instructorDetails?.experienceYears || 'N/A'} años de experiencia
                   </CardDescription>
                 </CardHeader>
                 
@@ -832,14 +854,14 @@ function ActivityDetailPage() {
                   {/* Especialidades */}
                   <div className="mb-4">
                     <div className="flex flex-wrap gap-1 justify-center">
-                      {getSpecialtiesArray((instructorDetails as any)?.specialties).slice(0, 2).map((specialty: string, index: number) => (
+                      {getSpecialtiesArray(instructorDetails?.specialties).slice(0, 2).map((specialty: string, index: number) => (
                         <Badge key={index} variant="secondary" className="text-xs bg-primary/10 text-primary">
                           {specialty}
                         </Badge>
                       ))}
-                      {getSpecialtiesArray((instructorDetails as any)?.specialties).length > 2 && (
+                      {getSpecialtiesArray(instructorDetails?.specialties).length > 2 && (
                         <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-600">
-                          +{getSpecialtiesArray((instructorDetails as any)?.specialties).length - 2}
+                          +{getSpecialtiesArray(instructorDetails?.specialties).length - 2}
                         </Badge>
                       )}
                     </div>
@@ -847,20 +869,92 @@ function ActivityDetailPage() {
 
                   {/* Rating */}
                   <div className="flex justify-center mb-4">
-                    {renderStars((instructorDetails as any)?.rating || 0)}
+                    {renderStars(instructorDetails?.rating || null)}
                   </div>
 
                   {/* Botones de acción */}
                   <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => openProfile(instructorDetails)}
-                      className="flex-1 text-primary border-primary hover:bg-primary hover:text-white"
-                    >
-                      <User className="h-4 w-4 mr-1" />
-                      Ver Perfil
-                    </Button>
+                    <Dialog open={profileDialogOpen} onOpenChange={setProfileDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openProfile(instructorDetails)}
+                          className="flex-1 text-primary border-primary hover:bg-primary hover:text-white"
+                        >
+                          <User className="h-4 w-4 mr-1" />
+                          Ver Perfil
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+                        <DialogHeader>
+                          <DialogTitle>Perfil del Instructor</DialogTitle>
+                          <DialogDescription>
+                            Información detallada del instructor
+                          </DialogDescription>
+                        </DialogHeader>
+                        {selectedInstructor && (
+                          <div className="space-y-6 p-4">
+                            {/* Header con avatar y nombre */}
+                            <div className="text-center">
+                              <Avatar className="h-24 w-24 mx-auto mb-4">
+                                <AvatarImage 
+                                  src={selectedInstructor.profileImageUrl} 
+                                  alt={selectedInstructor.fullName}
+                                />
+                                <AvatarFallback className="bg-gradient-to-br from-primary to-primary-600 text-white text-xl">
+                                  {selectedInstructor.fullName?.split(' ').map((n: string) => n[0]).join('') || 'IN'}
+                                </AvatarFallback>
+                              </Avatar>
+                              <h3 className="text-xl font-bold text-gray-900">{selectedInstructor.fullName}</h3>
+                              <p className="text-sm text-gray-600">{selectedInstructor.experienceYears} años de experiencia</p>
+                            </div>
+
+                            {/* Información de contacto */}
+                            {(selectedInstructor.email || selectedInstructor.phone) && (
+                              <div className="bg-gray-50 rounded-lg p-4">
+                                <h4 className="font-semibold text-gray-900 mb-2">Contacto</h4>
+                                {selectedInstructor.email && (
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <Mail className="h-4 w-4 text-gray-500" />
+                                    <span className="text-sm text-gray-700">{selectedInstructor.email}</span>
+                                  </div>
+                                )}
+                                {selectedInstructor.phone && (
+                                  <div className="flex items-center gap-2">
+                                    <Phone className="h-4 w-4 text-gray-500" />
+                                    <span className="text-sm text-gray-700">{selectedInstructor.phone}</span>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+
+                            {/* Especialidades */}
+                            {getSpecialtiesArray(selectedInstructor.specialties).length > 0 && (
+                              <div>
+                                <h4 className="font-semibold text-gray-900 mb-2">Especialidades</h4>
+                                <div className="flex flex-wrap gap-2">
+                                  {getSpecialtiesArray(selectedInstructor.specialties).map((specialty: string, index: number) => (
+                                    <Badge key={index} variant="secondary" className="bg-primary/10 text-primary">
+                                      {specialty}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Bio */}
+                            {selectedInstructor.bio && (
+                              <div>
+                                <h4 className="font-semibold text-gray-900 mb-2">Biografía</h4>
+                                <p className="text-sm text-gray-700 leading-relaxed">{selectedInstructor.bio}</p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </DialogContent>
+                    </Dialog>
+                    
                     <Dialog>
                       <DialogTrigger asChild>
                         <Button
@@ -874,15 +968,40 @@ function ActivityDetailPage() {
                       </DialogTrigger>
                       <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
                         <DialogHeader>
-                          <DialogTitle>Evaluar a {(instructorDetails as any)?.full_name || activity?.instructorName}</DialogTitle>
+                          <DialogTitle>Evaluar a {instructorDetails?.fullName || activity?.instructorName}</DialogTitle>
                           <DialogDescription>
                             Comparte tu experiencia con este instructor
                           </DialogDescription>
                         </DialogHeader>
                         <div className="p-4">
-                          <p className="text-sm text-gray-600">
-                            Formulario de evaluación del instructor próximamente disponible.
+                          <p className="text-sm text-gray-600 mb-4">
+                            Tu evaluación nos ayuda a mejorar la calidad de nuestras actividades.
                           </p>
+                          <div className="space-y-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Calificación general
+                              </label>
+                              <div className="flex gap-1">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                  <Star key={star} className="h-6 w-6 text-gray-300 hover:text-yellow-400 cursor-pointer" />
+                                ))}
+                              </div>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Comentarios (opcional)
+                              </label>
+                              <Textarea 
+                                placeholder="Comparte tu experiencia con este instructor..."
+                                className="w-full"
+                                rows={3}
+                              />
+                            </div>
+                            <Button className="w-full bg-emerald-600 hover:bg-emerald-700">
+                              Enviar Evaluación
+                            </Button>
+                          </div>
                         </div>
                       </DialogContent>
                     </Dialog>
