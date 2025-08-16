@@ -239,7 +239,16 @@ export function registerActivityRoutes(app: any, apiRouter: any, isAuthenticated
         ...(parsedEndDate && { endDate: parsedEndDate })
       };
       
-      console.log("Datos procesados para actualizar actividad:", activityData);
+      // Debug logging para verificar valores críticos
+      console.log("🔍 Valores antes del UPDATE:", {
+        category_id: activityData.categoryId,
+        targetMarket: activityData.targetMarket,
+        specialNeeds: activityData.specialNeeds,
+        registrationEnabled: activityData.registrationEnabled,
+        maxRegistrations: activityData.maxRegistrations,
+        registrationDeadline: activityData.registrationDeadline,
+        requiresApproval: activityData.requiresApproval
+      });
       
       console.log("🔄 Llamando a storage.updateActivity con ID:", activityId);
       const result = await storage.updateActivity(activityId, activityData);

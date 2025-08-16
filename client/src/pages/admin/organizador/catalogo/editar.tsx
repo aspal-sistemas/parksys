@@ -401,7 +401,7 @@ const EditarActividadPage = () => {
       queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
       queryClient.invalidateQueries({ queryKey: [`/api/activities/${activityId}`] });
       
-      setLocation('/admin/organizador/catalogo/ver');
+      setLocation(`/admin/organizador/catalogo/ver/${activityId}`);
     },
     onError: (error) => {
       console.error('Error al actualizar actividad:', error);
