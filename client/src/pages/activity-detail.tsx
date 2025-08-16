@@ -78,11 +78,17 @@ import {
   CreditCard,
   Package,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Award,
+  MessageSquare,
+  ExternalLink,
+  Navigation
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { DialogTrigger } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -112,6 +118,68 @@ function ActivityDetailPage() {
   const activityId = params.id;
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Estados para dialogo del instructor
+  const [selectedInstructor, setSelectedInstructor] = useState(null);
+  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
+  const [evaluationInstructor, setEvaluationInstructor] = useState(null);
+
+  // Funciones auxiliares para instructor
+  const openProfile = (instructor: any) => {
+    setSelectedInstructor(instructor);
+    setProfileDialogOpen(true);
+  };
+
+  const openEvaluation = (instructor: any) => {
+    setEvaluationInstructor(instructor);
+  };
+
+  const renderStars = (rating: number | null) => {
+    if (!rating) return null;
+    
+    return (
+      <div className="flex items-center">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <Star
+            key={star}
+            className={`h-4 w-4 ${
+              star <= rating ? 'text-yellow-400 fill-current' : 'text-gray-300'
+            }`}
+          />
+        ))}
+        <span className="ml-1 text-sm text-gray-600">({rating.toFixed(1)})</span>
+      </div>
+    );
+  };
+
+  const getSpecialtiesArray = (specialties: string | string[] | undefined) => {
+    if (!specialties) return [];
+    
+    if (Array.isArray(specialties)) return specialties;
+    
+    if (typeof specialties === 'string') {
+      if (specialties.startsWith('{') && specialties.endsWith('}')) {
+        const cleanedString = specialties.slice(1, -1);
+        return cleanedString
+          .split(',')
+          .map(s => s.trim().replace(/^"/, '').replace(/"$/, ''))
+          .filter(s => s.length > 0);
+      }
+      
+      try {
+        const parsed = JSON.parse(specialties);
+        if (Array.isArray(parsed)) {
+          return parsed;
+        }
+      } catch (e) {
+        // Si falla el parsing JSON, usar split por comas
+      }
+      
+      return specialties.split(',').map(s => s.trim()).filter(s => s.length > 0);
+    }
+    
+    return [];
+  };
 
   // Estados para modales y flujo de pago
   const [showRegistrationDialog, setShowRegistrationDialog] = useState(false);
@@ -734,79 +802,165 @@ function ActivityDetailPage() {
                   </div>
                 )}
 
-                {/* Datos del Instructor */}
-                {activity?.instructorName && (
-                  <div className="flex items-center gap-3">
-                    <User className="h-5 w-5 text-indigo-600" />
-                    <div>
-                      <p className="font-medium">Datos del Instructor</p>
-                      <p className="text-sm text-gray-600">{activity.instructorName}</p>
-                    </div>
-                  </div>
-                )}
+
               </CardContent>
             </Card>
 
-            {/* Ficha del Instructor */}
+            {/* Ficha del Instructor - Estilo similar a /instructors */}
             {(activity?.instructorName || instructorDetails) && (
+              <Card className="group hover:shadow-lg transition-all duration-300 border-0 shadow-sm bg-white">
+                <CardHeader className="text-center pb-2">
+                  <Avatar className="h-20 w-20 mx-auto mb-4 ring-4 ring-primary/10">
+                    <AvatarImage 
+                      src={(instructorDetails as any)?.profile_image_url || undefined} 
+                      alt={(instructorDetails as any)?.full_name || activity?.instructorName || 'Instructor'}
+                    />
+                    <AvatarFallback className="bg-gradient-to-br from-primary to-primary-600 text-white font-semibold text-lg">
+                      {((instructorDetails as any)?.full_name || activity?.instructorName || 'IN').split(' ').map((n: string) => n[0]).join('')}
+                    </AvatarFallback>
+                  </Avatar>
+                  <CardTitle className="text-lg font-semibold text-gray-900">
+                    {(instructorDetails as any)?.full_name || activity?.instructorName || 'Instructor asignado'}
+                  </CardTitle>
+                  <CardDescription className="flex items-center justify-center gap-1 text-primary">
+                    <Award className="h-4 w-4" />
+                    {(instructorDetails as any)?.experience_years || 'N/A'} años de experiencia
+                  </CardDescription>
+                </CardHeader>
+                
+                <CardContent className="pt-0">
+                  {/* Especialidades */}
+                  <div className="mb-4">
+                    <div className="flex flex-wrap gap-1 justify-center">
+                      {getSpecialtiesArray((instructorDetails as any)?.specialties).slice(0, 2).map((specialty: string, index: number) => (
+                        <Badge key={index} variant="secondary" className="text-xs bg-primary/10 text-primary">
+                          {specialty}
+                        </Badge>
+                      ))}
+                      {getSpecialtiesArray((instructorDetails as any)?.specialties).length > 2 && (
+                        <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-600">
+                          +{getSpecialtiesArray((instructorDetails as any)?.specialties).length - 2}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Rating */}
+                  <div className="flex justify-center mb-4">
+                    {renderStars((instructorDetails as any)?.rating || 0)}
+                  </div>
+
+                  {/* Botones de acción */}
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => openProfile(instructorDetails)}
+                      className="flex-1 text-primary border-primary hover:bg-primary hover:text-white"
+                    >
+                      <User className="h-4 w-4 mr-1" />
+                      Ver Perfil
+                    </Button>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button
+                          size="sm"
+                          onClick={() => openEvaluation(instructorDetails)}
+                          className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700"
+                        >
+                          <MessageSquare className="h-4 w-4 mr-1" />
+                          Evaluar
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+                        <DialogHeader>
+                          <DialogTitle>Evaluar a {(instructorDetails as any)?.full_name || activity?.instructorName}</DialogTitle>
+                          <DialogDescription>
+                            Comparte tu experiencia con este instructor
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="p-4">
+                          <p className="text-sm text-gray-600">
+                            Formulario de evaluación del instructor próximamente disponible.
+                          </p>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Ubicación y Contacto - Similar a /parque/bosque-los-colomos-5 */}
+            {(activity?.location || activity?.latitude || activity?.longitude) && (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <User className="h-5 w-5 text-indigo-600" />
-                    Instructor a cargo
+                    <MapPin className="h-5 w-5 text-red-600" />
+                    Ubicación y Contacto
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
-                    <div className="space-y-3">
-                      {/* Nombre del instructor */}
-                      <div>
-                        <h4 className="font-semibold text-indigo-900">
-                          {instructorDetails?.firstName && instructorDetails?.lastName 
-                            ? `${instructorDetails.firstName} ${instructorDetails.lastName}`
-                            : activity?.instructorName || 'Instructor asignado'
-                          }
-                        </h4>
-                        {instructorDetails?.specialization && (
-                          <p className="text-sm text-indigo-700">
-                            Especialización: {instructorDetails.specialization}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Contacto del instructor */}
-                      {instructorDetails?.email && (
+                  <div className="space-y-4">
+                    {/* Información de ubicación */}
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <div className="space-y-3">
                         <div className="flex items-center gap-2">
-                          <Mail className="h-4 w-4 text-indigo-600" />
-                          <span className="text-sm text-indigo-800">{instructorDetails.email}</span>
-                        </div>
-                      )}
-
-                      {instructorDetails?.phone && (
-                        <div className="flex items-center gap-2">
-                          <Phone className="h-4 w-4 text-indigo-600" />
-                          <span className="text-sm text-indigo-800">{instructorDetails.phone}</span>
-                        </div>
-                      )}
-
-                      {/* Experiencia o bio */}
-                      {instructorDetails?.bio && (
-                        <div className="mt-3 pt-3 border-t border-indigo-200">
-                          <p className="text-sm text-indigo-800">
-                            {instructorDetails.bio}
-                          </p>
-                        </div>
-                      )}
-
-                      {/* Experiencia en años */}
-                      {instructorDetails?.experience && (
-                        <div className="flex items-center gap-2">
-                          <Star className="h-4 w-4 text-indigo-600" />
-                          <span className="text-sm text-indigo-800">
-                            {instructorDetails.experience} años de experiencia
+                          <MapPin className="h-4 w-4 text-blue-600" />
+                          <span className="text-sm font-medium text-blue-900">
+                            {activity.location}
                           </span>
                         </div>
-                      )}
+                        
+                        <div className="flex items-center gap-2">
+                          <Info className="h-4 w-4 text-blue-600" />
+                          <span className="text-sm text-blue-800">
+                            {activity.parkName}
+                          </span>
+                        </div>
+
+                        {/* Coordenadas si están disponibles */}
+                        {(activity.latitude && activity.longitude) && (
+                          <div className="flex items-center gap-2">
+                            <Navigation className="h-4 w-4 text-blue-600" />
+                            <span className="text-xs text-blue-700">
+                              {activity.latitude}, {activity.longitude}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Botones de acción de ubicación */}
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 text-blue-600 border-blue-600 hover:bg-blue-600 hover:text-white"
+                        onClick={() => {
+                          const location = activity.latitude && activity.longitude 
+                            ? `${activity.latitude},${activity.longitude}`
+                            : encodeURIComponent(`${activity.location}, ${activity.parkName}, Guadalajara`);
+                          window.open(`https://www.google.com/maps/dir/?api=1&destination=${location}`, '_blank');
+                        }}
+                      >
+                        <Navigation className="h-4 w-4 mr-1" />
+                        Cómo llegar
+                      </Button>
+                      
+                      <Button
+                        size="sm"
+                        className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                        onClick={() => {
+                          const location = activity.latitude && activity.longitude 
+                            ? `${activity.latitude},${activity.longitude}`
+                            : encodeURIComponent(`${activity.location}, ${activity.parkName}, Guadalajara`);
+                          window.open(`https://www.google.com/maps/search/?api=1&query=${location}`, '_blank');
+                        }}
+                      >
+                        <ExternalLink className="h-4 w-4 mr-1" />
+                        Ver en Mapa
+                      </Button>
                     </div>
                   </div>
                 </CardContent>
