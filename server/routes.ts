@@ -3816,8 +3816,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("🔥 Body completo recibido:", JSON.stringify(req.body, null, 2));
       
       // Log de depuración más detallado
-      console.log("fechaInicio recibido:", req.body.fechaInicio, "tipo:", typeof req.body.fechaInicio);
-      console.log("fechaFin recibido:", req.body.fechaFin, "tipo:", typeof req.body.fechaFin);
+      console.log("startDate recibido:", req.body.startDate, "tipo:", typeof req.body.startDate);
+      console.log("endDate recibido:", req.body.endDate, "tipo:", typeof req.body.endDate);
+      console.log("categoryId recibido:", req.body.categoryId, "tipo:", typeof req.body.categoryId);
+      console.log("price recibido:", req.body.price, "tipo:", typeof req.body.price);
+      console.log("latitude recibido:", req.body.latitude, "tipo:", typeof req.body.latitude);
+      console.log("longitude recibido:", req.body.longitude, "tipo:", typeof req.body.longitude);
       
       // Mapear campos del frontend al esquema de base de datos
       const {
@@ -3826,8 +3830,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         category,
         categoryId: category_id,
         parkId,
-        startDate: fechaInicio,
-        endDate: fechaFin,
+        startDate,
+        endDate,
         startTime,
         endTime,
         location,
@@ -3863,14 +3867,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let parsedStartDate: Date;
       let parsedEndDate: Date | undefined;
       
-      console.log("Procesando fechas - fechaInicio:", fechaInicio, "tipo:", typeof fechaInicio);
-      console.log("Procesando fechas - fechaFin:", fechaFin, "tipo:", typeof fechaFin);
+      console.log("Procesando fechas - startDate:", startDate, "tipo:", typeof startDate);
+      console.log("Procesando fechas - endDate:", endDate, "tipo:", typeof endDate);
       
       try {
         // Si viene como string ISO, parsearlo; si ya es Date, usarlo directamente
-        parsedStartDate = typeof fechaInicio === 'string' ? new Date(fechaInicio) : fechaInicio;
-        if (fechaFin) {
-          parsedEndDate = typeof fechaFin === 'string' ? new Date(fechaFin) : fechaFin;
+        parsedStartDate = typeof startDate === 'string' ? new Date(startDate) : startDate;
+        if (endDate) {
+          parsedEndDate = typeof endDate === 'string' ? new Date(endDate) : endDate;
         }
         
         console.log("Fechas parseadas - parsedStartDate:", parsedStartDate);
@@ -3929,7 +3933,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...(parsedEndDate && { endDate: parsedEndDate })
       };
       
-      console.log("Datos finales para validación Zod:", activityData);
+      console.log("🚀 DATOS FINALES COMPLETOS ANTES DE ZOD:");
+      console.log("- title:", activityData.title);
+      console.log("- categoryId:", activityData.categoryId);
+      console.log("- price:", activityData.price);
+      console.log("- latitude:", activityData.latitude);
+      console.log("- longitude:", activityData.longitude);
+      console.log("- startTime:", activityData.startTime);
+      console.log("- endTime:", activityData.endTime);
+      console.log("- capacity:", activityData.capacity);
+      console.log("- targetMarket:", activityData.targetMarket);
+      console.log("- specialNeeds:", activityData.specialNeeds);
+      console.log("- maxRegistrations:", activityData.maxRegistrations);
       console.log("Intentando crear actividad en base de datos...");
       
       console.log("Datos procesados para creación de actividad:", activityData);
