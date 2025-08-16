@@ -26,7 +26,7 @@ router.get('/api/evaluations/stats', async (req, res) => {
     const parkStats = await db
       .select({
         total: count(),
-        avgRating: sql`COALESCE(AVG(CAST(${parkEvaluations.overallRating} AS DECIMAL)), 0)`
+        avgRating: sql`COALESCE(AVG(CAST(overall_rating AS DECIMAL)), 0)`
       })
       .from(parkEvaluations);
 
@@ -34,7 +34,7 @@ router.get('/api/evaluations/stats', async (req, res) => {
     const instructorStats = await db
       .select({
         total: count(),
-        avgRating: sql`COALESCE(AVG(CAST(${instructorEvaluations.overallRating} AS DECIMAL)), 0)`
+        avgRating: sql`COALESCE(AVG(CAST(overall_rating AS DECIMAL)), 0)`
       })
       .from(instructorEvaluations);
 
@@ -42,7 +42,7 @@ router.get('/api/evaluations/stats', async (req, res) => {
     const volunteerStats = await db
       .select({
         total: count(),
-        avgRating: sql`COALESCE(AVG(CAST(${volunteerEvaluations.overallRating} AS DECIMAL)), 0)`
+        avgRating: sql`COALESCE(AVG(CAST(overall_performance AS DECIMAL)), 0)`
       })
       .from(volunteerEvaluations);
 
@@ -51,7 +51,7 @@ router.get('/api/evaluations/stats', async (req, res) => {
       .select({
         entityType: universalEvaluations.entityType,
         total: count(),
-        avgRating: sql`COALESCE(AVG(CAST(${universalEvaluations.overallRating} AS DECIMAL)), 0)`
+        avgRating: sql`COALESCE(AVG(CAST(overall_rating AS DECIMAL)), 0)`
       })
       .from(universalEvaluations)
       .groupBy(universalEvaluations.entityType);
