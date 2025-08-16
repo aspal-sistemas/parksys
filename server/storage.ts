@@ -1878,6 +1878,12 @@ DatabaseStorage.prototype.updateActivity = async function(id: number, activityDa
     }
     
     console.log("📝 Datos mapeados para actualizar:", updateData);
+    console.log("🔍 Valores específicos a verificar:", {
+      category_id: updateData.category_id,
+      registration_enabled: updateData.registration_enabled,
+      categoryIdFromFrontend: activityData.categoryId,
+      allowsPublicRegistrationFromFrontend: activityData.allowsPublicRegistration
+    });
     
     // Realizar la actualización usando Drizzle ORM
     const result = await db
