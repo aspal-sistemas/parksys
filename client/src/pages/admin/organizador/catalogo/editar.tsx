@@ -160,15 +160,9 @@ const EditarActividadPage = () => {
     user.roleName?.toLowerCase().includes('instructor')
   );
 
-  // Stats para debug
-  console.log('Debug stats:', {
-    parques: parques.length,
-    categorias: categorias.length,
-    instructores: instructores.length,
-  });
 
-  // Debug categorias
-  console.log('🔧 Categorías disponibles:', categorias.map((cat: any) => ({ id: cat.id, nombre: cat.nombre || cat.name })));
+
+
 
   // Consulta para obtener los datos de la actividad actual
   const { data: actividad, isLoading: isLoadingActividad } = useQuery({
@@ -217,8 +211,6 @@ const EditarActividadPage = () => {
   useEffect(() => {
     if (actividad) {
       const data = actividad as any;
-      console.log('💾 Datos de actividad recibidos:', data);
-      
       // Extraer fecha y hora de inicio
       let startDate = '';
       let startTime = '09:00';
@@ -318,10 +310,7 @@ const EditarActividadPage = () => {
         healthRequirements: data.healthRequirements || data.health_requirements || "",
       };
 
-      console.log('📝 Valores para el formulario:', formValues);
-      console.log('🔧 Valor de category antes de reset:', formValues.category);
       form.reset(formValues);
-      console.log('🔧 Valor actual category en form después de reset:', form.getValues('category'));
     }
   }, [actividad, form]);
 
@@ -508,10 +497,16 @@ const EditarActividadPage = () => {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Categoría *</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
+                          <Select 
+                            onValueChange={field.onChange} 
+                            value={field.value || ""} 
+                            defaultValue={field.value || ""}
+                          >
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Selecciona una categoría" />
+                                <SelectValue placeholder="Selecciona una categoría">
+                                  {field.value && categorias.find((c: any) => c.id.toString() === field.value)?.nombre}
+                                </SelectValue>
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -557,10 +552,16 @@ const EditarActividadPage = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Parque *</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select 
+                          onValueChange={field.onChange} 
+                          value={field.value || ""} 
+                          defaultValue={field.value || ""}
+                        >
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Selecciona un parque" />
+                              <SelectValue placeholder="Selecciona un parque">
+                                {field.value && parques.find((p: any) => p.id.toString() === field.value)?.nombre}
+                              </SelectValue>
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
