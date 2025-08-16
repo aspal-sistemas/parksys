@@ -509,7 +509,103 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 
 
 
-// ENDPOINT DUPLICADO ELIMINADO - USANDO ÚNICO ENDPOINT EN routes.ts
+// ENDPOINT DIRECTO PARA ACTIVIDADES - PRIORIDAD MÁXIMA
+app.post("/api/activities", async (req: Request, res: Response) => {
+  console.log("🔥🔥🔥 ENDPOINT DIRECTO ACTIVIDADES EN INDEX.TS - MÁXIMA PRIORIDAD 🔥🔥🔥");
+  console.log("🔥 Body completo recibido:", JSON.stringify(req.body, null, 2));
+  
+  try {
+    const {
+      title,
+      description,
+      categoryId,
+      parkId,
+      startDate,
+      endDate,
+      startTime,
+      endTime,
+      location,
+      latitude,
+      longitude,
+      instructorId,
+      duration,
+      capacity,
+      price,
+      isPriceRandom,
+      isFree,
+      materials,
+      requirements,
+      isRecurring,
+      recurringDays,
+      targetMarket,
+      specialNeeds,
+      allowsPublicRegistration,
+      maxRegistrations,
+      registrationDeadline,
+      registrationInstructions,
+      requiresApproval,
+      ageRestrictions,
+      healthRequirements
+    } = req.body;
+
+    // Procesar fechas
+    const parsedStartDate = new Date(startDate);
+    const parsedEndDate = endDate ? new Date(endDate) : undefined;
+
+    // Importar dependencias dinámicamente
+    const { db } = await import("./db");
+    const { activities } = await import("../shared/schema");
+
+    // Crear objeto con todos los campos
+    const activityData = {
+      title,
+      description,
+      categoryId: categoryId ? Number(categoryId) : null,
+      parkId: Number(parkId),
+      startDate: parsedStartDate,
+      endDate: parsedEndDate,
+      startTime,
+      endTime,
+      location,
+      latitude: latitude ? Number(latitude) : null,
+      longitude: longitude ? Number(longitude) : null,
+      instructorId: instructorId || null,
+      duration: duration ? Number(duration) : null,
+      capacity: capacity ? Number(capacity) : null,
+      price: price ? price.toString() : null,
+      isPriceRandom: Boolean(isPriceRandom),
+      isFree: Boolean(isFree),
+      materials: materials || null,
+      requirements: requirements || null,
+      isRecurring: Boolean(isRecurring),
+      recurringDays: recurringDays || [],
+      targetMarket: targetMarket || [],
+      specialNeeds: specialNeeds || [],
+      allowsPublicRegistration: Boolean(allowsPublicRegistration),
+      maxRegistrations: maxRegistrations ? Number(maxRegistrations) : null,
+      registrationDeadline: registrationDeadline ? new Date(registrationDeadline) : null,
+      registrationInstructions: registrationInstructions || null,
+      requiresApproval: Boolean(requiresApproval),
+      ageRestrictions: ageRestrictions || null,
+      healthRequirements: healthRequirements || null
+    };
+
+    console.log("🚀 DATOS PROCESADOS PARA INSERCIÓN:", activityData);
+
+    // Insertar en base de datos
+    const [result] = await db
+      .insert(activities)
+      .values(activityData)
+      .returning();
+
+    console.log("✅ ACTIVIDAD CREADA EXITOSAMENTE:", result);
+    
+    res.status(201).json(result);
+  } catch (error) {
+    console.error("❌ ERROR CREANDO ACTIVIDAD:", error);
+    res.status(500).json({ message: "Error al crear actividad", error: error.message });
+  }
+});
 
 // ENDPOINT PARA OBTENER ACTIVIDAD ESPECÍFICA
 app.get("/api/activities/:id", async (req: Request, res: Response) => {
