@@ -556,22 +556,29 @@ export const activities = pgTable("activities", {
   instructorId: integer("instructor_id").references(() => instructors.id),
   // Campos adicionales del formulario
   startTime: text("start_time"), // horaInicio
+  endTime: text("end_time"), // horaFin
   duration: integer("duration"), // duracion en minutos
   capacity: integer("capacity"), // capacidad maxima
   materials: text("materials"), // materiales necesarios
   requiredStaff: integer("required_staff"), // personalRequerido
   isRecurring: boolean("is_recurring").default(false), // esRecurrente
   isFree: boolean("is_free").default(true), // esGratuita
+  isPriceRandom: boolean("is_price_random").default(false), // precio aleatorio
   price: decimal("price", { precision: 10, scale: 2 }), // precio
   requirements: text("requirements"), // requisitos
   recurringDays: text("recurring_days").array(), // diasRecurrentes
+  // Campos de segmentación como JSONB
+  targetMarket: jsonb("target_market"), // mercado objetivo
+  specialNeeds: jsonb("special_needs"), // necesidades especiales
   // Campos para registro ciudadano - Solo las columnas que existen en la base de datos
   registrationEnabled: boolean("registration_enabled").default(false), // permitir registro publico
   registrationDeadline: timestamp("registration_deadline"), // fecha limite de registro
   maxRegistrations: integer("max_registrations"), // limite de inscripciones (puede ser diferente a capacity)
   requiresApproval: boolean("requires_approval").default(false), // requiere aprobacion manual
-
-
+  // Campos adicionales de registro ciudadano que existen en DB
+  registrationInstructions: text("registration_instructions"),
+  ageRestrictions: text("age_restrictions"),
+  healthRequirements: text("health_requirements"),
 });
 
 // Tabla de imágenes de actividades
