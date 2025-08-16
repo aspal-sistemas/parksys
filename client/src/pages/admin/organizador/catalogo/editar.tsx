@@ -472,7 +472,11 @@ const EditarActividadPage = () => {
           
           <CardContent className="space-y-6">
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <form 
+                key={actividad?.data?.id} 
+                onSubmit={form.handleSubmit(onSubmit)} 
+                className="space-y-6"
+              >
                 
                 {/* Sección de Información Básica */}
                 <div className="space-y-4">
@@ -1309,7 +1313,7 @@ const EditarActividadPage = () => {
                         <FormLabel>Seleccionar Instructor</FormLabel>
                         <Select
                           onValueChange={field.onChange}
-                          defaultValue={field.value}
+                          value={field.value}
                         >
                           <FormControl>
                             <SelectTrigger>
