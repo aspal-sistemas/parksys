@@ -1238,7 +1238,7 @@ const CrearActividadPage = () => {
                 {instructores.length === 0 && (
                   <div className="bg-amber-50 border border-amber-200 rounded-md p-4 my-4">
                     <p className="text-amber-800">
-                      No hay instructores registrados en el sistema. Dirígete a la sección de Usuarios para crear un usuario con rol de Instructor primero.
+                      No hay instructores registrados en el sistema. Dirígete a la sección de Instructores en este módulo de Actividades, para crear un Instructor primero.
                     </p>
                   </div>
                 )}
