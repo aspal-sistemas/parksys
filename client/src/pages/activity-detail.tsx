@@ -101,7 +101,8 @@ import {
   Award,
   MessageSquare,
   ExternalLink,
-  Navigation
+  Navigation,
+  Eye
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -115,6 +116,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import AdSpace from '@/components/AdSpace';
+import PublicInstructorEvaluationForm from '@/components/PublicInstructorEvaluationForm';
 
 // Initialize Stripe with options for Mexico
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || '', {
@@ -831,6 +833,12 @@ function ActivityDetailPage() {
             {/* Ficha del Instructor - Estilo similar a /instructors */}
             {(activity?.instructorName || instructorDetails) && (
               <Card className="group hover:shadow-lg transition-all duration-300 border-0 shadow-sm bg-white">
+                <div className="border-b border-gray-100 px-6 py-4">
+                  <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                    <User className="h-5 w-5 text-primary" />
+                    Instructor o Facilitador
+                  </h3>
+                </div>
                 <CardHeader className="text-center pb-2">
                   <Avatar className="h-20 w-20 mx-auto mb-4 ring-4 ring-primary/10">
                     <AvatarImage 
@@ -874,16 +882,26 @@ function ActivityDetailPage() {
 
                   {/* Botones de acción */}
                   <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => window.open(`/instructor/${activity?.instructorId}`, '_blank')}
+                      className="flex-1 text-primary border-primary hover:bg-primary hover:text-white"
+                    >
+                      <User className="h-4 w-4 mr-1" />
+                      Ver Perfil
+                    </Button>
+                    
                     <Dialog open={profileDialogOpen} onOpenChange={setProfileDialogOpen}>
                       <DialogTrigger asChild>
                         <Button
-                          variant="outline"
+                          variant="ghost"
                           size="sm"
                           onClick={() => openProfile(instructorDetails)}
-                          className="flex-1 text-primary border-primary hover:bg-primary hover:text-white"
+                          className="flex-1 text-gray-600 hover:text-gray-900"
                         >
-                          <User className="h-4 w-4 mr-1" />
-                          Ver Perfil
+                          <Eye className="h-4 w-4 mr-1" />
+                          Vista Rápida
                         </Button>
                       </DialogTrigger>
                       <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
@@ -973,36 +991,10 @@ function ActivityDetailPage() {
                             Comparte tu experiencia con este instructor
                           </DialogDescription>
                         </DialogHeader>
-                        <div className="p-4">
-                          <p className="text-sm text-gray-600 mb-4">
-                            Tu evaluación nos ayuda a mejorar la calidad de nuestras actividades.
-                          </p>
-                          <div className="space-y-4">
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Calificación general
-                              </label>
-                              <div className="flex gap-1">
-                                {[1, 2, 3, 4, 5].map((star) => (
-                                  <Star key={star} className="h-6 w-6 text-gray-300 hover:text-yellow-400 cursor-pointer" />
-                                ))}
-                              </div>
-                            </div>
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Comentarios (opcional)
-                              </label>
-                              <Textarea 
-                                placeholder="Comparte tu experiencia con este instructor..."
-                                className="w-full"
-                                rows={3}
-                              />
-                            </div>
-                            <Button className="w-full bg-emerald-600 hover:bg-emerald-700">
-                              Enviar Evaluación
-                            </Button>
-                          </div>
-                        </div>
+                        <PublicInstructorEvaluationForm 
+                          instructorId={activity?.instructorId || 0} 
+                          instructorName={instructorDetails?.fullName || activity?.instructorName || ''}
+                        />
                       </DialogContent>
                     </Dialog>
                   </div>
