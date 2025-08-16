@@ -428,6 +428,95 @@ router.delete('/api/evaluations/criteria/:id', async (req, res) => {
   }
 });
 
+// CRUD de criterios de evaluación
+
+// Crear nuevo criterio
+router.post('/api/evaluations/criteria', async (req, res) => {
+  try {
+    const data = req.body;
+    
+    const [newCriterio] = await db
+      .insert(evaluationCriteria)
+      .values({
+        name: data.name,
+        label: data.label,
+        description: data.description,
+        fieldType: data.fieldType,
+        minValue: data.minValue,
+        maxValue: data.maxValue,
+        isRequired: data.isRequired,
+        category: data.category,
+        icon: data.icon,
+        isActive: true,
+        sortOrder: 0
+      })
+      .returning();
+    
+    console.log('✅ [EVALUACIONES] Criterio creado:', newCriterio);
+    res.status(201).json(newCriterio);
+  } catch (error) {
+    console.error('❌ Error creando criterio:', error);
+    res.status(500).json({ error: 'Error al crear criterio de evaluación' });
+  }
+});
+
+// Actualizar criterio
+router.put('/api/evaluations/criteria/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = req.body;
+    
+    const [updatedCriterio] = await db
+      .update(evaluationCriteria)
+      .set({
+        name: data.name,
+        label: data.label,
+        description: data.description,
+        fieldType: data.fieldType,
+        minValue: data.minValue,
+        maxValue: data.maxValue,
+        isRequired: data.isRequired,
+        category: data.category,
+        icon: data.icon,
+        updatedAt: new Date()
+      })
+      .where(eq(evaluationCriteria.id, parseInt(id)))
+      .returning();
+    
+    if (!updatedCriterio) {
+      return res.status(404).json({ error: 'Criterio no encontrado' });
+    }
+    
+    console.log('✅ [EVALUACIONES] Criterio actualizado:', updatedCriterio);
+    res.json(updatedCriterio);
+  } catch (error) {
+    console.error('❌ Error actualizando criterio:', error);
+    res.status(500).json({ error: 'Error al actualizar criterio de evaluación' });
+  }
+});
+
+// Eliminar criterio
+router.delete('/api/evaluations/criteria/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const [deletedCriterio] = await db
+      .delete(evaluationCriteria)
+      .where(eq(evaluationCriteria.id, parseInt(id)))
+      .returning();
+    
+    if (!deletedCriterio) {
+      return res.status(404).json({ error: 'Criterio no encontrado' });
+    }
+    
+    console.log('✅ [EVALUACIONES] Criterio eliminado:', deletedCriterio);
+    res.json({ message: 'Criterio eliminado exitosamente' });
+  } catch (error) {
+    console.error('❌ Error eliminando criterio:', error);
+    res.status(500).json({ error: 'Error al eliminar criterio de evaluación' });
+  }
+});
+
 // Asignar criterios a un tipo de entidad (construir formulario)
 router.post('/api/evaluations/criteria/assign/:entityType', async (req, res) => {
   try {

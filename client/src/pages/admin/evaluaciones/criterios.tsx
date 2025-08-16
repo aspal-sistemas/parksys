@@ -43,9 +43,9 @@ const entityTypes = [
 
 const CriteriosEvaluacion = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingCriteria, setEditingCriteria] = useState<any>(null);
   const [activeTab, setActiveTab] = useState('criterios');
   const [selectedEntityType, setSelectedEntityType] = useState('park');
+  const [editingCriterio, setEditingCriterio] = useState<any>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -88,6 +88,43 @@ const CriteriosEvaluacion = () => {
       toast({
         title: "Error",
         description: "No se pudo crear el criterio",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Mutación para editar criterio
+  const editMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: CriterioFormData }) => {
+      const response = await fetch(`/api/evaluations/criteria/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Error al actualizar criterio');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/evaluations/criteria'] });
+      setIsDialogOpen(false);
+      setEditingCriterio(null);
+      form.reset();
+      toast({
+        title: "Criterio actualizado",
+        description: "El criterio se ha actualizado exitosamente",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "No se pudo actualizar el criterio",
         variant: "destructive",
       });
     },
@@ -139,7 +176,43 @@ const CriteriosEvaluacion = () => {
   });
 
   const onSubmit = (data: CriterioFormData) => {
-    createMutation.mutate(data);
+    if (editingCriterio) {
+      editMutation.mutate({ id: editingCriterio.id, data });
+    } else {
+      createMutation.mutate(data);
+    }
+  };
+
+  const handleEdit = (criterio: any) => {
+    setEditingCriterio(criterio);
+    form.reset({
+      name: criterio.name,
+      label: criterio.label,
+      description: criterio.description || "",
+      fieldType: criterio.fieldType,
+      minValue: criterio.minValue,
+      maxValue: criterio.maxValue,
+      isRequired: criterio.isRequired,
+      category: criterio.category,
+      icon: criterio.icon,
+    });
+    setIsDialogOpen(true);
+  };
+
+  const handleNewCriterio = () => {
+    setEditingCriterio(null);
+    form.reset({
+      name: "",
+      label: "",
+      description: "",
+      fieldType: "rating",
+      minValue: 1,
+      maxValue: 5,
+      isRequired: true,
+      category: "experiencia",
+      icon: "Star",
+    });
+    setIsDialogOpen(true);
   };
 
   const handleDelete = (id: number, name: string) => {
@@ -191,14 +264,16 @@ const CriteriosEvaluacion = () => {
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="flex items-center gap-2">
+            <Button onClick={handleNewCriterio} className="flex items-center gap-2">
               <Plus className="h-4 w-4" />
               Nuevo Criterio
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Crear Nuevo Criterio</DialogTitle>
+              <DialogTitle>
+                {editingCriterio ? 'Editar Criterio' : 'Crear Nuevo Criterio'}
+              </DialogTitle>
             </DialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -330,11 +405,17 @@ const CriteriosEvaluacion = () => {
                 )}
 
                 <div className="flex justify-end gap-2 pt-4">
-                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                  <Button type="button" variant="outline" onClick={() => {
+                    setIsDialogOpen(false);
+                    setEditingCriterio(null);
+                  }}>
                     Cancelar
                   </Button>
-                  <Button type="submit" disabled={createMutation.isPending}>
-                    {createMutation.isPending ? 'Creando...' : 'Crear Criterio'}
+                  <Button type="submit" disabled={createMutation.isPending || editMutation.isPending}>
+                    {editingCriterio 
+                      ? (editMutation.isPending ? 'Actualizando...' : 'Actualizar Criterio')
+                      : (createMutation.isPending ? 'Creando...' : 'Crear Criterio')
+                    }
                   </Button>
                 </div>
               </form>
@@ -435,7 +516,11 @@ const CriteriosEvaluacion = () => {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleEdit(criterio)}
+                        >
                           <Edit className="h-4 w-4" />
                         </Button>
                         <Button 
