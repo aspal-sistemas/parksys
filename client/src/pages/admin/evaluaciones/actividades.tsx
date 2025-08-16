@@ -295,7 +295,7 @@ const EvaluacionesActividades = () => {
                     <div className="flex items-center gap-3">
                       <div className="text-right">
                         <div className={`text-lg font-bold ${getRatingColor(evaluation.overallRating)}`}>
-                          {evaluation.overallRating.toFixed(1)} ⭐
+                          {(evaluation.overallRating || 0).toFixed(1)} ⭐
                         </div>
                         <Badge className={getStatusColor(evaluation.status)}>
                           {evaluation.status === 'pending' ? 'Pendiente' :
@@ -307,38 +307,40 @@ const EvaluacionesActividades = () => {
                   </div>
 
                   {/* Criterios de evaluación */}
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
-                    <div className="text-center">
-                      <p className="text-xs text-gray-500">Organización</p>
-                      <p className={`font-semibold ${getRatingColor(evaluation.criteria.organization)}`}>
-                        {evaluation.criteria.organization}/5
-                      </p>
+                  {evaluation.criteria && (
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+                      <div className="text-center">
+                        <p className="text-xs text-gray-500">Organización</p>
+                        <p className={`font-semibold ${getRatingColor(evaluation.criteria.organization || 0)}`}>
+                          {evaluation.criteria.organization || 0}/5
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs text-gray-500">Contenido</p>
+                        <p className={`font-semibold ${getRatingColor(evaluation.criteria.content || 0)}`}>
+                          {evaluation.criteria.content || 0}/5
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs text-gray-500">Participación</p>
+                        <p className={`font-semibold ${getRatingColor(evaluation.criteria.participation || 0)}`}>
+                          {evaluation.criteria.participation || 0}/5
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs text-gray-500">Recursos</p>
+                        <p className={`font-semibold ${getRatingColor(evaluation.criteria.resources || 0)}`}>
+                          {evaluation.criteria.resources || 0}/5
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs text-gray-500">Satisfacción</p>
+                        <p className={`font-semibold ${getRatingColor(evaluation.criteria.satisfaction || 0)}`}>
+                          {evaluation.criteria.satisfaction || 0}/5
+                        </p>
+                      </div>
                     </div>
-                    <div className="text-center">
-                      <p className="text-xs text-gray-500">Contenido</p>
-                      <p className={`font-semibold ${getRatingColor(evaluation.criteria.content)}`}>
-                        {evaluation.criteria.content}/5
-                      </p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-xs text-gray-500">Participación</p>
-                      <p className={`font-semibold ${getRatingColor(evaluation.criteria.participation)}`}>
-                        {evaluation.criteria.participation}/5
-                      </p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-xs text-gray-500">Recursos</p>
-                      <p className={`font-semibold ${getRatingColor(evaluation.criteria.resources)}`}>
-                        {evaluation.criteria.resources}/5
-                      </p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-xs text-gray-500">Satisfacción</p>
-                      <p className={`font-semibold ${getRatingColor(evaluation.criteria.satisfaction)}`}>
-                        {evaluation.criteria.satisfaction}/5
-                      </p>
-                    </div>
-                  </div>
+                  )}
 
                   {evaluation.comments && (
                     <div className="mb-4">

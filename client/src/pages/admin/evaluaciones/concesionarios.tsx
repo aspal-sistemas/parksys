@@ -304,7 +304,7 @@ const EvaluacionesConcesionarios = () => {
                     <div className="flex items-center gap-3">
                       <div className="text-right">
                         <div className={`text-lg font-bold ${getRatingColor(evaluation.overallRating)}`}>
-                          {evaluation.overallRating.toFixed(1)} ⭐
+                          {(evaluation.overallRating || 0).toFixed(1)} ⭐
                         </div>
                         <Badge className={getStatusColor(evaluation.status)}>
                           {evaluation.status === 'pending' ? 'Pendiente' :
@@ -316,38 +316,40 @@ const EvaluacionesConcesionarios = () => {
                   </div>
 
                   {/* Criterios de evaluación */}
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
-                    <div className="text-center">
-                      <p className="text-xs text-gray-500">Calidad Servicio</p>
-                      <p className={`font-semibold ${getRatingColor(evaluation.criteria.serviceQuality)}`}>
-                        {evaluation.criteria.serviceQuality}/5
-                      </p>
+                  {evaluation.criteria && (
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+                      <div className="text-center">
+                        <p className="text-xs text-gray-500">Calidad Servicio</p>
+                        <p className={`font-semibold ${getRatingColor(evaluation.criteria.serviceQuality || 0)}`}>
+                          {evaluation.criteria.serviceQuality || 0}/5
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs text-gray-500">Limpieza</p>
+                        <p className={`font-semibold ${getRatingColor(evaluation.criteria.cleanliness || 0)}`}>
+                          {evaluation.criteria.cleanliness || 0}/5
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs text-gray-500">Cumplimiento</p>
+                        <p className={`font-semibold ${getRatingColor(evaluation.criteria.compliance || 0)}`}>
+                          {evaluation.criteria.compliance || 0}/5
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs text-gray-500">Atención Cliente</p>
+                        <p className={`font-semibold ${getRatingColor(evaluation.criteria.customerService || 0)}`}>
+                          {evaluation.criteria.customerService || 0}/5
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs text-gray-500">Mantenimiento</p>
+                        <p className={`font-semibold ${getRatingColor(evaluation.criteria.maintenance || 0)}`}>
+                          {evaluation.criteria.maintenance || 0}/5
+                        </p>
+                      </div>
                     </div>
-                    <div className="text-center">
-                      <p className="text-xs text-gray-500">Limpieza</p>
-                      <p className={`font-semibold ${getRatingColor(evaluation.criteria.cleanliness)}`}>
-                        {evaluation.criteria.cleanliness}/5
-                      </p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-xs text-gray-500">Cumplimiento</p>
-                      <p className={`font-semibold ${getRatingColor(evaluation.criteria.compliance)}`}>
-                        {evaluation.criteria.compliance}/5
-                      </p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-xs text-gray-500">Atención Cliente</p>
-                      <p className={`font-semibold ${getRatingColor(evaluation.criteria.customerService)}`}>
-                        {evaluation.criteria.customerService}/5
-                      </p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-xs text-gray-500">Mantenimiento</p>
-                      <p className={`font-semibold ${getRatingColor(evaluation.criteria.maintenance)}`}>
-                        {evaluation.criteria.maintenance}/5
-                      </p>
-                    </div>
-                  </div>
+                  )}
 
                   {evaluation.comments && (
                     <div className="mb-4">

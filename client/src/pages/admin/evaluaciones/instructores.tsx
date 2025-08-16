@@ -144,7 +144,7 @@ const EvaluacionesInstructores = () => {
                 <div>
                   <p className="text-sm text-gray-600">Promedio</p>
                   <p className={`text-2xl font-bold ${getRatingColor(stats.averageRating)}`}>
-                    {stats.averageRating.toFixed(1)} ⭐
+                    {(stats.averageRating || 0).toFixed(1)} ⭐
                   </p>
                 </div>
                 <Star className="h-8 w-8 text-yellow-500" />
@@ -274,7 +274,7 @@ const EvaluacionesInstructores = () => {
                     <div className="flex items-center gap-3">
                       <div className="text-right">
                         <div className={`text-lg font-bold ${getRatingColor(evaluation.overallRating)}`}>
-                          {evaluation.overallRating.toFixed(1)} ⭐
+                          {(evaluation.overallRating || 0).toFixed(1)} ⭐
                         </div>
                         <Badge className={getStatusColor(evaluation.status)}>
                           {evaluation.status === 'pending' ? 'Pendiente' :
@@ -286,38 +286,40 @@ const EvaluacionesInstructores = () => {
                   </div>
 
                   {/* Criterios de evaluación */}
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
-                    <div className="text-center">
-                      <p className="text-xs text-gray-500">Conocimiento</p>
-                      <p className={`font-semibold ${getRatingColor(evaluation.criteria.knowledge)}`}>
-                        {evaluation.criteria.knowledge}/5
-                      </p>
+                  {evaluation.criteria && (
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+                      <div className="text-center">
+                        <p className="text-xs text-gray-500">Conocimiento</p>
+                        <p className={`font-semibold ${getRatingColor(evaluation.criteria.knowledge || 0)}`}>
+                          {evaluation.criteria.knowledge || 0}/5
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs text-gray-500">Comunicación</p>
+                        <p className={`font-semibold ${getRatingColor(evaluation.criteria.communication || 0)}`}>
+                          {evaluation.criteria.communication || 0}/5
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs text-gray-500">Metodología</p>
+                        <p className={`font-semibold ${getRatingColor(evaluation.criteria.methodology || 0)}`}>
+                          {evaluation.criteria.methodology || 0}/5
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs text-gray-500">Puntualidad</p>
+                        <p className={`font-semibold ${getRatingColor(evaluation.criteria.punctuality || 0)}`}>
+                          {evaluation.criteria.punctuality || 0}/5
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs text-gray-500">Actitud</p>
+                        <p className={`font-semibold ${getRatingColor(evaluation.criteria.attitude || 0)}`}>
+                          {evaluation.criteria.attitude || 0}/5
+                        </p>
+                      </div>
                     </div>
-                    <div className="text-center">
-                      <p className="text-xs text-gray-500">Comunicación</p>
-                      <p className={`font-semibold ${getRatingColor(evaluation.criteria.communication)}`}>
-                        {evaluation.criteria.communication}/5
-                      </p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-xs text-gray-500">Metodología</p>
-                      <p className={`font-semibold ${getRatingColor(evaluation.criteria.methodology)}`}>
-                        {evaluation.criteria.methodology}/5
-                      </p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-xs text-gray-500">Puntualidad</p>
-                      <p className={`font-semibold ${getRatingColor(evaluation.criteria.punctuality)}`}>
-                        {evaluation.criteria.punctuality}/5
-                      </p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-xs text-gray-500">Actitud</p>
-                      <p className={`font-semibold ${getRatingColor(evaluation.criteria.attitude)}`}>
-                        {evaluation.criteria.attitude}/5
-                      </p>
-                    </div>
-                  </div>
+                  )}
 
                   {evaluation.comments && (
                     <div className="mb-4">

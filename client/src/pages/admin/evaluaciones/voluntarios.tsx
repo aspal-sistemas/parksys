@@ -290,7 +290,7 @@ const EvaluacionesVoluntarios = () => {
                     <div className="flex items-center gap-3">
                       <div className="text-right">
                         <div className={`text-lg font-bold ${getRatingColor(evaluation.overallRating)}`}>
-                          {evaluation.overallRating.toFixed(1)} ⭐
+                          {(evaluation.overallRating || 0).toFixed(1)} ⭐
                         </div>
                         <Badge className={getStatusColor(evaluation.status)}>
                           {evaluation.status === 'pending' ? 'Pendiente' :
@@ -302,38 +302,40 @@ const EvaluacionesVoluntarios = () => {
                   </div>
 
                   {/* Criterios de evaluación */}
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
-                    <div className="text-center">
-                      <p className="text-xs text-gray-500">Compromiso</p>
-                      <p className={`font-semibold ${getRatingColor(evaluation.criteria.commitment)}`}>
-                        {evaluation.criteria.commitment}/5
-                      </p>
+                  {evaluation.criteria && (
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+                      <div className="text-center">
+                        <p className="text-xs text-gray-500">Compromiso</p>
+                        <p className={`font-semibold ${getRatingColor(evaluation.criteria.commitment || 0)}`}>
+                          {evaluation.criteria.commitment || 0}/5
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs text-gray-500">Trabajo en Equipo</p>
+                        <p className={`font-semibold ${getRatingColor(evaluation.criteria.teamwork || 0)}`}>
+                          {evaluation.criteria.teamwork || 0}/5
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs text-gray-500">Iniciativa</p>
+                        <p className={`font-semibold ${getRatingColor(evaluation.criteria.initiative || 0)}`}>
+                          {evaluation.criteria.initiative || 0}/5
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs text-gray-500">Responsabilidad</p>
+                        <p className={`font-semibold ${getRatingColor(evaluation.criteria.responsibility || 0)}`}>
+                          {evaluation.criteria.responsibility || 0}/5
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs text-gray-500">Actitud</p>
+                        <p className={`font-semibold ${getRatingColor(evaluation.criteria.attitude || 0)}`}>
+                          {evaluation.criteria.attitude || 0}/5
+                        </p>
+                      </div>
                     </div>
-                    <div className="text-center">
-                      <p className="text-xs text-gray-500">Trabajo en Equipo</p>
-                      <p className={`font-semibold ${getRatingColor(evaluation.criteria.teamwork)}`}>
-                        {evaluation.criteria.teamwork}/5
-                      </p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-xs text-gray-500">Iniciativa</p>
-                      <p className={`font-semibold ${getRatingColor(evaluation.criteria.initiative)}`}>
-                        {evaluation.criteria.initiative}/5
-                      </p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-xs text-gray-500">Responsabilidad</p>
-                      <p className={`font-semibold ${getRatingColor(evaluation.criteria.responsibility)}`}>
-                        {evaluation.criteria.responsibility}/5
-                      </p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-xs text-gray-500">Actitud</p>
-                      <p className={`font-semibold ${getRatingColor(evaluation.criteria.attitude)}`}>
-                        {evaluation.criteria.attitude}/5
-                      </p>
-                    </div>
-                  </div>
+                  )}
 
                   {evaluation.comments && (
                     <div className="mb-4">
