@@ -251,6 +251,7 @@ export function registerActivityRoutes(app: any, apiRouter: any, isAuthenticated
       });
       
       console.log("🔄 Llamando a storage.updateActivity con ID:", activityId);
+      console.log("📤 Datos que se envían al storage:", activityData);
       const result = await storage.updateActivity(activityId, activityData);
       console.log("🎉 Resultado de updateActivity:", result);
       
