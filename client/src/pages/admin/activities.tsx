@@ -539,9 +539,13 @@ const AdminActivities = () => {
     if (categoryId && categoriesMap[categoryId]) {
       return categoriesMap[categoryId].name;
     }
-    // Si no, usar el campo category string
-    else if (activity.category && categoryStringMap[activity.category]) {
-      return categoryStringMap[activity.category];
+    // Si no, usar el campo category string directo desde el servidor
+    else if (activity.category) {
+      return activity.category;
+    }
+    // Si ya viene categoryName desde el servidor, usarlo
+    if (activity.categoryName) {
+      return activity.categoryName;
     }
     return 'Sin categoría';
   };
