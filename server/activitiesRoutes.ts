@@ -198,27 +198,33 @@ export function registerActivityRoutes(app: any, apiRouter: any, isAuthenticated
       
       console.log("Headers recibidos:", req.headers);
       console.log("Datos recibidos para actualizar actividad:", req.body);
+      console.log("🎯 INICIO DEL PROCESO DE ACTUALIZACIÓN - ID:", activityId);
       
       // Verificar si la actividad existe
       const existingActivity = await storage.getActivity(activityId);
       if (!existingActivity) {
+        console.log("❌ ACTIVIDAD NO ENCONTRADA - ID:", activityId);
         return res.status(404).json({ message: "Actividad no encontrada" });
       }
+      console.log("✅ ACTIVIDAD ENCONTRADA - Continuando proceso...");
       
       // Extraer los datos
+      console.log("🔄 EXTRAYENDO DATOS - startDate:", req.body.startDate, "endDate:", req.body.endDate);
       const { startDate, endDate, ...otherData } = req.body;
       
       // Convertir las fechas explícitamente a objetos Date
       let parsedStartDate: Date;
       let parsedEndDate: Date | undefined;
       
+      console.log("🔄 CONVIRTIENDO FECHAS...");
       try {
         parsedStartDate = new Date(startDate);
         if (endDate) {
           parsedEndDate = new Date(endDate);
         }
+        console.log("✅ FECHAS CONVERTIDAS EXITOSAMENTE");
       } catch (e) {
-        console.error("Error al convertir fechas:", e);
+        console.error("❌ Error al convertir fechas:", e);
         return res.status(400).json({ message: "Formato de fecha inválido" });
       }
       
