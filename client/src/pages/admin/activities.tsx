@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { Plus, Pencil, Trash, Search, ChevronLeft, ChevronRight, Calendar, X, Image as ImageIcon, Grid, List, Clock, MapPin, Users, Badge } from 'lucide-react';
+import { Plus, Pencil, Trash, Search, ChevronLeft, ChevronRight, Calendar, X, Image as ImageIcon, Grid, List, Clock, MapPin, Users, Badge, Download, Upload, FileText } from 'lucide-react';
 import { useLocation } from 'wouter';
 import AdminLayout from '@/components/AdminLayout';
 import { Button } from '@/components/ui/button';
@@ -55,6 +55,10 @@ const AdminActivities = () => {
   const [selectedActivity, setSelectedActivity] = useState<any>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   
+  // States for CSV import functionality
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  
   const activitiesPerPage = 9;
   const { toast } = useToast();
 
@@ -102,6 +106,404 @@ const AdminActivities = () => {
       });
     },
   });
+
+  // CSV Export function
+  const handleExportCSV = () => {
+    try {
+      if (!Array.isArray(activitiesData) || activitiesData.length === 0) {
+        toast({
+          title: "Sin datos",
+          description: "No hay actividades para exportar.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Create CSV template based on form fields from "Nueva Actividad"
+      const csvHeaders = [
+        'título',
+        'descripción',
+        'parque',
+        'categoría',
+        'fechaInicio',
+        'fechaFin',
+        'horaInicio',
+        'horaFin',
+        'ubicación',
+        'latitud',
+        'longitud',
+        'capacidad',
+        'duración',
+        'precio',
+        'esGratis',
+        'materiales',
+        'requisitos',
+        'esRecurrente',
+        'díasRecurrentes',
+        'mercadoObjetivo',
+        'necesidadesEspeciales',
+        'permiteRegistroPúblico',
+        'máximoRegistros',
+        'fechaLímiteRegistro',
+        'instruccionesRegistro',
+        'requiereAprobación',
+        'restriccionesEdad',
+        'requisitosSalud'
+      ];
+
+      // Map activities data to CSV format
+      const csvData = activitiesData.map((activity: any) => {
+        const park = parksData?.find((p: any) => p.id === activity.parkId);
+        const category = categoriesData?.find((c: any) => c.id === activity.categoryId);
+        
+        return [
+          activity.title || '',
+          activity.description || '',
+          park?.name || '',
+          category?.name || '',
+          activity.startDate || '',
+          activity.endDate || '',
+          activity.startTime || '',
+          activity.endTime || '',
+          activity.location || '',
+          activity.latitude || '',
+          activity.longitude || '',
+          activity.capacity || '',
+          activity.duration || '',
+          activity.price || '',
+          activity.isFree ? 'Sí' : 'No',
+          activity.materials || '',
+          activity.requirements || '',
+          activity.isRecurring ? 'Sí' : 'No',
+          Array.isArray(activity.recurringDays) ? activity.recurringDays.join(';') : '',
+          Array.isArray(activity.targetMarket) ? activity.targetMarket.join(';') : '',
+          Array.isArray(activity.specialNeeds) ? activity.specialNeeds.join(';') : '',
+          activity.allowsPublicRegistration ? 'Sí' : 'No',
+          activity.maxRegistrations || '',
+          activity.registrationDeadline || '',
+          activity.registrationInstructions || '',
+          activity.requiresApproval ? 'Sí' : 'No',
+          activity.ageRestrictions || '',
+          activity.healthRequirements || ''
+        ];
+      });
+
+      // Create CSV content with proper encoding for Spanish characters
+      const csvContent = [csvHeaders, ...csvData]
+        .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+        .join('\n');
+
+      // Create and download file with UTF-8 BOM to handle Spanish accents
+      const BOM = '\uFEFF';
+      const blob = new Blob([BOM + csvContent], { 
+        type: 'text/csv;charset=utf-8;' 
+      });
+      
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `actividades_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast({
+        title: "Exportación exitosa",
+        description: `Se han exportado ${activitiesData.length} actividades al archivo CSV.`,
+      });
+    } catch (error) {
+      console.error('Error exporting CSV:', error);
+      toast({
+        title: "Error",
+        description: "Hubo un problema al exportar el archivo CSV.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Generate CSV template for import
+  const handleDownloadTemplate = () => {
+    try {
+      const templateHeaders = [
+        'título',
+        'descripción',
+        'parque',
+        'categoría',
+        'fechaInicio',
+        'fechaFin',
+        'horaInicio',
+        'horaFin',
+        'ubicación',
+        'latitud',
+        'longitud',
+        'capacidad',
+        'duración',
+        'precio',
+        'esGratis',
+        'materiales',
+        'requisitos',
+        'esRecurrente',
+        'díasRecurrentes',
+        'mercadoObjetivo',
+        'necesidadesEspeciales',
+        'permiteRegistroPúblico',
+        'máximoRegistros',
+        'fechaLímiteRegistro',
+        'instruccionesRegistro',
+        'requiereAprobación',
+        'restriccionesEdad',
+        'requisitosSalud'
+      ];
+
+      // Add example row with proper Spanish format
+      const exampleRow = [
+        'Ejemplo: Yoga en el Parque',
+        'Clase de yoga matutina para todas las edades',
+        'Parque Central',
+        'Bienestar',
+        '2024-03-15',
+        '2024-06-15',
+        '08:00',
+        '09:30',
+        'Área de césped principal',
+        '20.123456',
+        '-103.654321',
+        '30',
+        '90',
+        '50',
+        'No',
+        'Mat de yoga, toalla',
+        'Ropa cómoda, agua',
+        'Sí',
+        'lunes;miércoles;viernes',
+        'adultos;jóvenes',
+        'principiantes',
+        'Sí',
+        '25',
+        '2024-03-10',
+        'Contactar por email para registro',
+        'No',
+        '16+',
+        'Sin problemas cardíacos'
+      ];
+
+      const templateContent = [templateHeaders, exampleRow]
+        .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+        .join('\n');
+
+      // Create template with UTF-8 BOM for Spanish characters
+      const BOM = '\uFEFF';
+      const blob = new Blob([BOM + templateContent], { 
+        type: 'text/csv;charset=utf-8;' 
+      });
+      
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'plantilla_actividades.csv');
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast({
+        title: "Plantilla descargada",
+        description: "La plantilla CSV se ha descargado correctamente.",
+      });
+    } catch (error) {
+      console.error('Error downloading template:', error);
+      toast({
+        title: "Error",
+        description: "Hubo un problema al descargar la plantilla.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Import mutation
+  const importMutation = useMutation({
+    mutationFn: async (csvData: any[]) => {
+      return await apiRequest('/api/activities/import', {
+        method: 'POST',
+        body: JSON.stringify({ activities: csvData }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+    },
+    onSuccess: (response) => {
+      toast({
+        title: "Importación exitosa",
+        description: `Se han importado ${response.imported || 0} actividades correctamente.`,
+      });
+      setShowImportDialog(false);
+      setImportFile(null);
+      refetch();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error en importación",
+        description: error.message || "Hubo un problema al importar las actividades.",
+        variant: "destructive"
+      });
+    },
+  });
+
+  // Handle CSV import
+  const handleImportCSV = () => {
+    if (!importFile) {
+      toast({
+        title: "Error",
+        description: "Por favor selecciona un archivo CSV.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const text = e.target?.result as string;
+        const lines = text.split('\n').filter(line => line.trim());
+        
+        if (lines.length < 2) {
+          throw new Error('El archivo debe contener al menos una fila de datos además del encabezado.');
+        }
+
+        const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
+        const dataRows = lines.slice(1);
+
+        const csvData = dataRows.map((row, index) => {
+          const values = row.split(',').map(v => v.replace(/"/g, '').trim());
+          
+          if (values.length !== headers.length) {
+            throw new Error(`Fila ${index + 2}: número incorrecto de columnas.`);
+          }
+
+          const activityData: any = {};
+          headers.forEach((header, i) => {
+            const value = values[i];
+            
+            // Map CSV headers to database fields
+            switch (header.toLowerCase()) {
+              case 'título':
+                activityData.title = value;
+                break;
+              case 'descripción':
+                activityData.description = value;
+                break;
+              case 'parque':
+                const park = parksData?.find((p: any) => 
+                  p.name.toLowerCase() === value.toLowerCase()
+                );
+                if (park) {
+                  activityData.parkId = park.id;
+                } else if (value) {
+                  throw new Error(`Parque no encontrado: ${value}`);
+                }
+                break;
+              case 'categoría':
+                const category = categoriesData?.find((c: any) => 
+                  c.name.toLowerCase() === value.toLowerCase()
+                );
+                if (category) {
+                  activityData.categoryId = category.id;
+                } else if (value) {
+                  throw new Error(`Categoría no encontrada: ${value}`);
+                }
+                break;
+              case 'fechainicio':
+                activityData.startDate = value || null;
+                break;
+              case 'fechafin':
+                activityData.endDate = value || null;
+                break;
+              case 'horainicio':
+                activityData.startTime = value || null;
+                break;
+              case 'horafin':
+                activityData.endTime = value || null;
+                break;
+              case 'ubicación':
+                activityData.location = value || null;
+                break;
+              case 'latitud':
+                activityData.latitude = value ? parseFloat(value) : null;
+                break;
+              case 'longitud':
+                activityData.longitude = value ? parseFloat(value) : null;
+                break;
+              case 'capacidad':
+                activityData.capacity = value ? parseInt(value) : null;
+                break;
+              case 'duración':
+                activityData.duration = value ? parseInt(value) : null;
+                break;
+              case 'precio':
+                activityData.price = value ? parseFloat(value) : 0;
+                break;
+              case 'esgratis':
+                activityData.isFree = value.toLowerCase() === 'sí' || value.toLowerCase() === 'si' || value === '1';
+                break;
+              case 'materiales':
+                activityData.materials = value || '';
+                break;
+              case 'requisitos':
+                activityData.requirements = value || '';
+                break;
+              case 'esrecurrente':
+                activityData.isRecurring = value.toLowerCase() === 'sí' || value.toLowerCase() === 'si' || value === '1';
+                break;
+              case 'díasrecurrentes':
+                activityData.recurringDays = value ? value.split(';').filter(d => d.trim()) : [];
+                break;
+              case 'mercadoobjetivo':
+                activityData.targetMarket = value ? value.split(';').filter(t => t.trim()) : [];
+                break;
+              case 'necesidadesespeciales':
+                activityData.specialNeeds = value ? value.split(';').filter(n => n.trim()) : [];
+                break;
+              case 'permiteregistropúblico':
+                activityData.allowsPublicRegistration = value.toLowerCase() === 'sí' || value.toLowerCase() === 'si' || value === '1';
+                break;
+              case 'máximoregistros':
+                activityData.maxRegistrations = value ? parseInt(value) : null;
+                break;
+              case 'fechalímiteregistro':
+                activityData.registrationDeadline = value || null;
+                break;
+              case 'instruccionesregistro':
+                activityData.registrationInstructions = value || '';
+                break;
+              case 'requiereaprobación':
+                activityData.requiresApproval = value.toLowerCase() === 'sí' || value.toLowerCase() === 'si' || value === '1';
+                break;
+              case 'restriccionesedad':
+                activityData.ageRestrictions = value || '';
+                break;
+              case 'requisitossalud':
+                activityData.healthRequirements = value || '';
+                break;
+            }
+          });
+
+          return activityData;
+        });
+
+        importMutation.mutate(csvData);
+
+      } catch (error: any) {
+        toast({
+          title: "Error al procesar archivo",
+          description: error.message || "Formato de archivo inválido.",
+          variant: "destructive"
+        });
+      }
+    };
+
+    reader.readAsText(importFile, 'UTF-8');
+  };
 
   const formatDate = (dateString: string) => {
     try {
@@ -294,6 +696,34 @@ const AdminActivities = () => {
                 <List className="h-4 w-4" />
               </Button>
             </div>
+            
+            {/* Botones CSV */}
+            <Button 
+              variant="outline"
+              onClick={handleDownloadTemplate}
+              className="border-[#00a587] text-[#00a587] hover:bg-[#00a587] hover:text-white"
+            >
+              <FileText className="h-4 w-4 mr-2" />
+              Plantilla CSV
+            </Button>
+            
+            <Button 
+              variant="outline"
+              onClick={handleExportCSV}
+              className="border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Exportar CSV
+            </Button>
+            
+            <Button 
+              variant="outline"
+              onClick={() => setShowImportDialog(true)}
+              className="border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white"
+            >
+              <Upload className="h-4 w-4 mr-2" />
+              Importar CSV
+            </Button>
             
             <Button 
               className="bg-[#00a587] hover:bg-[#067f5f]"
@@ -601,6 +1031,93 @@ const AdminActivities = () => {
         </div>
 
 
+
+        {/* CSV Import Dialog */}
+        <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Importar Actividades desde CSV</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm text-gray-600 mb-4">
+                  Selecciona un archivo CSV con las actividades a importar. Usa la plantilla descargable para el formato correcto.
+                </p>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                  <input
+                    type="file"
+                    accept=".csv"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setImportFile(file);
+                      }
+                    }}
+                    className="hidden"
+                    id="csv-upload"
+                  />
+                  <label
+                    htmlFor="csv-upload"
+                    className="cursor-pointer flex flex-col items-center"
+                  >
+                    <Upload className="h-8 w-8 text-gray-400 mb-2" />
+                    <span className="text-sm font-medium text-gray-900">
+                      Haz clic para seleccionar archivo
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      Solo archivos .csv
+                    </span>
+                  </label>
+                </div>
+                {importFile && (
+                  <div className="mt-2 p-2 bg-green-50 rounded border border-green-200">
+                    <p className="text-sm text-green-800">
+                      📄 {importFile.name} ({(importFile.size / 1024).toFixed(1)} KB)
+                    </p>
+                  </div>
+                )}
+              </div>
+              
+              <div className="bg-blue-50 p-3 rounded-lg">
+                <p className="text-xs text-blue-800">
+                  <strong>Formato requerido:</strong> Usa la plantilla CSV descargable que incluye todos los campos del formulario "Nueva Actividad" con soporte completo para caracteres acentuados.
+                </p>
+              </div>
+            </div>
+            <DialogFooter className="flex justify-between">
+              <Button
+                variant="outline"
+                onClick={handleDownloadTemplate}
+                className="border-[#00a587] text-[#00a587] hover:bg-[#00a587] hover:text-white"
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                Descargar Plantilla
+              </Button>
+              <div className="space-x-2">
+                <Button variant="outline" onClick={() => setShowImportDialog(false)}>
+                  Cancelar
+                </Button>
+                <Button
+                  onClick={handleImportCSV}
+                  disabled={!importFile || importMutation.isPending}
+                  className="bg-[#00a587] hover:bg-[#067f5f]"
+                >
+                  {importMutation.isPending ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Importando...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="h-4 w-4 mr-2" />
+                      Importar
+                    </>
+                  )}
+                </Button>
+              </div>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Delete Confirmation Dialog */}
         <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>

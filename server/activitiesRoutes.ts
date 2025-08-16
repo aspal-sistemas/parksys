@@ -284,4 +284,112 @@ export function registerActivityRoutes(app: any, apiRouter: any, isAuthenticated
       res.status(500).json({ message: "Error al eliminar actividad" });
     }
   });
+
+  // Importar actividades desde CSV
+  apiRouter.post("/activities/import", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const { activities: csvActivities } = req.body;
+      
+      if (!Array.isArray(csvActivities) || csvActivities.length === 0) {
+        return res.status(400).json({ 
+          message: "Se requiere un array de actividades para importar" 
+        });
+      }
+
+      console.log(`=== IMPORTANDO ${csvActivities.length} ACTIVIDADES DESDE CSV ===`);
+      
+      let imported = 0;
+      let errors: string[] = [];
+
+      for (let i = 0; i < csvActivities.length; i++) {
+        const activityData = csvActivities[i];
+        
+        try {
+          // Validate required fields
+          if (!activityData.title || activityData.title.trim() === '') {
+            throw new Error(`Fila ${i + 2}: El título es requerido`);
+          }
+          
+          if (!activityData.parkId || activityData.parkId === '') {
+            throw new Error(`Fila ${i + 2}: El parque es requerido`);
+          }
+          
+          if (!activityData.categoryId || activityData.categoryId === '') {
+            throw new Error(`Fila ${i + 2}: La categoría es requerida`);
+          }
+
+          // Parse and validate the activity data using Zod schema
+          const validatedActivity = insertActivitySchema.parse({
+            title: activityData.title.trim(),
+            description: activityData.description || '',
+            parkId: parseInt(activityData.parkId),
+            categoryId: parseInt(activityData.categoryId),
+            startDate: activityData.startDate || null,
+            endDate: activityData.endDate || null,
+            startTime: activityData.startTime || null,
+            endTime: activityData.endTime || null,
+            location: activityData.location || null,
+            latitude: activityData.latitude ? parseFloat(activityData.latitude) : null,
+            longitude: activityData.longitude ? parseFloat(activityData.longitude) : null,
+            capacity: activityData.capacity ? parseInt(activityData.capacity) : null,
+            duration: activityData.duration ? parseInt(activityData.duration) : null,
+            price: activityData.price ? parseFloat(activityData.price) : 0,
+            isFree: activityData.isFree === true || activityData.isFree === 'true',
+            materials: activityData.materials || '',
+            requirements: activityData.requirements || '',
+            isRecurring: activityData.isRecurring === true || activityData.isRecurring === 'true',
+            recurringDays: Array.isArray(activityData.recurringDays) ? activityData.recurringDays : [],
+            targetMarket: Array.isArray(activityData.targetMarket) ? activityData.targetMarket : [],
+            specialNeeds: Array.isArray(activityData.specialNeeds) ? activityData.specialNeeds : [],
+            allowsPublicRegistration: activityData.allowsPublicRegistration === true || activityData.allowsPublicRegistration === 'true',
+            maxRegistrations: activityData.maxRegistrations ? parseInt(activityData.maxRegistrations) : null,
+            registrationDeadline: activityData.registrationDeadline || null,
+            registrationInstructions: activityData.registrationInstructions || '',
+            requiresApproval: activityData.requiresApproval === true || activityData.requiresApproval === 'true',
+            ageRestrictions: activityData.ageRestrictions || '',
+            healthRequirements: activityData.healthRequirements || '',
+            createdAt: new Date(),
+            updatedAt: new Date()
+          });
+
+          // Insert the activity using storage layer
+          await storage.createActivity(validatedActivity);
+          imported++;
+          
+          console.log(`✓ Actividad importada: "${validatedActivity.title}"`);
+          
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : `Error desconocido en fila ${i + 2}`;
+          errors.push(errorMessage);
+          console.error(`✗ Error en fila ${i + 2}:`, errorMessage);
+        }
+      }
+
+      if (errors.length > 0 && imported === 0) {
+        return res.status(400).json({
+          message: "No se pudo importar ninguna actividad",
+          errors: errors.slice(0, 10), // Limit error messages
+          total: csvActivities.length,
+          imported: 0
+        });
+      }
+
+      const response = {
+        message: `Importación completada: ${imported} actividades importadas`,
+        imported,
+        total: csvActivities.length,
+        errors: errors.length > 0 ? errors.slice(0, 5) : undefined
+      };
+
+      console.log(`✓ Importación CSV completada: ${imported}/${csvActivities.length} actividades`);
+      res.status(200).json(response);
+      
+    } catch (error) {
+      console.error("Error general al importar CSV:", error);
+      res.status(500).json({ 
+        message: "Error interno del servidor al importar actividades",
+        error: error instanceof Error ? error.message : "Error desconocido"
+      });
+    }
+  });
 }
