@@ -494,32 +494,29 @@ const EditarActividadPage = () => {
                     <FormField
                       control={form.control}
                       name="category"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Categoría *</FormLabel>
-                          <Select 
-                            onValueChange={field.onChange} 
-                            value={field.value || ""} 
-                            defaultValue={field.value || ""}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Selecciona una categoría">
-                                  {field.value && categorias.find((c: any) => c.id.toString() === field.value)?.nombre}
-                                </SelectValue>
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {categorias.map((categoria: any) => (
-                                <SelectItem key={categoria.id} value={categoria.id.toString()}>
-                                  {categoria.nombre}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                      render={({ field }) => {
+                        const selectedCategory = categorias.find((c: any) => c.id.toString() === field.value);
+                        return (
+                          <FormItem>
+                            <FormLabel>Categoría *</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value || undefined}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Selecciona una categoría" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {categorias.map((categoria: any) => (
+                                  <SelectItem key={categoria.id} value={categoria.id.toString()}>
+                                    {categoria.name || categoria.nombre}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        );
+                      }}
                     />
                   </div>
 
@@ -552,22 +549,16 @@ const EditarActividadPage = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Parque *</FormLabel>
-                        <Select 
-                          onValueChange={field.onChange} 
-                          value={field.value || ""} 
-                          defaultValue={field.value || ""}
-                        >
+                        <Select onValueChange={field.onChange} value={field.value || undefined}>
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Selecciona un parque">
-                                {field.value && parques.find((p: any) => p.id.toString() === field.value)?.nombre}
-                              </SelectValue>
+                              <SelectValue placeholder="Selecciona un parque" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
                             {parques.map((parque: any) => (
                               <SelectItem key={parque.id} value={parque.id.toString()}>
-                                {parque.nombre}
+                                {parque.nombre || parque.name}
                               </SelectItem>
                             ))}
                           </SelectContent>
