@@ -815,20 +815,87 @@ function ActivityDetailPage() {
                   </div>
                 )}
 
-                {/* Ubicación */}
-                {activity?.location && (
-                  <div className="flex items-center gap-3">
-                    <MapPin className="h-5 w-5 text-red-600" />
-                    <div>
-                      <p className="font-medium">Ubicación</p>
-                      <p className="text-sm text-gray-600">{activity.location}</p>
-                    </div>
-                  </div>
-                )}
+
 
 
               </CardContent>
             </Card>
+
+            {/* Ubicación y Contacto - Similar a /parque/bosque-los-colomos-5 */}
+            {(activity?.location || activity?.latitude || activity?.longitude) && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <MapPin className="h-5 w-5 text-red-600" />
+                    Ubicación y Contacto
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {/* Información de ubicación */}
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-4 w-4 text-blue-600" />
+                          <span className="text-sm font-medium text-blue-900">
+                            {activity.location}
+                          </span>
+                        </div>
+                        
+                        <div className="flex items-center gap-2">
+                          <Info className="h-4 w-4 text-blue-600" />
+                          <span className="text-sm text-blue-800">
+                            {activity.parkName}
+                          </span>
+                        </div>
+
+                        {/* Coordenadas si están disponibles */}
+                        {(activity.latitude && activity.longitude) && (
+                          <div className="flex items-center gap-2">
+                            <Navigation className="h-4 w-4 text-blue-600" />
+                            <span className="text-xs text-blue-700">
+                              {activity.latitude}, {activity.longitude}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Botones de acción de ubicación */}
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 text-blue-600 border-blue-600 hover:bg-blue-600 hover:text-white"
+                        onClick={() => {
+                          const location = activity.latitude && activity.longitude 
+                            ? `${activity.latitude},${activity.longitude}`
+                            : encodeURIComponent(`${activity.location}, ${activity.parkName}, Guadalajara`);
+                          window.open(`https://www.google.com/maps/dir/?api=1&destination=${location}`, '_blank');
+                        }}
+                      >
+                        <Navigation className="h-4 w-4 mr-1" />
+                        Cómo llegar
+                      </Button>
+                      
+                      <Button
+                        size="sm"
+                        className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                        onClick={() => {
+                          const location = activity.latitude && activity.longitude 
+                            ? `${activity.latitude},${activity.longitude}`
+                            : encodeURIComponent(`${activity.location}, ${activity.parkName}, Guadalajara`);
+                          window.open(`https://www.google.com/maps/search/?api=1&query=${location}`, '_blank');
+                        }}
+                      >
+                        <ExternalLink className="h-4 w-4 mr-1" />
+                        Ver en Mapa
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Ficha del Instructor - Estilo similar a /instructors */}
             {(activity?.instructorName || instructorDetails) && (
@@ -916,82 +983,6 @@ function ActivityDetailPage() {
                         />
                       </DialogContent>
                     </Dialog>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Ubicación y Contacto - Similar a /parque/bosque-los-colomos-5 */}
-            {(activity?.location || activity?.latitude || activity?.longitude) && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <MapPin className="h-5 w-5 text-red-600" />
-                    Ubicación y Contacto
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {/* Información de ubicación */}
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-2">
-                          <MapPin className="h-4 w-4 text-blue-600" />
-                          <span className="text-sm font-medium text-blue-900">
-                            {activity.location}
-                          </span>
-                        </div>
-                        
-                        <div className="flex items-center gap-2">
-                          <Info className="h-4 w-4 text-blue-600" />
-                          <span className="text-sm text-blue-800">
-                            {activity.parkName}
-                          </span>
-                        </div>
-
-                        {/* Coordenadas si están disponibles */}
-                        {(activity.latitude && activity.longitude) && (
-                          <div className="flex items-center gap-2">
-                            <Navigation className="h-4 w-4 text-blue-600" />
-                            <span className="text-xs text-blue-700">
-                              {activity.latitude}, {activity.longitude}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Botones de acción de ubicación */}
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex-1 text-blue-600 border-blue-600 hover:bg-blue-600 hover:text-white"
-                        onClick={() => {
-                          const location = activity.latitude && activity.longitude 
-                            ? `${activity.latitude},${activity.longitude}`
-                            : encodeURIComponent(`${activity.location}, ${activity.parkName}, Guadalajara`);
-                          window.open(`https://www.google.com/maps/dir/?api=1&destination=${location}`, '_blank');
-                        }}
-                      >
-                        <Navigation className="h-4 w-4 mr-1" />
-                        Cómo llegar
-                      </Button>
-                      
-                      <Button
-                        size="sm"
-                        className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
-                        onClick={() => {
-                          const location = activity.latitude && activity.longitude 
-                            ? `${activity.latitude},${activity.longitude}`
-                            : encodeURIComponent(`${activity.location}, ${activity.parkName}, Guadalajara`);
-                          window.open(`https://www.google.com/maps/search/?api=1&query=${location}`, '_blank');
-                        }}
-                      >
-                        <ExternalLink className="h-4 w-4 mr-1" />
-                        Ver en Mapa
-                      </Button>
-                    </div>
                   </div>
                 </CardContent>
               </Card>

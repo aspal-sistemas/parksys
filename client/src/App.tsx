@@ -27,6 +27,7 @@ import AdminPayments from "@/pages/admin/payments";
 import AdminLogin from "@/pages/admin/login";
 import AdminInstructorInvitations from "@/pages/admin/instructor-invitations";
 import InstructorRegistration from "@/pages/public/instructor-registration";
+import ActivityDetailPage from "@/pages/activity-detail";
 import TestAccess from "@/pages/test-access";
 import AdminVolunteers from "@/pages/admin/volunteers";
 import Landing from "@/pages/Landing";
@@ -115,11 +116,7 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/event-detail')))}
           </Suspense>
         </Route>
-        <Route path="/activity/:id">
-          <Suspense fallback={<div className="p-8 text-center">Cargando detalle de actividad...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/activity-detail')))}
-          </Suspense>
-        </Route>
+        <Route path="/activity/:id" component={ActivityDetailPage} />
         <Route path="/activity/:id/payment">
           <Suspense fallback={<div className="p-8 text-center">Cargando página de pago...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/activity-payment')))}
