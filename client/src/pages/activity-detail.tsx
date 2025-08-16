@@ -154,18 +154,13 @@ function ActivityDetailPage() {
   // Mutación para inscripción con Stripe
   const registerMutation = useMutation({
     mutationFn: async (data: RegistrationFormData) => {
-      const response = await apiRequest(
-        'POST',
+      return await apiRequest(
         `/api/activities/${activityId}/register`,
-        data
+        {
+          method: 'POST',
+          data: data,
+        }
       );
-      
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Error al registrarse');
-      }
-      
-      return response.json();
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: [`/api/activities/${activityId}`] });
@@ -398,26 +393,9 @@ function ActivityDetailPage() {
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-600">Plazas disponibles:</span>
                       <span className="font-medium text-green-600">
-                        {registrationStats && typeof registrationStats === 'object' && 'availableSlots' in registrationStats ? (
-                          `${(registrationStats as any).availableSlots} de ${(registrationStats as any).capacity} disponibles`
-                        ) : (
-                          activity.capacity ? `${activity.capacity} personas` : 'Sin límite'
-                        )}
+                        {activity.capacity ? `${activity.capacity} personas` : 'Sin límite'}
                       </span>
                     </div>
-                    {registrationStats && typeof registrationStats === 'object' && 'totalRegistrations' in registrationStats && (
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-600">Inscritos actuales:</span>
-                        <span className="font-medium text-blue-600">
-                          {(registrationStats as any).totalRegistrations} personas
-                          {(registrationStats as any).pending > 0 && (
-                            <span className="text-orange-500 ml-1">
-                              ({(registrationStats as any).pending} pendientes)
-                            </span>
-                          )}
-                        </span>
-                      </div>
-                    )}
                     {activity.registrationDeadline && (
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-gray-600">Fecha límite:</span>
