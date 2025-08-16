@@ -252,10 +252,19 @@ export function registerActivityRoutes(app: any, apiRouter: any, isAuthenticated
       
       console.log("🔄 Llamando a storage.updateActivity con ID:", activityId);
       console.log("📤 Datos que se envían al storage:", activityData);
-      const result = await storage.updateActivity(activityId, activityData);
-      console.log("🎉 Resultado de updateActivity:", result);
+      console.log("🔎 Específicamente categoryId y allowsPublicRegistration:", {
+        categoryId: activityData.categoryId,
+        allowsPublicRegistration: activityData.allowsPublicRegistration
+      });
       
-      res.json(result);
+      try {
+        const result = await storage.updateActivity(activityId, activityData);
+        console.log("🎉 Resultado de updateActivity:", result);
+        res.json(result);
+      } catch (storageError) {
+        console.error("❌ Error en storage.updateActivity:", storageError);
+        throw storageError;
+      }
     } catch (error) {
       if (error instanceof ZodError) {
         const validationError = fromZodError(error);
