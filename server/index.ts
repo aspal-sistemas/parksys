@@ -530,8 +530,11 @@ app.get("/api/activities/:id", async (req: Request, res: Response) => {
       sql`SELECT 
         a.*,
         ac.name as category_name,
+        ac.id as category_id,
         p.name as park_name,
-        i.full_name as instructor_name
+        p.id as park_id,
+        i.full_name as instructor_name,
+        i.id as instructor_id
       FROM activities a
       LEFT JOIN activity_categories ac ON a.category_id = ac.id
       LEFT JOIN parks p ON a.park_id = p.id
@@ -625,8 +628,8 @@ app.get("/api/activities/:id", async (req: Request, res: Response) => {
     // Formatear respuesta para que coincida con lo que espera el frontend
     const formattedActivity = {
       id: activity.id,
-      title: activity.title,
-      description: activity.description,
+      title: activity.title || "",
+      description: activity.description || "",
       category: activity.category_name || activity.category,
       categoryName: activity.category_name || activity.category,
       categoryId: activity.category_id,
@@ -634,26 +637,34 @@ app.get("/api/activities/:id", async (req: Request, res: Response) => {
       parkName: activity.park_name,
       startDate: activity.start_date,
       endDate: activity.end_date,
-      location: activity.location,
+      startTime: activity.start_time,
+      endTime: activity.end_time,
+      location: activity.location || "",
+      latitude: activity.latitude,
+      longitude: activity.longitude,
       createdAt: activity.created_at,
       capacity: activity.capacity,
       price: activity.price,
-      materials: activity.materials,
-      requirements: activity.requirements,
+      materials: activity.materials || "",
+      requirements: activity.requirements || "",
       duration: activity.duration,
-      isRecurring: activity.is_recurring,
-      isFree: activity.is_free,
-      recurringDays: activity.recurring_days,
+      isRecurring: activity.is_recurring || false,
+      isFree: activity.is_free !== false, // Si no está definido o es null, asumir true
+      isPriceRandom: activity.is_price_random || false,
+      recurringDays: activity.recurring_days || [],
       instructorId: activity.instructor_id,
       instructorName: activity.instructor_name,
-      startTime: activity.start_time,
       targetMarket: targetMarket,
       specialNeeds: specialNeeds,
-      // Campos de configuración de inscripciones
-      registrationEnabled: activity.registration_enabled,
+      // Campos de configuración de inscripciones  
+      registrationEnabled: activity.registration_enabled || false,
+      allowsPublicRegistration: activity.registration_enabled || false,
       maxRegistrations: activity.max_registrations,
       registrationDeadline: activity.registration_deadline,
-      requiresApproval: activity.requires_approval
+      registrationInstructions: activity.registration_instructions || "",
+      requiresApproval: activity.requires_approval || false,
+      ageRestrictions: activity.age_restrictions || "",
+      healthRequirements: activity.health_requirements || ""
     };
 
     console.log("🎯 Actividad encontrada:", formattedActivity);

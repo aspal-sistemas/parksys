@@ -214,20 +214,29 @@ const EditarActividadPage = () => {
   useEffect(() => {
     if (actividad) {
       const data = actividad as any;
+      console.log('💾 Datos de actividad recibidos:', data);
       
       // Extraer fecha y hora de inicio
       let startDate = '';
       let startTime = '09:00';
       
       if (data.startDate) {
-        if (data.startDate.includes('T')) {
+        const dateStr = data.startDate.toString();
+        if (dateStr.includes('T')) {
           // Si es una fecha ISO completa
-          const date = new Date(data.startDate);
+          const date = new Date(dateStr);
           startDate = date.toISOString().split('T')[0];
           startTime = date.toTimeString().substring(0, 5);
+        } else if (dateStr.includes(' ')) {
+          // Si es formato "YYYY-MM-DD HH:MM:SS"
+          const [datePart, timePart] = dateStr.split(' ');
+          startDate = datePart;
+          if (timePart) {
+            startTime = timePart.substring(0, 5);
+          }
         } else {
-          // Si es solo fecha
-          startDate = data.startDate;
+          // Si es solo fecha YYYY-MM-DD
+          startDate = dateStr;
         }
       }
       
@@ -246,13 +255,40 @@ const EditarActividadPage = () => {
         endTime = `${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`;
       }
 
-      form.reset({
+      // Procesar endDate
+      let endDate = '';
+      if (data.endDate) {
+        const endDateStr = data.endDate.toString();
+        if (endDateStr.includes('T')) {
+          endDate = new Date(endDateStr).toISOString().split('T')[0];
+        } else if (endDateStr.includes(' ')) {
+          endDate = endDateStr.split(' ')[0];
+        } else {
+          endDate = endDateStr;
+        }
+      }
+
+      // Procesar registrationDeadline
+      let registrationDeadline = '';
+      if (data.registrationDeadline) {
+        const deadlineStr = data.registrationDeadline.toString();
+        if (deadlineStr.includes('T')) {
+          registrationDeadline = new Date(deadlineStr).toISOString().split('T')[0];
+        } else if (deadlineStr.includes(' ')) {
+          registrationDeadline = deadlineStr.split(' ')[0];
+        } else {
+          registrationDeadline = deadlineStr;
+        }
+      }
+
+      // Preparar los valores para el formulario
+      const formValues = {
         title: data.title || "",
         description: data.description || "",
-        category: data.categoryId ? data.categoryId.toString() : "",
-        parkId: data.parkId ? data.parkId.toString() : "",
+        category: data.categoryId ? data.categoryId.toString() : (data.category_id ? data.category_id.toString() : ""),
+        parkId: data.parkId ? data.parkId.toString() : (data.park_id ? data.park_id.toString() : ""),
         startDate: startDate,
-        endDate: data.endDate ? (new Date(data.endDate)).toISOString().split('T')[0] : "",
+        endDate: endDate,
         startTime: startTime,
         endTime: endTime,
         location: data.location || "",
@@ -260,24 +296,27 @@ const EditarActividadPage = () => {
         longitude: data.longitude || undefined,
         capacity: data.capacity || undefined,
         duration: data.duration || calcularDuracionEnMinutos(startTime, endTime),
-        price: data.price || 0,
-        isPriceRandom: data.isPriceRandom || false,
-        isFree: data.isFree || false,
+        price: data.price ? parseFloat(data.price) : 0,
+        isPriceRandom: data.isPriceRandom || data.is_price_random || false,
+        isFree: data.isFree || data.is_free || (data.price === null || data.price === 0 || data.price === "0"),
         materials: data.materials || "",
         requirements: data.requirements || "",
-        isRecurring: data.isRecurring || false,
-        recurringDays: data.recurringDays || [],
-        targetMarket: data.targetMarket || [],
-        specialNeeds: data.specialNeeds || [],
-        instructorId: data.instructorId ? data.instructorId.toString() : "",
-        allowsPublicRegistration: data.allowsPublicRegistration || false,
-        maxRegistrations: data.maxRegistrations || undefined,
-        registrationDeadline: data.registrationDeadline ? (new Date(data.registrationDeadline)).toISOString().split('T')[0] : "",
-        registrationInstructions: data.registrationInstructions || "",
-        requiresApproval: data.requiresApproval || false,
-        ageRestrictions: data.ageRestrictions || "",
-        healthRequirements: data.healthRequirements || "",
-      });
+        isRecurring: data.isRecurring || data.is_recurring || false,
+        recurringDays: data.recurringDays || data.recurring_days || [],
+        targetMarket: data.targetMarket || data.target_market || [],
+        specialNeeds: data.specialNeeds || data.special_needs || [],
+        instructorId: data.instructorId ? data.instructorId.toString() : (data.instructor_id ? data.instructor_id.toString() : ""),
+        allowsPublicRegistration: data.allowsPublicRegistration || data.allows_public_registration || data.registrationEnabled || data.registration_enabled || false,
+        maxRegistrations: data.maxRegistrations || data.max_registrations || undefined,
+        registrationDeadline: registrationDeadline,
+        registrationInstructions: data.registrationInstructions || data.registration_instructions || "",
+        requiresApproval: data.requiresApproval || data.requires_approval || false,
+        ageRestrictions: data.ageRestrictions || data.age_restrictions || "",
+        healthRequirements: data.healthRequirements || data.health_requirements || "",
+      };
+
+      console.log('📝 Valores para el formulario:', formValues);
+      form.reset(formValues);
     }
   }, [actividad, form]);
 
