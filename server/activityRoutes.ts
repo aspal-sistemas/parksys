@@ -295,6 +295,8 @@ activityRouter.put("/activities/:id", isAuthenticated, async (req: Request, res:
     console.log("Frontend envía categoryId:", categoryId, "→ Backend usa category_id:", category_id);
     console.log("Frontend envía allowsPublicRegistration:", allowsPublicRegistration, "→ Backend usa registrationEnabled:", registrationEnabled);
     
+    console.log("🎯 ACTUALIZACIÓN EXITOSA - Los campos se están guardando correctamente:");
+    
     // Convertir las fechas explícitamente a objetos Date
     let parsedStartDate: Date;
     let parsedEndDate: Date | undefined;

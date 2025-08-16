@@ -36,6 +36,8 @@ The application uses a client-server architecture with a modern full-stack.
 
 **Current Fix (January 2025)**: Applied comprehensive solution to prevent filter reappearance: added explicit comments in code stating no filters should appear, created robust search-only interface with Card wrapper, and added "Sin Filtros" indicator in page subtitle. System now has multiple safeguards against dynamic filter injection.
 
+**Critical Bug Fix (August 2025)**: Resolved critical activity update issue where `categoryId` and `allowsPublicRegistration` fields were not being saved. Root cause was multiple duplicate PUT `/activities/:id` endpoints in different files (`server/routes.ts`, `server/activityRoutes.ts`, `server/activitiesRoutes.ts`). The issue was caused by field name mismatch - frontend sends `categoryId` and `allowsPublicRegistration`, but backend was expecting `category_id` and `registrationEnabled`. Fix implemented proper field mapping in `server/activityRoutes.ts` (the active endpoint). Verified working correctly with logs showing proper data flow and database updates.
+
 ## External Dependencies
 - **Frontend**: React, TypeScript, Vite, Tailwind CSS, Radix UI (shadcn/ui), React Query, React Router, React Hook Form, Zod.
 - **Backend**: Node.js, Express, TypeScript, Multer, bcryptjs.
