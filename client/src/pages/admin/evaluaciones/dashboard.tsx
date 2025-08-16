@@ -1,312 +1,431 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { useLocation } from 'wouter';
 import AdminLayout from '@/components/AdminLayout';
-import { 
-  Users, 
-  UserCheck, 
-  MapPin, 
-  Calendar, 
-  Target, 
-  Building, 
-  Star,
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
   BarChart3,
-  Settings,
-  Filter,
-  Plus,
+  MapPin,
+  GraduationCap,
+  Heart,
+  Calendar,
+  Building2,
   Eye,
-  CheckCircle,
-  XCircle,
-  Clock
+  Search,
+  RefreshCw,
+  AlertCircle,
+  TrendingUp,
+  Users,
 } from 'lucide-react';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { Badge } from '@/components/ui/badge';
 
-interface EvaluationStats {
-  total: number;
-  pending: number;
-  approved: number;
-  rejected: number;
-  averageRating: number;
-}
-
-interface EntityStats {
-  parks: EvaluationStats;
-  instructors: EvaluationStats;
-  volunteers: EvaluationStats;
-  activities: EvaluationStats;
-  concessionaires: EvaluationStats;
-  events: EvaluationStats;
-}
-
-const EvaluationsDashboard = () => {
-  const [selectedEntityType, setSelectedEntityType] = useState<string>('all');
-
-  // Consulta para obtener estadísticas de todas las entidades
-  const { data: stats, isLoading } = useQuery<EntityStats>({
+export default function EvaluacionesDashboard() {
+  const [, setLocation] = useLocation();
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  // Consulta para obtener estadísticas de evaluaciones
+  const { 
+    data: statsData, 
+    isLoading: isStatsLoading, 
+    isError: isStatsError,
+    refetch: refetchStats
+  } = useQuery({
     queryKey: ['/api/evaluations/stats'],
   });
 
   // Consulta para obtener evaluaciones recientes
-  const { data: recentEvaluations, isLoading: loadingRecent } = useQuery({
-    queryKey: ['/api/evaluations/recent', selectedEntityType],
+  const { 
+    data: recentData, 
+    isLoading: isRecentLoading, 
+    isError: isRecentError,
+    refetch: refetchRecent
+  } = useQuery({
+    queryKey: ['/api/evaluations/recent'],
   });
+  
+  const stats = statsData || {};
+  const recentEvaluations = recentData || [];
 
-  const entityTypes = [
-    { key: 'all', label: 'Todas', icon: BarChart3, color: 'bg-gray-500' },
-    { key: 'park', label: 'Parques', icon: MapPin, color: 'bg-green-500' },
-    { key: 'instructor', label: 'Instructores', icon: UserCheck, color: 'bg-blue-500' },
-    { key: 'volunteer', label: 'Voluntarios', icon: Users, color: 'bg-purple-500' },
-    { key: 'activity', label: 'Actividades', icon: Calendar, color: 'bg-orange-500' },
-    { key: 'concessionaire', label: 'Concesionarios', icon: Building, color: 'bg-teal-500' },
-    { key: 'event', label: 'Eventos', icon: Target, color: 'bg-red-500' },
-  ];
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'approved':
-        return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case 'rejected':
-        return <XCircle className="h-4 w-4 text-red-500" />;
-      default:
-        return <Clock className="h-4 w-4 text-yellow-500" />;
+  // Formatear fecha
+  const formatDate = (dateString: string) => {
+    if (!dateString) return 'Fecha no disponible';
+    
+    try {
+      return format(new Date(dateString), 'dd MMM yyyy, HH:mm', { locale: es });
+    } catch (error) {
+      return 'Fecha inválida';
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'approved':
+  // Filtrar evaluaciones recientes
+  const filteredEvaluations = Array.isArray(recentEvaluations) 
+    ? recentEvaluations.filter((evaluation: any) => {
+        const matchesSearch = 
+          evaluation.entityName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          evaluation.evaluatorName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          evaluation.comments?.toLowerCase().includes(searchTerm.toLowerCase());
+        
+        return matchesSearch;
+      })
+    : [];
+
+  // Función para navegar a módulos específicos
+  const navigateToModule = (moduleType: string) => {
+    setLocation(`/admin/evaluaciones/${moduleType}`);
+  };
+
+  // Función para obtener el icono según el tipo de evaluación
+  const getEvaluationTypeIcon = (type: string) => {
+    switch(type) {
+      case 'park':
+        return <MapPin className="h-4 w-4" />;
+      case 'instructor':
+        return <GraduationCap className="h-4 w-4" />;
+      case 'volunteer':
+        return <Heart className="h-4 w-4" />;
+      case 'activity':
+        return <Calendar className="h-4 w-4" />;
+      case 'concessionaire':
+        return <Building2 className="h-4 w-4" />;
+      default:
+        return <AlertCircle className="h-4 w-4" />;
+    }
+  };
+
+  // Función para obtener el color del badge según el tipo
+  const getEvaluationTypeColor = (type: string) => {
+    switch(type) {
+      case 'park':
         return 'bg-green-100 text-green-800';
-      case 'rejected':
-        return 'bg-red-100 text-red-800';
-      default:
+      case 'instructor':
+        return 'bg-blue-100 text-blue-800';
+      case 'volunteer':
+        return 'bg-purple-100 text-purple-800';
+      case 'activity':
+        return 'bg-orange-100 text-orange-800';
+      case 'concessionaire':
         return 'bg-yellow-100 text-yellow-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
-  if (isLoading) {
+  // Función para obtener el nombre en español del tipo
+  const getEvaluationTypeName = (type: string) => {
+    switch(type) {
+      case 'park':
+        return 'Parque';
+      case 'instructor':
+        return 'Instructor';
+      case 'volunteer':
+        return 'Voluntario';
+      case 'activity':
+        return 'Actividad';
+      case 'concessionaire':
+        return 'Concesionario';
+      default:
+        return type;
+    }
+  };
+
+  if (isStatsLoading || isRecentLoading) {
     return (
-      <AdminLayout title="Dashboard de Evaluaciones" subtitle="Cargando sistema de evaluaciones...">
-        <div className="p-6">
-          <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="h-32 bg-gray-200 rounded"></div>
-              ))}
-            </div>
+      <AdminLayout>
+        <div className="container mx-auto p-6">
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold">Dashboard de Evaluaciones</h1>
+            <p className="text-muted-foreground">
+              Gestión centralizada del sistema de evaluaciones
+            </p>
+          </div>
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
           </div>
         </div>
       </AdminLayout>
     );
   }
 
+  if (isStatsError || isRecentError) {
+    return (
+      <AdminLayout>
+        <div className="container mx-auto p-6">
+          <Card className="mt-6">
+            <CardContent>
+              <div className="text-center py-8">
+                <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+                <h2 className="text-lg font-medium mb-2">Error al cargar estadísticas</h2>
+                <p className="text-gray-500 mb-4">Ha ocurrido un error al intentar obtener los datos. Por favor, intenta nuevamente.</p>
+                <Button onClick={() => { refetchStats(); refetchRecent(); }}>
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Reintentar
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </AdminLayout>
+    );
+  }
+
   return (
-    <AdminLayout title="Dashboard de Evaluaciones" subtitle="Gestión centralizada de evaluaciones del sistema">
-      <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Sistema de Evaluaciones</h1>
-          <p className="text-gray-600 mt-2">
-            Gestión centralizada de evaluaciones para parques, instructores, voluntarios, actividades, concesionarios y eventos
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" className="flex items-center gap-2">
-            <Settings className="h-4 w-4" />
-            Configurar Criterios
-          </Button>
-          <Button className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            Nueva Evaluación
+    <AdminLayout>
+      <div className="container mx-auto p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-2xl font-bold">Dashboard de Evaluaciones</h1>
+            <p className="text-muted-foreground">
+              Gestión centralizada del sistema de evaluaciones
+            </p>
+          </div>
+          <Button onClick={() => { refetchStats(); refetchRecent(); }}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Actualizar datos
           </Button>
         </div>
-      </div>
 
-      {/* Estadísticas por Tipo de Entidad */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-        {entityTypes.slice(1).map((type) => {
-          const entityStats = stats?.[type.key as keyof EntityStats];
-          const Icon = type.icon;
+        {/* Estadísticas generales */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Total Evaluaciones</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.totalEvaluations || 0}</div>
+              <p className="text-xs text-muted-foreground">
+                <TrendingUp className="h-3 w-3 inline mr-1" />
+                Promedio: {stats.averageOverallRating || '0.0'}
+              </p>
+            </CardContent>
+          </Card>
           
-          return (
-            <Card key={type.key} className="hover:shadow-md transition-shadow cursor-pointer"
-                  onClick={() => setSelectedEntityType(type.key)}>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className={`p-2 rounded-lg ${type.color.replace('bg-', 'bg-').replace('-500', '-100')}`}>
-                    <Icon className={`h-5 w-5 ${type.color.replace('bg-', 'text-')}`} />
-                  </div>
-                  <Badge variant="secondary">{entityStats?.total || 0}</Badge>
-                </div>
-                <h3 className="font-semibold text-gray-900 mb-1">{type.label}</h3>
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <Star className="h-3 w-3 text-yellow-500" />
-                  {entityStats?.averageRating?.toFixed(1) || '0.0'}
-                </div>
-                <div className="mt-2 flex gap-1">
-                  <div className="flex-1 text-center">
-                    <div className="text-xs font-medium text-green-600">{entityStats?.approved || 0}</div>
-                    <div className="text-xs text-gray-500">Aprobadas</div>
-                  </div>
-                  <div className="flex-1 text-center">
-                    <div className="text-xs font-medium text-yellow-600">{entityStats?.pending || 0}</div>
-                    <div className="text-xs text-gray-500">Pendientes</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Parques</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.parks?.total || 0}</div>
+              <p className="text-xs text-muted-foreground">
+                Promedio: {stats.parks?.averageRating?.toFixed(1) || '0.0'}
+              </p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Instructores</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.instructors?.total || 0}</div>
+              <p className="text-xs text-muted-foreground">
+                Promedio: {stats.instructors?.averageRating?.toFixed(1) || '0.0'}
+              </p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Voluntarios</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.volunteers?.total || 0}</div>
+              <p className="text-xs text-muted-foreground">
+                Promedio: {stats.volunteers?.averageRating?.toFixed(1) || '0.0'}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
 
-      {/* Resumen General */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total Evaluaciones</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {Object.values(stats || {}).reduce((acc, curr) => acc + (curr?.total || 0), 0)}
-                </p>
-              </div>
-              <BarChart3 className="h-8 w-8 text-blue-500" />
+        {/* Módulos de evaluación */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Módulos de Evaluación</CardTitle>
+            <CardDescription>
+              Accede a los diferentes tipos de evaluaciones disponibles en el sistema
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigateToModule('parques')}>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-green-100 rounded-lg">
+                      <MapPin className="h-5 w-5 text-green-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium">Parques</h3>
+                      <p className="text-sm text-muted-foreground">{stats.parks?.total || 0} evaluaciones</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigateToModule('instructores')}>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <GraduationCap className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium">Instructores</h3>
+                      <p className="text-sm text-muted-foreground">{stats.instructors?.total || 0} evaluaciones</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigateToModule('voluntarios')}>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-purple-100 rounded-lg">
+                      <Heart className="h-5 w-5 text-purple-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium">Voluntarios</h3>
+                      <p className="text-sm text-muted-foreground">{stats.volunteers?.total || 0} evaluaciones</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigateToModule('actividades')}>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-orange-100 rounded-lg">
+                      <Calendar className="h-5 w-5 text-orange-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium">Actividades</h3>
+                      <p className="text-sm text-muted-foreground">{stats.activities?.total || 0} evaluaciones</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigateToModule('concesionarios')}>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-yellow-100 rounded-lg">
+                      <Building2 className="h-5 w-5 text-yellow-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium">Concesionarios</h3>
+                      <p className="text-sm text-muted-foreground">{stats.concessionaires?.total || 0} evaluaciones</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigateToModule('eventos')}>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-indigo-100 rounded-lg">
+                      <Calendar className="h-5 w-5 text-indigo-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium">Eventos</h3>
+                      <p className="text-sm text-muted-foreground">{stats.events?.total || 0} evaluaciones</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </CardContent>
         </Card>
 
+        {/* Evaluaciones recientes */}
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Pendientes de Revisión</p>
-                <p className="text-2xl font-bold text-yellow-600">
-                  {Object.values(stats || {}).reduce((acc, curr) => acc + (curr?.pending || 0), 0)}
-                </p>
+          <CardHeader>
+            <CardTitle>Evaluaciones Recientes</CardTitle>
+            <CardDescription>
+              Últimas evaluaciones registradas en el sistema
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="mb-4">
+              <div className="relative">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar evaluaciones..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-8"
+                />
               </div>
-              <Clock className="h-8 w-8 text-yellow-500" />
+            </div>
+            
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Tipo</TableHead>
+                    <TableHead>Entidad</TableHead>
+                    <TableHead>Evaluador</TableHead>
+                    <TableHead>Calificación</TableHead>
+                    <TableHead>Fecha</TableHead>
+                    <TableHead>Acciones</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredEvaluations.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-4">
+                        No hay evaluaciones disponibles
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    filteredEvaluations.map((evaluation: any) => (
+                      <TableRow key={`${evaluation.type}-${evaluation.id}`}>
+                        <TableCell>
+                          <Badge className={getEvaluationTypeColor(evaluation.type)}>
+                            {getEvaluationTypeIcon(evaluation.type)}
+                            <span className="ml-1">{getEvaluationTypeName(evaluation.type)}</span>
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          {evaluation.entityName || 'Nombre no disponible'}
+                        </TableCell>
+                        <TableCell>
+                          {evaluation.evaluatorName || 'Evaluador no disponible'}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={evaluation.overallRating >= 4 ? "default" : evaluation.overallRating >= 3 ? "secondary" : "destructive"}>
+                            {evaluation.overallRating}/5
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {formatDate(evaluation.createdAt)}
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => navigateToModule(evaluation.type === 'park' ? 'parques' : evaluation.type === 'instructor' ? 'instructores' : evaluation.type === 'volunteer' ? 'voluntarios' : evaluation.type === 'concessionaire' ? 'concesionarios' : 'eventos')}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
             </div>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Aprobadas</p>
-                <p className="text-2xl font-bold text-green-600">
-                  {Object.values(stats || {}).reduce((acc, curr) => acc + (curr?.approved || 0), 0)}
-                </p>
-              </div>
-              <CheckCircle className="h-8 w-8 text-green-500" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Promedio General</p>
-                <div className="flex items-center gap-1">
-                  <p className="text-2xl font-bold text-gray-900">
-                    {(Object.values(stats || {}).reduce((acc, curr) => acc + (curr?.averageRating || 0), 0) / 
-                      Object.keys(stats || {}).length).toFixed(1) || '0.0'}
-                  </p>
-                  <Star className="h-5 w-5 text-yellow-500" />
-                </div>
-              </div>
-              <Star className="h-8 w-8 text-yellow-500" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Tabs por Tipo de Entidad */}
-      <Tabs value={selectedEntityType} onValueChange={setSelectedEntityType}>
-        <TabsList className="grid w-full grid-cols-7">
-          {entityTypes.map((type) => {
-            const Icon = type.icon;
-            return (
-              <TabsTrigger key={type.key} value={type.key} className="flex items-center gap-2">
-                <Icon className="h-4 w-4" />
-                {type.label}
-              </TabsTrigger>
-            );
-          })}
-        </TabsList>
-
-        {entityTypes.map((type) => (
-          <TabsContent key={type.key} value={type.key} className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span>Evaluaciones Recientes - {type.label}</span>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
-                      <Filter className="h-4 w-4 mr-2" />
-                      Filtros
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      <Eye className="h-4 w-4 mr-2" />
-                      Ver Todas
-                    </Button>
-                  </div>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {loadingRecent ? (
-                  <div className="space-y-3">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <div key={i} className="animate-pulse">
-                        <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                        <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {(recentEvaluations as any[])?.length ? (
-                      (recentEvaluations as any[]).slice(0, 5).map((evaluation: any) => (
-                        <div key={evaluation.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
-                          <div className="flex items-center gap-3">
-                            {getStatusIcon(evaluation.status)}
-                            <div>
-                              <p className="font-medium text-gray-900">{evaluation.entityName}</p>
-                              <p className="text-sm text-gray-600">
-                                Por {evaluation.evaluatorName} • {evaluation.overallRating}/5 ⭐
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Badge className={getStatusColor(evaluation.status)}>
-                              {evaluation.status === 'pending' ? 'Pendiente' :
-                               evaluation.status === 'approved' ? 'Aprobada' : 'Rechazada'}
-                            </Badge>
-                            <span className="text-xs text-gray-500">
-                              {new Date(evaluation.createdAt).toLocaleDateString()}
-                            </span>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="text-center py-8 text-gray-500">
-                        No hay evaluaciones recientes para {type.label.toLowerCase()}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-        ))}
-      </Tabs>
       </div>
     </AdminLayout>
   );
-};
-
-export default EvaluationsDashboard;
+}

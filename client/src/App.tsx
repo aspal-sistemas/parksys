@@ -235,6 +235,11 @@ function Router() {
         {/* MÓDULO DE EVALUACIONES */}
         <Route path="/admin/evaluaciones">
           <Suspense fallback={<div className="p-8 text-center">Cargando sistema de evaluaciones...</div>}>
+            {React.createElement(React.lazy(() => import('@/pages/admin/evaluaciones')))}
+          </Suspense>
+        </Route>
+        <Route path="/admin/evaluaciones/dashboard">
+          <Suspense fallback={<div className="p-8 text-center">Cargando dashboard de evaluaciones...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/admin/evaluaciones/dashboard')))}
           </Suspense>
         </Route>

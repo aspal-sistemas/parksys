@@ -543,4 +543,83 @@ router.post('/api/evaluations/criteria/assign/:entityType', async (req, res) => 
   }
 });
 
+// Obtener evaluaciones recientes
+router.get('/api/evaluations/recent', async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit as string) || 10;
+    
+    // Obtener evaluaciones recientes de parques
+    const recentParkEvaluations = await db
+      .select({
+        id: parkEvaluations.id,
+        type: sql`'park'`,
+        entityName: sql`COALESCE(${parks.name}, 'Parque Desconocido')`,
+        evaluatorName: sql`'Sistema de Evaluación'`,
+        overallRating: parkEvaluations.overallRating,
+        status: sql`'approved'`,
+        comments: parkEvaluations.comments,
+        createdAt: parkEvaluations.createdAt
+      })
+      .from(parkEvaluations)
+      .leftJoin(parks, eq(parkEvaluations.parkId, parks.id))
+      .orderBy(desc(parkEvaluations.createdAt))
+      .limit(Math.floor(limit * 0.8))
+      .catch(() => []);
+
+    // Obtener evaluaciones recientes de instructores
+    const recentInstructorEvaluations = await db
+      .select({
+        id: instructorEvaluations.id,
+        type: sql`'instructor'`,
+        entityName: sql`COALESCE(${instructors.fullName}, 'Instructor Desconocido')`,
+        evaluatorName: sql`'Sistema de Evaluación'`,
+        overallRating: instructorEvaluations.overallRating,
+        status: sql`'approved'`,
+        comments: instructorEvaluations.comments,
+        createdAt: instructorEvaluations.createdAt
+      })
+      .from(instructorEvaluations)
+      .leftJoin(instructors, eq(instructorEvaluations.instructorId, instructors.id))
+      .orderBy(desc(instructorEvaluations.createdAt))
+      .limit(Math.floor(limit * 0.1))
+      .catch(() => []);
+
+    // Obtener evaluaciones recientes de voluntarios
+    const recentVolunteerEvaluations = await db
+      .select({
+        id: volunteerEvaluations.id,
+        type: sql`'volunteer'`,
+        entityName: sql`COALESCE(${volunteers.fullName}, 'Voluntario Desconocido')`,
+        evaluatorName: sql`'Sistema de Evaluación'`,
+        overallRating: volunteerEvaluations.overallPerformance,
+        status: sql`'approved'`,
+        comments: volunteerEvaluations.comments,
+        createdAt: volunteerEvaluations.createdAt
+      })
+      .from(volunteerEvaluations)
+      .leftJoin(volunteers, eq(volunteerEvaluations.volunteerId, volunteers.id))
+      .orderBy(desc(volunteerEvaluations.createdAt))
+      .limit(Math.floor(limit * 0.1))
+      .catch(() => []);
+
+    // Combinar y ordenar todas las evaluaciones por fecha
+    const allEvaluations = [
+      ...recentParkEvaluations,
+      ...recentInstructorEvaluations,
+      ...recentVolunteerEvaluations
+    ];
+
+    // Ordenar por fecha de creación descendente
+    allEvaluations.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    // Limitar al número solicitado
+    const recentEvaluations = allEvaluations.slice(0, limit);
+
+    res.json(recentEvaluations);
+  } catch (error) {
+    console.error('Error al obtener evaluaciones recientes:', error);
+    res.status(500).json({ error: 'Error interno del servidor', recent: [] });
+  }
+});
+
 export default router;
