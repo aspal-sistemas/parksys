@@ -1,70 +1,72 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { useLocation, useParams } from 'wouter';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { useLocation, useParams } from 'wouter';
 
 import AdminLayout from '@/components/AdminLayout';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Calendar } from '@/components/ui/calendar';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { cn } from '@/lib/utils';
-import { CalendarIcon } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { Spinner } from '@/components/Spinner';
-import ActivityImageManager from '@/components/ActivityImageManager';
-import { safeApiRequest } from '@/lib/queryClient';
+import { toast } from '@/hooks/use-toast';
+import { queryClient } from '@/lib/queryClient';
+import { Checkbox } from '@/components/ui/checkbox';
+import LocationSelector from '@/components/LocationSelector';
+import { Edit } from 'lucide-react';
 
-// Esquema para validar el formulario
-const activitySchema = z.object({
+// Días de la semana para actividades recurrentes
+const DIAS_SEMANA = [
+  { id: "lunes", label: "Lunes" },
+  { id: "martes", label: "Martes" },
+  { id: "miercoles", label: "Miércoles" },
+  { id: "jueves", label: "Jueves" },
+  { id: "viernes", label: "Viernes" },
+  { id: "sabado", label: "Sábado" },
+  { id: "domingo", label: "Domingo" }
+];
+
+// Opciones de mercado meta para la segmentación
+const MERCADO_META = [
+  { id: "preescolar", label: "Preescolar - 0 a 5 años" },
+  { id: "ninos", label: "Niños - 6 a 12 años" },
+  { id: "adolescentes", label: "Adolescentes - 13 a 18 años" },
+  { id: "adultos", label: "Adultos - 19 a 65 años" },
+  { id: "adultosmayores", label: "Adultos Mayores - +65 años" }
+];
+
+// Opciones de capacidades diferentes
+const CAPACIDADES_DIFERENTES = [
+  { id: "fisica", label: "Física / Motriz" },
+  { id: "visual", label: "Visual" },
+  { id: "auditiva", label: "Auditiva" },
+  { id: "intelectual", label: "Intelectual / Cognitiva" },
+  { id: "psicosocial", label: "Psicosocial / Mental" },
+  { id: "neurodivergencias", label: "Neurodivergencias" },
+  { id: "multiple", label: "Múltiple / Combinada" },
+  { id: "temporal", label: "Temporal" }
+];
+
+// Esquema de validación para el formulario - IDÉNTICO AL DE CREAR
+const formSchema = z.object({
   title: z.string().min(3, "El título debe tener al menos 3 caracteres"),
   description: z.string().min(10, "La descripción debe tener al menos 10 caracteres"),
   category: z.string().min(1, "Debes seleccionar una categoría"),
-  parkId: z.coerce.number().int().positive("Debes seleccionar un parque"),
+  parkId: z.string().min(1, "Debes seleccionar un parque"),
   startDate: z.string().min(1, "La fecha de inicio es obligatoria"),
   endDate: z.string().optional(),
   
-  // Campos para hora de inicio y finalización
+  // Nuevos campos para hora de inicio y finalización
   startTime: z.string().min(1, "La hora de inicio es obligatoria"),
   endTime: z.string().min(1, "La hora de finalización es obligatoria"),
   
   location: z.string().optional(),
+  latitude: z.coerce.number().optional(),
+  longitude: z.coerce.number().optional(),
   capacity: z.coerce.number().int().positive().optional(),
   duration: z.coerce.number().int().positive().optional(),
   
@@ -78,733 +80,417 @@ const activitySchema = z.object({
   isRecurring: z.boolean().default(false),
   recurringDays: z.array(z.string()).optional(),
   
-  // Campos para segmentación
+  // Nuevos campos para segmentación
   targetMarket: z.array(z.string()).optional(),
   
   // Campos para capacidades diferentes
   specialNeeds: z.array(z.string()).optional(),
   
-  // Campo para seleccionar al instructor por su ID e información adicional
-  instructorId: z.coerce.number().optional().nullable(),
-  instructorName: z.string().optional(),
-  instructorContact: z.string().optional(),
+  // Campo para seleccionar al instructor por su ID
+  instructorId: z.string().optional(),
   
-  // Campos para inscripciones de participantes
-  registrationEnabled: z.boolean().default(false),
+  // Nuevos campos para registro ciudadano
+  allowsPublicRegistration: z.boolean().default(false),
   maxRegistrations: z.coerce.number().int().positive().optional(),
   registrationDeadline: z.string().optional(),
-  requiresApproval: z.boolean().default(false), // Cambiado a false para que sea opcional por defecto
+  registrationInstructions: z.string().optional(),
+  requiresApproval: z.boolean().default(false),
+  ageRestrictions: z.string().optional(),
+  healthRequirements: z.string().optional(),
 });
 
-// Función para formatear la fecha correctamente para la API (sin zona horaria)
-function formatearFechaParaAPI(fecha: string): string {
-  if (!fecha) return '';
-  
-  try {
-    // Si la fecha ya está en formato YYYY-MM-DD, usarla directamente
-    if (fecha.match(/^\d{4}-\d{2}-\d{2}$/)) {
-      return fecha;
-    }
-    
-    // Si es un objeto Date o string ISO, extraer solo la fecha
-    const fechaObj = new Date(fecha);
-    const year = fechaObj.getFullYear();
-    const month = (fechaObj.getMonth() + 1).toString().padStart(2, '0');
-    const day = fechaObj.getDate().toString().padStart(2, '0');
-    
-    return `${year}-${month}-${day}`;
-  } catch (error) {
-    console.error("Error al formatear fecha:", error);
-    return '';
-  }
-}
+type FormValues = z.infer<typeof formSchema>;
 
-// Función para combinar fecha y hora (mantener zona horaria local)
+// Función para combinar una fecha y una hora en un formato ISO
 function combinarFechaYHora(fecha: string, hora: string): string {
-  if (!fecha || !hora) return '';
+  const [year, month, day] = fecha.split('-');
+  const [hours, minutes] = hora.split(':');
   
-  try {
-    const [year, month, day] = fecha.split('-');
-    const [hours, minutes] = hora.split(':');
-    
-    // Crear fecha local (sin conversión UTC)
-    const fechaCompleta = new Date(
-      parseInt(year),
-      parseInt(month) - 1,
-      parseInt(day),
-      parseInt(hours),
-      parseInt(minutes)
-    );
-    
-    // Retornar en formato local ISO
-    const timezoneOffset = fechaCompleta.getTimezoneOffset();
-    const localDate = new Date(fechaCompleta.getTime() - (timezoneOffset * 60000));
-    return localDate.toISOString().split('T')[0] + 'T' + hora + ':00';
-  } catch (error) {
-    console.error("Error al combinar fecha y hora:", error);
-    return '';
-  }
+  const fechaCompleta = new Date(
+    parseInt(year), 
+    parseInt(month) - 1, // El mes en JavaScript es 0-indexado
+    parseInt(day),
+    parseInt(hours),
+    parseInt(minutes)
+  );
+  
+  return fechaCompleta.toISOString();
 }
 
 // Función para calcular la duración en minutos entre dos horas
 function calcularDuracionEnMinutos(horaInicio: string, horaFin: string): number {
   if (!horaInicio || !horaFin) return 0;
   
-  try {
-    const [horaInicioH, horaInicioM] = horaInicio.split(':').map(Number);
-    const [horaFinH, horaFinM] = horaFin.split(':').map(Number);
-    
-    if (isNaN(horaInicioH) || isNaN(horaInicioM) || isNaN(horaFinH) || isNaN(horaFinM)) {
-      console.error("Error en formato de horas:", { horaInicio, horaFin });
-      return 0;
-    }
-    
-    const inicioMinutos = horaInicioH * 60 + horaInicioM;
-    const finMinutos = horaFinH * 60 + horaFinM;
-    
-    // Si la hora de fin es menor que la de inicio, asumimos que es al día siguiente
-    if (finMinutos < inicioMinutos) {
-      return (24 * 60 - inicioMinutos) + finMinutos;
-    }
-    
-    return finMinutos - inicioMinutos;
-  } catch (error) {
-    console.error("Error al calcular duración:", error);
-    return 0;
+  const [inicioHoras, inicioMinutos] = horaInicio.split(':').map(Number);
+  const [finHoras, finMinutos] = horaFin.split(':').map(Number);
+  
+  const inicioTotal = inicioHoras * 60 + inicioMinutos;
+  let finTotal = finHoras * 60 + finMinutos;
+  
+  // Si la hora de fin es menor que la de inicio, asumimos que es al día siguiente
+  if (finTotal <= inicioTotal) {
+    finTotal += 24 * 60; // Agregar 24 horas
   }
+  
+  return finTotal - inicioTotal;
 }
 
 const EditarActividadPage = () => {
   const [location, setLocation] = useLocation();
   const params = useParams();
   const activityId = params?.id;
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  
-  // Valores por defecto para las horas
-  const [horaInicio, setHoraInicio] = useState("09:00");
-  const [horaFin, setHoraFin] = useState("10:00");
-  
-  // Obtener los datos de la actividad
+
+  // Consulta para obtener la lista de parques
+  const { data: parques = [], isLoading: isLoadingParques } = useQuery({
+    queryKey: ['/api/parks'],
+  });
+
+  // Consulta para obtener la lista de categorías
+  const { data: categorias = [], isLoading: isLoadingCategorias } = useQuery({
+    queryKey: ['/api/activity-categories'],
+  });
+
+  // Consulta para obtener la lista de usuarios con rol de instructor
+  const { data: allUsers = [], isLoading: isLoadingUsers } = useQuery({
+    queryKey: ['/api/users']
+  });
+
+  const instructores = allUsers.filter((user: any) => 
+    user.roleName?.toLowerCase() === 'instructor' || 
+    user.roleName?.toLowerCase().includes('instructor')
+  );
+
+  // Stats para debug
+  console.log('Debug stats:', {
+    parques: parques.length,
+    categorias: categorias.length,
+    instructores: instructores.length,
+  });
+
+  // Consulta para obtener los datos de la actividad actual
   const { data: actividad, isLoading: isLoadingActividad } = useQuery({
     queryKey: [`/api/activities/${activityId}`],
     enabled: !!activityId,
   });
-  
-  // Obtener la lista de parques para el select
-  const { data: parques, isLoading: isLoadingParques, error: parquesError } = useQuery({
-    queryKey: ['/api/parks'],
-  });
-  
-  // Debug eliminado - parques funcionando correctamente
-  
-  // Obtener la lista de instructores para el select
-  const { data: instructores, isLoading: isLoadingInstructores } = useQuery({
-    queryKey: ['/api/instructors'],
-  });
 
-  // Obtener las categorías dinámicamente desde la API
-  const { data: categoriesData = [] } = useQuery({
-    queryKey: ['/api/activity-categories'],
-  });
-  
-  // Inicializar el formulario con valores por defecto completos
-  const form = useForm({
-    resolver: zodResolver(activitySchema),
+  // Inicializar el formulario con valores por defecto idénticos al formulario de crear
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
       description: "",
-      parkId: 0,
+      category: "",
+      parkId: "",
       startDate: "",
       endDate: "",
       startTime: "09:00",
       endTime: "10:00",
-      category: "",
       location: "",
-      capacity: 20,
+      latitude: undefined,
+      longitude: undefined,
+      capacity: undefined,
+      duration: 60,
       price: 0,
       isPriceRandom: false,
-      isFree: true,
+      isFree: false,
       materials: "",
       requirements: "",
       isRecurring: false,
       recurringDays: [],
       targetMarket: [],
       specialNeeds: [],
-      instructorId: null,
-      instructorName: "",
-      instructorContact: "",
-      duration: 60,
-      registrationEnabled: false,
-      maxRegistrations: 20,
+      instructorId: "",
+      allowsPublicRegistration: false,
+      maxRegistrations: undefined,
       registrationDeadline: "",
-      requiresApproval: true,
-    },
-    mode: "onChange"
+      registrationInstructions: "",
+      requiresApproval: false,
+      ageRestrictions: "",
+      healthRequirements: "",
+    }
   });
-  
-  // Llenar el formulario con los datos de la actividad cuando se carguen
+
+  // Llenar el formulario cuando se cargan los datos de la actividad
   useEffect(() => {
-    if (actividad && typeof actividad === 'object') {
+    if (actividad) {
       const data = actividad as any;
       
-      // Extraer fecha y hora de manera más robusta
-      let startDate = "";
-      let startTime = "09:00";
-      let endTime = "10:00";
+      // Extraer fecha y hora de inicio
+      let startDate = '';
+      let startTime = '09:00';
       
-      console.log("📅 Datos de actividad recibidos:", {
-        startDate: data.startDate,
-        startTime: data.startTime,
-        endTime: data.endTime,
-        duration: data.duration
-      });
-      
-      // Procesar fecha de inicio
       if (data.startDate) {
-        try {
-          // Si startDate contiene una fecha completa con tiempo, parsearlo
-          if (data.startDate.includes('T') || data.startDate.includes(' ')) {
-            const startDateObj = new Date(data.startDate);
-            startDate = format(startDateObj, 'yyyy-MM-dd');
-            // Solo usar la hora del startDate si no hay startTime separado
-            if (!data.startTime) {
-              startTime = format(startDateObj, 'HH:mm');
-            }
-          } else {
-            // Si es solo fecha (YYYY-MM-DD), usarla directamente
-            startDate = data.startDate;
-          }
-        } catch (error) {
-          console.error("❌ Error al parsear fecha de inicio:", error);
-          startDate = "";
+        if (data.startDate.includes('T')) {
+          // Si es una fecha ISO completa
+          const date = new Date(data.startDate);
+          startDate = date.toISOString().split('T')[0];
+          startTime = date.toTimeString().substring(0, 5);
+        } else {
+          // Si es solo fecha
+          startDate = data.startDate;
         }
       }
       
-      // Usar startTime si está disponible por separado
-      if (data.startTime && typeof data.startTime === 'string') {
+      // Si hay startTime separado, úsalo
+      if (data.startTime) {
         startTime = data.startTime;
       }
       
-      // Usar endTime si está disponible, o calcular usando duración
-      if (data.endTime && typeof data.endTime === 'string') {
-        endTime = data.endTime;
-      } else if (data.duration && startTime) {
-        try {
-          const [hours, minutes] = startTime.split(':').map(Number);
-          const startMinutes = hours * 60 + minutes;
-          const endMinutes = startMinutes + (data.duration || 60);
-          
-          const endHours = Math.floor(endMinutes / 60) % 24;
-          const endMins = endMinutes % 60;
-          
-          endTime = `${endHours.toString().padStart(2, '0')}:${endMins.toString().padStart(2, '0')}`;
-        } catch (error) {
-          console.error("❌ Error al calcular hora de fin:", error);
-          endTime = "10:00";
-        }
+      // Calcular endTime si no está disponible
+      let endTime = data.endTime || '10:00';
+      if (!data.endTime && data.duration) {
+        const [h, m] = startTime.split(':').map(Number);
+        const totalMinutos = h * 60 + m + (data.duration || 60);
+        const endH = Math.floor(totalMinutos / 60) % 24;
+        const endM = totalMinutos % 60;
+        endTime = `${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`;
       }
-      
-      console.log("✅ Fechas procesadas:", {
-        startDate,
-        startTime,
-        endTime
-      });
-      
-      setHoraInicio(startTime);
-      setHoraFin(endTime);
-      
-      // Llenar el formulario asegurando que todos los campos tengan valores válidos
+
       form.reset({
         title: data.title || "",
         description: data.description || "",
-        parkId: Number(data.parkId) || 0,
-        startDate: startDate || "",
-        endDate: data.endDate ? format(new Date(data.endDate), 'yyyy-MM-dd') : "",
-        startTime: startTime || "09:00",
-        endTime: endTime || "10:00",
         category: data.categoryId ? data.categoryId.toString() : "",
+        parkId: data.parkId ? data.parkId.toString() : "",
+        startDate: startDate,
+        endDate: data.endDate ? (new Date(data.endDate)).toISOString().split('T')[0] : "",
+        startTime: startTime,
+        endTime: endTime,
         location: data.location || "",
-        capacity: Number(data.capacity) || 20,
-        price: Number(data.price) || 0,
-        isPriceRandom: Boolean(data.isPriceRandom),
-        isFree: Boolean(data.isFree),
+        latitude: data.latitude || undefined,
+        longitude: data.longitude || undefined,
+        capacity: data.capacity || undefined,
+        duration: data.duration || calcularDuracionEnMinutos(startTime, endTime),
+        price: data.price || 0,
+        isPriceRandom: data.isPriceRandom || false,
+        isFree: data.isFree || false,
         materials: data.materials || "",
         requirements: data.requirements || "",
-        isRecurring: Boolean(data.isRecurring),
-        recurringDays: Array.isArray(data.recurringDays) ? data.recurringDays : [],
-        targetMarket: Array.isArray(data.targetMarket) ? data.targetMarket : [],
-        specialNeeds: Array.isArray(data.specialNeeds) ? data.specialNeeds : [],
-        instructorId: data.instructorId && data.instructorId !== 0 ? Number(data.instructorId) : null,
-        instructorName: data.instructorName || "",
-        instructorContact: data.instructorContact || "",
-        duration: Number(data.duration) || calcularDuracionEnMinutos(startTime, endTime),
-        registrationEnabled: Boolean(data.registrationEnabled),
-        maxRegistrations: Number(data.maxRegistrations) || 20,
-        registrationDeadline: data.registrationDeadline ? format(new Date(data.registrationDeadline), 'yyyy-MM-dd') : "",
-        requiresApproval: Boolean(data.requiresApproval),
+        isRecurring: data.isRecurring || false,
+        recurringDays: data.recurringDays || [],
+        targetMarket: data.targetMarket || [],
+        specialNeeds: data.specialNeeds || [],
+        instructorId: data.instructorId ? data.instructorId.toString() : "",
+        allowsPublicRegistration: data.allowsPublicRegistration || false,
+        maxRegistrations: data.maxRegistrations || undefined,
+        registrationDeadline: data.registrationDeadline ? (new Date(data.registrationDeadline)).toISOString().split('T')[0] : "",
+        registrationInstructions: data.registrationInstructions || "",
+        requiresApproval: data.requiresApproval || false,
+        ageRestrictions: data.ageRestrictions || "",
+        healthRequirements: data.healthRequirements || "",
       });
     }
   }, [actividad, form]);
-  
-  // Actualizar la duración cuando cambian las horas
-  useEffect(() => {
-    const startTimeValue = form.watch("startTime");
-    const endTimeValue = form.watch("endTime");
-    
-    if (startTimeValue && endTimeValue) {
-      const duracion = calcularDuracionEnMinutos(startTimeValue, endTimeValue);
-      form.setValue("duration", duracion);
-    }
-  }, [form.watch("startTime"), form.watch("endTime"), form]);
-  
+
   // Mutación para actualizar la actividad
-  const actualizarActividad = useMutation({
-    mutationFn: async (values: any) => {
-      // Construir el objeto de datos a enviar
-      const data = {
+  const updateMutation = useMutation({
+    mutationFn: async (values: FormValues) => {
+      console.log('Enviando datos de edición:', values);
+
+      // Buscamos el instructor seleccionado para obtener sus datos
+      let instructorData = {};
+      
+      if (values.instructorId) {
+        const selectedInstructor = instructores.find(
+          (instructor: any) => instructor.id.toString() === values.instructorId
+        );
+        
+        if (selectedInstructor) {
+          instructorData = {
+            instructorId: selectedInstructor.id,
+            instructorName: `${selectedInstructor.fullName || selectedInstructor.username || ''}`.trim(),
+            instructorContact: selectedInstructor.email || '',
+          };
+        }
+      }
+
+      // Preparar los datos para enviar
+      const dataToSend = {
         title: values.title,
         description: values.description,
-        parkId: values.parkId,
-        startDate: formatearFechaParaAPI(values.startDate),
-        endDate: values.endDate ? formatearFechaParaAPI(values.endDate) : null,
+        categoryId: parseInt(values.category),
+        parkId: parseInt(values.parkId),
+        
+        // Combinar fecha y hora para startDate
+        startDate: combinarFechaYHora(values.startDate, values.startTime),
+        endDate: values.endDate ? combinarFechaYHora(values.endDate, values.endTime) : null,
+        
+        // Guardar también los campos separados
         startTime: values.startTime,
         endTime: values.endTime,
-        category_id: parseInt(values.category),
-        location: values.location || null,
-        capacity: values.capacity || null,
-        duration: values.duration || calcularDuracionEnMinutos(values.startTime, values.endTime),
-        price: values.isFree ? 0 : values.price,
-        isPriceRandom: values.isPriceRandom || false,
-        isFree: values.isFree || false,
-        materials: values.materials || null,
-        requirements: values.requirements || null,
-        isRecurring: values.isRecurring || false,
-        recurringDays: values.isRecurring ? values.recurringDays : [],
-        targetMarket: values.targetMarket || [],
-        specialNeeds: values.specialNeeds || [],
-        registrationEnabled: values.registrationEnabled || false,
-        maxRegistrations: values.maxRegistrations || null,
-        registrationDeadline: values.registrationDeadline ? formatearFechaParaAPI(values.registrationDeadline) : null,
-        requiresApproval: values.requiresApproval || true,
+        
+        location: values.location,
+        latitude: values.latitude,
+        longitude: values.longitude,
+        capacity: values.capacity,
+        duration: values.duration,
+        price: values.price,
+        isPriceRandom: values.isPriceRandom,
+        isFree: values.isFree,
+        materials: values.materials,
+        requirements: values.requirements,
+        isRecurring: values.isRecurring,
+        recurringDays: values.recurringDays,
+        targetMarket: values.targetMarket,
+        specialNeeds: values.specialNeeds,
+        
+        // Datos del instructor
+        ...instructorData,
+        
+        // Campos de registro ciudadano
+        allowsPublicRegistration: values.allowsPublicRegistration,
+        maxRegistrations: values.maxRegistrations,
+        registrationDeadline: values.registrationDeadline,
+        registrationInstructions: values.registrationInstructions,
+        requiresApproval: values.requiresApproval,
+        ageRestrictions: values.ageRestrictions,
+        healthRequirements: values.healthRequirements,
       };
-      
-      // Agregar datos del instructor si se seleccionó uno
-      let instructorData = {};
-      if (values.instructorId && values.instructorId !== 0) {
-        instructorData = {
-          instructorId: values.instructorId,
-          instructorName: values.instructorName,
-          instructorContact: values.instructorContact
-        };
-      } else {
-        // Asegurar que los campos de instructor se envíen como null cuando no hay instructor
-        instructorData = {
-          instructorId: null,
-          instructorName: null,
-          instructorContact: null
-        };
-      }
-      
-      const finalData = { ...data, ...instructorData };
-      console.log("Enviando datos a la API:", finalData);
-      
-      // Usar safeApiRequest en lugar de fetch directo
-      return await safeApiRequest(`/api/activities/${activityId}`, { 
-        method: 'PUT', 
-        data: finalData 
+
+      const response = await fetch(`/api/activities/${activityId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dataToSend),
       });
+
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(`Error ${response.status}: ${error}`);
+      }
+
+      return response.json();
     },
     onSuccess: () => {
       toast({
-        title: "Actividad actualizada",
-        description: "La actividad se ha actualizado correctamente",
+        title: "¡Éxito!",
+        description: "La actividad ha sido actualizada correctamente.",
       });
+      
       queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
       queryClient.invalidateQueries({ queryKey: [`/api/activities/${activityId}`] });
-      setLocation("/admin/activities");
+      
+      setLocation('/admin/organizador/catalogo/ver');
     },
     onError: (error) => {
-      console.error("Error al actualizar actividad:", error);
+      console.error('Error al actualizar actividad:', error);
       toast({
         title: "Error",
-        description: "No se pudo actualizar la actividad. Intente nuevamente.",
+        description: `No se pudo actualizar la actividad: ${error.message}`,
         variant: "destructive",
       });
-    }
+    },
   });
-  
-  // Manejar el envío del formulario
-  const onSubmit = (values: any) => {
-    console.log("🚀 onSubmit ejecutado con valores:", values);
-    console.log("🔍 Errores del formulario:", form.formState.errors);
-    console.log("🔍 Estado del formulario válido:", form.formState.isValid);
-    console.log("🔍 Campos sucios:", form.formState.dirtyFields);
-    
-    actualizarActividad.mutate(values);
+
+  const onSubmit = (values: FormValues) => {
+    updateMutation.mutate(values);
   };
-  
 
-  
-  // Días de la semana para actividades recurrentes
-  const diasSemana = [
-    { id: "Lunes", label: "Lunes" },
-    { id: "Martes", label: "Martes" },
-    { id: "Miércoles", label: "Miércoles" },
-    { id: "Jueves", label: "Jueves" },
-    { id: "Viernes", label: "Viernes" },
-    { id: "Sábado", label: "Sábado" },
-    { id: "Domingo", label: "Domingo" }
-  ];
-  
-  // Opciones de mercado meta para la segmentación
-  const mercadoObjetivo = [
-    { id: "preescolar", label: "Preescolar - 0 a 5 años" },
-    { id: "ninos", label: "Niños - 6 a 12 años" },
-    { id: "adolescentes", label: "Adolescentes - 13 a 18 años" },
-    { id: "adultos", label: "Adultos - 19 a 65 años" },
-    { id: "adultosmayores", label: "Adultos Mayores - +65 años" }
-  ];
-  
-  // Opciones de capacidades diferentes
-  const necesidadesEspeciales = [
-    { id: "fisica", label: "Física / Motriz" },
-    { id: "visual", label: "Visual" },
-    { id: "auditiva", label: "Auditiva" },
-    { id: "intelectual", label: "Intelectual / Cognitiva" },
-    { id: "psicosocial", label: "Psicosocial / Mental" },
-    { id: "neurodivergencias", label: "Neurodivergencias" },
-    { id: "multiple", label: "Múltiple / Combinada" },
-    { id: "temporal", label: "Temporal" }
-  ];
-
-  
-  // Mostrar loading si los datos aún no están cargados
-  if (isLoadingActividad || isLoadingParques || isLoadingInstructores) {
+  if (isLoadingActividad || isLoadingParques || isLoadingCategorias || isLoadingUsers) {
     return (
       <AdminLayout>
-        <div className="flex justify-center items-center h-64">
-          <Spinner />
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+            <p className="mt-4">Cargando datos de la actividad...</p>
+          </div>
         </div>
       </AdminLayout>
     );
   }
-  
-  // Si no se encuentra la actividad
-  if (!actividad && !isLoadingActividad) {
+
+  if (!actividad) {
     return (
       <AdminLayout>
-        <Card className="w-full max-w-3xl mx-auto">
-          <CardHeader>
-            <CardTitle>Actividad no encontrada</CardTitle>
-            <CardDescription>No se pudo encontrar la actividad con el ID proporcionado</CardDescription>
-          </CardHeader>
-          <CardFooter>
-            <Button onClick={() => setLocation("/admin/activities")}>
-              Volver al listado
-            </Button>
-          </CardFooter>
-        </Card>
+        <div className="container mx-auto px-4 py-8">
+          <Card>
+            <CardContent className="p-6 text-center">
+              <p className="text-red-600">No se encontró la actividad solicitada.</p>
+              <Button 
+                onClick={() => setLocation('/admin/organizador/catalogo/ver')} 
+                className="mt-4"
+              >
+                Volver al catálogo
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
       </AdminLayout>
     );
   }
-  
+
   return (
     <AdminLayout>
-      <div className="container mx-auto py-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Editar Actividad</h1>
-          <Button
-            variant="outline"
-            onClick={() => setLocation("/admin/activities")}
-          >
-            Volver al listado
-          </Button>
-        </div>
-        
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            <Card>
-              <CardHeader>
-                <CardTitle>Información Básica</CardTitle>
-                <CardDescription>
-                  Información general sobre la actividad
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Nombre de la actividad */}
-                <FormField
-                  control={form.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nombre de la actividad *</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Ej. Taller de Pintura" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+      <div className="container mx-auto px-4 py-8">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Edit className="w-5 h-5" />
+              Editar Actividad
+            </CardTitle>
+            <CardDescription>
+              Modifica los detalles de la actividad seleccionada
+            </CardDescription>
+          </CardHeader>
+          
+          <CardContent className="space-y-6">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 
-                {/* Descripción */}
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Descripción *</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Describe la actividad..."
-                          className="resize-none min-h-32"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Incluye detalles importantes sobre lo que los participantes harán y aprenderán.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                {/* Parque */}
-                <FormField
-                  control={form.control}
-                  name="parkId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Parque *</FormLabel>
-                      <Select
-                        onValueChange={(value) => field.onChange(parseInt(value))}
-                        value={field.value?.toString() || "0"}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecciona un parque" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {isLoadingParques ? (
-                            <SelectItem value="loading" disabled>
-                              Cargando parques...
-                            </SelectItem>
-                          ) : Array.isArray(parques) && parques.length > 0 ? (
-                            parques.map((parque: any) => (
-                              <SelectItem key={parque.id} value={parque.id.toString()}>
-                                {parque.name || "Parque sin nombre"}
-                              </SelectItem>
-                            ))
-                          ) : (
-                            <SelectItem value="no-parks" disabled>
-                              No hay parques disponibles
-                            </SelectItem>
-                          )}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                {/* Categoría */}
-                <FormField
-                  control={form.control}
-                  name="category"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Categoría *</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecciona una categoría" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {Array.isArray(categoriesData) && categoriesData.map((category: any) => (
-                            <SelectItem key={category.id} value={category.id.toString()}>
-                              {category.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                {/* Ubicación dentro del parque */}
-                <FormField
-                  control={form.control}
-                  name="location"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Ubicación dentro del parque</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Ej. Área central del parque"
-                          {...field}
-                          value={field.value || ''}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Especifica dónde dentro del parque se realizará la actividad.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </CardContent>
-            </Card>
-            
-            {/* Fechas y horarios */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Fechas y Horarios</CardTitle>
-                <CardDescription>
-                  Cuándo se realizará la actividad
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Fecha de inicio */}
-                <FormField
-                  control={form.control}
-                  name="startDate"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Fecha de inicio *</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
+                {/* Sección de Información Básica */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium">Información Básica</h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="title"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nombre de la actividad *</FormLabel>
                           <FormControl>
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              {field.value ? (
-                                format(new Date(field.value), "PPP", { locale: es })
-                              ) : (
-                                <span>Selecciona una fecha</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
+                            <Input placeholder="Ej: Yoga en el parque" {...field} />
                           </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value ? new Date(field.value) : undefined}
-                            onSelect={(date) => {
-                              if (date) {
-                                field.onChange(format(date, "yyyy-MM-dd"));
-                              }
-                            }}
-                            disabled={(date) => date < new Date("1900-01-01")}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                {/* Fecha de fin */}
-                <FormField
-                  control={form.control}
-                  name="endDate"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Fecha de fin (opcional)</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              {field.value ? (
-                                format(new Date(field.value), "PPP", { locale: es })
-                              ) : (
-                                <span>Selecciona una fecha</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value ? new Date(field.value) : undefined}
-                            onSelect={(date) => {
-                              if (date) {
-                                field.onChange(format(date, "yyyy-MM-dd"));
-                              } else {
-                                field.onChange("");
-                              }
-                            }}
-                            disabled={(date) => {
-                              const startDate = form.getValues("startDate");
-                              if (date < new Date("1900-01-01")) return true;
-                              if (startDate && date < new Date(startDate)) return true;
-                              return false;
-                            }}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormDescription>
-                        Para actividades de un solo día, deja este campo vacío.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                {/* Horas de inicio y fin */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="category"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Categoría *</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecciona una categoría" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {categorias.map((categoria: any) => (
+                                <SelectItem key={categoria.id} value={categoria.id.toString()}>
+                                  {categoria.nombre}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
                   <FormField
                     control={form.control}
-                    name="startTime"
+                    name="description"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Hora de inicio *</FormLabel>
+                        <FormLabel>Descripción *</FormLabel>
                         <FormControl>
-                          <Input 
-                            type="time" 
+                          <Textarea
+                            placeholder="Describe la actividad, qué se hará, objetivos, etc."
+                            className="min-h-[100px]"
                             {...field}
-                            onChange={(e) => {
-                              field.onChange(e.target.value);
-                              setHoraInicio(e.target.value);
-                            }}
-                            className="mt-1"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="endTime"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Hora de fin *</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="time" 
-                            {...field}
-                            onChange={(e) => {
-                              field.onChange(e.target.value);
-                              setHoraFin(e.target.value);
-                            }}
-                            className="mt-1"
                           />
                         </FormControl>
                         <FormMessage />
@@ -812,56 +498,402 @@ const EditarActividadPage = () => {
                     )}
                   />
                 </div>
-                
-                {/* Duración (calculada automáticamente) */}
-                <FormField
-                  control={form.control}
-                  name="duration"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Duración (en minutos)</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          {...field}
-                          min={0}
-                          readOnly
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        La duración se calcula automáticamente en base a las horas de inicio y fin.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                {/* Actividad recurrente */}
-                <div className="space-y-4">
+
+                {/* Sección de Ubicación */}
+                <div className="space-y-4 pt-4 border-t">
+                  <h3 className="text-lg font-medium">Ubicación</h3>
+                  
+                  <FormField
+                    control={form.control}
+                    name="parkId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Parque *</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecciona un parque" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {parques.map((parque: any) => (
+                              <SelectItem key={parque.id} value={parque.id.toString()}>
+                                {parque.nombre}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="location"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Ubicación específica</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="Ej: Área de juegos, Cancha de fútbol, Junto al lago" 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Especifica dónde exactamente dentro del parque se realizará la actividad
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="latitude"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Latitud (GPS)</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              step="any" 
+                              placeholder="Ej: 20.676667" 
+                              {...field}
+                              onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                              value={field.value || ""}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Coordenada de latitud para ubicación GPS precisa
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="longitude"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Longitud (GPS)</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              step="any" 
+                              placeholder="Ej: -103.342222" 
+                              {...field}
+                              onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                              value={field.value || ""}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Coordenada de longitud para ubicación GPS precisa
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        if (navigator.geolocation) {
+                          navigator.geolocation.getCurrentPosition(
+                            (position) => {
+                              form.setValue('latitude', position.coords.latitude);
+                              form.setValue('longitude', position.coords.longitude);
+                              toast({
+                                title: "Ubicación obtenida",
+                                description: "Las coordenadas GPS han sido establecidas automáticamente.",
+                              });
+                            },
+                            (error) => {
+                              toast({
+                                title: "Error",
+                                description: "No se pudo obtener la ubicación. Por favor ingresa las coordenadas manualmente.",
+                                variant: "destructive"
+                              });
+                            }
+                          );
+                        } else {
+                          toast({
+                            title: "No soportado",
+                            description: "Tu navegador no soporta la geolocalización.",
+                            variant: "destructive"
+                          });
+                        }
+                      }}
+                      className="w-full"
+                    >
+                      📍 Obtener Ubicación Actual
+                    </Button>
+                    <p className="text-xs text-gray-500 mt-2 text-center">
+                      Haz clic para obtener automáticamente tu ubicación GPS actual
+                    </p>
+                  </div>
+                </div>
+
+                {/* Sección de Segmentación */}
+                <div className="space-y-4 pt-4 border-t">
+                  <h3 className="text-lg font-medium">Segmentación</h3>
+                  
+                  <FormField
+                    control={form.control}
+                    name="targetMarket"
+                    render={() => (
+                      <FormItem>
+                        <div className="mb-4">
+                          <FormLabel>Mercado Meta</FormLabel>
+                          <FormDescription>
+                            Selecciona los grupos de edad a los que está dirigida esta actividad
+                          </FormDescription>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                          {MERCADO_META.map((item) => (
+                            <FormField
+                              key={item.id}
+                              control={form.control}
+                              name="targetMarket"
+                              render={({ field }) => {
+                                return (
+                                  <FormItem
+                                    key={item.id}
+                                    className="flex flex-row items-start space-x-3 space-y-0"
+                                  >
+                                    <FormControl>
+                                      <Checkbox
+                                        checked={field.value?.includes(item.id)}
+                                        onCheckedChange={(checked) => {
+                                          return checked
+                                            ? field.onChange([...(field.value || []), item.id])
+                                            : field.onChange(
+                                                field.value?.filter(
+                                                  (value) => value !== item.id
+                                                )
+                                              );
+                                        }}
+                                      />
+                                    </FormControl>
+                                    <FormLabel className="font-normal">
+                                      {item.label}
+                                    </FormLabel>
+                                  </FormItem>
+                                );
+                              }}
+                            />
+                          ))}
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* Sección de Capacidades Diferentes */}
+                <div className="space-y-4 pt-4 border-t">
+                  <h3 className="text-lg font-medium">Capacidades Diferentes</h3>
+                  
+                  <FormField
+                    control={form.control}
+                    name="specialNeeds"
+                    render={() => (
+                      <FormItem>
+                        <div className="mb-4">
+                          <FormLabel>Accesibilidad para personas con capacidades diferentes</FormLabel>
+                          <FormDescription>
+                            Selecciona los tipos de discapacidad para los que esta actividad está adaptada
+                          </FormDescription>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                          {CAPACIDADES_DIFERENTES.map((item) => (
+                            <FormField
+                              key={item.id}
+                              control={form.control}
+                              name="specialNeeds"
+                              render={({ field }) => {
+                                return (
+                                  <FormItem
+                                    key={item.id}
+                                    className="flex flex-row items-start space-x-3 space-y-0"
+                                  >
+                                    <FormControl>
+                                      <Checkbox
+                                        checked={field.value?.includes(item.id)}
+                                        onCheckedChange={(checked) => {
+                                          return checked
+                                            ? field.onChange([...(field.value || []), item.id])
+                                            : field.onChange(
+                                                field.value?.filter(
+                                                  (value) => value !== item.id
+                                                )
+                                              );
+                                        }}
+                                      />
+                                    </FormControl>
+                                    <FormLabel className="font-normal">
+                                      {item.label}
+                                    </FormLabel>
+                                  </FormItem>
+                                );
+                              }}
+                            />
+                          ))}
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* Sección de fecha y hora */}
+                <div className="space-y-4 pt-4 border-t">
+                  <h3 className="text-lg font-medium">Fecha y Horario</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="startDate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Fecha de inicio *</FormLabel>
+                          <FormControl>
+                            <Input type="date" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="endDate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Fecha de finalización</FormLabel>
+                          <FormControl>
+                            <Input type="date" {...field} />
+                          </FormControl>
+                          <FormDescription>
+                            Opcional para actividades de un solo día
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  
+                  {/* Nuevos campos para hora de inicio y finalización */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="startTime"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Hora de inicio *</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="time" 
+                              {...field} 
+                              onChange={(e) => {
+                                field.onChange(e); // Actualizar el campo normalmente
+                                
+                                // Calcular la duración automáticamente
+                                const endTime = form.getValues("endTime");
+                                if (endTime) {
+                                  const duracionCalculada = calcularDuracionEnMinutos(e.target.value, endTime);
+                                  form.setValue("duration", duracionCalculada);
+                                }
+                              }}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Hora a la que comenzará la actividad
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="endTime"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Hora de finalización *</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="time" 
+                              {...field}
+                              onChange={(e) => {
+                                field.onChange(e); // Actualizar el campo normalmente
+                                
+                                // Calcular la duración automáticamente
+                                const startTime = form.getValues("startTime");
+                                if (startTime) {
+                                  const duracionCalculada = calcularDuracionEnMinutos(startTime, e.target.value);
+                                  form.setValue("duration", duracionCalculada);
+                                }
+                              }}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Hora a la que terminará la actividad
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="duration"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Duración (minutos)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            min="0" 
+                            placeholder="Se calcula automáticamente" 
+                            {...field} 
+                            disabled={true} // Deshabilitamos el campo para que sea de solo lectura
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Se calcula automáticamente basado en la hora de inicio y finalización
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
                   <FormField
                     control={form.control}
                     name="isRecurring"
                     render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                        <div className="space-y-0.5">
+                          <FormLabel>Actividad recurrente</FormLabel>
+                          <FormDescription>
+                            Marca esta opción si la actividad se repite en días específicos
+                          </FormDescription>
+                        </div>
                         <FormControl>
-                          <Checkbox
+                          <Switch
                             checked={field.value}
                             onCheckedChange={field.onChange}
                           />
                         </FormControl>
-                        <div className="space-y-1 leading-none">
-                          <FormLabel>
-                            Actividad recurrente
-                          </FormLabel>
-                          <FormDescription>
-                            Marca esta opción si la actividad se repetirá en días específicos.
-                          </FormDescription>
-                        </div>
                       </FormItem>
                     )}
                   />
-                  
-                  {/* Días recurrentes (mostrar solo si isRecurring es true) */}
+
                   {form.watch("isRecurring") && (
                     <FormField
                       control={form.control}
@@ -869,39 +901,39 @@ const EditarActividadPage = () => {
                       render={() => (
                         <FormItem>
                           <div className="mb-4">
-                            <FormLabel className="text-base">
-                              Días de la semana
-                            </FormLabel>
+                            <FormLabel>Días de la semana</FormLabel>
                             <FormDescription>
-                              Selecciona los días en que se repetirá la actividad.
+                              Selecciona los días en que se repite la actividad
                             </FormDescription>
                           </div>
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                            {diasSemana.map((dia) => (
+                            {DIAS_SEMANA.map((item) => (
                               <FormField
-                                key={dia.id}
+                                key={item.id}
                                 control={form.control}
                                 name="recurringDays"
                                 render={({ field }) => {
                                   return (
-                                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                    <FormItem
+                                      key={item.id}
+                                      className="flex flex-row items-start space-x-3 space-y-0"
+                                    >
                                       <FormControl>
                                         <Checkbox
-                                          checked={Array.isArray(field.value) && field.value.includes(dia.id)}
+                                          checked={field.value?.includes(item.id)}
                                           onCheckedChange={(checked) => {
-                                            const currentValue = Array.isArray(field.value) ? field.value : [];
                                             return checked
-                                              ? field.onChange([...currentValue, dia.id])
+                                              ? field.onChange([...(field.value || []), item.id])
                                               : field.onChange(
-                                                  currentValue.filter(
-                                                    (value: string) => value !== dia.id
+                                                  field.value?.filter(
+                                                    (value) => value !== item.id
                                                   )
                                                 );
                                           }}
                                         />
                                       </FormControl>
                                       <FormLabel className="font-normal">
-                                        {dia.label}
+                                        {item.label}
                                       </FormLabel>
                                     </FormItem>
                                   );
@@ -915,576 +947,388 @@ const EditarActividadPage = () => {
                     />
                   )}
                 </div>
-              </CardContent>
-            </Card>
-            
-            {/* Detalles adicionales */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Detalles Adicionales</CardTitle>
-                <CardDescription>
-                  Información complementaria sobre la actividad
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Capacidad */}
-                <FormField
-                  control={form.control}
-                  name="capacity"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Capacidad (número de participantes)</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          {...field}
-                          min={1}
-                          value={field.value || ''}
-                          onChange={(e) => field.onChange(e.target.value === '' ? undefined : parseInt(e.target.value))}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Número máximo de personas que pueden participar.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </CardContent>
-            </Card>
-            
-            {/* Configuración de Precios y Pagos */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Configuración de Precios y Pagos</CardTitle>
-                <CardDescription>
-                  Configura el precio y las opciones de pago para la actividad
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Actividad gratuita */}
-                <FormField
-                  control={form.control}
-                  name="isFree"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-base">
-                          Actividad gratuita
-                        </FormLabel>
-                        <FormDescription>
-                          Esta actividad no tiene costo para los participantes
-                        </FormDescription>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={(checked) => {
-                            field.onChange(checked);
-                            if (checked) {
-                              form.setValue("price", 0);
-                            }
-                          }}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                
-                {/* Campos de precio (solo mostrar si no es gratuita) */}
-                {!form.watch("isFree") && (
-                  <div className="space-y-4">
+
+                {/* Sección de capacidad y materiales */}
+                <div className="space-y-4 pt-4 border-t">
+                  <h3 className="text-lg font-medium">Capacidad y Materiales</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
-                      name="price"
+                      name="capacity"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Precio (MXN)</FormLabel>
+                          <FormLabel>Capacidad máxima</FormLabel>
                           <FormControl>
-                            <Input
-                              type="number"
-                              min={0}
-                              step="0.01"
-                              value={field.value || ''}
-                              onChange={(e) => {
-                                const value = e.target.value;
-                                if (value === '') {
-                                  field.onChange(0);
-                                } else {
-                                  const numericValue = parseFloat(value);
-                                  if (!isNaN(numericValue)) {
-                                    field.onChange(numericValue);
-                                  }
-                                }
-                              }}
-                              placeholder="0.00"
+                            <Input 
+                              type="number" 
+                              min="0" 
+                              placeholder="Ej: 20" 
+                              {...field}
+                              onChange={e => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                              value={field.value || ""}
                             />
                           </FormControl>
                           <FormDescription>
-                            Precio que pagarán los participantes para inscribirse
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="isPriceRandom"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                          <div className="space-y-0.5">
-                            <FormLabel className="text-base">
-                              Cuota de recuperación voluntaria
-                            </FormLabel>
-                            <FormDescription>
-                              El precio es sugerido, los participantes pueden aportar una cantidad diferente
-                            </FormDescription>
-                          </div>
-                          <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-            
-            {/* Detalles complementarios */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Detalles Complementarios</CardTitle>
-                <CardDescription>
-                  Información adicional sobre materiales y requisitos
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Materiales */}
-                <FormField
-                  control={form.control}
-                  name="materials"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Materiales</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Enlista los materiales necesarios..."
-                          className="resize-none"
-                          {...field}
-                          value={field.value || ''}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Materiales que se utilizarán o que deben traer los participantes.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                {/* Requisitos */}
-                <FormField
-                  control={form.control}
-                  name="requirements"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Requisitos</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Describe los requisitos para participar..."
-                          className="resize-none"
-                          {...field}
-                          value={field.value || ''}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Requisitos previos, habilidades necesarias o condiciones para participar.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                {/* Mercado objetivo */}
-                <FormField
-                  control={form.control}
-                  name="targetMarket"
-                  render={() => (
-                    <FormItem>
-                      <div className="mb-4">
-                        <FormLabel className="text-base">
-                          Público objetivo
-                        </FormLabel>
-                        <FormDescription>
-                          Selecciona los grupos de edad a los que está dirigida la actividad.
-                        </FormDescription>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        {mercadoObjetivo.map((grupo) => (
-                          <FormField
-                            key={grupo.id}
-                            control={form.control}
-                            name="targetMarket"
-                            render={({ field }) => {
-                              return (
-                                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                                  <FormControl>
-                                    <Checkbox
-                                      checked={Array.isArray(field.value) && field.value.includes(grupo.id)}
-                                      onCheckedChange={(checked) => {
-                                        const currentValue = Array.isArray(field.value) ? field.value : [];
-                                        return checked
-                                          ? field.onChange([...currentValue, grupo.id])
-                                          : field.onChange(
-                                              currentValue.filter(
-                                                (value: string) => value !== grupo.id
-                                              )
-                                            );
-                                      }}
-                                    />
-                                  </FormControl>
-                                  <FormLabel className="font-normal">
-                                    {grupo.label}
-                                  </FormLabel>
-                                </FormItem>
-                              );
-                            }}
-                          />
-                        ))}
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                {/* Necesidades especiales */}
-                <FormField
-                  control={form.control}
-                  name="specialNeeds"
-                  render={() => (
-                    <FormItem>
-                      <div className="mb-4">
-                        <FormLabel className="text-base">
-                          Adaptaciones para necesidades especiales
-                        </FormLabel>
-                        <FormDescription>
-                          Selecciona si la actividad está adaptada para personas con necesidades especiales.
-                        </FormDescription>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        {necesidadesEspeciales.map((necesidad) => (
-                          <FormField
-                            key={necesidad.id}
-                            control={form.control}
-                            name="specialNeeds"
-                            render={({ field }) => {
-                              return (
-                                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                                  <FormControl>
-                                    <Checkbox
-                                      checked={Array.isArray(field.value) && field.value.includes(necesidad.id)}
-                                      onCheckedChange={(checked) => {
-                                        const currentValue = Array.isArray(field.value) ? field.value : [];
-                                        return checked
-                                          ? field.onChange([...currentValue, necesidad.id])
-                                          : field.onChange(
-                                              currentValue.filter(
-                                                (value: string) => value !== necesidad.id
-                                              )
-                                            );
-                                      }}
-                                    />
-                                  </FormControl>
-                                  <FormLabel className="font-normal">
-                                    {necesidad.label}
-                                  </FormLabel>
-                                </FormItem>
-                              );
-                            }}
-                          />
-                        ))}
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </CardContent>
-            </Card>
-            
-            {/* Información del instructor */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Información del Instructor</CardTitle>
-                <CardDescription>
-                  Datos del instructor que impartirá la actividad (opcional)
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <FormField
-                  control={form.control}
-                  name="instructorId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Instructor</FormLabel>
-                      <Select
-                        onValueChange={(value) => {
-                          if (value === "0") {
-                            field.onChange(undefined);
-                            form.setValue("instructorName", "");
-                            form.setValue("instructorContact", "");
-                          } else {
-                            const instructorId = parseInt(value);
-                            field.onChange(instructorId);
-                            
-                            // Encontrar el instructor seleccionado
-                            const instructor = Array.isArray(instructores) ? instructores.find((i: any) => i.id === instructorId) : null;
-                            if (instructor) {
-                              form.setValue("instructorName", instructor.fullName || `${instructor.firstName} ${instructor.lastName}`);
-                              form.setValue("instructorContact", instructor.email || instructor.contactEmail || '');
-                            }
-                          }
-                        }}
-                        value={field.value !== undefined && field.value !== null && field.value !== 0 ? String(field.value) : "0"}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecciona un instructor (opcional)" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="0">Sin instructor asignado</SelectItem>
-                          {Array.isArray(instructores) ? instructores.map((instructor: any) => (
-                            <SelectItem key={instructor.id} value={instructor.id.toString()}>
-                              {instructor.fullName || `${instructor.firstName} ${instructor.lastName}`}
-                            </SelectItem>
-                          )) : null}
-                        </SelectContent>
-                      </Select>
-                      <FormDescription>
-                        Selecciona un instructor de la lista o déjalo en blanco si no aplica.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                {form.watch("instructorId") && form.watch("instructorId") !== 0 && form.watch("instructorId") !== undefined && (
-                  <>
-                    <FormField
-                      control={form.control}
-                      name="instructorName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Nombre del instructor</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              readOnly
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="instructorContact"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Contacto del instructor</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              readOnly
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Configuración de Inscripciones */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Configuración de Inscripciones</CardTitle>
-                <CardDescription>
-                  Configuración para permitir inscripciones ciudadanas a esta actividad
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Habilitar inscripciones */}
-                <FormField
-                  control={form.control}
-                  name="registrationEnabled"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-base">
-                          Permitir inscripciones públicas
-                        </FormLabel>
-                        <FormDescription>
-                          Los ciudadanos podrán inscribirse a esta actividad desde las páginas públicas
-                        </FormDescription>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-
-                {/* Mostrar campos adicionales solo si las inscripciones están habilitadas */}
-                {form.watch("registrationEnabled") && (
-                  <>
-                    {/* Capacidad máxima de inscripciones */}
-                    <FormField
-                      control={form.control}
-                      name="maxRegistrations"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Capacidad máxima de inscripciones</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              {...field}
-                              min={1}
-                              max={1000}
-                              value={field.value || ''}
-                              onChange={(e) => field.onChange(e.target.value === '' ? undefined : parseInt(e.target.value))}
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            Número máximo de personas que pueden inscribirse
+                            Número máximo de participantes permitidos
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
 
-                    {/* Fecha límite de inscripción */}
-                    <FormField
-                      control={form.control}
-                      name="registrationDeadline"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                          <FormLabel>Fecha límite de inscripción</FormLabel>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant={"outline"}
-                                  className={cn(
-                                    "w-full pl-3 text-left font-normal",
-                                    !field.value && "text-muted-foreground"
-                                  )}
-                                >
-                                  {field.value ? (
-                                    format(new Date(field.value), "PPP", { locale: es })
-                                  ) : (
-                                    <span>Selecciona una fecha</span>
-                                  )}
-                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <Calendar
-                                mode="single"
-                                selected={field.value ? new Date(field.value) : undefined}
-                                onSelect={(date) => {
-                                  field.onChange(date ? format(date, 'yyyy-MM-dd') : '');
-                                }}
-                                disabled={(date) =>
-                                  date < new Date()
-                                }
-                                initialFocus
+                    <div className="space-y-3">
+                      <FormField
+                        control={form.control}
+                        name="price"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Precio (MXN)</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number" 
+                                min="0" 
+                                step="0.01" 
+                                placeholder="Ej: 50.00" 
+                                {...field} 
+                                disabled={form.watch("isFree") || form.watch("isPriceRandom")}
                               />
-                            </PopoverContent>
-                          </Popover>
-                          <FormDescription>
-                            Fecha límite para que los ciudadanos se inscriban
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    {/* Requiere aprobación */}
-                    <FormField
-                      control={form.control}
-                      name="requiresApproval"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                          <div className="space-y-0.5">
-                            <FormLabel className="text-base">
-                              Requiere aprobación administrativa
-                            </FormLabel>
+                            </FormControl>
                             <FormDescription>
-                              Las inscripciones quedarán pendientes hasta ser aprobadas por un administrador
+                              {form.watch("isFree") 
+                                ? "Actividad gratuita" 
+                                : form.watch("isPriceRandom") 
+                                  ? "El precio será variable o por donativo" 
+                                  : "Precio fijo por persona"}
                             </FormDescription>
-                          </div>
-                          <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  </>
-                )}
-              </CardContent>
-            </Card>
-            
-            <div className="flex justify-end space-x-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setLocation("/admin/organizador/catalogo/ver")}
-              >
-                Cancelar
-              </Button>
-              <Button 
-                type="submit"
-                disabled={actualizarActividad.isPending}
-                onClick={(e) => {
-                  console.log("🔥 Botón clickeado - evento submit");
-                  console.log("🔍 Form valid:", form.formState.isValid);
-                  console.log("🔍 Form errors:", form.formState.errors);
-                  // No prevenimos default, dejamos que el form maneje
-                }}
-              >
-                {actualizarActividad.isPending ? (
-                  <>
-                    <Spinner className="mr-2 h-4 w-4" />
-                    Actualizando...
-                  </>
-                ) : (
-                  "Actualizar Actividad"
-                )}
-              </Button>
-            </div>
-          </form>
-        </Form>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <div className="flex flex-col gap-2 mt-2">
+                        <FormField
+                          control={form.control}
+                          name="isFree"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value}
+                                  onCheckedChange={(checked) => {
+                                    field.onChange(checked);
+                                    if (checked) {
+                                      form.setValue("price", 0);
+                                      form.setValue("isPriceRandom", false);
+                                    }
+                                  }}
+                                />
+                              </FormControl>
+                              <FormLabel className="font-medium">
+                                Actividad Gratuita
+                              </FormLabel>
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name="isPriceRandom"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value}
+                                  onCheckedChange={(checked) => {
+                                    field.onChange(checked);
+                                    if (checked) {
+                                      form.setValue("isFree", false);
+                                    }
+                                  }}
+                                />
+                              </FormControl>
+                              <FormLabel className="font-medium">
+                                Precio Aleatorio (Donativo/Variable)
+                              </FormLabel>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                  </div>
 
-        {/* Gestión de Imágenes */}
-        <div className="mt-8">
-          <ActivityImageManager activityId={parseInt(params.id || '0')} />
-        </div>
+                  <FormField
+                    control={form.control}
+                    name="materials"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Materiales necesarios</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Lista de materiales que se usarán o que deben traer los participantes"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="requirements"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Requisitos para participantes</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Requisitos especiales, rango de edad, condiciones físicas, etc."
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* Sección de Registro Ciudadano */}
+                <div className="space-y-4 pt-4 border-t">
+                  <h3 className="text-lg font-medium">Configuración de Registro Ciudadano</h3>
+                  <p className="text-sm text-gray-600">Configura si los ciudadanos pueden inscribirse a esta actividad desde el sitio público</p>
+                  
+                  <FormField
+                    control={form.control}
+                    name="allowsPublicRegistration"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-base">
+                            Permitir inscripción pública
+                          </FormLabel>
+                          <FormDescription>
+                            Los ciudadanos podrán inscribirse a esta actividad desde la página pública
+                          </FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  {form.watch("allowsPublicRegistration") && (
+                    <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="maxRegistrations"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Capacidad máxima de inscripciones</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  placeholder="Ej: 25"
+                                  {...field}
+                                  value={field.value || ""}
+                                  onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                                />
+                              </FormControl>
+                              <FormDescription>
+                                Número máximo de personas que se pueden inscribir
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="registrationDeadline"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Fecha límite de inscripción</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="date"
+                                  {...field}
+                                  value={field.value || ""}
+                                />
+                              </FormControl>
+                              <FormDescription>
+                                Fecha después de la cual no se aceptan inscripciones
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <FormField
+                        control={form.control}
+                        name="registrationInstructions"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Instrucciones para inscripción</FormLabel>
+                            <FormControl>
+                              <Textarea
+                                placeholder="Instrucciones específicas para los participantes al inscribirse"
+                                {...field}
+                                value={field.value || ""}
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Información adicional que verán los ciudadanos al inscribirse
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="requiresApproval"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                            <div className="space-y-0.5">
+                              <FormLabel className="text-base">
+                                Requiere aprobación administrativa
+                              </FormLabel>
+                              <FormDescription>
+                                Las inscripciones deben ser aprobadas manualmente por un administrador
+                              </FormDescription>
+                            </div>
+                            <FormControl>
+                              <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="ageRestrictions"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Restricciones de edad</FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="Ej: 18-65 años, Menores acompañados"
+                                  {...field}
+                                  value={field.value || ""}
+                                />
+                              </FormControl>
+                              <FormDescription>
+                                Restricciones específicas de edad para participar
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="healthRequirements"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Requisitos de salud</FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="Ej: Certificado médico, buena condición física"
+                                  {...field}
+                                  value={field.value || ""}
+                                />
+                              </FormControl>
+                              <FormDescription>
+                                Requisitos médicos o de salud para participar
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Sección de Instructor/Facilitador */}
+                <div className="space-y-4 pt-4 border-t">
+                  <h3 className="text-lg font-medium">Datos del Instructor o Facilitador</h3>
+                  
+                  <FormField
+                    control={form.control}
+                    name="instructorId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Seleccionar Instructor</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecciona un instructor" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {instructores.length === 0 ? (
+                              <SelectItem value="no-instructors" disabled>
+                                No hay instructores disponibles
+                              </SelectItem>
+                            ) : (
+                              instructores.map((instructor: any) => (
+                                <SelectItem key={instructor.id} value={instructor.id.toString()}>
+                                  {instructor.firstName} {instructor.lastName} ({instructor.email})
+                                </SelectItem>
+                              ))
+                            )}
+                          </SelectContent>
+                        </Select>
+                        <FormDescription>
+                          Selecciona un instructor registrado en el sistema. Si el instructor que buscas no está en la lista, primero debes registrarlo en la sección de Usuarios.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  {instructores.length === 0 && (
+                    <div className="bg-amber-50 border border-amber-200 rounded-md p-4 my-4">
+                      <p className="text-amber-800">
+                        No hay instructores registrados en el sistema. Dirígete a la sección de Usuarios para crear un usuario con rol de Instructor primero.
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="pt-4 border-t">
+                  <div className="flex justify-end gap-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setLocation('/admin/organizador/catalogo/ver')}
+                    >
+                      Cancelar
+                    </Button>
+                    <Button 
+                      type="submit"
+                      disabled={updateMutation.isPending}
+                    >
+                      {updateMutation.isPending ? "Guardando..." : "Actualizar Actividad"}
+                    </Button>
+                  </div>
+                </div>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
       </div>
     </AdminLayout>
   );
