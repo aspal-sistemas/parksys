@@ -120,16 +120,50 @@ router.get('/api/evaluations/parks', async (req, res) => {
     const evaluations = await db
       .select({
         id: parkEvaluations.id,
+        parkId: parkEvaluations.parkId,
         parkName: parks.name,
         evaluatorName: parkEvaluations.evaluatorName,
+        evaluatorEmail: parkEvaluations.evaluatorEmail,
+        evaluatorPhone: parkEvaluations.evaluatorPhone,
+        evaluatorCity: parkEvaluations.evaluatorCity,
+        evaluatorAge: parkEvaluations.evaluatorAge,
+        isFrequentVisitor: parkEvaluations.isFrequentVisitor,
+        
+        // Criterios de evaluación individuales
+        cleanliness: parkEvaluations.cleanliness,
+        safety: parkEvaluations.safety,
+        maintenance: parkEvaluations.maintenance,
+        accessibility: parkEvaluations.accessibility,
+        amenities: parkEvaluations.amenities,
+        activities: parkEvaluations.activities,
+        staff: parkEvaluations.staff,
+        naturalBeauty: parkEvaluations.naturalBeauty,
+        
         overallRating: parkEvaluations.overallRating,
+        comments: parkEvaluations.comments,
+        suggestions: parkEvaluations.suggestions,
+        wouldRecommend: parkEvaluations.wouldRecommend,
+        
+        visitDate: parkEvaluations.visitDate,
+        visitPurpose: parkEvaluations.visitPurpose,
+        visitDuration: parkEvaluations.visitDuration,
+        
         status: parkEvaluations.status,
-        createdAt: parkEvaluations.createdAt
+        moderatedBy: parkEvaluations.moderatedBy,
+        moderatedAt: parkEvaluations.moderatedAt,
+        moderationNotes: parkEvaluations.moderationNotes,
+        
+        ipAddress: parkEvaluations.ipAddress,
+        userAgent: parkEvaluations.userAgent,
+        
+        createdAt: parkEvaluations.createdAt,
+        updatedAt: parkEvaluations.updatedAt
       })
       .from(parkEvaluations)
       .leftJoin(parks, eq(parkEvaluations.parkId, parks.id))
       .orderBy(desc(parkEvaluations.createdAt));
 
+    console.log(`📊 Enviando ${evaluations.length} evaluaciones de parques con datos completos`);
     res.json(evaluations);
   } catch (error) {
     console.error('Error al obtener evaluaciones de parques:', error);
