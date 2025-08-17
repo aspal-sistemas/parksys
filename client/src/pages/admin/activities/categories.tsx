@@ -1,11 +1,43 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import AdminLayout from '@/components/AdminLayout';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Textarea } from '@/components/ui/textarea';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { 
   Table, 
   TableBody, 
@@ -16,10 +48,24 @@ import {
 } from '@/components/ui/table';
 import { Tag, Plus, Edit, Trash2, Search } from 'lucide-react';
 
+// Schema de validación para editar categorías
+const categorySchema = z.object({
+  name: z.string().min(1, "El nombre es obligatorio").max(100, "Máximo 100 caracteres"),
+  description: z.string().optional(),
+  color: z.string().default("#00a587"),
+  icon: z.string().default("tag"),
+});
+
+type CategoryFormData = z.infer<typeof categorySchema>;
+
 // Página de gestión de categorías de actividades
 const ActivityCategoriesPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [editingCategory, setEditingCategory] = useState<any>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [location, setLocation] = useLocation();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Obtener categorías de actividades
   const { data: categories = [], isLoading } = useQuery({
@@ -32,6 +78,94 @@ const ActivityCategoriesPage: React.FC = () => {
     queryKey: ['/api/activities'],
     retry: 1,
   });
+
+  // Formulario para editar categorías
+  const form = useForm<CategoryFormData>({
+    resolver: zodResolver(categorySchema),
+    defaultValues: {
+      name: "",
+      description: "",
+      color: "#00a587",
+      icon: "tag",
+    },
+  });
+
+  // Mutación para actualizar categoría
+  const updateCategoryMutation = useMutation({
+    mutationFn: async (data: { id: number; updates: CategoryFormData }) => {
+      return apiRequest(`/api/activity-categories/${data.id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data.updates),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/activity-categories'] });
+      setIsEditDialogOpen(false);
+      setEditingCategory(null);
+      form.reset();
+      toast({
+        title: "Categoría actualizada",
+        description: "La categoría se actualizó correctamente.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "No se pudo actualizar la categoría.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Mutación para eliminar categoría
+  const deleteCategoryMutation = useMutation({
+    mutationFn: async (categoryId: number) => {
+      return apiRequest(`/api/activity-categories/${categoryId}`, {
+        method: 'DELETE',
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/activity-categories'] });
+      toast({
+        title: "Categoría eliminada",
+        description: "La categoría se eliminó correctamente.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "No se pudo eliminar la categoría.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Función para abrir el diálogo de edición
+  const handleEditCategory = (category: any) => {
+    setEditingCategory(category);
+    form.reset({
+      name: category.name || "",
+      description: category.description || "",
+      color: category.color || "#00a587",
+      icon: category.icon || "tag",
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  // Función para enviar el formulario de edición
+  const handleSubmitEdit = (data: CategoryFormData) => {
+    if (editingCategory) {
+      updateCategoryMutation.mutate({
+        id: editingCategory.id,
+        updates: data,
+      });
+    }
+  };
+
+  // Función para eliminar categoría
+  const handleDeleteCategory = (categoryId: number) => {
+    deleteCategoryMutation.mutate(categoryId);
+  };
 
   // Contar actividades por categoría (usar la misma lógica que activities.tsx)
   const categoryCounts = (activities as any[]).reduce((acc: any, activity: any) => {
@@ -219,12 +353,42 @@ const ActivityCategoriesPage: React.FC = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-2">
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleEditCategory(category)}
+                          disabled={updateCategoryMutation.isPending}
+                        >
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button variant="outline" size="sm">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              disabled={deleteCategoryMutation.isPending}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>¿Eliminar categoría?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Esta acción no se puede deshacer. La categoría "{category.name}" será eliminada permanentemente.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleDeleteCategory(category.id)}
+                                className="bg-red-600 hover:bg-red-700"
+                              >
+                                Eliminar
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -266,6 +430,80 @@ const ActivityCategoriesPage: React.FC = () => {
               })}
           </div>
         </div>
+
+        {/* Diálogo de edición */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>Editar Categoría</DialogTitle>
+            </DialogHeader>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(handleSubmitEdit)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nombre de la categoría</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Ej: Arte y Cultura" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Descripción</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Descripción opcional de la categoría..."
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="color"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Color</FormLabel>
+                      <FormControl>
+                        <Input type="color" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="flex gap-2 pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsEditDialogOpen(false)}
+                    disabled={updateCategoryMutation.isPending}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button 
+                    type="submit"
+                    disabled={updateCategoryMutation.isPending}
+                  >
+                    {updateCategoryMutation.isPending ? "Guardando..." : "Guardar cambios"}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
       </div>
     </AdminLayout>
   );
