@@ -276,5 +276,130 @@ export function registerInstructorEvaluationRoutes(app: any, apiRouter: Router) 
     }
   });
 
+  // Obtener todas las evaluaciones para el panel de administración
+  apiRouter.get('/evaluations/instructors', async (req: Request, res: Response) => {
+    try {
+      const result = await db.execute(sql`
+        SELECT 
+          ie.id,
+          ie.instructor_id as "instructorId",
+          i.full_name as "instructorName",
+          ie.evaluator_name as "evaluatorName",
+          ie.evaluator_email as "evaluatorEmail",
+          ie.evaluator_phone as "evaluatorPhone",
+          ie.evaluator_age as "evaluatorAge",
+          ie.knowledge_rating as "knowledgeRating",
+          ie.communication_rating as "communicationRating", 
+          ie.methodology_rating as "methodologyRating",
+          ie.attitude_rating as "attitudeRating",
+          ie.punctuality_rating as "punctualityRating",
+          ie.overall_rating as "overallRating",
+          ie.would_recommend as "wouldRecommend",
+          ie.comments,
+          ie.attended_activity as "attendedActivity",
+          ie.status,
+          ie.moderation_notes as "moderationNotes",
+          ie.moderated_by as "moderatedBy",
+          ie.moderated_at as "moderatedAt",
+          ie.evaluation_date as "evaluationDate",
+          ie.created_at as "createdAt",
+          ie.updated_at as "updatedAt"
+        FROM instructor_evaluations ie
+        LEFT JOIN instructors i ON ie.instructor_id = i.id
+        ORDER BY ie.created_at DESC
+      `);
+
+      console.log('📊 Enviando', result.rows.length, 'evaluaciones de instructores');
+      res.json(result.rows);
+
+    } catch (error) {
+      console.error('Error fetching instructor evaluations:', error);
+      res.status(500).json({ message: 'Error al obtener evaluaciones de instructores' });
+    }
+  });
+
+  // Actualizar evaluación (moderación)
+  apiRouter.put('/evaluations/instructors/:id', async (req: Request, res: Response) => {
+    try {
+      const evaluationId = parseInt(req.params.id);
+      const { status, moderationNotes } = req.body;
+
+      if (!evaluationId || isNaN(evaluationId)) {
+        return res.status(400).json({ message: 'ID de evaluación inválido' });
+      }
+
+      if (!['pending', 'approved', 'rejected'].includes(status)) {
+        return res.status(400).json({ message: 'Estado inválido' });
+      }
+
+      const result = await db.execute(sql`
+        UPDATE instructor_evaluations 
+        SET 
+          status = ${status},
+          moderation_notes = ${moderationNotes || null},
+          moderated_by = ${1},
+          moderated_at = NOW(),
+          updated_at = NOW()
+        WHERE id = ${evaluationId}
+        RETURNING *
+      `);
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ message: 'Evaluación no encontrada' });
+      }
+
+      console.log('✅ Evaluación de instructor actualizada:', {
+        evaluationId,
+        status,
+        moderationNotes
+      });
+
+      res.json({ 
+        message: 'Evaluación actualizada exitosamente',
+        evaluation: result.rows[0]
+      });
+
+    } catch (error) {
+      console.error('Error updating instructor evaluation:', error);
+      res.status(500).json({ message: 'Error al actualizar evaluación' });
+    }
+  });
+
+  // Eliminar evaluación
+  apiRouter.delete('/evaluations/instructors/:id', async (req: Request, res: Response) => {
+    try {
+      const evaluationId = parseInt(req.params.id);
+
+      if (!evaluationId || isNaN(evaluationId)) {
+        return res.status(400).json({ message: 'ID de evaluación inválido' });
+      }
+
+      // Verificar que la evaluación existe
+      const checkResult = await db.execute(sql`
+        SELECT id FROM instructor_evaluations WHERE id = ${evaluationId}
+      `);
+
+      if (checkResult.rows.length === 0) {
+        return res.status(404).json({ message: 'Evaluación no encontrada' });
+      }
+
+      // Eliminar la evaluación
+      await db.execute(sql`
+        DELETE FROM instructor_evaluations WHERE id = ${evaluationId}
+      `);
+
+      console.log('🗑️ Evaluación de instructor eliminada:', evaluationId);
+
+      res.json({ 
+        message: 'Evaluación eliminada exitosamente',
+        deletedId: evaluationId
+      });
+
+    } catch (error) {
+      console.error('Error deleting instructor evaluation:', error);
+      res.status(500).json({ message: 'Error al eliminar evaluación' });
+    }
+  });
+
   console.log('✅ Rutas de evaluaciones de instructores registradas correctamente');
 }

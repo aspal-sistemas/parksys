@@ -77,6 +77,7 @@ import { registerRoleRoutes } from "./roleRoutes";
 import feedbackRouter from "./feedback-routes";
 import { registerEventCategoriesRoutes } from "./event-categories-routes";
 import { seedEventCategories } from "./seed-event-categories";
+import { registerInstructorEvaluationRoutes } from "./instructor-evaluations-routes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Create HTTP server first
@@ -540,6 +541,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Registramos las rutas del sistema de roles
   registerRoleRoutes(app);
+
+  // Registramos las rutas de evaluaciones de instructores
+  registerInstructorEvaluationRoutes(app, apiRouter);
   
   // Registramos las rutas del módulo de concesiones
   registerConcessionRoutes(app, apiRouter, isAuthenticated);
