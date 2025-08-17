@@ -384,7 +384,22 @@ export function registerParkEvaluationRoutes(app: any, apiRouter: any, isAuthent
   // Crear nueva evaluación (público)
   apiRouter.post('/park-evaluations', async (req: Request, res: Response) => {
     try {
-      console.log('📝 Datos recibidos en el endpoint POST:', JSON.stringify(req.body, null, 2));
+      console.log('📝 POST a /api/park-evaluations recibido');
+      console.log('📝 Headers:', JSON.stringify(req.headers, null, 2));
+      console.log('📝 Body:', JSON.stringify(req.body, null, 2));
+      console.log('📝 Method:', req.method);
+      console.log('📝 URL:', req.url);
+      
+      // Verificar si el body está vacío
+      if (!req.body || Object.keys(req.body).length === 0) {
+        console.log('❌ Body vacío - posiblemente una llamada no deseada');
+        return res.status(400).json({ 
+          error: 'Body vacío', 
+          message: 'Se requiere enviar datos para crear una evaluación',
+          required: ['parkId', 'evaluatorName']
+        });
+      }
+      
       const validatedData = createEvaluationSchema.parse(req.body);
       
       // Agregar metadata
