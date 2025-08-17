@@ -98,10 +98,10 @@ const EvaluacionesParques = () => {
     const matchesStatus = statusFilter === 'all' || evaluation.status === statusFilter;
     
     const matchesRating = ratingFilter === 'all' || 
-      (ratingFilter === 'excellent' && evaluation.overallRating >= 4.5) ||
-      (ratingFilter === 'good' && evaluation.overallRating >= 3.5 && evaluation.overallRating < 4.5) ||
-      (ratingFilter === 'average' && evaluation.overallRating >= 2.5 && evaluation.overallRating < 3.5) ||
-      (ratingFilter === 'poor' && evaluation.overallRating < 2.5);
+      (ratingFilter === 'excellent' && evaluation.overallRating && evaluation.overallRating >= 4.5) ||
+      (ratingFilter === 'good' && evaluation.overallRating && evaluation.overallRating >= 3.5 && evaluation.overallRating < 4.5) ||
+      (ratingFilter === 'average' && evaluation.overallRating && evaluation.overallRating >= 2.5 && evaluation.overallRating < 3.5) ||
+      (ratingFilter === 'poor' && evaluation.overallRating && evaluation.overallRating < 2.5);
     
     return matchesSearch && matchesStatus && matchesRating;
   });
@@ -144,7 +144,8 @@ const EvaluacionesParques = () => {
     }
   };
 
-  const getRatingColor = (rating: number) => {
+  const getRatingColor = (rating: number | null) => {
+    if (!rating) return 'text-gray-500';
     if (rating >= 4.5) return 'text-green-600';
     if (rating >= 3.5) return 'text-blue-600';
     if (rating >= 2.5) return 'text-yellow-600';
@@ -158,7 +159,7 @@ const EvaluacionesParques = () => {
     approved: evaluations.filter(e => e.status === 'approved').length,
     rejected: evaluations.filter(e => e.status === 'rejected').length,
     averageRating: evaluations.length > 0 
-      ? evaluations.reduce((sum, e) => sum + e.overallRating, 0) / evaluations.length 
+      ? evaluations.reduce((sum, e) => sum + (e.overallRating || 0), 0) / evaluations.length 
       : 0
   };
 
@@ -181,7 +182,7 @@ const EvaluacionesParques = () => {
           </div>
           <div className="text-right">
             <div className={`text-lg font-bold ${getRatingColor(evaluation.overallRating)}`}>
-              {evaluation.overallRating.toFixed(1)} ⭐
+              {evaluation.overallRating ? evaluation.overallRating.toFixed(1) : 'N/A'} ⭐
             </div>
             <Badge className={getStatusColor(evaluation.status)}>
               {getStatusLabel(evaluation.status)}
