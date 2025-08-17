@@ -310,6 +310,7 @@ const AdminSidebarComplete: React.FC = () => {
     if (location.startsWith('/admin/events') || location.startsWith('/admin/eventos-ambu')) return 'eventos';
     if (location.startsWith('/admin/space-reservations')) return 'reservas';
     if (location.startsWith('/admin/amenities')) return 'amenidades';
+    if (location.startsWith('/admin/evaluaciones')) return 'evaluaciones';
     if (location.startsWith('/admin/roles') || location.startsWith('/admin/permissions') || location.startsWith('/admin/role-')) return 'roles-sistema';
     if (location.startsWith('/admin/assets')) return 'activos';
     if (location.startsWith('/admin/incidents')) return 'incidencias';
@@ -366,7 +367,8 @@ const AdminSidebarComplete: React.FC = () => {
         location.startsWith('/admin/events') || 
         location.startsWith('/admin/eventos-ambu') || 
         location.startsWith('/admin/space-reservations') ||
-        location.startsWith('/admin/amenities')) {
+        location.startsWith('/admin/amenities') ||
+        location.startsWith('/admin/evaluaciones')) {
       return ['gestion'];
     }
     
@@ -682,7 +684,7 @@ const AdminSidebarComplete: React.FC = () => {
               id="evaluaciones"
               title="Evaluaciones"
               icon={<Star className="h-4 w-4" />}
-              isExpanded={expandedSubmenus.includes('evaluaciones') || location.startsWith('/admin/evaluaciones')}
+              isExpanded={expandedSubmenus.includes('evaluaciones')}
               onToggle={toggleSubmenu}
             >
               <NavItem 
