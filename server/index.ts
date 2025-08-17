@@ -1004,12 +1004,18 @@ app.use('/api/fauna', faunaRoutes);
 app.use('/api', visitorCountRoutes);
 
 // ENDPOINT DIRECTO PARA ACTUALIZACIÓN DE EVALUACIONES - PRIORITY ROUTING (ANTES DE OTROS ROUTERS)
-app.put('/api/evaluations/parks/:id', express.json(), async (req, res) => {
+app.put('/api/evaluations/parks/:id', async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     const { status, moderationNotes } = req.body;
 
-    console.log(`🔄 [DIRECT] Actualizando evaluación ${id}:`, { status, moderationNotes, body: req.body });
+    console.log(`🔄 [DIRECT] Actualizando evaluación ${id}:`, { 
+      status, 
+      moderationNotes, 
+      body: req.body,
+      headers: req.headers['content-type'],
+      rawBody: JSON.stringify(req.body)
+    });
 
     // Validar el estado
     if (!['pending', 'approved', 'rejected'].includes(status)) {
