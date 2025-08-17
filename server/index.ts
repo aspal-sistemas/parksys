@@ -1663,6 +1663,18 @@ async function initializeDatabaseAsync() {
     }
   }, 2000);
 
+  // Setup Vite development server BEFORE starting the server
+  if (app.get("env") === "development") {
+    try {
+      console.log("🔧 Initializing Vite development server...");
+      const { setupVite } = await import("./vite");
+      await setupVite(app, appServer);
+      console.log("✅ Vite development server configured");
+    } catch (error) {
+      console.log("⚠️ Continuing without Vite:", error);
+    }
+  }
+
   // Error handling middleware
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
@@ -1671,46 +1683,23 @@ async function initializeDatabaseAsync() {
     res.status(status).json({ message });
   });
 
-
-
   // Use environment port for deployment compatibility - ensure port 5000
   const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
   const HOST = '0.0.0.0';
   
   console.log(`🚀 Starting server on ${HOST}:${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
 
-  // START SERVER FIRST - critical for health checks
+  // START SERVER - after Vite is configured
   appServer = app.listen(PORT, HOST, () => {
     console.log(`✅ Server listening on ${HOST}:${PORT} - Health checks ready`);
     console.log(`🏥 Health endpoints available at /, /health, /healthz, /ping`);
     
-    // Initialize Vite IMMEDIATELY after server is listening
-    setTimeout(async () => {
-      try {
-        console.log("🔧 Initializing Vite development server...");
-        
-        // Setup development environment - FIRST priority
-        if (app.get("env") === "development") {
-          try {
-            const { setupVite } = await import("./vite");
-            await setupVite(app, appServer);
-            console.log("✅ Vite development server configured");
-          } catch (error) {
-            console.log("⚠️ Continuing without Vite:", error);
-          }
-        }
-        
-        // Initialize database asynchronously after Vite
-        setTimeout(() => {
-          initializeDatabaseAsync().catch(error => {
-            console.error("❌ Database initialization error (non-critical):", error);
-          });
-        }, 50);
-        
-      } catch (error) {
-        console.error("❌ Post-startup initialization error:", error);
-      }
-    }, 0); // IMMEDIATE setup
+    // Initialize database asynchronously after server is listening
+    setTimeout(() => {
+      initializeDatabaseAsync().catch(error => {
+        console.error("❌ Database initialization error (non-critical):", error);
+      });
+    }, 50);
   });
 
   // Configure production static file serving if needed

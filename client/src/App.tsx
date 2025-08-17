@@ -43,6 +43,7 @@ import EventsIndex from "@/pages/admin/events/index";
 import EditEventPage from "@/pages/admin/events/edit";
 import Header from "@/components/Header";
 import ParkEvaluationForm from "@/pages/ParkEvaluationForm";
+import EvaluacionesParques from "@/pages/admin/evaluaciones/parques";
 
 function Router() {
   const [location] = useLocation();
@@ -231,11 +232,7 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/admin/evaluaciones/dashboard')))}
           </Suspense>
         </Route>
-        <Route path="/admin/evaluaciones/parques">
-          <Suspense fallback={<div className="p-8 text-center">Cargando evaluaciones de parques...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/evaluaciones/parques')))}
-          </Suspense>
-        </Route>
+        <Route path="/admin/evaluaciones/parques" component={EvaluacionesParques} />
         <Route path="/admin/evaluaciones/instructores">
           <Suspense fallback={<div className="p-8 text-center">Cargando evaluaciones de instructores...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/admin/evaluaciones/instructores')))}
