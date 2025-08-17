@@ -50,6 +50,8 @@ The application uses a client-server architecture with a modern full-stack.
 
 **CSV Export UTF-8 Fix (August 2025)**: Resolved critical CSV export encoding issue where Spanish characters (accents, ñ, etc.) were displaying as strange symbols. Fixed by adding BOM (Byte Order Mark) UTF-8 prefix, enabling proper quoting for special characters, and ensuring correct encoding in the blob creation. CSV files now export perfectly with all Spanish characters preserved for Excel and other applications.
 
+**Activity Categories Synchronization (August 2025)**: Completed synchronization between activity categories management (`/admin/activities/categories`) and activity listing filters (`/admin/activities`). Eliminated hardcoded categories in favor of dynamic server data from `/api/activity-categories` endpoint. Implemented consistent color schemes and counting logic. Fixed non-functional "Nueva Categoría" button with proper navigation to `/admin/organizador/categorias`. Reorganized sidebar menu order: Categorías → Listado → Nueva Actividad for improved user experience. Categories now display identical data and visual styling across all modules.
+
 ## External Dependencies
 - **Frontend**: React, TypeScript, Vite, Tailwind CSS, Radix UI (shadcn/ui), React Query, React Router, React Hook Form, Zod.
 - **Backend**: Node.js, Express, TypeScript, Multer, bcryptjs.
