@@ -119,7 +119,7 @@ const CriteriosEvaluacion = () => {
   // Mutaciones para CRUD
   const createMutation = useMutation({
     mutationFn: (data: z.infer<typeof criterionSchema>) => 
-      apiRequest('/api/evaluations/criteria', { method: 'POST', body: data }),
+      apiRequest('/api/evaluations/criteria', { method: 'POST', data }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/evaluations/criteria'] });
       setShowCreateDialog(false);
@@ -139,8 +139,10 @@ const CriteriosEvaluacion = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: z.infer<typeof criterionSchema> }) =>
-      apiRequest(`/api/evaluations/criteria/${id}`, { method: 'PUT', body: data }),
+    mutationFn: ({ id, data }: { id: number; data: z.infer<typeof criterionSchema> }) => {
+      console.log('📊 [EVALUACIONES] Actualizando criterio', id, ':', data);
+      return apiRequest(`/api/evaluations/criteria/${id}`, { method: 'PUT', data });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/evaluations/criteria'] });
       setEditingCriterion(null);
@@ -163,7 +165,7 @@ const CriteriosEvaluacion = () => {
     mutationFn: ({ id, isActive }: { id: number; isActive: boolean }) =>
       apiRequest(`/api/evaluations/criteria/${id}`, { 
         method: 'PUT', 
-        body: { isActive } 
+        data: { isActive } 
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/evaluations/criteria'] });
@@ -223,20 +225,24 @@ const CriteriosEvaluacion = () => {
 
   // Funciones auxiliares
   const handleEdit = (criterion: EvaluationCriterion) => {
-    setEditingCriterion(criterion);
-    form.reset({
-      name: criterion.name,
-      label: criterion.label,
-      description: criterion.description || '',
-      fieldType: criterion.fieldType,
-      minValue: criterion.minValue,
-      maxValue: criterion.maxValue,
-      isRequired: criterion.isRequired,
-      isActive: criterion.isActive,
-      sortOrder: criterion.sortOrder,
-      icon: criterion.icon || 'Star',
-      category: criterion.category
-    });
+    // Reset form first, then set values
+    form.reset();
+    setTimeout(() => {
+      setEditingCriterion(criterion);
+      form.reset({
+        name: criterion.name,
+        label: criterion.label,
+        description: criterion.description || '',
+        fieldType: criterion.fieldType,
+        minValue: criterion.minValue,
+        maxValue: criterion.maxValue,
+        isRequired: criterion.isRequired,
+        isActive: criterion.isActive,
+        sortOrder: criterion.sortOrder,
+        icon: criterion.icon || 'Star',
+        category: criterion.category
+      });
+    }, 100);
   };
 
   const handleSubmit = (data: z.infer<typeof criterionSchema>) => {
@@ -609,7 +615,7 @@ const CriteriosEvaluacion = () => {
         )}
 
         {/* Diálogos */}
-        <Dialog open={!!editingCriterion} onOpenChange={() => resetForm()}>
+        <Dialog open={!!editingCriterion || showCreateDialog} onOpenChange={() => resetForm()}>
           <CriterionDialog />
         </Dialog>
 

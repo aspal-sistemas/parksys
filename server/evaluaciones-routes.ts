@@ -367,13 +367,22 @@ router.put('/api/evaluations/criteria/:id', async (req, res) => {
     const id = parseInt(req.params.id);
     console.log(`📊 [EVALUACIONES] Actualizando criterio ${id}:`, req.body);
     
+    // Validar que se recibieron datos
+    if (!req.body || Object.keys(req.body).length === 0) {
+      console.log('❌ [EVALUACIONES] No se recibieron datos para actualizar');
+      return res.status(400).json({ error: 'No se recibieron datos para actualizar' });
+    }
+    
     const { name, label, description, fieldType, minValue, maxValue, isRequired, isActive, sortOrder, icon, category } = req.body;
     
     // Si solo se está actualizando el estado activo/inactivo
     if (Object.keys(req.body).length === 1 && req.body.hasOwnProperty('isActive')) {
       const [updatedCriteria] = await db
         .update(evaluationCriteria)
-        .set({ isActive })
+        .set({ 
+          isActive,
+          updatedAt: new Date()
+        })
         .where(eq(evaluationCriteria.id, id))
         .returning();
       
@@ -381,22 +390,26 @@ router.put('/api/evaluations/criteria/:id', async (req, res) => {
       return res.json(updatedCriteria);
     }
     
+    // Preparar los datos para actualizar, solo incluir campos que no sean undefined
+    const updateData: any = { updatedAt: new Date() };
+    
+    if (name !== undefined) updateData.name = name;
+    if (label !== undefined) updateData.label = label;
+    if (description !== undefined) updateData.description = description;
+    if (fieldType !== undefined) updateData.fieldType = fieldType;
+    if (minValue !== undefined) updateData.minValue = minValue;
+    if (maxValue !== undefined) updateData.maxValue = maxValue;
+    if (isRequired !== undefined) updateData.isRequired = isRequired;
+    if (isActive !== undefined) updateData.isActive = isActive;
+    if (sortOrder !== undefined) updateData.sortOrder = sortOrder;
+    if (icon !== undefined) updateData.icon = icon;
+    if (category !== undefined) updateData.category = category;
+    
+    console.log('📊 [EVALUACIONES] Datos para actualizar:', updateData);
+    
     const [updatedCriteria] = await db
       .update(evaluationCriteria)
-      .set({
-        name,
-        label,
-        description,
-        fieldType,
-        minValue,
-        maxValue,
-        isRequired,
-        isActive,
-        sortOrder,
-        icon,
-        category,
-        updatedAt: new Date()
-      })
+      .set(updateData)
       .where(eq(evaluationCriteria.id, id))
       .returning();
     
@@ -447,58 +460,7 @@ router.delete('/api/evaluations/criteria/:id', async (req, res) => {
   }
 });
 
-// Eliminar endpoints duplicados - ya están arriba
-    
-    const [updatedCriterio] = await db
-      .update(evaluationCriteria)
-      .set({
-        name: data.name,
-        label: data.label,
-        description: data.description,
-        fieldType: data.fieldType,
-        minValue: data.minValue,
-        maxValue: data.maxValue,
-        isRequired: data.isRequired,
-        category: data.category,
-        icon: data.icon,
-        updatedAt: new Date()
-      })
-      .where(eq(evaluationCriteria.id, parseInt(id)))
-      .returning();
-    
-    if (!updatedCriterio) {
-      return res.status(404).json({ error: 'Criterio no encontrado' });
-    }
-    
-    console.log('✅ [EVALUACIONES] Criterio actualizado:', updatedCriterio);
-    res.json(updatedCriterio);
-  } catch (error) {
-    console.error('❌ Error actualizando criterio:', error);
-    res.status(500).json({ error: 'Error al actualizar criterio de evaluación' });
-  }
-});
 
-// Eliminar criterio
-router.delete('/api/evaluations/criteria/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    
-    const [deletedCriterio] = await db
-      .delete(evaluationCriteria)
-      .where(eq(evaluationCriteria.id, parseInt(id)))
-      .returning();
-    
-    if (!deletedCriterio) {
-      return res.status(404).json({ error: 'Criterio no encontrado' });
-    }
-    
-    console.log('✅ [EVALUACIONES] Criterio eliminado:', deletedCriterio);
-    res.json({ message: 'Criterio eliminado exitosamente' });
-  } catch (error) {
-    console.error('❌ Error eliminando criterio:', error);
-    res.status(500).json({ error: 'Error al eliminar criterio de evaluación' });
-  }
-});
 
 // Asignar criterios a un tipo de entidad (construir formulario)
 router.post('/api/evaluations/criteria/assign/:entityType', async (req, res) => {
