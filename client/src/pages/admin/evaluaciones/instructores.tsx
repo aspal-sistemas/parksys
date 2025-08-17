@@ -56,14 +56,11 @@ interface InstructorEvaluation {
   instructorName: string;
   evaluatorName: string;
   evaluatorEmail: string;
-  evaluatorPhone: string;
-  evaluatorAge: number;
-  knowledgeRating: number;
-  communicationRating: number;
-  methodologyRating: number;
-  attitudeRating: number;
-  punctualityRating: number;
   overallRating: number;
+  knowledgeRating: number;
+  patienceRating: number;
+  clarityRating: number;
+  punctualityRating: number;
   wouldRecommend: boolean;
   comments: string;
   attendedActivity: string;
@@ -73,7 +70,6 @@ interface InstructorEvaluation {
   moderatedAt: string;
   evaluationDate: string;
   createdAt: string;
-  updatedAt: string;
 }
 
 const RECORDS_PER_PAGE = 9;
@@ -694,12 +690,12 @@ const EvaluacionesInstructores = () => {
                       <span className="font-medium">{evaluation.knowledgeRating}/5</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Comunicación:</span>
-                      <span className="font-medium">{evaluation.communicationRating}/5</span>
+                      <span className="text-muted-foreground">Paciencia:</span>
+                      <span className="font-medium">{evaluation.patienceRating}/5</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Metodología:</span>
-                      <span className="font-medium">{evaluation.methodologyRating}/5</span>
+                      <span className="text-muted-foreground">Claridad:</span>
+                      <span className="font-medium">{evaluation.clarityRating}/5</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Puntualidad:</span>
@@ -925,16 +921,7 @@ const EvaluacionesInstructores = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-sm font-medium text-muted-foreground">Teléfono</Label>
-                    <p>{selectedEvaluation.evaluatorPhone || 'No proporcionado'}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium text-muted-foreground">Edad</Label>
-                    <p>{selectedEvaluation.evaluatorAge || 'No proporcionada'}</p>
-                  </div>
-                </div>
+
 
                 <div>
                   <Label className="text-sm font-medium text-muted-foreground">Calificación General</Label>
@@ -954,16 +941,12 @@ const EvaluacionesInstructores = () => {
                       <span className="font-medium">{selectedEvaluation.knowledgeRating}/5</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Comunicación:</span>
-                      <span className="font-medium">{selectedEvaluation.communicationRating}/5</span>
+                      <span>Paciencia:</span>
+                      <span className="font-medium">{selectedEvaluation.patienceRating}/5</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Metodología:</span>
-                      <span className="font-medium">{selectedEvaluation.methodologyRating}/5</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Actitud:</span>
-                      <span className="font-medium">{selectedEvaluation.attitudeRating}/5</span>
+                      <span>Claridad:</span>
+                      <span className="font-medium">{selectedEvaluation.clarityRating}/5</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Puntualidad:</span>

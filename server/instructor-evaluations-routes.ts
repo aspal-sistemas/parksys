@@ -279,21 +279,18 @@ export function registerInstructorEvaluationRoutes(app: any, apiRouter: Router) 
   // Obtener todas las evaluaciones para el panel de administración
   apiRouter.get('/evaluations/instructors', async (req: Request, res: Response) => {
     try {
-      const result = await db.execute(sql`
+      const result = await db.execute(`
         SELECT 
           ie.id,
           ie.instructor_id as "instructorId",
-          i.full_name as "instructorName",
+          COALESCE(i.full_name, i.first_name || ' ' || i.last_name, 'Sin nombre') as "instructorName",
           ie.evaluator_name as "evaluatorName",
           ie.evaluator_email as "evaluatorEmail",
-          ie.evaluator_phone as "evaluatorPhone",
-          ie.evaluator_age as "evaluatorAge",
-          ie.knowledge_rating as "knowledgeRating",
-          ie.communication_rating as "communicationRating", 
-          ie.methodology_rating as "methodologyRating",
-          ie.attitude_rating as "attitudeRating",
-          ie.punctuality_rating as "punctualityRating",
           ie.overall_rating as "overallRating",
+          ie.knowledge_rating as "knowledgeRating",
+          ie.patience_rating as "patienceRating",
+          ie.clarity_rating as "clarityRating",
+          ie.punctuality_rating as "punctualityRating",
           ie.would_recommend as "wouldRecommend",
           ie.comments,
           ie.attended_activity as "attendedActivity",
@@ -302,8 +299,7 @@ export function registerInstructorEvaluationRoutes(app: any, apiRouter: Router) 
           ie.moderated_by as "moderatedBy",
           ie.moderated_at as "moderatedAt",
           ie.evaluation_date as "evaluationDate",
-          ie.created_at as "createdAt",
-          ie.updated_at as "updatedAt"
+          ie.created_at as "createdAt"
         FROM instructor_evaluations ie
         LEFT JOIN instructors i ON ie.instructor_id = i.id
         ORDER BY ie.created_at DESC
@@ -332,16 +328,27 @@ export function registerInstructorEvaluationRoutes(app: any, apiRouter: Router) 
         return res.status(400).json({ message: 'Estado inválido' });
       }
 
-      const result = await db.execute(sql`
+      await db.execute(`
         UPDATE instructor_evaluations 
         SET 
-          status = ${status},
-          moderation_notes = ${moderationNotes || null},
-          moderated_by = ${1},
-          moderated_at = NOW(),
-          updated_at = NOW()
+          status = '${status}',
+          moderation_notes = ${moderationNotes ? `'${moderationNotes.replace(/'/g, "''")}'` : 'NULL'},
+          moderated_by = 1,
+          moderated_at = NOW()
         WHERE id = ${evaluationId}
-        RETURNING *
+      `);
+
+      // Obtener la evaluación actualizada
+      const result = await db.execute(`
+        SELECT 
+          ie.id,
+          ie.instructor_id as "instructorId",
+          ie.status,
+          ie.moderation_notes as "moderationNotes",
+          ie.moderated_by as "moderatedBy",
+          ie.moderated_at as "moderatedAt"
+        FROM instructor_evaluations ie
+        WHERE ie.id = ${evaluationId}
       `);
 
       if (result.rows.length === 0) {
