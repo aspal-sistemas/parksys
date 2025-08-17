@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useLocation } from 'wouter';
 import AdminLayout from '@/components/AdminLayout';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,6 +19,7 @@ import { Tag, Plus, Edit, Trash2, Search } from 'lucide-react';
 // Página de gestión de categorías de actividades
 const ActivityCategoriesPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [location, setLocation] = useLocation();
 
   // Obtener categorías de actividades
   const { data: categories = [], isLoading } = useQuery({
@@ -98,7 +100,10 @@ const ActivityCategoriesPage: React.FC = () => {
               <p className="text-gray-600 mt-2">Gestión de categorías para actividades en parques</p>
             </div>
             <div className="flex gap-2">
-              <Button className="flex items-center gap-2">
+              <Button 
+                className="flex items-center gap-2"
+                onClick={() => setLocation('/admin/organizador/categorias')}
+              >
                 <Plus size={16} />
                 Nueva Categoría
               </Button>

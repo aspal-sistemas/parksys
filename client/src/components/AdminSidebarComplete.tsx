@@ -462,6 +462,13 @@ const AdminSidebarComplete: React.FC = () => {
               onToggle={toggleSubmenu}
             >
               <NavItem 
+                href="/admin/activities/categories" 
+                icon={<Tag className="h-4 w-4" />}
+                active={location.startsWith('/admin/activities/categories')}
+              >
+                Categorías
+              </NavItem>
+              <NavItem 
                 href="/admin/activities" 
                 icon={<Activity className="h-4 w-4" />}
                 active={location === '/admin/activities'}
@@ -488,13 +495,6 @@ const AdminSidebarComplete: React.FC = () => {
                 active={location.startsWith('/admin/activities/registrations')}
               >
                 Inscripciones
-              </NavItem>
-              <NavItem 
-                href="/admin/activities/categories" 
-                icon={<Tag className="h-4 w-4" />}
-                active={location.startsWith('/admin/activities/categories')}
-              >
-                Categorías
               </NavItem>
               <NavItem 
                 href="/admin/instructors" 
