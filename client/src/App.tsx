@@ -217,11 +217,7 @@ function Router() {
           </Suspense>
         </Route>
 
-        <Route path="/admin/visitors/criteria">
-          <Suspense fallback={<div className="p-8 text-center">Cargando criterios de evaluación...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/admin/visitors/criteria')))}
-          </Suspense>
-        </Route>
+
         <Route path="/admin/visitors/feedback">
           <Suspense fallback={<div className="p-8 text-center">Cargando retroalimentación de usuarios...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/admin/visitors/feedback')))}

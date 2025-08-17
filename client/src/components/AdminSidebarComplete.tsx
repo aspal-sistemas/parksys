@@ -577,13 +577,7 @@ const AdminSidebarComplete: React.FC = () => {
                 Conteo
               </NavItem>
 
-              <NavItem 
-                href="/admin/visitors/criteria" 
-                icon={<Settings className="h-4 w-4" />}
-                active={location === '/admin/visitors/criteria'}
-              >
-                Criterios
-              </NavItem>
+
               <NavItem 
                 href="/admin/visitors/feedback" 
                 icon={<MessageSquare className="h-4 w-4" />}

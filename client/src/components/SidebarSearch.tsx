@@ -33,7 +33,7 @@ export function SidebarSearch() {
     { id: 'visitors-dashboard', title: 'Dashboard Visitantes', description: 'Panel de control de visitantes', href: '/admin/visitors/dashboard', module: 'Visitantes', icon: <BarChart3 className="h-4 w-4" /> },
     { id: 'visitor-count', title: 'Conteo de Visitantes', description: 'Registro y conteo de visitantes', href: '/admin/visitors/count', module: 'Visitantes', icon: <Users className="h-4 w-4" /> },
 
-    { id: 'visitor-criteria', title: 'Criterios de Visitantes', description: 'Criterios de evaluación', href: '/admin/visitors/criteria', module: 'Visitantes', icon: <Settings className="h-4 w-4" /> },
+
     { id: 'visitor-feedback', title: 'Retroalimentación', description: 'Feedback de visitantes', href: '/admin/visitors/feedback', module: 'Visitantes', icon: <FileText className="h-4 w-4" /> },
 
     // Gestión - Parques
