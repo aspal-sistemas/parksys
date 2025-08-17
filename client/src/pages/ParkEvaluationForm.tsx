@@ -129,19 +129,21 @@ export default function ParkEvaluationForm() {
   });
 
   const createEvaluation = useMutation({
-    mutationFn: (data: EvaluationFormData) => {
+    mutationFn: async (evaluationData: EvaluationFormData) => {
       console.log('🚀 MUTATION: Iniciando envío de evaluación');
-      console.log('🚀 MUTATION: Datos recibidos:', JSON.stringify(data, null, 2));
+      console.log('🚀 MUTATION: Datos recibidos:', JSON.stringify(evaluationData, null, 2));
       
-      if (!data || typeof data !== 'object') {
+      if (!evaluationData || typeof evaluationData !== 'object') {
         console.error('❌ MUTATION: Datos inválidos o vacíos');
         throw new Error('Datos de evaluación inválidos');
       }
       
-      return apiRequest('/api/park-evaluations', {
+      const response = await apiRequest('/api/park-evaluations', {
         method: 'POST',
-        body: data,
+        data: evaluationData, // Cambié 'body' por 'data'
       });
+      
+      return response;
     },
     onSuccess: (data) => {
       setIsSubmitted(true);
