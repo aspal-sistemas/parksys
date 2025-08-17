@@ -34,17 +34,41 @@ interface ParkEvaluation {
   parkId: number;
   parkName: string;
   evaluatorName: string;
+  evaluatorEmail?: string;
+  evaluatorPhone?: string;
+  evaluatorCity?: string;
+  evaluatorAge?: number;
+  isFrequentVisitor: boolean;
+  
+  // Criterios de evaluación individuales
+  cleanliness: number;
+  safety: number;
+  maintenance: number;
+  accessibility: number;
+  amenities: number;
+  activities: number;
+  staff: number;
+  naturalBeauty: number;
+  
   overallRating: number;
+  comments?: string;
+  suggestions?: string;
+  wouldRecommend: boolean;
+  
+  visitDate?: string;
+  visitPurpose?: string;
+  visitDuration?: number;
+  
   status: 'pending' | 'approved' | 'rejected';
+  moderatedBy?: number;
+  moderatedAt?: string;
+  moderationNotes?: string;
+  
+  ipAddress?: string;
+  userAgent?: string;
+  
   createdAt: string;
-  criteria: {
-    cleanliness: number;
-    safety: number;
-    accessibility: number;
-    maintenance: number;
-    facilities: number;
-  };
-  comments: string;
+  updatedAt: string;
 }
 
 const EvaluacionesParques = () => {
@@ -608,23 +632,35 @@ const EvaluacionesParques = () => {
                   <div className="grid grid-cols-2 gap-4 mt-2">
                     <div className="flex justify-between">
                       <span>Limpieza:</span>
-                      <span className="font-semibold">{viewingEvaluation.criteria.cleanliness}/5</span>
+                      <span className="font-semibold">{viewingEvaluation.cleanliness || 'N/A'}/5</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Seguridad:</span>
-                      <span className="font-semibold">{viewingEvaluation.criteria.safety}/5</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Accesibilidad:</span>
-                      <span className="font-semibold">{viewingEvaluation.criteria.accessibility}/5</span>
+                      <span className="font-semibold">{viewingEvaluation.safety || 'N/A'}/5</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Mantenimiento:</span>
-                      <span className="font-semibold">{viewingEvaluation.criteria.maintenance}/5</span>
+                      <span className="font-semibold">{viewingEvaluation.maintenance || 'N/A'}/5</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Instalaciones:</span>
-                      <span className="font-semibold">{viewingEvaluation.criteria.facilities}/5</span>
+                      <span>Accesibilidad:</span>
+                      <span className="font-semibold">{viewingEvaluation.accessibility || 'N/A'}/5</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Amenidades:</span>
+                      <span className="font-semibold">{viewingEvaluation.amenities || 'N/A'}/5</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Actividades:</span>
+                      <span className="font-semibold">{viewingEvaluation.activities || 'N/A'}/5</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Personal:</span>
+                      <span className="font-semibold">{viewingEvaluation.staff || 'N/A'}/5</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Belleza Natural:</span>
+                      <span className="font-semibold">{viewingEvaluation.naturalBeauty || 'N/A'}/5</span>
                     </div>
                   </div>
                 </div>
