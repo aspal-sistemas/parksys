@@ -80,7 +80,7 @@ app.put('/api/evaluations/parks/:id', (req, res) => {
         .set({
           status: status,
           moderationNotes: moderationNotes || null,
-          moderatedBy: 'admin',
+          moderatedBy: 1, // ID del usuario administrador
           moderatedAt: new Date(),
           updatedAt: new Date()
         })
