@@ -123,13 +123,10 @@ const EvaluacionesParques = () => {
       console.log('Datos enviados a la API:', data);
       const response = await apiRequest(`/api/evaluations/parks/${data.id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
+        data: {
           status: data.status,
           moderationNotes: data.moderationNotes
-        })
+        }
       });
       return response;
     },
