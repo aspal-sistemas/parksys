@@ -42,6 +42,7 @@ import NewEventPage from "@/pages/admin/events/new-event";
 import EventsIndex from "@/pages/admin/events/index";
 import EditEventPage from "@/pages/admin/events/edit";
 import Header from "@/components/Header";
+import ParkEvaluationForm from "@/pages/ParkEvaluationForm";
 
 function Router() {
   const [location] = useLocation();
@@ -172,11 +173,7 @@ function Router() {
             {React.createElement(React.lazy(() => import('@/pages/FaunaDetail')))}
           </Suspense>
         </Route>
-        <Route path="/parque/:slug/evaluar">
-          <Suspense fallback={<div className="p-8 text-center">Cargando formulario de evaluación...</div>}>
-            {React.createElement(React.lazy(() => import('@/pages/ParkEvaluationForm')))}
-          </Suspense>
-        </Route>
+        <Route path="/parque/:slug/evaluar" component={ParkEvaluationForm} />
         <Route path="/parque/:parkSlug/evaluaciones">
           <Suspense fallback={<div className="p-8 text-center">Cargando evaluaciones del parque...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/ParkEvaluations')))}
