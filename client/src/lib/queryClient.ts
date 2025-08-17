@@ -118,11 +118,12 @@ export async function apiRequest(
 
   console.log(`🌐 [API REQUEST] ${method} ${url}`);
   
-  // Debug específico para el problema
-  if (url.includes('/api/activities') && method === 'POST') {
-    console.error('🚨 POST a /api/activities detectado!');
-    console.error('Stack trace:', new Error().stack);
-    console.error('Data enviada:', data);
+  // Debug específico para evaluaciones
+  if (url.includes('/api/park-evaluations') && method === 'POST') {
+    console.log('📋 POST a /api/park-evaluations detectado');
+    console.log('📋 Data enviada:', JSON.stringify(data, null, 2));
+    console.log('📋 Headers:', JSON.stringify(headers, null, 2));
+    console.log('📋 Body preparado:', body);
   }
   
   const res = await fetch(url, {
@@ -131,6 +132,11 @@ export async function apiRequest(
     body,
     credentials: "include",
   });
+
+  // Debug para evaluaciones - ver respuesta del servidor
+  if (url.includes('/api/park-evaluations') && method === 'POST') {
+    console.log('📋 Respuesta del servidor:', res.status, res.ok);
+  }
 
   // Para peticiones que no son de login, verificar si hay errores
   if (!isLoginRequest && !res.ok) {
@@ -147,8 +153,22 @@ export async function apiRequest(
         errorMessage = `HTTP error! status: ${res.status}`;
       }
     }
-    throw new Error(errorMessage);
+    
+    // Debug específico para evaluaciones
+    if (url.includes('/api/park-evaluations') && method === 'POST') {
+      console.error('📋 ERROR en evaluaciones:', res.status, errorMessage);
+    }
+    
+    throw new Error(`${res.status}: ${errorMessage}`);
   }
+  
+  // Debug para evaluaciones - ver datos de respuesta exitosa
+  if (url.includes('/api/park-evaluations') && method === 'POST') {
+    const responseData = await res.json();
+    console.log('📋 Respuesta exitosa del servidor:', JSON.stringify(responseData, null, 2));
+    return responseData;
+  }
+  
   return res.json();
 }
 

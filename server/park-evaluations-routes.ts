@@ -398,6 +398,7 @@ export function registerParkEvaluationRoutes(app: any, apiRouter: any, isAuthent
       }
       
       console.log('🔍 Validando datos con schema...');
+      console.log('🔍 Datos antes de validar:', JSON.stringify(req.body, null, 2));
       const validatedData = createEvaluationSchema.parse(req.body);
       console.log('✅ Datos validados exitosamente:', JSON.stringify(validatedData, null, 2));
       
