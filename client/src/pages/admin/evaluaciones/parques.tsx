@@ -120,13 +120,18 @@ const EvaluacionesParques = () => {
   // Mutación para actualizar evaluación (moderación)
   const updateMutation = useMutation({
     mutationFn: async (data: { id: number; status: string; moderationNotes?: string }) => {
-      await apiRequest(`/api/evaluations/parks/${data.id}`, {
+      console.log('Datos enviados a la API:', data);
+      const response = await apiRequest(`/api/evaluations/parks/${data.id}`, {
         method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({
           status: data.status,
           moderationNotes: data.moderationNotes
         })
       });
+      return response;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/evaluations/parks'] });
@@ -988,11 +993,19 @@ const EvaluacionesParques = () => {
                     Cancelar
                   </Button>
                   <Button 
-                    onClick={() => updateMutation.mutate({
-                      id: editingEvaluation.id,
-                      status: editStatus || editingEvaluation.status,
-                      moderationNotes: editNotes.trim() || undefined
-                    })}
+                    onClick={() => {
+                      const finalStatus = editStatus || editingEvaluation.status;
+                      console.log('Enviando actualización:', {
+                        id: editingEvaluation.id,
+                        status: finalStatus,
+                        moderationNotes: editNotes.trim() || undefined
+                      });
+                      updateMutation.mutate({
+                        id: editingEvaluation.id,
+                        status: finalStatus,
+                        moderationNotes: editNotes.trim() || undefined
+                      });
+                    }}
                     disabled={updateMutation.isPending}
                   >
                     {updateMutation.isPending ? 'Guardando...' : 'Guardar Cambios'}

@@ -177,7 +177,7 @@ router.put('/api/evaluations/parks/:id', async (req, res) => {
     const id = parseInt(req.params.id);
     const { status, moderationNotes } = req.body;
 
-    console.log(`📝 Actualizando evaluación de parque ${id} con estado: ${status}`);
+    console.log(`📝 Actualizando evaluación de parque ${id}`, { status, moderationNotes, body: req.body });
 
     // Validar el estado
     if (!['pending', 'approved', 'rejected'].includes(status)) {
