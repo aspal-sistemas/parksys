@@ -46,6 +46,8 @@ The application uses a client-server architecture with a modern full-stack.
 
 **Park Evaluation System Resolution (August 2025)**: Successfully resolved all critical issues with the park evaluation system. Eliminated 909 duplicate entries keeping only 9 clean evaluations, fixed null value JavaScript errors with proper toFixed() protections, optimized database performance to 99%, implemented graceful handling of automatic browser POST requests (returns 204 instead of 400), and added comprehensive error logging. The park evaluation form now works flawlessly without console errors and data is properly saved to the database.
 
+**CSV Export UTF-8 Fix (August 2025)**: Resolved critical CSV export encoding issue where Spanish characters (accents, ñ, etc.) were displaying as strange symbols. Fixed by adding BOM (Byte Order Mark) UTF-8 prefix, enabling proper quoting for special characters, and ensuring correct encoding in the blob creation. CSV files now export perfectly with all Spanish characters preserved for Excel and other applications.
+
 ## External Dependencies
 - **Frontend**: React, TypeScript, Vite, Tailwind CSS, Radix UI (shadcn/ui), React Query, React Router, React Hook Form, Zod.
 - **Backend**: Node.js, Express, TypeScript, Multer, bcryptjs.

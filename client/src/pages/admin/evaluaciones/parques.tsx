@@ -160,14 +160,24 @@ const EvaluacionesParques = () => {
       'Fecha de Actualización': new Date(evaluation.updatedAt).toLocaleString('es-MX')
     }));
 
-    // Convertir a CSV
+    // Convertir a CSV con configuración específica para caracteres especiales
     const csv = Papa.unparse(csvData, {
       header: true,
-      delimiter: ','
+      delimiter: ',',
+      quotes: true, // Asegurar que los campos con caracteres especiales estén entre comillas
+      quoteChar: '"',
+      escapeChar: '"'
     });
 
-    // Descargar archivo
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    // Agregar BOM UTF-8 para compatibilidad con Excel y caracteres especiales
+    const BOM = '\uFEFF';
+    const csvWithBOM = BOM + csv;
+
+    // Crear blob con encoding UTF-8 explícito
+    const blob = new Blob([csvWithBOM], { 
+      type: 'text/csv;charset=utf-8;' 
+    });
+    
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
@@ -179,7 +189,7 @@ const EvaluacionesParques = () => {
 
     toast({
       title: "Exportación exitosa",
-      description: `Se exportaron ${filteredEvaluations.length} evaluaciones a CSV.`,
+      description: `Se exportaron ${filteredEvaluations.length} evaluaciones a CSV con codificación UTF-8.`,
     });
   };
 
