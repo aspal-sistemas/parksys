@@ -101,6 +101,60 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
+// ===== ENDPOINT CRÍTICO PARA ACTUALIZACIÓN DE EVALUACIONES - MÁXIMA PRIORIDAD =====
+app.put('/api/evaluations/parks/:id', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const { status, moderationNotes } = req.body;
+
+    console.log(`🔄 [PRIORITY] Actualizando evaluación ${id}:`, { 
+      status, 
+      moderationNotes, 
+      body: req.body,
+      headers: req.headers['content-type'],
+      rawBody: JSON.stringify(req.body),
+      method: req.method,
+      url: req.url
+    });
+
+    // Validar el estado
+    if (!['pending', 'approved', 'rejected'].includes(status)) {
+      console.log(`❌ [PRIORITY] Estado inválido: ${status}`);
+      return res.status(400).json({ error: 'Estado inválido' });
+    }
+
+    // Actualizar la evaluación
+    const { parkEvaluations } = await import('./shared/schema');
+    const { eq } = await import('drizzle-orm');
+    const { db } = await import('./db');
+
+    const [updatedEvaluation] = await db
+      .update(parkEvaluations)
+      .set({
+        status: status,
+        moderationNotes: moderationNotes || null,
+        moderatedBy: 'admin',
+        moderatedAt: new Date(),
+        updatedAt: new Date()
+      })
+      .where(eq(parkEvaluations.id, id))
+      .returning();
+
+    if (!updatedEvaluation) {
+      console.log(`❌ [PRIORITY] Evaluación ${id} no encontrada`);
+      return res.status(404).json({ error: 'Evaluación no encontrada' });
+    }
+
+    console.log(`✅ [PRIORITY] Evaluación ${id} actualizada exitosamente`);
+    res.json(updatedEvaluation);
+
+  } catch (error) {
+    console.error('❌ [PRIORITY] Error al actualizar evaluación:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+// ===== FIN DE ENDPOINT CRÍTICO =====
+
 // Multiple health check endpoints for Cloud Run compatibility
 app.get('/healthz', (req: Request, res: Response) => {
   try {
@@ -1000,57 +1054,10 @@ app.use('/api', skillsRouter);
 // Registrar las rutas de fauna
 app.use('/api/fauna', faunaRoutes);
 
+
+
 // Registrar las rutas de conteo de visitantes
 app.use('/api', visitorCountRoutes);
-
-// ENDPOINT DIRECTO PARA ACTUALIZACIÓN DE EVALUACIONES - PRIORITY ROUTING (ANTES DE OTROS ROUTERS)
-app.put('/api/evaluations/parks/:id', async (req, res) => {
-  try {
-    const id = parseInt(req.params.id);
-    const { status, moderationNotes } = req.body;
-
-    console.log(`🔄 [DIRECT] Actualizando evaluación ${id}:`, { 
-      status, 
-      moderationNotes, 
-      body: req.body,
-      headers: req.headers['content-type'],
-      rawBody: JSON.stringify(req.body)
-    });
-
-    // Validar el estado
-    if (!['pending', 'approved', 'rejected'].includes(status)) {
-      return res.status(400).json({ error: 'Estado inválido' });
-    }
-
-    // Actualizar la evaluación
-    const { parkEvaluations } = await import('./shared/schema');
-    const { eq } = await import('drizzle-orm');
-    const { db } = await import('./db');
-
-    const [updatedEvaluation] = await db
-      .update(parkEvaluations)
-      .set({
-        status: status,
-        moderationNotes: moderationNotes || null,
-        moderatedBy: 'admin',
-        moderatedAt: new Date(),
-        updatedAt: new Date()
-      })
-      .where(eq(parkEvaluations.id, id))
-      .returning();
-
-    if (!updatedEvaluation) {
-      return res.status(404).json({ error: 'Evaluación no encontrada' });
-    }
-
-    console.log(`✅ [DIRECT] Evaluación ${id} actualizada exitosamente`);
-    res.json(updatedEvaluation);
-
-  } catch (error) {
-    console.error('❌ [DIRECT] Error al actualizar evaluación:', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
-  }
-});
 
 // Registrar las rutas de evaluaciones (DESPUÉS del endpoint directo)
 app.use(evaluacionesRoutes);
