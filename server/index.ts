@@ -1003,11 +1003,7 @@ app.use('/api/fauna', faunaRoutes);
 // Registrar las rutas de conteo de visitantes
 app.use('/api', visitorCountRoutes);
 
-// Registrar las rutas de evaluaciones
-app.use(evaluacionesRoutes);
-console.log("📊 Rutas del módulo de evaluaciones registradas correctamente");
-
-// ENDPOINT DIRECTO PARA ACTUALIZACIÓN DE EVALUACIONES - PRIORITY ROUTING
+// ENDPOINT DIRECTO PARA ACTUALIZACIÓN DE EVALUACIONES - PRIORITY ROUTING (ANTES DE OTROS ROUTERS)
 app.put('/api/evaluations/parks/:id', express.json(), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
@@ -1049,6 +1045,10 @@ app.put('/api/evaluations/parks/:id', express.json(), async (req, res) => {
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
+
+// Registrar las rutas de evaluaciones (DESPUÉS del endpoint directo)
+app.use(evaluacionesRoutes);
+console.log("📊 Rutas del módulo de evaluaciones registradas correctamente");
 
 // ENDPOINT DIRECTO PARA SUBIDA DE IMÁGENES - PRIORITY ROUTING
 
