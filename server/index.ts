@@ -25,6 +25,84 @@ import evaluacionesRoutes from "./evaluaciones-routes";
 
 const app = express();
 
+// ===== ENDPOINT CRÍTICO MÁXIMA PRIORIDAD - ANTES DE TODO MIDDLEWARE =====
+app.put('/api/evaluations/parks/:id', (req, res) => {
+  console.log(`🚨 [ULTRA-PRIORITY] Endpoint capturado ANTES de middleware!`);
+  
+  // Parsear el body manualmente sin middleware
+  let body = '';
+  req.setEncoding('utf8');
+  
+  req.on('data', function(chunk) {
+    body += chunk;
+  });
+  
+  req.on('end', async function() {
+    try {
+      const id = parseInt(req.params.id);
+      
+      console.log(`🔄 [ULTRA-PRIORITY] Raw body recibido:`, { 
+        rawData: body,
+        contentType: req.headers['content-type'],
+        contentLength: req.headers['content-length']
+      });
+      
+      // Parsear JSON manualmente
+      let parsedBody;
+      try {
+        parsedBody = JSON.parse(body);
+      } catch (parseError) {
+        console.error('❌ [ULTRA-PRIORITY] Error parsing JSON:', parseError);
+        return res.status(400).json({ error: 'JSON inválido' });
+      }
+      
+      const { status, moderationNotes } = parsedBody;
+      
+      console.log(`🔄 [ULTRA-PRIORITY] Datos parseados:`, { 
+        status, 
+        moderationNotes, 
+        parsedBody
+      });
+
+      // Validar el estado
+      if (!['pending', 'approved', 'rejected'].includes(status)) {
+        console.log(`❌ [ULTRA-PRIORITY] Estado inválido: ${status}`);
+        return res.status(400).json({ error: 'Estado inválido' });
+      }
+
+      // Actualizar la evaluación
+      const { parkEvaluations } = await import('./shared/schema');
+      const { eq } = await import('drizzle-orm');
+      const { db } = await import('./db');
+
+      const [updatedEvaluation] = await db
+        .update(parkEvaluations)
+        .set({
+          status: status,
+          moderationNotes: moderationNotes || null,
+          moderatedBy: 'admin',
+          moderatedAt: new Date(),
+          updatedAt: new Date()
+        })
+        .where(eq(parkEvaluations.id, id))
+        .returning();
+
+      if (!updatedEvaluation) {
+        console.log(`❌ [ULTRA-PRIORITY] Evaluación ${id} no encontrada`);
+        return res.status(404).json({ error: 'Evaluación no encontrada' });
+      }
+
+      console.log(`✅ [ULTRA-PRIORITY] Evaluación ${id} actualizada exitosamente`);
+      res.json(updatedEvaluation);
+
+    } catch (error) {
+      console.error('❌ [ULTRA-PRIORITY] Error al actualizar evaluación:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  });
+});
+// ===== FIN ENDPOINT CRÍTICO =====
+
 // Configuración básica de Express
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
@@ -101,81 +179,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
-// ===== ENDPOINT CRÍTICO PARA ACTUALIZACIÓN DE EVALUACIONES - MÁXIMA PRIORIDAD =====
-app.put('/api/evaluations/parks/:id', (req, res) => {
-  // Parsear el body manualmente
-  let body = '';
-  req.setEncoding('utf8');
-  
-  req.on('data', function(chunk) {
-    body += chunk;
-  });
-  
-  req.on('end', async function() {
-    try {
-      const id = parseInt(req.params.id);
-      
-      console.log(`🔄 [PRIORITY] Raw body recibido:`, { 
-        rawData: body,
-        contentType: req.headers['content-type'],
-        contentLength: req.headers['content-length']
-      });
-      
-      // Parsear JSON manualmente
-      let parsedBody;
-      try {
-        parsedBody = JSON.parse(body);
-      } catch (parseError) {
-        console.error('❌ [PRIORITY] Error parsing JSON:', parseError);
-        return res.status(400).json({ error: 'JSON inválido' });
-      }
-      
-      const { status, moderationNotes } = parsedBody;
-      
-      console.log(`🔄 [PRIORITY] Datos parseados:`, { 
-        status, 
-        moderationNotes, 
-        parsedBody
-      });
-
-      // Validar el estado
-      if (!['pending', 'approved', 'rejected'].includes(status)) {
-        console.log(`❌ [PRIORITY] Estado inválido: ${status}`);
-        return res.status(400).json({ error: 'Estado inválido' });
-      }
-
-    // Actualizar la evaluación
-    const { parkEvaluations } = await import('./shared/schema');
-    const { eq } = await import('drizzle-orm');
-    const { db } = await import('./db');
-
-    const [updatedEvaluation] = await db
-      .update(parkEvaluations)
-      .set({
-        status: status,
-        moderationNotes: moderationNotes || null,
-        moderatedBy: 'admin',
-        moderatedAt: new Date(),
-        updatedAt: new Date()
-      })
-      .where(eq(parkEvaluations.id, id))
-      .returning();
-
-    if (!updatedEvaluation) {
-      console.log(`❌ [PRIORITY] Evaluación ${id} no encontrada`);
-      return res.status(404).json({ error: 'Evaluación no encontrada' });
-    }
-
-      console.log(`✅ [PRIORITY] Evaluación ${id} actualizada exitosamente`);
-      res.json(updatedEvaluation);
-
-    } catch (error) {
-      console.error('❌ [PRIORITY] Error al actualizar evaluación:', error);
-      res.status(500).json({ error: 'Error interno del servidor' });
-    }
-  });
-});
-// ===== FIN DE ENDPOINT CRÍTICO =====
+// ENDPOINT DUPLICADO REMOVIDO - AHORA ESTÁ AL INICIO DEL ARCHIVO
 
 // Multiple health check endpoints for Cloud Run compatibility
 app.get('/healthz', (req: Request, res: Response) => {
