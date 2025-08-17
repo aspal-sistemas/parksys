@@ -115,6 +115,27 @@ const EvaluacionesParques = () => {
     },
   });
 
+  // Función para traducir propósito de visita
+  const translateVisitPurpose = (purpose: string | undefined | null): string => {
+    if (!purpose) return 'N/A';
+    
+    const translations: Record<string, string> = {
+      'recreation': 'Recreación',
+      'exercise': 'Ejercicio',
+      'relaxation': 'Relajación', 
+      'social': 'Socializar',
+      'events': 'Eventos',
+      'photography': 'Fotografía',
+      'walking': 'Caminar',
+      'family-time': 'Tiempo en familia',
+      'sports': 'Deportes',
+      'nature': 'Contacto con la naturaleza',
+      'other': 'Otro'
+    };
+    
+    return translations[purpose] || purpose;
+  };
+
   // Función para exportar a CSV
   const exportToCSV = () => {
     if (!filteredEvaluations.length) {
@@ -149,7 +170,7 @@ const EvaluacionesParques = () => {
       'Sugerencias': evaluation.suggestions || 'Sin sugerencias',
       'Recomendaría': evaluation.wouldRecommend ? 'Sí' : 'No',
       'Fecha de Visita': evaluation.visitDate || 'N/A',
-      'Propósito de Visita': evaluation.visitPurpose || 'N/A',
+      'Propósito de Visita': translateVisitPurpose(evaluation.visitPurpose),
       'Duración de Visita (min)': evaluation.visitDuration || 'N/A',
       'Estado': evaluation.status === 'pending' ? 'Pendiente' : 
                 evaluation.status === 'approved' ? 'Aprobada' : 'Rechazada',
@@ -762,6 +783,44 @@ const EvaluacionesParques = () => {
                 <div>
                   <label className="text-sm font-medium text-gray-500">Sugerencias</label>
                   <p className="mt-1 text-gray-700">{viewingEvaluation.suggestions || 'Sin sugerencias'}</p>
+                </div>
+
+                {/* Información adicional de la visita */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Propósito de Visita</label>
+                    <p className="mt-1 text-gray-700">{translateVisitPurpose(viewingEvaluation.visitPurpose)}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Duración de Visita</label>
+                    <p className="mt-1 text-gray-700">
+                      {viewingEvaluation.visitDuration ? `${viewingEvaluation.visitDuration} minutos` : 'N/A'}
+                    </p>
+                  </div>
+                </div>
+
+                {viewingEvaluation.visitDate && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Fecha de Visita</label>
+                    <p className="mt-1 text-gray-700">
+                      {new Date(viewingEvaluation.visitDate).toLocaleDateString('es-MX', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </p>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Visitante Frecuente</label>
+                    <p className="mt-1 text-gray-700">{viewingEvaluation.isFrequentVisitor ? 'Sí' : 'No'}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Recomendaría el Parque</label>
+                    <p className="mt-1 text-gray-700">{viewingEvaluation.wouldRecommend ? 'Sí' : 'No'}</p>
+                  </div>
                 </div>
 
                 <div>
