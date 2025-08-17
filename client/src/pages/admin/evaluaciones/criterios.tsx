@@ -225,24 +225,24 @@ const CriteriosEvaluacion = () => {
 
   // Funciones auxiliares
   const handleEdit = (criterion: EvaluationCriterion) => {
-    // Reset form first, then set values
-    form.reset();
-    setTimeout(() => {
-      setEditingCriterion(criterion);
-      form.reset({
-        name: criterion.name,
-        label: criterion.label,
-        description: criterion.description || '',
-        fieldType: criterion.fieldType,
-        minValue: criterion.minValue,
-        maxValue: criterion.maxValue,
-        isRequired: criterion.isRequired,
-        isActive: criterion.isActive,
-        sortOrder: criterion.sortOrder,
-        icon: criterion.icon || 'Star',
-        category: criterion.category
-      });
-    }, 100);
+    // Close any open dialogs first
+    setShowCreateDialog(false);
+    
+    // Set editing criterion and form values
+    setEditingCriterion(criterion);
+    form.reset({
+      name: criterion.name,
+      label: criterion.label,
+      description: criterion.description || '',
+      fieldType: criterion.fieldType,
+      minValue: criterion.minValue,
+      maxValue: criterion.maxValue,
+      isRequired: criterion.isRequired,
+      isActive: criterion.isActive,
+      sortOrder: criterion.sortOrder,
+      icon: criterion.icon || 'Star',
+      category: criterion.category
+    });
   };
 
   const handleSubmit = (data: z.infer<typeof criterionSchema>) => {
@@ -254,10 +254,13 @@ const CriteriosEvaluacion = () => {
   };
 
   const resetForm = () => {
+    form.reset();
     setEditingCriterion(null);
     setShowCreateDialog(false);
-    form.reset();
   };
+
+  // Ensure dialogs are mutually exclusive
+  const isDialogOpen = !!editingCriterion || showCreateDialog;
 
   const getFieldTypeIcon = (fieldType: string) => {
     switch (fieldType) {
@@ -399,7 +402,17 @@ const CriteriosEvaluacion = () => {
               Filtros Avanzados
             </Button>
             
-            <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+            <Dialog open={showCreateDialog} onOpenChange={(open) => {
+              if (!open) {
+                setShowCreateDialog(false);
+                form.reset();
+              } else {
+                // Close any editing dialog first
+                setEditingCriterion(null);
+                setShowCreateDialog(true);
+                form.reset(); // Reset form for new criterion
+              }
+            }}>
               <DialogTrigger asChild>
                 <Button>
                   <Plus className="h-4 w-4 mr-1" />
@@ -615,7 +628,12 @@ const CriteriosEvaluacion = () => {
         )}
 
         {/* Diálogos */}
-        <Dialog open={!!editingCriterion || showCreateDialog} onOpenChange={() => resetForm()}>
+        <Dialog open={!!editingCriterion} onOpenChange={(open) => {
+          if (!open) {
+            setEditingCriterion(null);
+            form.reset();
+          }
+        }}>
           <CriterionDialog />
         </Dialog>
 
@@ -973,7 +991,7 @@ const CriteriosEvaluacion = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Tipo de Campo</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Selecciona el tipo" />
@@ -998,7 +1016,7 @@ const CriteriosEvaluacion = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Categoría</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Selecciona la categoría" />
