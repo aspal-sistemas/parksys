@@ -171,6 +171,45 @@ router.get('/api/evaluations/parks', async (req, res) => {
   }
 });
 
+// Actualizar evaluación de parque (moderación)
+router.put('/api/evaluations/parks/:id', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const { status, moderationNotes } = req.body;
+
+    console.log(`📝 Actualizando evaluación de parque ${id} con estado: ${status}`);
+
+    // Validar el estado
+    if (!['pending', 'approved', 'rejected'].includes(status)) {
+      return res.status(400).json({ error: 'Estado inválido' });
+    }
+
+    // Actualizar la evaluación
+    const [updatedEvaluation] = await db
+      .update(parkEvaluations)
+      .set({
+        status: status,
+        moderationNotes: moderationNotes || null,
+        moderatedBy: 'admin', // En un sistema real, sería el ID del admin autenticado
+        moderatedAt: new Date(),
+        updatedAt: new Date()
+      })
+      .where(eq(parkEvaluations.id, id))
+      .returning();
+
+    if (!updatedEvaluation) {
+      return res.status(404).json({ error: 'Evaluación no encontrada' });
+    }
+
+    console.log(`✅ Evaluación ${id} actualizada exitosamente`);
+    res.json(updatedEvaluation);
+
+  } catch (error) {
+    console.error('Error al actualizar evaluación de parque:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
 // Obtener evaluaciones de instructores
 router.get('/api/evaluations/instructors', async (req, res) => {
   try {

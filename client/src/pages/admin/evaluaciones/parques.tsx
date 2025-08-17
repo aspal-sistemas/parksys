@@ -82,6 +82,8 @@ const EvaluacionesParques = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [viewingEvaluation, setViewingEvaluation] = useState<ParkEvaluation | null>(null);
   const [editingEvaluation, setEditingEvaluation] = useState<ParkEvaluation | null>(null);
+  const [editStatus, setEditStatus] = useState<string>('');
+  const [editNotes, setEditNotes] = useState<string>('');
   const recordsPerPage = 9;
   
   const { toast } = useToast();
@@ -110,6 +112,34 @@ const EvaluacionesParques = () => {
       toast({
         title: "Error",
         description: "No se pudo eliminar la evaluación",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Mutación para actualizar evaluación (moderación)
+  const updateMutation = useMutation({
+    mutationFn: async (data: { id: number; status: string; moderationNotes?: string }) => {
+      await apiRequest(`/api/evaluations/parks/${data.id}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          status: data.status,
+          moderationNotes: data.moderationNotes
+        })
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/evaluations/parks'] });
+      setEditingEvaluation(null);
+      toast({
+        title: "Evaluación actualizada",
+        description: "El estado de la evaluación se ha actualizado exitosamente",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "No se pudo actualizar la evaluación",
         variant: "destructive",
       });
     },
@@ -327,7 +357,11 @@ const EvaluacionesParques = () => {
             <Button 
               variant="ghost" 
               size="sm"
-              onClick={() => setEditingEvaluation(evaluation)}
+              onClick={() => {
+                setEditingEvaluation(evaluation);
+                setEditStatus(evaluation.status);
+                setEditNotes('');
+              }}
             >
               <Edit className="h-4 w-4" />
             </Button>
@@ -397,7 +431,11 @@ const EvaluacionesParques = () => {
           <Button 
             variant="ghost" 
             size="sm"
-            onClick={() => setEditingEvaluation(evaluation)}
+            onClick={() => {
+              setEditingEvaluation(evaluation);
+              setEditStatus(evaluation.status);
+              setEditNotes('');
+            }}
           >
             <Edit className="h-4 w-4" />
           </Button>
@@ -839,22 +877,125 @@ const EvaluacionesParques = () => {
         </Dialog>
 
         {/* Dialog de edición */}
-        <Dialog open={!!editingEvaluation} onOpenChange={() => setEditingEvaluation(null)}>
+        <Dialog open={!!editingEvaluation} onOpenChange={(open) => {
+          if (!open) {
+            setEditingEvaluation(null);
+            setEditStatus('');
+            setEditNotes('');
+          }
+        }}>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Editar Evaluación</DialogTitle>
+              <DialogTitle>Moderar Evaluación</DialogTitle>
             </DialogHeader>
             {editingEvaluation && (
-              <div className="space-y-4">
-                <p className="text-gray-600">
-                  Funcionalidad de edición en desarrollo. Evaluación ID: {editingEvaluation.id}
-                </p>
-                <div className="flex gap-2">
-                  <Button onClick={() => setEditingEvaluation(null)}>
+              <div className="space-y-6">
+                {/* Información de la evaluación */}
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Parque</label>
+                      <p className="font-semibold">{editingEvaluation.parkName}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Evaluador</label>
+                      <p className="font-semibold">{editingEvaluation.evaluatorName}</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Calificación General</label>
+                      <p className={`text-lg font-bold ${getRatingColor(editingEvaluation.overallRating)}`}>
+                        {editingEvaluation.overallRating ? editingEvaluation.overallRating.toFixed(1) : 'N/A'} ⭐
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Estado Actual</label>
+                      <Badge className={getStatusColor(editingEvaluation.status)}>
+                        {getStatusLabel(editingEvaluation.status)}
+                      </Badge>
+                    </div>
+                  </div>
+                  
+                  {editingEvaluation.comments && (
+                    <div className="mt-4">
+                      <label className="text-sm font-medium text-gray-500">Comentarios del Usuario</label>
+                      <p className="text-sm text-gray-700 mt-1">{editingEvaluation.comments}</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Formulario de moderación */}
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">
+                      Nuevo Estado de la Evaluación
+                    </label>
+                    <Select 
+                      value={editStatus || editingEvaluation.status} 
+                      onValueChange={setEditStatus}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar estado" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pending">
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-4 w-4 text-yellow-500" />
+                            Pendiente de Revisión
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="approved">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="h-4 w-4 text-green-500" />
+                            Aprobada
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="rejected">
+                          <div className="flex items-center gap-2">
+                            <XCircle className="h-4 w-4 text-red-500" />
+                            Rechazada
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">
+                      Notas de Moderación (Opcional)
+                    </label>
+                    <textarea
+                      className="w-full p-3 border border-gray-300 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      rows={4}
+                      placeholder="Agregar comentarios sobre la decisión de moderación..."
+                      value={editNotes}
+                      onChange={(e) => setEditNotes(e.target.value)}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Estas notas serán visibles para otros administradores y serán guardadas en el historial.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Acciones */}
+                <div className="flex justify-end gap-3 pt-4 border-t">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setEditingEvaluation(null)}
+                    disabled={updateMutation.isPending}
+                  >
                     Cancelar
                   </Button>
-                  <Button>
-                    Guardar Cambios
+                  <Button 
+                    onClick={() => updateMutation.mutate({
+                      id: editingEvaluation.id,
+                      status: editStatus || editingEvaluation.status,
+                      moderationNotes: editNotes.trim() || undefined
+                    })}
+                    disabled={updateMutation.isPending}
+                  >
+                    {updateMutation.isPending ? 'Guardando...' : 'Guardar Cambios'}
                   </Button>
                 </div>
               </div>
