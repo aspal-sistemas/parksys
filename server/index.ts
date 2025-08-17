@@ -139,26 +139,28 @@ app.get('/ping', (req: Request, res: Response) => {
   res.status(200).send('pong');
 });
 
-// Root endpoint - prioritized health check handling for deployment
+// Root endpoint - only handle specific health check requests, let browsers through to Vite
 app.get('/', (req: Request, res: Response, next: NextFunction) => {
   try {
-    // Check if this is a health check request first (regardless of environment)
+    // Check if this is specifically a health check request (NOT browser requests)
     const userAgent = req.get('User-Agent') || '';
     const acceptHeader = req.get('Accept') || '';
     
-    const isHealthCheck = 
+    // Only respond with health check for deployment services, never for browsers
+    const isDeploymentHealthCheck = 
       userAgent.includes('GoogleHC') || 
       userAgent.includes('Cloud Run') ||
       userAgent.includes('kube-probe') ||
-      userAgent.includes('curl') ||
       userAgent.includes('Deployment') ||
       userAgent.includes('HealthCheck') ||
       req.query.health === 'check' ||
       req.query.healthcheck === 'true' ||
-      req.headers['x-health-check'] ||
-      !acceptHeader.includes('text/html');
+      req.headers['x-health-check'];
 
-    if (isHealthCheck) {
+    // Browser requests should always go to Vite frontend, never health check
+    const isBrowserRequest = acceptHeader.includes('text/html');
+
+    if (isDeploymentHealthCheck && !isBrowserRequest) {
       console.log('🏥 Health check request detected from:', userAgent);
       return res.status(200).json({
         status: 'ok',
@@ -172,7 +174,7 @@ app.get('/', (req: Request, res: Response, next: NextFunction) => {
       });
     }
     
-    // For browser requests and other non-health checks, continue to next middleware
+    // For browser requests and other requests, continue to Vite frontend
     next();
     
   } catch (error) {
