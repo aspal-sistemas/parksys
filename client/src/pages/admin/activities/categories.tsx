@@ -31,31 +31,58 @@ const ActivityCategoriesPage: React.FC = () => {
     retry: 1,
   });
 
-  // Contar actividades por categoría
+  // Contar actividades por categoría (usar la misma lógica que activities.tsx)
   const categoryCounts = (activities as any[]).reduce((acc: any, activity: any) => {
-    const categoryName = activity.category || 'Sin categoría';
+    // Usar la misma lógica de obtención de categoría que activities.tsx
+    let categoryName = 'Sin categoría';
+    
+    if (activity.category) {
+      categoryName = activity.category;
+    } else if (activity.categoryName) {
+      categoryName = activity.categoryName;
+    }
+    
     acc[categoryName] = (acc[categoryName] || 0) + 1;
     return acc;
   }, {});
 
-  // Filtrar categorías por búsqueda
-  const filteredCategories = (categories as any[]).filter((category: any) =>
-    category.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    category.description?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Función para obtener los colores de las categorías (igual que en activities.tsx)
+  const getCategoryColors = (categoryName: string) => {
+    switch (categoryName) {
+      case 'Arte y Cultura':
+        return 'bg-green-100 text-green-800';
+      case 'Recreación y Bienestar':
+        return 'bg-blue-100 text-blue-800';
+      case 'Eventos de Temporada':
+        return 'bg-orange-100 text-orange-800';
+      case 'Deportivo':
+        return 'bg-red-100 text-red-800';
+      case 'Comunidad':
+        return 'bg-purple-100 text-purple-800';
+      case 'Naturaleza y Ciencia':
+        return 'bg-teal-100 text-teal-800';
+      case 'Fitness y Ejercicio':
+        return 'bg-indigo-100 text-indigo-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
 
-  const categoryData = [
-    { name: 'Arte y Cultura', description: 'Actividades culturales y artísticas', count: categoryCounts['Arte y Cultura'] || 0 },
-    { name: 'Deportivo', description: 'Actividades físicas y deportivas', count: categoryCounts['Deportivo'] || 0 },
-    { name: 'Recreación y Bienestar', description: 'Actividades de recreación y salud', count: categoryCounts['Recreación y Bienestar'] || 0 },
-    { name: 'Naturaleza y Ciencia', description: 'Actividades de educación ambiental', count: categoryCounts['Naturaleza y Ciencia'] || 0 },
-    { name: 'Comunidad', description: 'Actividades comunitarias y sociales', count: categoryCounts['Comunidad'] || 0 },
-    { name: 'Eventos de Temporada', description: 'Eventos especiales y estacionales', count: categoryCounts['Eventos de Temporada'] || 0 },
-    { name: 'Fitness y Ejercicio', description: 'Actividades de acondicionamiento físico', count: categoryCounts['Fitness y Ejercicio'] || 0 },
-  ].filter(category =>
-    category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    category.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Crear datos de categorías basados en los datos del servidor
+  const categoryData = (categories as any[])
+    .map((category: any) => ({
+      id: category.id,
+      name: category.name,
+      description: category.description || '',
+      count: categoryCounts[category.name] || 0,
+      color: category.color || '#00a587',
+      icon: category.icon || 'calendar',
+      isActive: category.isActive !== false
+    }))
+    .filter(category =>
+      category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      category.description.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
   return (
     <AdminLayout>
@@ -216,15 +243,7 @@ const ActivityCategoriesPage: React.FC = () => {
                 return (
                   <div key={category.name} className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
                     <div className="flex items-center gap-3">
-                      <Badge className={`${
-                        category.name === 'Arte y Cultura' ? 'bg-green-100 text-green-800' :
-                        category.name === 'Deportivo' ? 'bg-red-100 text-red-800' :
-                        category.name === 'Recreación y Bienestar' ? 'bg-blue-100 text-blue-800' :
-                        category.name === 'Naturaleza y Ciencia' ? 'bg-teal-100 text-teal-800' :
-                        category.name === 'Comunidad' ? 'bg-purple-100 text-purple-800' :
-                        category.name === 'Eventos de Temporada' ? 'bg-orange-100 text-orange-800' :
-                        'bg-indigo-100 text-indigo-800'
-                      }`}>
+                      <Badge className={getCategoryColors(category.name)}>
                         {category.name}
                       </Badge>
                       <div className="flex-1">
