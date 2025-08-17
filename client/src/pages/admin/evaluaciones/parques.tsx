@@ -249,7 +249,7 @@ const EvaluacionesParques = () => {
       </td>
       <td className="px-6 py-4">
         <div className={`text-lg font-bold ${getRatingColor(evaluation.overallRating)}`}>
-          {evaluation.overallRating.toFixed(1)} ⭐
+          {evaluation.overallRating ? evaluation.overallRating.toFixed(1) : 'N/A'} ⭐
         </div>
       </td>
       <td className="px-6 py-4">
@@ -342,7 +342,7 @@ const EvaluacionesParques = () => {
                 <div>
                   <p className="text-sm text-gray-600">Promedio</p>
                   <p className={`text-2xl font-bold ${getRatingColor(stats.averageRating)}`}>
-                    {stats.averageRating.toFixed(1)} ⭐
+                    {stats.averageRating ? stats.averageRating.toFixed(1) : '0.0'} ⭐
                   </p>
                 </div>
                 <Star className="h-8 w-8 text-yellow-500" />
@@ -592,7 +592,7 @@ const EvaluacionesParques = () => {
                   <div>
                     <label className="text-sm font-medium text-gray-500">Calificación General</label>
                     <p className={`text-2xl font-bold ${getRatingColor(viewingEvaluation.overallRating)}`}>
-                      {viewingEvaluation.overallRating.toFixed(1)} ⭐
+                      {viewingEvaluation.overallRating ? viewingEvaluation.overallRating.toFixed(1) : 'N/A'} ⭐
                     </p>
                   </div>
                   <div>
