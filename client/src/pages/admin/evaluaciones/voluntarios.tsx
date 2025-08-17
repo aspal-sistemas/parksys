@@ -17,9 +17,13 @@ import {
   CheckCircle,
   XCircle,
   Clock,
-  Award
+  Award,
+  RefreshCw,
+  Database,
+  Loader2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
 
 interface VolunteerEvaluation {
   id: number;
@@ -47,9 +51,36 @@ const EvaluacionesVoluntarios = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Obtener evaluaciones de voluntarios
-  const { data: evaluations = [], isLoading } = useQuery<VolunteerEvaluation[]>({
-    queryKey: ['/api/evaluations/volunteers'],
+  // Obtener evaluaciones de voluntarios (usando endpoint unificado)
+  const { data: evaluations = [], isLoading, refetch } = useQuery<VolunteerEvaluation[]>({
+    queryKey: ['/api/volunteers/evaluations/all'],
+  });
+
+  // Obtener voluntarios para mostrar nombres
+  const { data: volunteers = [] } = useQuery({
+    queryKey: ['/api/volunteers'],
+  });
+
+  // Mutation para cargar datos de muestra de evaluaciones
+  const loadSampleData = useMutation({
+    mutationFn: async () => {
+      return await apiRequest('POST', '/api/admin/seed/evaluations');
+    },
+    onSuccess: () => {
+      toast({
+        title: "Datos de muestra cargados",
+        description: "Las evaluaciones de muestra se han cargado correctamente",
+      });
+      refetch();
+    },
+    onError: (error) => {
+      console.error("Error al cargar datos de muestra:", error);
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar los datos de muestra. Intente nuevamente.",
+        variant: "destructive",
+      });
+    },
   });
 
   // Filtrar evaluaciones
@@ -227,6 +258,30 @@ const EvaluacionesVoluntarios = () => {
           </div>
           
           <div className="flex gap-2">
+            {evaluations.length === 0 && (
+              <Button 
+                variant="outline" 
+                onClick={() => loadSampleData.mutate()}
+                disabled={loadSampleData.isPending}
+                className="flex items-center gap-2"
+              >
+                {loadSampleData.isPending ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Cargando...
+                  </>
+                ) : (
+                  <>
+                    <Database className="h-4 w-4" />
+                    Cargar datos de muestra
+                  </>
+                )}
+              </Button>
+            )}
+            <Button variant="outline" onClick={() => refetch()} className="flex items-center gap-2">
+              <RefreshCw className="h-4 w-4" />
+              Actualizar
+            </Button>
             <Button variant="outline" className="flex items-center gap-2">
               <Filter className="h-4 w-4" />
               Filtros Avanzados

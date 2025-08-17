@@ -603,7 +603,7 @@ export default function VolunteerDashboard() {
                             <Button 
                               variant="ghost" 
                               size="sm"
-                              onClick={() => setLocation(`/admin/volunteers/evaluations/edit/${evaluation.id}`)}
+                              onClick={() => setLocation(`/admin/evaluaciones/voluntarios`)}
                             >
                               Ver detalle
                             </Button>
@@ -618,7 +618,7 @@ export default function VolunteerDashboard() {
                     <Button 
                       variant="outline" 
                       size="sm"
-                      onClick={() => setLocation('/admin/volunteers/evaluations')}
+                      onClick={() => setLocation('/admin/evaluaciones/voluntarios')}
                     >
                       Ver todas las evaluaciones
                       <ChevronRight className="ml-1 h-4 w-4" />

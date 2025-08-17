@@ -196,6 +196,24 @@ router.get('/api/evaluations/volunteers', async (req, res) => {
   }
 });
 
+// Alias para compatibilidad con el endpoint anterior
+router.get('/api/volunteers/evaluations/all', async (req, res) => {
+  try {
+    const evaluationsList = await db
+      .select()
+      .from(volunteerEvaluations)
+      .orderBy(desc(volunteerEvaluations.createdAt));
+
+    console.log("🌐 [QUERY] GET /api/volunteers/evaluations/all");
+    console.log(`Se encontraron ${evaluationsList.length} evaluaciones`);
+    
+    res.json(evaluationsList);
+  } catch (error) {
+    console.error('Error fetching volunteer evaluations:', error);
+    res.status(500).json({ error: 'Error al obtener evaluaciones de voluntarios' });
+  }
+});
+
 // Obtener evaluaciones de actividades
 router.get('/api/evaluations/activities', async (req, res) => {
   try {

@@ -77,7 +77,7 @@ export function SidebarSearch() {
 
     // O & M - Voluntarios
     { id: 'volunteers', title: 'Gestión de Voluntarios', description: 'Administración de voluntarios', href: '/admin/volunteers', module: 'Voluntarios', icon: <Users className="h-4 w-4" /> },
-    { id: 'volunteers-evaluations', title: 'Evaluaciones de Voluntarios', description: 'Evaluaciones y seguimiento', href: '/admin/volunteers/evaluations', module: 'Voluntarios', icon: <FileText className="h-4 w-4" /> },
+
     { id: 'volunteers-recognition', title: 'Reconocimientos', description: 'Sistema de reconocimientos', href: '/admin/volunteers/recognition', module: 'Voluntarios', icon: <Shield className="h-4 w-4" /> },
 
     // Admin & Finanzas

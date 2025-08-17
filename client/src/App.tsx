@@ -35,8 +35,7 @@ import ParksModuleShowcase from "@/pages/ParksModuleShowcase";
 // El import de AdminVolunteerNew ha sido eliminado
 import AdminVolunteerParticipations from "@/pages/admin/volunteers/participations";
 import AdminParticipationEdit from "@/pages/admin/volunteers/participations/edit";
-import AdminVolunteerEvaluations from "@/pages/admin/volunteers/evaluations";
-import AdminEvaluationEdit from "@/pages/admin/volunteers/evaluations/edit";
+
 import DashboardPage from "@/pages/admin/volunteers/dashboard-page";
 import EventCategoriesPage from "@/pages/admin/events/categories";
 import NewEventPage from "@/pages/admin/events/new-event";
@@ -440,8 +439,7 @@ function Router() {
         </Route>
         <Route path="/admin/volunteers/participations" component={AdminVolunteerParticipations} />
         <Route path="/admin/volunteers/participations/:id" component={AdminParticipationEdit} />
-        <Route path="/admin/volunteers/evaluations" component={AdminVolunteerEvaluations} />
-        <Route path="/admin/volunteers/evaluations/:id" component={AdminEvaluationEdit} />
+
         <Route path="/admin/volunteers/recognition">
           <Suspense fallback={<div className="p-8 text-center">Cargando reconocimientos...</div>}>
             {React.createElement(React.lazy(() => import('@/pages/admin/volunteers/recognition')))}

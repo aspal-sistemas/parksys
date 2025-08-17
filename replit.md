@@ -42,6 +42,8 @@ The application uses a client-server architecture with a modern full-stack.
 
 **Critical Bug Fix (August 2025)**: Resolved critical activity update issue where `categoryId` and `allowsPublicRegistration` fields were not being saved. Root cause was multiple duplicate PUT `/activities/:id` endpoints in different files (`server/routes.ts`, `server/activityRoutes.ts`, `server/activitiesRoutes.ts`). The issue was caused by field name mismatch - frontend sends `categoryId` and `allowsPublicRegistration`, but backend was expecting `category_id` and `registrationEnabled`. Fix implemented proper field mapping in `server/activityRoutes.ts` (the active endpoint). Verified working correctly with logs showing proper data flow and database updates.
 
+**Final Evaluation System Consolidation (August 2025)**: Completed full migration of volunteer evaluations from `/admin/volunteers/evaluations` to the unified system at `/admin/evaluaciones/voluntarios`. Eliminated all duplicate evaluation modules, unified API endpoints while maintaining backward compatibility (`/api/volunteers/evaluations/all`), and updated all navigation references. The evaluation system is now completely centralized under `/admin/evaluaciones/` with zero redundancy. All evaluation functionality (parks, instructors, volunteers, concessionaires) is accessible through the unified interface with enhanced features including sample data loading, real-time updates, and comprehensive filtering.
+
 ## External Dependencies
 - **Frontend**: React, TypeScript, Vite, Tailwind CSS, Radix UI (shadcn/ui), React Query, React Router, React Hook Form, Zod.
 - **Backend**: Node.js, Express, TypeScript, Multer, bcryptjs.

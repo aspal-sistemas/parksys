@@ -851,13 +851,7 @@ const AdminSidebarComplete: React.FC = () => {
               >
                 Registro
               </NavItem>
-              <NavItem 
-                href="/admin/volunteers/evaluations" 
-                icon={<Star className="h-4 w-4" />}
-                active={location === '/admin/volunteers/evaluations'}
-              >
-                Evaluaciones
-              </NavItem>
+
               <NavItem 
                 href="/admin/volunteers/recognition" 
                 icon={<Award className="h-4 w-4" />}
