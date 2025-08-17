@@ -1007,6 +1007,49 @@ app.use('/api', visitorCountRoutes);
 app.use(evaluacionesRoutes);
 console.log("📊 Rutas del módulo de evaluaciones registradas correctamente");
 
+// ENDPOINT DIRECTO PARA ACTUALIZACIÓN DE EVALUACIONES - PRIORITY ROUTING
+app.put('/api/evaluations/parks/:id', express.json(), async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const { status, moderationNotes } = req.body;
+
+    console.log(`🔄 [DIRECT] Actualizando evaluación ${id}:`, { status, moderationNotes, body: req.body });
+
+    // Validar el estado
+    if (!['pending', 'approved', 'rejected'].includes(status)) {
+      return res.status(400).json({ error: 'Estado inválido' });
+    }
+
+    // Actualizar la evaluación
+    const { parkEvaluations } = await import('./shared/schema');
+    const { eq } = await import('drizzle-orm');
+    const { db } = await import('./db');
+
+    const [updatedEvaluation] = await db
+      .update(parkEvaluations)
+      .set({
+        status: status,
+        moderationNotes: moderationNotes || null,
+        moderatedBy: 'admin',
+        moderatedAt: new Date(),
+        updatedAt: new Date()
+      })
+      .where(eq(parkEvaluations.id, id))
+      .returning();
+
+    if (!updatedEvaluation) {
+      return res.status(404).json({ error: 'Evaluación no encontrada' });
+    }
+
+    console.log(`✅ [DIRECT] Evaluación ${id} actualizada exitosamente`);
+    res.json(updatedEvaluation);
+
+  } catch (error) {
+    console.error('❌ [DIRECT] Error al actualizar evaluación:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
 // ENDPOINT DIRECTO PARA SUBIDA DE IMÁGENES - PRIORITY ROUTING
 
 const imageStorage = multer.diskStorage({
