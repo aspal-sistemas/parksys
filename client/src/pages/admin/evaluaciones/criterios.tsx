@@ -5,6 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { 
   Settings, 
   Star, 
@@ -22,131 +29,324 @@ import {
   Calendar,
   Building,
   Target,
-  Heart
+  Heart,
+  Grid3X3,
+  List,
+  ChevronDown,
+  ChevronRight,
+  MoreVertical,
+  ArrowUpDown,
+  X
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { apiRequest } from '@/lib/queryClient';
 
 interface EvaluationCriterion {
   id: number;
   name: string;
+  label: string;
   description: string;
-  entityType: 'parques' | 'instructores' | 'voluntarios' | 'actividades' | 'concesionarios' | 'eventos';
-  weight: number;
-  isActive: boolean;
+  fieldType: string;
   minValue: number;
   maxValue: number;
+  isRequired: boolean;
+  isActive: boolean;
+  sortOrder: number;
+  icon: string;
+  category: string;
   createdAt: string;
   updatedAt: string;
 }
 
+// Schema para validación de formularios
+const criterionSchema = z.object({
+  name: z.string().min(1, 'El nombre es requerido'),
+  label: z.string().min(1, 'La etiqueta es requerida'),
+  description: z.string().optional(),
+  fieldType: z.string().min(1, 'El tipo de campo es requerido'),
+  minValue: z.number().min(0, 'El valor mínimo debe ser 0 o mayor'),
+  maxValue: z.number().min(1, 'El valor máximo debe ser 1 o mayor'),
+  isRequired: z.boolean(),
+  isActive: z.boolean(),
+  sortOrder: z.number().min(0, 'El orden debe ser 0 o mayor'),
+  icon: z.string().optional(),
+  category: z.string().min(1, 'La categoría es requerida')
+});
+
 const CriteriosEvaluacion = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [entityFilter, setEntityFilter] = useState<string>('all');
+  const [fieldTypeFilter, setFieldTypeFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [showFilters, setShowFilters] = useState(false);
+  const [editingCriterion, setEditingCriterion] = useState<EvaluationCriterion | null>(null);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState<number | null>(null);
+  const [showDetailDialog, setShowDetailDialog] = useState<EvaluationCriterion | null>(null);
+  
+  const recordsPerPage = 9;
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Formulario para crear/editar criterios
+  const form = useForm<z.infer<typeof criterionSchema>>({
+    resolver: zodResolver(criterionSchema),
+    defaultValues: {
+      name: '',
+      label: '',
+      description: '',
+      fieldType: 'rating',
+      minValue: 1,
+      maxValue: 5,
+      isRequired: true,
+      isActive: true,
+      sortOrder: 0,
+      icon: 'Star',
+      category: 'calidad'
+    }
+  });
 
   // Obtener criterios de evaluación
   const { data: criteria = [], isLoading } = useQuery<EvaluationCriterion[]>({
     queryKey: ['/api/evaluations/criteria'],
   });
 
+  // Mutaciones para CRUD
+  const createMutation = useMutation({
+    mutationFn: (data: z.infer<typeof criterionSchema>) => 
+      apiRequest('/api/evaluations/criteria', { method: 'POST', body: data }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/evaluations/criteria'] });
+      setShowCreateDialog(false);
+      form.reset();
+      toast({
+        title: "Criterio creado",
+        description: "El criterio de evaluación se ha creado exitosamente.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "No se pudo crear el criterio de evaluación.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: z.infer<typeof criterionSchema> }) =>
+      apiRequest(`/api/evaluations/criteria/${id}`, { method: 'PUT', body: data }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/evaluations/criteria'] });
+      setEditingCriterion(null);
+      form.reset();
+      toast({
+        title: "Criterio actualizado",
+        description: "El criterio de evaluación se ha actualizado exitosamente.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "No se pudo actualizar el criterio de evaluación.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  const toggleActiveMutation = useMutation({
+    mutationFn: ({ id, isActive }: { id: number; isActive: boolean }) =>
+      apiRequest(`/api/evaluations/criteria/${id}`, { 
+        method: 'PUT', 
+        body: { isActive } 
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/evaluations/criteria'] });
+      toast({
+        title: "Estado actualizado",
+        description: "El estado del criterio se ha actualizado exitosamente.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "No se pudo actualizar el estado del criterio.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) =>
+      apiRequest(`/api/evaluations/criteria/${id}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/evaluations/criteria'] });
+      setShowDeleteDialog(null);
+      toast({
+        title: "Criterio eliminado",
+        description: "El criterio de evaluación se ha eliminado exitosamente.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar el criterio de evaluación.",
+        variant: "destructive",
+      });
+    }
+  });
+
   // Filtrar criterios
   const filteredCriteria = criteria.filter((criterion) => {
     const matchesSearch = 
       criterion.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      criterion.label?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       criterion.description?.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesEntity = entityFilter === 'all' || criterion.entityType === entityFilter;
+    const matchesFieldType = fieldTypeFilter === 'all' || criterion.fieldType === fieldTypeFilter;
     const matchesStatus = statusFilter === 'all' || 
       (statusFilter === 'active' ? criterion.isActive : !criterion.isActive);
+    const matchesCategory = categoryFilter === 'all' || criterion.category === categoryFilter;
     
-    return matchesSearch && matchesEntity && matchesStatus;
+    return matchesSearch && matchesFieldType && matchesStatus && matchesCategory;
   });
 
-  const getEntityIcon = (entityType: string) => {
-    switch (entityType) {
-      case 'parques':
-        return <BookOpen className="h-4 w-4 text-green-500" />;
-      case 'instructores':
-        return <Users className="h-4 w-4 text-blue-500" />;
-      case 'voluntarios':
-        return <Heart className="h-4 w-4 text-purple-500" />;
-      case 'actividades':
-        return <Calendar className="h-4 w-4 text-orange-500" />;
-      case 'concesionarios':
-        return <Building className="h-4 w-4 text-teal-500" />;
-      case 'eventos':
-        return <Target className="h-4 w-4 text-red-500" />;
+  // Paginación
+  const totalPages = Math.ceil(filteredCriteria.length / recordsPerPage);
+  const startIndex = (currentPage - 1) * recordsPerPage;
+  const paginatedCriteria = filteredCriteria.slice(startIndex, startIndex + recordsPerPage);
+
+  // Funciones auxiliares
+  const handleEdit = (criterion: EvaluationCriterion) => {
+    setEditingCriterion(criterion);
+    form.reset({
+      name: criterion.name,
+      label: criterion.label,
+      description: criterion.description || '',
+      fieldType: criterion.fieldType,
+      minValue: criterion.minValue,
+      maxValue: criterion.maxValue,
+      isRequired: criterion.isRequired,
+      isActive: criterion.isActive,
+      sortOrder: criterion.sortOrder,
+      icon: criterion.icon || 'Star',
+      category: criterion.category
+    });
+  };
+
+  const handleSubmit = (data: z.infer<typeof criterionSchema>) => {
+    if (editingCriterion) {
+      updateMutation.mutate({ id: editingCriterion.id, data });
+    } else {
+      createMutation.mutate(data);
+    }
+  };
+
+  const resetForm = () => {
+    setEditingCriterion(null);
+    setShowCreateDialog(false);
+    form.reset();
+  };
+
+  const getFieldTypeIcon = (fieldType: string) => {
+    switch (fieldType) {
+      case 'rating':
+        return <Star className="h-4 w-4 text-yellow-500" />;
+      case 'text':
+        return <BookOpen className="h-4 w-4 text-blue-500" />;
+      case 'number':
+        return <Target className="h-4 w-4 text-green-500" />;
+      case 'boolean':
+        return <CheckCircle2 className="h-4 w-4 text-purple-500" />;
+      case 'select':
+        return <Filter className="h-4 w-4 text-orange-500" />;
       default:
         return <Settings className="h-4 w-4 text-gray-500" />;
     }
   };
 
-  const getEntityColor = (entityType: string) => {
-    switch (entityType) {
-      case 'parques':
-        return 'bg-green-100 text-green-800';
-      case 'instructores':
+  const getFieldTypeColor = (fieldType: string) => {
+    switch (fieldType) {
+      case 'rating':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'text':
         return 'bg-blue-100 text-blue-800';
-      case 'voluntarios':
+      case 'number':
+        return 'bg-green-100 text-green-800';
+      case 'boolean':
         return 'bg-purple-100 text-purple-800';
-      case 'actividades':
+      case 'select':
         return 'bg-orange-100 text-orange-800';
-      case 'concesionarios':
-        return 'bg-teal-100 text-teal-800';
-      case 'eventos':
-        return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const getEntityLabel = (entityType: string) => {
-    switch (entityType) {
-      case 'parques':
-        return 'Parques';
-      case 'instructores':
-        return 'Instructores';
-      case 'voluntarios':
-        return 'Voluntarios';
-      case 'actividades':
-        return 'Actividades';
-      case 'concesionarios':
-        return 'Concesionarios';
-      case 'eventos':
-        return 'Eventos';
+  const getFieldTypeLabel = (fieldType: string) => {
+    switch (fieldType) {
+      case 'rating':
+        return 'Calificación';
+      case 'text':
+        return 'Texto';
+      case 'number':
+        return 'Numérico';
+      case 'boolean':
+        return 'Sí/No';
+      case 'select':
+        return 'Selección';
       default:
         return 'General';
     }
   };
 
-  // Estadísticas por tipo de entidad
+  const getCategoryLabel = (category: string) => {
+    switch (category) {
+      case 'calidad':
+        return 'Calidad';
+      case 'servicio':
+        return 'Servicio';
+      case 'desempeño':
+        return 'Desempeño';
+      case 'experiencia':
+        return 'Experiencia';
+      case 'infraestructura':
+        return 'Infraestructura';
+      case 'gestión':
+        return 'Gestión';
+      default:
+        return 'General';
+    }
+  };
+
+  // Estadísticas por categoría
   const stats = {
     total: criteria.length,
     active: criteria.filter(c => c.isActive).length,
     inactive: criteria.filter(c => !c.isActive).length,
-    byEntity: {
-      parques: criteria.filter(c => c.entityType === 'parques').length,
-      instructores: criteria.filter(c => c.entityType === 'instructores').length,
-      voluntarios: criteria.filter(c => c.entityType === 'voluntarios').length,
-      actividades: criteria.filter(c => c.entityType === 'actividades').length,
-      concesionarios: criteria.filter(c => c.entityType === 'concesionarios').length,
-      eventos: criteria.filter(c => c.entityType === 'eventos').length,
-    }
+    byCategory: criteria.reduce((acc, criterion) => {
+      const category = criterion.category || 'general';
+      acc[category] = (acc[category] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>),
+    byFieldType: criteria.reduce((acc, criterion) => {
+      const fieldType = criterion.fieldType || 'general';
+      acc[fieldType] = (acc[fieldType] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>)
   };
 
   if (isLoading) {
     return (
-      <AdminLayout title="Criterios de Evaluación" subtitle="Cargando criterios de evaluación...">
-        <div className="p-6">
-          <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="h-32 bg-gray-200 rounded"></div>
-              ))}
-            </div>
+      <AdminLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+            <p className="mt-2 text-gray-600">Cargando criterios...</p>
           </div>
         </div>
       </AdminLayout>
@@ -154,280 +354,787 @@ const CriteriosEvaluacion = () => {
   }
 
   return (
-    <AdminLayout title="Criterios de Evaluación" subtitle="Gestión y configuración de criterios de evaluación por tipo de entidad">
-      <div className="p-6 space-y-6">
-        {/* Header con estadísticas */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-8 gap-4 mb-6">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Total</p>
-                  <p className="text-2xl font-bold">{stats.total}</p>
-                </div>
-                <Settings className="h-8 w-8 text-gray-500" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Activos</p>
-                  <p className="text-2xl font-bold text-green-600">{stats.active}</p>
-                </div>
-                <CheckCircle2 className="h-8 w-8 text-green-500" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Parques</p>
-                  <p className="text-2xl font-bold text-green-600">{stats.byEntity.parques}</p>
-                </div>
-                <BookOpen className="h-8 w-8 text-green-500" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Instructores</p>
-                  <p className="text-2xl font-bold text-blue-600">{stats.byEntity.instructores}</p>
-                </div>
-                <Users className="h-8 w-8 text-blue-500" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Voluntarios</p>
-                  <p className="text-2xl font-bold text-purple-600">{stats.byEntity.voluntarios}</p>
-                </div>
-                <Heart className="h-8 w-8 text-purple-500" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Actividades</p>
-                  <p className="text-2xl font-bold text-orange-600">{stats.byEntity.actividades}</p>
-                </div>
-                <Calendar className="h-8 w-8 text-orange-500" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Concesionarios</p>
-                  <p className="text-2xl font-bold text-teal-600">{stats.byEntity.concesionarios}</p>
-                </div>
-                <Building className="h-8 w-8 text-teal-500" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Eventos</p>
-                  <p className="text-2xl font-bold text-red-600">{stats.byEntity.eventos}</p>
-                </div>
-                <Target className="h-8 w-8 text-red-500" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Controles y filtros */}
-        <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-          <div className="flex gap-2 flex-1">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Buscar por nombre o descripción..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <select 
-              value={entityFilter} 
-              onChange={(e) => setEntityFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="all">Todas las entidades</option>
-              <option value="parques">Parques</option>
-              <option value="instructores">Instructores</option>
-              <option value="voluntarios">Voluntarios</option>
-              <option value="actividades">Actividades</option>
-              <option value="concesionarios">Concesionarios</option>
-              <option value="eventos">Eventos</option>
-            </select>
-            <select 
-              value={statusFilter} 
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="all">Todos los estados</option>
-              <option value="active">Activos</option>
-              <option value="inactive">Inactivos</option>
-            </select>
+    <AdminLayout>
+      <div className="space-y-6">
+        {/* Título y acciones principales */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Criterios</h1>
+            <p className="text-gray-600 mt-1">
+              Gestiona los criterios de evaluación del sistema
+            </p>
           </div>
           
-          <div className="flex gap-2">
-            <Button variant="outline" className="flex items-center gap-2">
-              <Filter className="h-4 w-4" />
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+            >
+              {viewMode === 'grid' ? (
+                <>
+                  <List className="h-4 w-4 mr-1" />
+                  Lista
+                </>
+              ) : (
+                <>
+                  <Grid3X3 className="h-4 w-4 mr-1" />
+                  Cuadrícula
+                </>
+              )}
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowFilters(!showFilters)}
+            >
+              <Filter className="h-4 w-4 mr-1" />
               Filtros Avanzados
             </Button>
-            <Button className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              Nuevo Criterio
-            </Button>
+            
+            <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="h-4 w-4 mr-1" />
+                  Nuevo Criterio
+                </Button>
+              </DialogTrigger>
+              <CriterionDialog />
+            </Dialog>
           </div>
         </div>
 
-        {/* Lista de criterios */}
-        <div className="grid gap-4">
-          {filteredCriteria.length === 0 ? (
-            <Card>
-              <CardContent className="p-8 text-center">
-                <Settings className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500">No se encontraron criterios de evaluación</p>
-                <p className="text-sm text-gray-400 mt-2">
-                  {searchTerm || entityFilter !== 'all' || statusFilter !== 'all'
-                    ? 'Intenta ajustar los filtros de búsqueda'
-                    : 'Los criterios aparecerán aquí una vez que se registren'
-                  }
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            filteredCriteria.map((criterion) => (
-              <Card key={criterion.id} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-start gap-4">
-                      <div className="p-2 bg-gray-100 rounded-lg">
-                        {getEntityIcon(criterion.entityType)}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="text-lg font-semibold text-gray-900">
-                            {criterion.name}
-                          </h3>
-                          <Badge className={getEntityColor(criterion.entityType)}>
-                            {getEntityLabel(criterion.entityType)}
-                          </Badge>
-                          {criterion.isActive ? (
-                            <ToggleRight className="h-5 w-5 text-green-500" />
-                          ) : (
-                            <ToggleLeft className="h-5 w-5 text-gray-400" />
-                          )}
-                        </div>
-                        <p className="text-sm text-gray-600 mb-2">
-                          {criterion.description}
-                        </p>
-                        <div className="flex gap-4 text-sm text-gray-500">
-                          <span>Peso: {criterion.weight}%</span>
-                          <span>Rango: {criterion.minValue} - {criterion.maxValue}</span>
-                          <span>
-                            Actualizado: {new Date(criterion.updatedAt).toLocaleDateString('es-MX')}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <Badge 
-                        className={criterion.isActive 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-gray-100 text-gray-600'
-                        }
-                      >
-                        {criterion.isActive ? 'Activo' : 'Inactivo'}
-                      </Badge>
-                    </div>
-                  </div>
+        {/* Estadísticas */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Total</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+                </div>
+                <Settings className="h-8 w-8 text-gray-400" />
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Activos</p>
+                  <p className="text-2xl font-bold text-green-600">{stats.active}</p>
+                </div>
+                <CheckCircle2 className="h-8 w-8 text-green-400" />
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Inactivos</p>
+                  <p className="text-2xl font-bold text-red-600">{stats.inactive}</p>
+                </div>
+                <ToggleLeft className="h-8 w-8 text-red-400" />
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Calificaciones</p>
+                  <p className="text-2xl font-bold text-yellow-600">{stats.byFieldType.rating || 0}</p>
+                </div>
+                <Star className="h-8 w-8 text-yellow-400" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-                  {/* Barra de peso visual */}
-                  <div className="mb-4">
-                    <div className="flex items-center justify-between text-sm text-gray-600 mb-1">
-                      <span>Peso en evaluación</span>
-                      <span>{criterion.weight}%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${criterion.weight}%` }}
+        {/* Filtros avanzados */}
+        <Collapsible open={showFilters} onOpenChange={setShowFilters}>
+          <CollapsibleContent>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Filter className="h-5 w-5" />
+                  Filtros Avanzados
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Buscar</label>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <Input
+                        placeholder="Buscar criterios..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10"
                       />
                     </div>
                   </div>
-
-                  {/* Acciones */}
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="flex items-center gap-2">
-                      <Eye className="h-4 w-4" />
-                      Ver Detalles
-                    </Button>
-                    <Button variant="outline" size="sm" className="flex items-center gap-2">
-                      <Edit className="h-4 w-4" />
-                      Editar
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className={`flex items-center gap-2 ${
-                        criterion.isActive 
-                          ? 'text-red-600 hover:text-red-700' 
-                          : 'text-green-600 hover:text-green-700'
-                      }`}
-                    >
-                      {criterion.isActive ? (
-                        <>
-                          <ToggleLeft className="h-4 w-4" />
-                          Desactivar
-                        </>
-                      ) : (
-                        <>
-                          <ToggleRight className="h-4 w-4" />
-                          Activar
-                        </>
-                      )}
-                    </Button>
-                    <Button 
-                      variant="destructive" 
-                      size="sm" 
-                      className="flex items-center gap-2"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      Eliminar
-                    </Button>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Tipo de Campo</label>
+                    <Select value={fieldTypeFilter} onValueChange={setFieldTypeFilter}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Todos los tipos" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos los tipos</SelectItem>
+                        <SelectItem value="rating">Calificación</SelectItem>
+                        <SelectItem value="text">Texto</SelectItem>
+                        <SelectItem value="number">Numérico</SelectItem>
+                        <SelectItem value="boolean">Sí/No</SelectItem>
+                        <SelectItem value="select">Selección</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Categoría</label>
+                    <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Todas las categorías" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todas las categorías</SelectItem>
+                        <SelectItem value="calidad">Calidad</SelectItem>
+                        <SelectItem value="servicio">Servicio</SelectItem>
+                        <SelectItem value="desempeño">Desempeño</SelectItem>
+                        <SelectItem value="experiencia">Experiencia</SelectItem>
+                        <SelectItem value="infraestructura">Infraestructura</SelectItem>
+                        <SelectItem value="gestión">Gestión</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Estado</label>
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Todos los estados" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos los estados</SelectItem>
+                        <SelectItem value="active">Activos</SelectItem>
+                        <SelectItem value="inactive">Inactivos</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
+                <div className="flex justify-end">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setSearchTerm('');
+                      setFieldTypeFilter('all');
+                      setCategoryFilter('all');
+                      setStatusFilter('all');
+                    }}
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Limpiar Filtros
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* Contenido principal */}
+        {viewMode === 'grid' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {paginatedCriteria.map((criterion) => (
+              <CriterionCard key={criterion.id} criterion={criterion} />
+            ))}
+          </div>
+        ) : (
+          <CriterionTable criteria={paginatedCriteria} />
+        )}
+
+        {/* Paginación */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-gray-700">
+              Mostrando {startIndex + 1} a {Math.min(startIndex + recordsPerPage, filteredCriteria.length)} de {filteredCriteria.length} criterios
+            </p>
+            
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+              >
+                Anterior
+              </Button>
+              
+              <div className="flex items-center gap-1">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  const page = i + 1;
+                  return (
+                    <Button
+                      key={page}
+                      variant={currentPage === page ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCurrentPage(page)}
+                      className="w-8 h-8 p-0"
+                    >
+                      {page}
+                    </Button>
+                  );
+                })}
+              </div>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                disabled={currentPage === totalPages}
+              >
+                Siguiente
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Diálogos */}
+        <Dialog open={!!editingCriterion} onOpenChange={() => resetForm()}>
+          <CriterionDialog />
+        </Dialog>
+
+        {/* Dialog de detalles */}
+        <Dialog open={!!showDetailDialog} onOpenChange={() => setShowDetailDialog(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Detalles del Criterio</DialogTitle>
+            </DialogHeader>
+            {showDetailDialog && (
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Nombre</label>
+                  <p className="text-lg font-semibold">{showDetailDialog.name}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Etiqueta</label>
+                  <p>{showDetailDialog.label}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Descripción</label>
+                  <p>{showDetailDialog.description || 'Sin descripción'}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Tipo de Campo</label>
+                    <Badge className={getFieldTypeColor(showDetailDialog.fieldType)}>
+                      {getFieldTypeIcon(showDetailDialog.fieldType)}
+                      <span className="ml-1">{getFieldTypeLabel(showDetailDialog.fieldType)}</span>
+                    </Badge>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Categoría</label>
+                    <p>{getCategoryLabel(showDetailDialog.category)}</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Valor Mínimo</label>
+                    <p>{showDetailDialog.minValue}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Valor Máximo</label>
+                    <p>{showDetailDialog.maxValue}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Orden</label>
+                    <p>{showDetailDialog.sortOrder}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Requerido</label>
+                    <p>{showDetailDialog.isRequired ? 'Sí' : 'No'}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Estado</label>
+                    <Badge variant={showDetailDialog.isActive ? "default" : "secondary"}>
+                      {showDetailDialog.isActive ? 'Activo' : 'Inactivo'}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Dialog de confirmación de eliminación */}
+        <AlertDialog open={!!showDeleteDialog} onOpenChange={() => setShowDeleteDialog(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>¿Eliminar criterio?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Esta acción no se puede deshacer. Se eliminará permanentemente el criterio
+                de evaluación del sistema.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => showDeleteDialog && deleteMutation.mutate(showDeleteDialog)}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                Eliminar
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </AdminLayout>
   );
+
+  // Componente de tarjeta de criterio
+  function CriterionCard({ criterion }: { criterion: EvaluationCriterion }) {
+    return (
+      <Card className="hover:shadow-md transition-shadow">
+        <CardHeader className="pb-3">
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-2">
+              {getFieldTypeIcon(criterion.fieldType)}
+              <div>
+                <CardTitle className="text-lg">{criterion.label}</CardTitle>
+                <p className="text-sm text-gray-600">{criterion.name}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowDetailDialog(criterion)}
+              >
+                <Eye className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleEdit(criterion)}
+              >
+                <Edit className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => toggleActiveMutation.mutate({ 
+                  id: criterion.id, 
+                  isActive: !criterion.isActive 
+                })}
+              >
+                {criterion.isActive ? (
+                  <ToggleRight className="h-4 w-4 text-green-600" />
+                ) : (
+                  <ToggleLeft className="h-4 w-4 text-gray-400" />
+                )}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowDeleteDialog(criterion.id)}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            <p className="text-sm text-gray-600 line-clamp-2">
+              {criterion.description || 'Sin descripción'}
+            </p>
+            
+            <div className="flex items-center gap-2">
+              <Badge className={getFieldTypeColor(criterion.fieldType)}>
+                {getFieldTypeLabel(criterion.fieldType)}
+              </Badge>
+              <Badge variant="outline">
+                {getCategoryLabel(criterion.category)}
+              </Badge>
+              <Badge variant={criterion.isActive ? "default" : "secondary"}>
+                {criterion.isActive ? 'Activo' : 'Inactivo'}
+              </Badge>
+            </div>
+            
+            <div className="flex items-center justify-between text-sm text-gray-500">
+              <span>Rango: {criterion.minValue} - {criterion.maxValue}</span>
+              <span>Orden: {criterion.sortOrder}</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Componente de tabla de criterios
+  function CriterionTable({ criteria }: { criteria: EvaluationCriterion[] }) {
+    return (
+      <Card>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Criterio
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Tipo
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Categoría
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Rango
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Estado
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Acciones
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {criteria.map((criterion) => (
+                  <tr key={criterion.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4">
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {criterion.label}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {criterion.name}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <Badge className={getFieldTypeColor(criterion.fieldType)}>
+                        {getFieldTypeIcon(criterion.fieldType)}
+                        <span className="ml-1">{getFieldTypeLabel(criterion.fieldType)}</span>
+                      </Badge>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="text-sm text-gray-900">
+                        {getCategoryLabel(criterion.category)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="text-sm text-gray-900">
+                        {criterion.minValue} - {criterion.maxValue}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <Badge variant={criterion.isActive ? "default" : "secondary"}>
+                        {criterion.isActive ? 'Activo' : 'Inactivo'}
+                      </Badge>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setShowDetailDialog(criterion)}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEdit(criterion)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleActiveMutation.mutate({ 
+                            id: criterion.id, 
+                            isActive: !criterion.isActive 
+                          })}
+                        >
+                          {criterion.isActive ? (
+                            <ToggleRight className="h-4 w-4 text-green-600" />
+                          ) : (
+                            <ToggleLeft className="h-4 w-4 text-gray-400" />
+                          )}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setShowDeleteDialog(criterion.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Componente del diálogo de crear/editar criterio
+  function CriterionDialog() {
+    return (
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>
+            {editingCriterion ? 'Editar Criterio' : 'Nuevo Criterio'}
+          </DialogTitle>
+          <DialogDescription>
+            {editingCriterion 
+              ? 'Modifica los detalles del criterio de evaluación'
+              : 'Crea un nuevo criterio de evaluación para el sistema'
+            }
+          </DialogDescription>
+        </DialogHeader>
+        
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nombre del Campo</FormLabel>
+                    <FormControl>
+                      <Input placeholder="ej. service_quality" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="label"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Etiqueta</FormLabel>
+                    <FormControl>
+                      <Input placeholder="ej. Calidad del Servicio" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Descripción</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Describe qué evalúa este criterio..." 
+                      rows={3}
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="fieldType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tipo de Campo</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecciona el tipo" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="rating">Calificación (1-5)</SelectItem>
+                        <SelectItem value="text">Texto</SelectItem>
+                        <SelectItem value="number">Numérico</SelectItem>
+                        <SelectItem value="boolean">Sí/No</SelectItem>
+                        <SelectItem value="select">Selección</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Categoría</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecciona la categoría" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="calidad">Calidad</SelectItem>
+                        <SelectItem value="servicio">Servicio</SelectItem>
+                        <SelectItem value="desempeño">Desempeño</SelectItem>
+                        <SelectItem value="experiencia">Experiencia</SelectItem>
+                        <SelectItem value="infraestructura">Infraestructura</SelectItem>
+                        <SelectItem value="gestión">Gestión</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            
+            <div className="grid grid-cols-3 gap-4">
+              <FormField
+                control={form.control}
+                name="minValue"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Valor Mínimo</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        {...field} 
+                        onChange={(e) => field.onChange(Number(e.target.value))}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="maxValue"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Valor Máximo</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        {...field} 
+                        onChange={(e) => field.onChange(Number(e.target.value))}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="sortOrder"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Orden</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        {...field} 
+                        onChange={(e) => field.onChange(Number(e.target.value))}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            
+            <div className="flex items-center gap-6">
+              <FormField
+                control={form.control}
+                name="isRequired"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                    <div className="space-y-0.5">
+                      <FormLabel>Campo Requerido</FormLabel>
+                      <div className="text-sm text-muted-foreground">
+                        Este criterio debe ser evaluado obligatoriamente
+                      </div>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="isActive"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                    <div className="space-y-0.5">
+                      <FormLabel>Criterio Activo</FormLabel>
+                      <div className="text-sm text-muted-foreground">
+                        El criterio está disponible para evaluaciones
+                      </div>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
+            
+            <div className="flex justify-end gap-3 pt-4">
+              <Button type="button" variant="outline" onClick={resetForm}>
+                Cancelar
+              </Button>
+              <Button 
+                type="submit" 
+                disabled={createMutation.isPending || updateMutation.isPending}
+              >
+                {createMutation.isPending || updateMutation.isPending ? (
+                  'Guardando...'
+                ) : editingCriterion ? (
+                  'Actualizar'
+                ) : (
+                  'Crear'
+                )}
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </DialogContent>
+    );
+  }
 };
 
 export default CriteriosEvaluacion;

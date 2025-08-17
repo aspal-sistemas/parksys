@@ -274,13 +274,12 @@ router.get('/api/evaluations/events', async (req, res) => {
   }
 });
 
-// Obtener criterios de evaluación
+// Obtener criterios de evaluación - TODOS los criterios, no solo activos
 router.get('/api/evaluations/criteria', async (req, res) => {
   try {
     const criteria = await db
       .select()
       .from(evaluationCriteria)
-      .where(eq(evaluationCriteria.isActive, true))
       .orderBy(evaluationCriteria.sortOrder, evaluationCriteria.name);
 
     res.json(criteria);
@@ -370,6 +369,18 @@ router.put('/api/evaluations/criteria/:id', async (req, res) => {
     
     const { name, label, description, fieldType, minValue, maxValue, isRequired, isActive, sortOrder, icon, category } = req.body;
     
+    // Si solo se está actualizando el estado activo/inactivo
+    if (Object.keys(req.body).length === 1 && req.body.hasOwnProperty('isActive')) {
+      const [updatedCriteria] = await db
+        .update(evaluationCriteria)
+        .set({ isActive })
+        .where(eq(evaluationCriteria.id, id))
+        .returning();
+      
+      console.log('✅ [EVALUACIONES] Estado del criterio actualizado:', updatedCriteria);
+      return res.json(updatedCriteria);
+    }
+    
     const [updatedCriteria] = await db
       .update(evaluationCriteria)
       .set({
@@ -436,43 +447,7 @@ router.delete('/api/evaluations/criteria/:id', async (req, res) => {
   }
 });
 
-// CRUD de criterios de evaluación
-
-// Crear nuevo criterio
-router.post('/api/evaluations/criteria', async (req, res) => {
-  try {
-    const data = req.body;
-    
-    const [newCriterio] = await db
-      .insert(evaluationCriteria)
-      .values({
-        name: data.name,
-        label: data.label,
-        description: data.description,
-        fieldType: data.fieldType,
-        minValue: data.minValue,
-        maxValue: data.maxValue,
-        isRequired: data.isRequired,
-        category: data.category,
-        icon: data.icon,
-        isActive: true,
-        sortOrder: 0
-      })
-      .returning();
-    
-    console.log('✅ [EVALUACIONES] Criterio creado:', newCriterio);
-    res.status(201).json(newCriterio);
-  } catch (error) {
-    console.error('❌ Error creando criterio:', error);
-    res.status(500).json({ error: 'Error al crear criterio de evaluación' });
-  }
-});
-
-// Actualizar criterio
-router.put('/api/evaluations/criteria/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const data = req.body;
+// Eliminar endpoints duplicados - ya están arriba
     
     const [updatedCriterio] = await db
       .update(evaluationCriteria)
