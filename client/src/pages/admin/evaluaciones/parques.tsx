@@ -24,10 +24,12 @@ import {
   Grid3X3,
   List,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Download
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
+import Papa from 'papaparse';
 
 interface ParkEvaluation {
   id: number;
@@ -112,6 +114,74 @@ const EvaluacionesParques = () => {
       });
     },
   });
+
+  // Función para exportar a CSV
+  const exportToCSV = () => {
+    if (!filteredEvaluations.length) {
+      toast({
+        title: "No hay datos para exportar",
+        description: "No se encontraron evaluaciones que coincidan con los filtros actuales.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Preparar los datos para CSV con headers en español
+    const csvData = filteredEvaluations.map(evaluation => ({
+      'ID': evaluation.id,
+      'Parque': evaluation.parkName,
+      'Evaluador': evaluation.evaluatorName,
+      'Email': evaluation.evaluatorEmail || 'N/A',
+      'Teléfono': evaluation.evaluatorPhone || 'N/A',
+      'Ciudad': evaluation.evaluatorCity || 'N/A',
+      'Edad': evaluation.evaluatorAge || 'N/A',
+      'Visitante Frecuente': evaluation.isFrequentVisitor ? 'Sí' : 'No',
+      'Limpieza': evaluation.cleanliness,
+      'Seguridad': evaluation.safety,
+      'Mantenimiento': evaluation.maintenance,
+      'Accesibilidad': evaluation.accessibility,
+      'Amenidades': evaluation.amenities,
+      'Actividades': evaluation.activities,
+      'Personal': evaluation.staff,
+      'Belleza Natural': evaluation.naturalBeauty,
+      'Calificación General': evaluation.overallRating,
+      'Comentarios': evaluation.comments || 'Sin comentarios',
+      'Sugerencias': evaluation.suggestions || 'Sin sugerencias',
+      'Recomendaría': evaluation.wouldRecommend ? 'Sí' : 'No',
+      'Fecha de Visita': evaluation.visitDate || 'N/A',
+      'Propósito de Visita': evaluation.visitPurpose || 'N/A',
+      'Duración de Visita (min)': evaluation.visitDuration || 'N/A',
+      'Estado': evaluation.status === 'pending' ? 'Pendiente' : 
+                evaluation.status === 'approved' ? 'Aprobada' : 'Rechazada',
+      'Moderado Por': evaluation.moderatedBy || 'N/A',
+      'Fecha de Moderación': evaluation.moderatedAt || 'N/A',
+      'Notas de Moderación': evaluation.moderationNotes || 'N/A',
+      'Fecha de Creación': new Date(evaluation.createdAt).toLocaleString('es-MX'),
+      'Fecha de Actualización': new Date(evaluation.updatedAt).toLocaleString('es-MX')
+    }));
+
+    // Convertir a CSV
+    const csv = Papa.unparse(csvData, {
+      header: true,
+      delimiter: ','
+    });
+
+    // Descargar archivo
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `evaluaciones_parques_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast({
+      title: "Exportación exitosa",
+      description: `Se exportaron ${filteredEvaluations.length} evaluaciones a CSV.`,
+    });
+  };
 
   // Filtrar evaluaciones
   const filteredEvaluations = evaluations.filter((evaluation) => {
@@ -439,6 +509,15 @@ const EvaluacionesParques = () => {
               </div>
               
               <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={exportToCSV}
+                  className="flex items-center gap-2"
+                  disabled={!filteredEvaluations.length}
+                >
+                  <Download className="h-4 w-4" />
+                  Exportar CSV
+                </Button>
                 <Button 
                   variant="outline" 
                   onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
