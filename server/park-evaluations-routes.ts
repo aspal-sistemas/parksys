@@ -392,15 +392,14 @@ export function registerParkEvaluationRoutes(app: any, apiRouter: any, isAuthent
       
       // Verificar si el body está vacío
       if (!req.body || Object.keys(req.body).length === 0) {
-        console.log('❌ Body vacío - posiblemente una llamada no deseada');
-        return res.status(400).json({ 
-          error: 'Body vacío', 
-          message: 'Se requiere enviar datos para crear una evaluación',
-          required: ['parkId', 'evaluatorName']
-        });
+        console.log('❌ Body vacío - posiblemente una llamada automática del navegador');
+        // En lugar de devolver 400, devolvemos 204 (No Content) para llamadas automáticas
+        return res.status(204).send();
       }
       
+      console.log('🔍 Validando datos con schema...');
       const validatedData = createEvaluationSchema.parse(req.body);
+      console.log('✅ Datos validados exitosamente:', JSON.stringify(validatedData, null, 2));
       
       // Agregar metadata
       const evaluationData = {
@@ -460,9 +459,11 @@ export function registerParkEvaluationRoutes(app: any, apiRouter: any, isAuthent
     } catch (error) {
       console.error('❌ Error creando evaluación:', error);
       if (error instanceof z.ZodError) {
+        console.error('📋 Errores de validación Zod:', JSON.stringify(error.errors, null, 2));
         res.status(400).json({ error: 'Datos inválidos', details: error.errors });
       } else {
-        res.status(500).json({ error: 'Error al crear evaluación' });
+        console.error('💥 Error de base de datos o servidor:', error);
+        res.status(500).json({ error: 'Error al crear evaluación', details: error.message });
       }
     }
   });
