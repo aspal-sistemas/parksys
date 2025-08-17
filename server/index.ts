@@ -139,53 +139,7 @@ app.get('/ping', (req: Request, res: Response) => {
   res.status(200).send('pong');
 });
 
-// Root endpoint - only handle specific health check requests, let browsers through to Vite
-app.get('/', (req: Request, res: Response, next: NextFunction) => {
-  try {
-    // Check if this is specifically a health check request (NOT browser requests)
-    const userAgent = req.get('User-Agent') || '';
-    const acceptHeader = req.get('Accept') || '';
-    
-    // Only respond with health check for deployment services, never for browsers
-    const isDeploymentHealthCheck = 
-      userAgent.includes('GoogleHC') || 
-      userAgent.includes('Cloud Run') ||
-      userAgent.includes('kube-probe') ||
-      userAgent.includes('Deployment') ||
-      userAgent.includes('HealthCheck') ||
-      req.query.health === 'check' ||
-      req.query.healthcheck === 'true' ||
-      req.headers['x-health-check'];
-
-    // Browser requests should always go to Vite frontend, never health check
-    const isBrowserRequest = acceptHeader.includes('text/html');
-
-    if (isDeploymentHealthCheck && !isBrowserRequest) {
-      console.log('🏥 Health check request detected from:', userAgent);
-      return res.status(200).json({
-        status: 'ok',
-        message: 'ParkSys - Bosques Urbanos de Guadalajara',
-        timestamp: new Date().toISOString(),
-        service: 'Urban Parks Management System',
-        version: '1.0.0',
-        health: 'ready',
-        port: process.env.PORT || 5000,
-        environment: process.env.NODE_ENV || 'development'
-      });
-    }
-    
-    // For browser requests and other requests, continue to Vite frontend
-    next();
-    
-  } catch (error) {
-    console.error('Error in root endpoint handler:', error);
-    res.status(503).json({ 
-      status: 'error', 
-      message: 'Service temporarily unavailable',
-      timestamp: new Date().toISOString()
-    });
-  }
-});
+// Root endpoint removed - let health check middleware and Vite handle all requests
 
 // Simple API health check - priority over static files
 app.get('/api/status', (req: Request, res: Response) => {

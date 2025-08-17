@@ -671,6 +671,11 @@ const EvaluacionesParques = () => {
                 </div>
 
                 <div>
+                  <label className="text-sm font-medium text-gray-500">Sugerencias</label>
+                  <p className="mt-1 text-gray-700">{viewingEvaluation.suggestions || 'Sin sugerencias'}</p>
+                </div>
+
+                <div>
                   <label className="text-sm font-medium text-gray-500">Fecha de Evaluación</label>
                   <p className="mt-1">{new Date(viewingEvaluation.createdAt).toLocaleDateString('es-MX', {
                     year: 'numeric',
