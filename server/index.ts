@@ -71,7 +71,7 @@ app.put('/api/evaluations/parks/:id', (req, res) => {
       }
 
       // Actualizar la evaluación
-      const { parkEvaluations } = await import('./shared/schema');
+      const { parkEvaluations } = await import('../shared/schema');
       const { eq } = await import('drizzle-orm');
       const { db } = await import('./db');
 
