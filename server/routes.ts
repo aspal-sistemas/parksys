@@ -1202,6 +1202,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.get("/parks/:id/extended", async (req: Request, res: Response) => {
     try {
       const parkId = Number(req.params.id);
+      
+      // Validar que el ID es un número válido
+      if (isNaN(parkId) || parkId <= 0) {
+        console.log("ID de parque inválido:", req.params.id);
+        return res.status(400).json({ message: "Invalid park ID" });
+      }
+      
       console.log("Solicitando datos extendidos para parque:", parkId);
       
       // Obtener datos básicos del parque

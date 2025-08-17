@@ -31,8 +31,8 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Early health check middleware - highest priority for deployment compatibility
 app.use((req: Request, res: Response, next: NextFunction) => {
-  // Handle health checks immediately, before any other processing
-  if (req.path === '/' || req.path === '/health' || req.path === '/healthz' || req.path === '/ping') {
+  // Handle specific health check endpoints, NOT the root path for browser requests
+  if (req.path === '/health' || req.path === '/healthz' || req.path === '/ping') {
     const userAgent = req.get('User-Agent') || '';
     const isHealthCheck = 
       userAgent.includes('GoogleHC') || 
@@ -45,7 +45,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
       req.query.healthcheck === 'true' ||
       !req.get('Accept')?.includes('text/html');
 
-    if (isHealthCheck) {
+    if (isHealthCheck || req.path !== '/') {
       return res.status(200).json({
         status: 'ok',
         health: 'ready',
@@ -55,6 +55,35 @@ app.use((req: Request, res: Response, next: NextFunction) => {
       });
     }
   }
+  
+  // Only handle root path health checks for deployment services, not browser requests
+  if (req.path === '/') {
+    const userAgent = req.get('User-Agent') || '';
+    const acceptsHtml = req.get('Accept')?.includes('text/html');
+    
+    // If it's a browser request (accepts HTML), let it continue to Vite/frontend
+    if (acceptsHtml && !userAgent.includes('GoogleHC') && !userAgent.includes('Cloud Run') && !userAgent.includes('kube-probe')) {
+      return next();
+    }
+    
+    // Only respond with health check for deployment services
+    const isDeploymentHealthCheck = 
+      userAgent.includes('GoogleHC') || 
+      userAgent.includes('Cloud Run') ||
+      userAgent.includes('kube-probe') ||
+      userAgent.includes('Deployment');
+      
+    if (isDeploymentHealthCheck) {
+      return res.status(200).json({
+        status: 'ok',
+        health: 'ready',
+        service: 'ParkSys',
+        timestamp: new Date().toISOString(),
+        port: process.env.PORT || 5000
+      });
+    }
+  }
+  
   next();
 });
 
