@@ -129,11 +129,20 @@ export default function ParkEvaluationForm() {
   });
 
   const createEvaluation = useMutation({
-    mutationFn: (data: EvaluationFormData) =>
-      apiRequest('/api/park-evaluations', {
+    mutationFn: (data: EvaluationFormData) => {
+      console.log('🚀 MUTATION: Iniciando envío de evaluación');
+      console.log('🚀 MUTATION: Datos recibidos:', JSON.stringify(data, null, 2));
+      
+      if (!data || typeof data !== 'object') {
+        console.error('❌ MUTATION: Datos inválidos o vacíos');
+        throw new Error('Datos de evaluación inválidos');
+      }
+      
+      return apiRequest('/api/park-evaluations', {
         method: 'POST',
         body: data,
-      }),
+      });
+    },
     onSuccess: (data) => {
       setIsSubmitted(true);
       toast({
@@ -225,6 +234,19 @@ export default function ParkEvaluationForm() {
     }
 
     console.log('📝 Datos procesados a enviar:', JSON.stringify(processedData, null, 2));
+    
+    // Validación adicional antes del envío
+    if (!processedData.parkId || !processedData.evaluatorName) {
+      console.error('❌ Datos insuficientes para enviar evaluación:', processedData);
+      toast({
+        title: "Error en los datos",
+        description: "Faltan datos requeridos para enviar la evaluación.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    console.log('✅ Enviando evaluación con datos válidos...');
     createEvaluation.mutate(processedData);
   };
 
