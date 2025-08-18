@@ -104,6 +104,8 @@ const getCategoryColors = (categoryColor?: string): string => {
       return 'bg-blue-100 text-blue-800 hover:bg-blue-200';
     case '#f39c12': // Eventos de Temporada - naranja
       return 'bg-orange-100 text-orange-800 hover:bg-orange-200';
+    case '#ffea00': // Categoria Prueba Luis - amarillo
+      return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200';
     default:
       return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
   }
@@ -505,12 +507,12 @@ export default function ActivitiesCalendarPage() {
                       </div>
                     )}
                     
-                    {selectedActivity.instructor?.full_name && (
+                    {selectedActivity.instructor?.fullName && (
                       <div className="flex items-start">
                         <User className="h-5 w-5 mr-2 text-gray-500 mt-0.5" />
                         <div>
                           <h4 className="font-medium">Instructor</h4>
-                          <p>{selectedActivity.instructor.full_name}</p>
+                          <p>{selectedActivity.instructor.fullName}</p>
                         </div>
                       </div>
                     )}
