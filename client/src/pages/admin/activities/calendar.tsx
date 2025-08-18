@@ -60,11 +60,13 @@ interface Activity {
   startDate: string;
   endDate?: string;
   category?: string;
+  categoryName?: string;
+  categoryId?: number;
   instructorId?: number;
   instructor?: {
     id: number;
-    full_name: string;
-  };
+    fullName: string;
+  } | null;
   price?: number;
   location?: string;
 }
@@ -161,7 +163,7 @@ export default function ActivitiesCalendarPage() {
     
     return activitiesArray.filter((activity: Activity) => {
       // Filtro por categoría
-      const matchesCategory = filters.category === 'all' || activity.category === filters.category;
+      const matchesCategory = filters.category === 'all' || activity.categoryName === filters.category;
       
       // Filtro por parque
       const matchesPark = filters.parkId === 'all' || activity.parkId === parseInt(filters.parkId);
@@ -266,7 +268,7 @@ export default function ActivitiesCalendarPage() {
                 setIsDialogOpen(true);
               }}
             >
-              <Badge className={categoryColorMap[activity.category || ''] || getCategoryColors()} variant="outline">
+              <Badge className={categoryColorMap[activity.categoryName || ''] || getCategoryColors()} variant="outline">
                 {activity.title}
               </Badge>
             </div>
@@ -461,8 +463,8 @@ export default function ActivitiesCalendarPage() {
                 <DialogHeader>
                   <div className="flex justify-between items-center">
                     <DialogTitle className="text-2xl font-bold">{selectedActivity.title}</DialogTitle>
-                    <Badge className={categoryColorMap[selectedActivity.category || ''] || getCategoryColors()} variant="outline">
-                      {selectedActivity.category}
+                    <Badge className={categoryColorMap[selectedActivity.categoryName || ''] || getCategoryColors()} variant="outline">
+                      {selectedActivity.categoryName}
                     </Badge>
                   </div>
                   <DialogDescription>
@@ -580,8 +582,8 @@ export default function ActivitiesCalendarPage() {
                       }}>
                       <div className="flex justify-between">
                         <h3 className="font-medium">{activity.title}</h3>
-                        <Badge className={categoryColors[activity.category || 'default']} variant="outline">
-                          {activity.category}
+                        <Badge className={categoryColorMap[activity.category || ''] || getCategoryColors()} variant="outline">
+                          {activity.category || 'Sin categoría'}
                         </Badge>
                       </div>
                       <div className="text-sm text-gray-500 mt-1">
@@ -593,7 +595,7 @@ export default function ActivitiesCalendarPage() {
                         </div>
                         {activity.instructor && (
                           <div>
-                            <span className="font-medium">Instructor:</span> {activity.instructor.full_name}
+                            <span className="font-medium">Instructor:</span> {activity.instructor.fullName}
                           </div>
                         )}
                         <div>
