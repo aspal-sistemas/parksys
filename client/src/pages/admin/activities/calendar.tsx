@@ -80,19 +80,31 @@ interface ActivityCategory {
 // Tipo para instructores
 interface Instructor {
   id: number;
-  full_name: string;
+  fullName: string;
   email?: string;
 }
 
-// Colores para categorías de actividades (6 categorías oficiales)
-const categoryColors: Record<string, string> = {
-  'Arte y Cultura': 'bg-green-100 text-green-800 hover:bg-green-200',
-  'Recreación y Bienestar': 'bg-blue-100 text-blue-800 hover:bg-blue-200',
-  'Eventos de Temporada': 'bg-orange-100 text-orange-800 hover:bg-orange-200',
-  'Deportivo': 'bg-red-100 text-red-800 hover:bg-red-200',
-  'Comunidad': 'bg-purple-100 text-purple-800 hover:bg-purple-200',
-  'Naturaleza y Ciencia': 'bg-teal-100 text-teal-800 hover:bg-teal-200',
-  'default': 'bg-gray-100 text-gray-800 hover:bg-gray-200',
+// Función para obtener colores basados en el color de la categoría
+const getCategoryColors = (categoryColor?: string): string => {
+  if (!categoryColor) return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
+  
+  // Convertir el color hex a clases de Tailwind
+  switch (categoryColor) {
+    case '#e74c3c': // Deportivo - rojo
+      return 'bg-red-100 text-red-800 hover:bg-red-200';
+    case '#2ecc71': // Recreación y Bienestar - verde
+      return 'bg-green-100 text-green-800 hover:bg-green-200';
+    case '#9b59b6': // Arte y Cultura - púrpura
+      return 'bg-purple-100 text-purple-800 hover:bg-purple-200';
+    case '#27ae60': // Naturaleza y Ciencia - verde oscuro
+      return 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200';
+    case '#3498db': // Comunidad - azul
+      return 'bg-blue-100 text-blue-800 hover:bg-blue-200';
+    case '#f39c12': // Eventos de Temporada - naranja
+      return 'bg-orange-100 text-orange-800 hover:bg-orange-200';
+    default:
+      return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
+  }
 };
 
 export default function ActivitiesCalendarPage() {
@@ -131,6 +143,17 @@ export default function ActivitiesCalendarPage() {
     queryKey: ['/api/instructors'],
     retry: 1,
   });
+
+  // Crear mapa de colores por categoría
+  const categoryColorMap = React.useMemo(() => {
+    const colorMap: Record<string, string> = {};
+    if (Array.isArray(categories)) {
+      categories.forEach((category) => {
+        colorMap[category.name] = getCategoryColors(category.color);
+      });
+    }
+    return colorMap;
+  }, [categories]);
 
   // Función para filtrar actividades
   const filteredActivities = React.useMemo(() => {
@@ -243,7 +266,7 @@ export default function ActivitiesCalendarPage() {
                 setIsDialogOpen(true);
               }}
             >
-              <Badge className={categoryColors[activity.category || 'default']} variant="outline">
+              <Badge className={categoryColorMap[activity.category || ''] || getCategoryColors()} variant="outline">
                 {activity.title}
               </Badge>
             </div>
@@ -373,8 +396,8 @@ export default function ActivitiesCalendarPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todos los instructores</SelectItem>
-                    {Array.isArray(instructors) && instructors.map((instructor: any) => (
-                      <SelectItem key={instructor.id} value={instructor.id.toString()}>{instructor.full_name}</SelectItem>
+                    {Array.isArray(instructors) && instructors.map((instructor: Instructor) => (
+                      <SelectItem key={instructor.id} value={instructor.id.toString()}>{instructor.fullName}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -423,14 +446,11 @@ export default function ActivitiesCalendarPage() {
         {/* Leyenda de categorías */}
         <div className="mt-6 flex flex-wrap gap-2">
           <div className="text-sm font-medium mr-2">Categorías:</div>
-          {Object.entries(categoryColors).map(([category, colorClass]) => {
-            if (category === 'default') return null;
-            return (
-              <Badge key={category} className={colorClass} variant="outline">
-                {category}
-              </Badge>
-            );
-          })}
+          {Array.isArray(categories) && categories.map((category) => (
+            <Badge key={category.id} className={getCategoryColors(category.color)} variant="outline">
+              {category.name}
+            </Badge>
+          ))}
         </div>
 
         {/* Diálogo de detalles de actividad */}
@@ -441,7 +461,7 @@ export default function ActivitiesCalendarPage() {
                 <DialogHeader>
                   <div className="flex justify-between items-center">
                     <DialogTitle className="text-2xl font-bold">{selectedActivity.title}</DialogTitle>
-                    <Badge className={categoryColors[selectedActivity.category || 'default']} variant="outline">
+                    <Badge className={categoryColorMap[selectedActivity.category || ''] || getCategoryColors()} variant="outline">
                       {selectedActivity.category}
                     </Badge>
                   </div>
