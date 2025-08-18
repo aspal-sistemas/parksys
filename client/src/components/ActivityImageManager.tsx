@@ -203,15 +203,25 @@ const ActivityImageManager: React.FC<ActivityImageManagerProps> = ({
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <Label htmlFor="image-upload">Seleccionar Imagen</Label>
-            <Input
-              id="image-upload"
+            <Label>Seleccionar Imagen</Label>
+            <input
               ref={fileInputRef}
               type="file"
               accept="image/*"
               onChange={handleFileSelect}
               disabled={!activityId}
+              className="hidden"
             />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={!activityId}
+              className="w-full mt-2"
+            >
+              <Upload className="mr-2 h-4 w-4" />
+              Seleccionar Imagen
+            </Button>
           </div>
 
           {previewUrl && (
@@ -284,14 +294,23 @@ const ActivityImageManager: React.FC<ActivityImageManagerProps> = ({
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <Label htmlFor="image-upload">Seleccionar Imagen</Label>
-            <Input
-              id="image-upload"
+            <Label>Seleccionar Imagen</Label>
+            <input
               ref={fileInputRef}
               type="file"
               accept="image/*"
               onChange={handleFileSelect}
+              className="hidden"
             />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full mt-2"
+            >
+              <Upload className="mr-2 h-4 w-4" />
+              Seleccionar Imagen
+            </Button>
           </div>
 
           {previewUrl && (
