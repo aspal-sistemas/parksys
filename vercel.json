@@ -1,5 +1,5 @@
 {
-  "buildCommand": "node scripts/prepare-vercel-assets.js && npm run build",
+  "buildCommand": "npm run build && node scripts/prepare-vercel-assets.js",
   "outputDirectory": "dist/public",
   "functions": {
     "dist/index.js": {
@@ -8,8 +8,32 @@
   },
   "routes": [
     {
+      "src": "/images/(.*)",
+      "dest": "/images/$1"
+    },
+    {
+      "src": "/uploads/(.*)",
+      "dest": "/uploads/$1"
+    },
+    {
+      "src": "/fonts/(.*)",
+      "dest": "/fonts/$1"
+    },
+    {
+      "src": "/locales/(.*)",
+      "dest": "/locales/$1"
+    },
+    {
+      "src": "/assets/(.*)",
+      "dest": "/assets/$1"
+    },
+    {
       "src": "/api/(.*)",
       "dest": "/dist/index.js"
+    },
+    {
+      "src": "/(.*\\.(png|jpg|jpeg|gif|webp|svg|ico))",
+      "dest": "/$1"
     },
     {
       "src": "/(.*)",
