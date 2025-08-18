@@ -6351,6 +6351,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ==================== RUTAS DE ARCHIVOS ESTÁTICOS ====================
+  console.log("🖼️ Configurando rutas de archivos estáticos...");
+  
+  // Ruta para imágenes estáticas
+  app.get('/images/:filename', (req: Request, res: Response) => {
+    const filename = req.params.filename;
+    const imagePath = path.join(process.cwd(), 'public', 'images', filename);
+    
+    if (fs.existsSync(imagePath)) {
+      res.sendFile(imagePath);
+    } else {
+      console.log(`❌ Imagen no encontrada: ${imagePath}`);
+      res.status(404).json({ error: 'Imagen no encontrada' });
+    }
+  });
+
+  // Ruta para uploads dinámicos
+  app.get('/uploads/*', (req: Request, res: Response) => {
+    const filePath = req.path.replace('/uploads/', '');
+    const fullPath = path.join(process.cwd(), 'uploads', filePath);
+    
+    if (fs.existsSync(fullPath)) {
+      res.sendFile(fullPath);
+    } else {
+      // Intentar en public/uploads
+      const publicPath = path.join(process.cwd(), 'public', 'uploads', filePath);
+      if (fs.existsSync(publicPath)) {
+        res.sendFile(publicPath);
+      } else {
+        console.log(`❌ Archivo no encontrado: ${fullPath} ni ${publicPath}`);
+        res.status(404).json({ error: 'Archivo no encontrado' });
+      }
+    }
+  });
+
+  // Ruta para fuentes
+  app.get('/fonts/:filename', (req: Request, res: Response) => {
+    const filename = req.params.filename;
+    const fontPath = path.join(process.cwd(), 'public', 'fonts', filename);
+    
+    if (fs.existsSync(fontPath)) {
+      res.sendFile(fontPath);
+    } else {
+      console.log(`❌ Fuente no encontrada: ${fontPath}`);
+      res.status(404).json({ error: 'Fuente no encontrada' });
+    }
+  });
+
+  // Ruta para archivos de localización
+  app.get('/locales/:lang/:namespace.json', (req: Request, res: Response) => {
+    const { lang, namespace } = req.params;
+    const localePath = path.join(process.cwd(), 'public', 'locales', lang, `${namespace}.json`);
+    
+    if (fs.existsSync(localePath)) {
+      res.sendFile(localePath);
+    } else {
+      console.log(`❌ Archivo de localización no encontrado: ${localePath}`);
+      res.status(404).json({ error: 'Archivo de localización no encontrado' });
+    }
+  });
+
+  console.log("✅ Rutas de archivos estáticos configuradas");
+
   // Inicializar categorías de eventos en segundo plano
   setTimeout(async () => {
     try {
