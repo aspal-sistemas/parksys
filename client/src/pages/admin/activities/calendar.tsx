@@ -69,6 +69,21 @@ interface Activity {
   location?: string;
 }
 
+// Tipo para las categorías
+interface ActivityCategory {
+  id: number;
+  name: string;
+  description?: string;
+  color?: string;
+}
+
+// Tipo para instructores
+interface Instructor {
+  id: number;
+  full_name: string;
+  email?: string;
+}
+
 // Colores para categorías de actividades (6 categorías oficiales)
 const categoryColors: Record<string, string> = {
   'Arte y Cultura': 'bg-green-100 text-green-800 hover:bg-green-200',
@@ -99,14 +114,20 @@ export default function ActivitiesCalendarPage() {
     retry: 1,
   });
 
+  // Obtener categorías para filtro
+  const { data: categories = [] } = useQuery<ActivityCategory[]>({
+    queryKey: ['/api/activity-categories'],
+    retry: 1,
+  });
+
   // Obtener parques para filtro
-  const { data: parks } = useQuery({
+  const { data: parks = [] } = useQuery({
     queryKey: ['/api/parks'],
     retry: 1,
   });
 
   // Obtener instructores para filtro
-  const { data: instructors } = useQuery({
+  const { data: instructors = [] } = useQuery<Instructor[]>({
     queryKey: ['/api/instructors'],
     retry: 1,
   });
@@ -149,19 +170,7 @@ export default function ActivitiesCalendarPage() {
     return [...emptyDays, ...daysInterval];
   }, [currentDate]);
 
-  // Obtener categorías únicas para filtro
-  const categories = React.useMemo(() => {
-    const activitiesArray = Array.isArray(activities) ? activities : [];
-    
-    const uniqueCategories = new Set();
-    activitiesArray.forEach((activity: Activity) => {
-      if (activity.category) {
-        uniqueCategories.add(activity.category);
-      }
-    });
-    
-    return Array.from(uniqueCategories) as string[];
-  }, [activities]);
+
 
   // Obtener actividades para un día específico
   const getActivitiesForDay = (day: Date | null) => {
@@ -335,7 +344,7 @@ export default function ActivitiesCalendarPage() {
                   <SelectContent>
                     <SelectItem value="all">Todas las categorías</SelectItem>
                     {categories.map((category) => (
-                      <SelectItem key={category} value={category}>{category}</SelectItem>
+                      <SelectItem key={category.id} value={category.name}>{category.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
