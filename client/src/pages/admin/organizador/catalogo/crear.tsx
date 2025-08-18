@@ -164,23 +164,19 @@ const CrearActividadPage = () => {
   
   const categorias = Array.isArray(categoriasResponse) ? categoriasResponse : [];
   
-  // Consulta para obtener la lista de usuarios con rol de instructor
-  const { data: usersResponse, isLoading: usersLoading } = useQuery({
-    queryKey: ['/api/users'],
+  // Consulta para obtener la lista de instructores
+  const { data: instructoresResponse, isLoading: instructoresLoading } = useQuery({
+    queryKey: ['/api/instructors'],
   });
   
-  const allUsers = Array.isArray(usersResponse) ? usersResponse : [];
-  const instructores = allUsers.filter((user: any) => 
-    user.roleName?.toLowerCase() === 'instructor' || 
-    user.roleName?.toLowerCase().includes('instructor')
-  );
+  const instructores = Array.isArray(instructoresResponse) ? instructoresResponse : [];
 
   // Logging para diagnosticar
-  console.log('🔧 Datos procesados correctamente:', { 
+  console.log('🔧 Datos de instructores cargados:', { 
     parques: parques.length, 
     categorias: categorias.length, 
     instructores: instructores.length,
-    roles: allUsers.map(u => u.roleName) 
+    instructoresData: instructores.slice(0, 3) // Mostrar primeros 3 para debug
   });
 
   // Configuración del formulario
@@ -1207,35 +1203,45 @@ const CrearActividadPage = () => {
                       <Select
                         onValueChange={field.onChange}
                         defaultValue={field.value}
+                        disabled={instructoresLoading}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Selecciona un instructor" />
+                            <SelectValue placeholder={
+                              instructoresLoading 
+                                ? "Cargando instructores..." 
+                                : "Selecciona un instructor"
+                            } />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {instructores.length === 0 ? (
+                          {instructoresLoading ? (
+                            <SelectItem value="loading" disabled>
+                              Cargando instructores...
+                            </SelectItem>
+                          ) : instructores.length === 0 ? (
                             <SelectItem value="no-instructors" disabled>
                               No hay instructores disponibles
                             </SelectItem>
                           ) : (
                             instructores.map((instructor: any) => (
                               <SelectItem key={instructor.id} value={instructor.id.toString()}>
-                                {instructor.firstName} {instructor.lastName} ({instructor.email})
+                                {instructor.full_name || instructor.fullName || `${instructor.firstName || ''} ${instructor.lastName || ''}`.trim()} 
+                                {instructor.email && ` (${instructor.email})`}
                               </SelectItem>
                             ))
                           )}
                         </SelectContent>
                       </Select>
                       <FormDescription>
-                        Selecciona un instructor registrado en el sistema. Si el instructor que buscas no está en la lista, primero debes registrarlo en la sección de Usuarios.
+                        Selecciona un instructor registrado en el sistema. Si el instructor que buscas no está en la lista, primero debes registrarlo en la sección de Instructores.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
                 
-                {instructores.length === 0 && (
+                {!instructoresLoading && instructores.length === 0 && (
                   <div className="bg-amber-50 border border-amber-200 rounded-md p-4 my-4">
                     <p className="text-amber-800">
                       No hay instructores registrados en el sistema. Dirígete a la sección de Instructores en este módulo de Actividades, para crear un Instructor primero.
