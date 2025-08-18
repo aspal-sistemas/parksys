@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npm run build && node scripts/prepare-vercel-assets.js",
+  "buildCommand": "npm run build",
   "outputDirectory": "dist/public",
   "functions": {
     "dist/index.js": {
